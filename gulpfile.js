@@ -30,19 +30,20 @@ var gulp = require('gulp'),
 var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
-
+            bowerPath + 'jquery/dist/jquery.min.js',
+            bowerPath + 'semantic-ui/dist/semantic.min.js',
             'resources/assets/js/**/*.js'
         ],
         styles: [
-
+            bowerPath + 'semantic-ui/dist/semantic.min.css',
             'resources/assets/less/*.less'
         ],
         fonts: [
-
+            bowerPath + 'semantic-ui/dist/themes/default/assets/fonts/*.*',
             'resources/assets/fonts/*.*'
         ],
         images: [
-
+            bowerPath + 'semantic-ui/dist/themes/default/assets/images/*.*',
             'resources/assets/images/**/*.*'
         ]
     };
