@@ -1,0 +1,9 @@
+/vendor
+/node_modules
+Homestead.yaml
+.env
+/.idea
+/bower_components
+composer.lock
+public/js/*
+public/css/*

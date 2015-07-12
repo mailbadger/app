@@ -1,0 +1,22 @@
+{
+  "name": "newsletters",
+  "version": "0.0.0",
+  "authors": [
+    "Filip Nikolovski <filip.nikol92@gmail.com>"
+  ],
+  "description": "Self hosted newsletter mail system",
+  "keywords": [
+    "newsletters",
+    "emails",
+    "self-hosted",
+    "system"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
