@@ -30,20 +30,15 @@ var gulp = require('gulp'),
 var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
-            bowerPath + 'jquery/dist/jquery.min.js',
-            bowerPath + 'semantic-ui/dist/semantic.min.js',
-            'resources/assets/js/**/*.js'
+            bowerPath + 'jquery/dist/jquery.min.js'
         ],
         styles: [
-            bowerPath + 'semantic-ui/dist/semantic.min.css',
             'resources/assets/less/*.less'
         ],
         fonts: [
-            bowerPath + 'semantic-ui/dist/themes/default/assets/fonts/*.*',
             'resources/assets/fonts/*.*'
         ],
         images: [
-            bowerPath + 'semantic-ui/dist/themes/default/assets/images/*.*',
             'resources/assets/images/**/*.*'
         ]
     };
@@ -60,9 +55,16 @@ gulp.task('prune', function (cb) {
 });
 
 // minify and copy all JS (except vendor scripts, sourcemaps are commented and basically useless)
-gulp.task('scripts', function () {
+gulp.task('vendor-scripts', function () {
     return gulp.src(srcPaths.scripts)
         .pipe(concat('app.min.js'))
+        .pipe(gulpif(inProduction, uglify()))
+        .pipe(gulp.dest(destPaths.scripts))
+        ;
+});
+
+gulp.task('scripts', function () {
+    return gulp.src('resources/assets/js/**/*.js')
         .pipe(gulpif(inProduction, uglify()))
         .pipe(gulp.dest(destPaths.scripts))
         ;
@@ -108,7 +110,7 @@ gulp.task('watch', function () {
 });
 
 // default task
-gulp.task('default', ['scripts', 'styles', 'images', 'phpunit']);
+gulp.task('default', ['vendor-scripts', 'scripts', 'styles', 'images', 'phpunit']);
 
 /*
  * usage:

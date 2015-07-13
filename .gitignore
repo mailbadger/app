@@ -1,6 +1,5 @@
 /vendor
 /node_modules
-Homestead.yaml
 .env
 /.idea
 /bower_components
@@ -9,3 +8,4 @@ public/js/*
 public/css/*
 public/fonts/*
 public/images/*
+public/dist/*
