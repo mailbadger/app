@@ -22,10 +22,11 @@ class AuthController extends Controller
     */
 use AuthenticatesUsers, ThrottlesLogins;
 
+    protected $redirectPath = '/dashboard';
+
     /**
      * Create a new authentication controller instance.
      *
-     * @return void
      */
     public function __construct()
     {

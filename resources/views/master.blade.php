@@ -8,7 +8,6 @@
 
     <title>News Maily</title>
 
-    <link rel="stylesheet" href="{{asset('dist/semantic.min.css')}}">
     <link rel="stylesheet" href="{{asset('css/app.min.css')}}">
 
     <!--[if lt IE 9]>
@@ -18,14 +17,13 @@
 </head>
 <body>
 @include('header')
-<div class="container">
+<div class="container-fluid">
     @yield('content')
 </div>
 <script>
     var url_base = '{{url()}}';
 </script>
-<script type="text/javascript" src="{{asset('js/app.min.js')}}"></script>
-<script type="text/javascript" src="{{asset('dist/semantic.min.js')}}"></script>
+<script type="text/javascript" src="{{asset('js/global.bundle.js')}}"></script>
 @yield('scripts')
 </body>
 </html>

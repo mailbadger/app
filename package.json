@@ -1,19 +1,13 @@
 {
   "private": true,
-  "dependencies": {
-    "better-console": "^0.2.4",
+  "devDependencies": {
+    "bootstrap": "^3.3.5",
+    "browserify": "^10.2.6",
     "del": "~1.1.1",
-    "extend": "^3.0.0",
-    "gulp": "^3.8.8",
-    "gulp-autoprefixer": "^2.3.1",
-    "gulp-chmod": "^1.2.0",
-    "gulp-clone": "^1.0.0",
+    "event-stream": "^3.3.1",
+    "gulp": "^3.9.0",
+    "gulp-cache": "~0.2.8",
     "gulp-concat": "~2.5.2",
-    "gulp-concat-css": "^2.2.0",
-    "gulp-copy": "0.0.2",
-    "gulp-flatten": "^0.1.0",
-    "gulp-header": "^1.2.2",
-    "gulp-help": "^1.6.0",
     "gulp-if": "~1.2.5",
     "gulp-imagemin": "~2.2.1",
     "gulp-less": "~3.0.2",
@@ -21,19 +15,12 @@
     "gulp-newer": "~0.5.0",
     "gulp-notify": "~2.2.0",
     "gulp-phpunit": "~0.8.1",
-    "gulp-plumber": "^1.0.1",
-    "gulp-print": "^1.1.0",
     "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.5.3",
-    "gulp-rtlcss": "^0.1.4",
     "gulp-sourcemaps": "~1.5.1",
     "gulp-uglify": "~1.1.0",
     "gulp-util": "~3.0.4",
-    "gulp-watch": "^4.3.1",
-    "laravel-elixir": "*",
-    "map-stream": "0.0.6",
-    "require-dot-file": "^0.4.0",
-    "semantic-ui": "^2.0.3",
-    "yamljs": "^0.2.3"
+    "jquery": "^2.1.4",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
