@@ -2,10 +2,8 @@
 /node_modules
 .env
 /.idea
-/bower_components
 composer.lock
 public/js/*
 public/css/*
 public/fonts/*
 public/images/*
-public/dist/*

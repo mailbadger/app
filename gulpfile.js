@@ -59,7 +59,6 @@ gulp.task('prune', function (cb) {
     return cache.clearAll(cb);
 });
 
-// minify and copy all JS (except vendor scripts, sourcemaps are commented and basically useless)
 gulp.task('scripts', function () {
     // map them to our stream function
     var tasks = srcPaths.scripts.map(function (entry) {
