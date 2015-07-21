@@ -12,9 +12,9 @@
         <div class="navbar-collapse collapse" id="navbar">
             <ul class="nav navbar-nav navbar-right">
                 @if(Auth::check())
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#">Settings</a></li>
-                    <li><a href="#">Profile</a></li>
+                    <li><a href="{{url('dashboard')}}">Dashboard</a></li>
+                    <li><a href="{{url('dashboard/settings')}}">Settings</a></li>
+                    <li><a href="{{url('auth/logout')}}">Logout</a></li>
                 @else
                     <li><a href="{{url('auth/login')}}">Login</a></li>
                 @endif
