@@ -28,7 +28,7 @@ return [
     |
     */
 
-    'model' => newsletters\User::class,
+    'model' => newsletters\Entities\User::class,
 
     /*
     |--------------------------------------------------------------------------

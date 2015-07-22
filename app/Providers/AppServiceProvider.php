@@ -13,7 +13,27 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        //Bind repositories
+        $this->app->bind('newsletters\Repositories\CampaignRepository',
+            'newsletters\Repositories\CampaignRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\TemplateRepository',
+            'newsletters\Repositories\TemplateRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\ListsRepository',
+            'newsletters\Repositories\ListsRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\TagRepository',
+            'newsletters\Repositories\TagRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\SubscriberRepository',
+            'newsletters\Repositories\SubscriberRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\FieldRepository',
+            'newsletters\Repositories\FieldRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\SentEmailRepository',
+            'newsletters\Repositories\SentEmailRepositoryEloquent');
     }
 
     /**

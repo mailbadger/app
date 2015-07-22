@@ -1,6 +1,6 @@
 <?php
 
-namespace newsletters;
+namespace newsletters\Entities;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
