@@ -21,6 +21,17 @@ Route::post('password/reset', 'Auth\PasswordController@postReset');
 
 Route::controller('dashboard', 'DashboardController');
 
-Route::get('/', ['middleware' => 'guest', function () {
-    return view('home');
-}]);
+Route::group(['namespace' => 'Api', 'prefix' => 'api'], function()
+{
+    Route::resource('campaign', 'CampaignController', ['except' => ['create', 'edit']]);
+
+    Route::resource('template', 'TemplateController', ['except' => ['create', 'edit']]);
+});
+
+
+Route::get('/', [
+    'middleware' => 'guest',
+    function () {
+        return view('home');
+    },
+]);
