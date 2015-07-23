@@ -20,7 +20,15 @@
     "gulp-uglify": "~1.1.0",
     "gulp-util": "~3.0.4",
     "jquery": "^2.1.4",
+    "react": "^0.13.3",
+    "reactify": "^1.1.1",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
+  },
+  "dependencies": {
+    "bootpag": "^1.0.7",
+    "jquery.mousewheel": "^3.1.9",
+    "select2": "^4.0.0",
+    "summernote": "^0.6.10"
   }
 }

@@ -2,6 +2,7 @@
 
 // configuration, adapt paths/folders to your project
 var frontPath = './public/',
+    npmPath = './node_modules/',
     destPaths = {
         scripts: frontPath + 'js/',
         styles: frontPath + 'css/',
@@ -28,19 +29,23 @@ var gulp = require('gulp'),
     gulputil = require('gulp-util'),
     gulpif = require('gulp-if'),
     del = require('del'),
-    es = require('event-stream');
+    es = require('event-stream'),
+    reactify = require('reactify');
 
 // use "--production" option to minify everything
 var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
             'resources/assets/js/global.js',
-            'resources/assets/js/auth.js'
+            'resources/assets/js/components/campaigns-table.js',
+            'resources/assets/js/campaigns.js'
         ],
         styles: [
+            npmPath + 'select2/dist/css/select2.min.css',
             'resources/assets/less/*.less'
         ],
         fonts: [
+            npmPath + 'bootstrap/fonts/*.*',
             'resources/assets/fonts/*.*'
         ],
         images: [
@@ -62,14 +67,21 @@ gulp.task('prune', function (cb) {
 gulp.task('scripts', function () {
     // map them to our stream function
     var tasks = srcPaths.scripts.map(function (entry) {
-        return browserify({entries: [entry]})
+        var dirnames = entry.substr(entry.indexOf('js') + 3).split('/');
+        dirnames.pop();
+        var dirname = dirnames.join('/');
+
+        return browserify({
+            entries: [entry],
+            transform: [reactify]
+        })
             .bundle()
             .pipe(source(entry))
             // rename them to have "bundle as postfix"
             .pipe(buffer())
             .pipe(gulpif(inProduction, uglify()))
             .pipe(rename({
-                dirname: '',
+                dirname: dirname,
                 extname: '.bundle.js'
             }))
             .pipe(gulp.dest(destPaths.scripts));

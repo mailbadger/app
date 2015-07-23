@@ -17,6 +17,11 @@ class DashboardController extends Controller
 
     public function getIndex()
     {
-        return view('dashboard.campaigns.list');
+        return view('dashboard.campaigns.list')->with('activeSidebar', 'dashboard');
+    }
+
+    public function getNewCampaign()
+    {
+        return view('dashboard.campaigns.create_new')->with('activeSidebar', 'new-campaign');
     }
 }
