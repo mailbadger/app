@@ -23,9 +23,9 @@ Route::controller('dashboard', 'DashboardController');
 
 Route::group(['namespace' => 'Api', 'prefix' => 'api'], function()
 {
-    Route::resource('campaign', 'CampaignController', ['except' => ['create', 'edit']]);
+    Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
 
-    Route::resource('template', 'TemplateController', ['except' => ['create', 'edit']]);
+    Route::resource('templates', 'TemplateController', ['except' => ['create', 'edit']]);
 });
 
 

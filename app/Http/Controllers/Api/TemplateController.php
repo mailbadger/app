@@ -2,6 +2,7 @@
 
 namespace newsletters\Http\Controllers\Api;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 use newsletters\Http\Requests;
@@ -26,11 +27,18 @@ class TemplateController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        if($request->has('paginate')) {
+            $perPage = ($request->has('per_page')) ? $request->input('per_page') : 15;
+            $templates = $this->repository->paginate($perPage);
+        } else {
+            $templates = $this->repository->all();
+        }
+        return response()->json($templates, 200);
     }
 
     /**
@@ -52,7 +60,13 @@ class TemplateController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $template = $this->repository->find($id);
+
+            return response()->json($template, 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
+        }
     }
 
     /**

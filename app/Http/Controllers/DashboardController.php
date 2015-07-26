@@ -24,4 +24,14 @@ class DashboardController extends Controller
     {
         return view('dashboard.campaigns.create_new')->with('activeSidebar', 'new-campaign');
     }
+
+    public function getTemplates()
+    {
+        return view('dashboard.templates.list')->with('activeSidebar', 'templates');
+    }
+
+    public function getNewTemplate()
+    {
+        return view('dashboard.templates.create_new')->with('activeSidebar', 'new-template');
+    }
 }

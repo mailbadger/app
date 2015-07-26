@@ -37,8 +37,8 @@ var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
             'resources/assets/js/global.js',
-            'resources/assets/js/components/campaigns-table.js',
-            'resources/assets/js/campaigns.js'
+            'resources/assets/js/components/campaigns-table.jsx',
+            'resources/assets/js/components/campaign-form.jsx'
         ],
         styles: [
             npmPath + 'select2/dist/css/select2.min.css',

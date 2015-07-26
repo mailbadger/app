@@ -3,13 +3,15 @@
  */
 var Campaign = function () {
 
-    var url = url_base + '/api/campaign';
+    var url = url_base + '/api/campaigns';
 
-    this.all = function (page) {
+    this.all = function (paginate, perPage, page) {
         return $.ajax({
             type: 'GET',
             url: url,
             data: {
+                paginate: paginate,
+                per_page: perPage,
                 page: page
             },
             dataType: 'json'
@@ -42,6 +44,7 @@ var Campaign = function () {
                 from_name: data.from_name,
                 from_email: data.from_email,
                 status: data.status,
+                recipients: data.recipients,
                 template_id: data.template_id
             },
             dataType: 'json'
