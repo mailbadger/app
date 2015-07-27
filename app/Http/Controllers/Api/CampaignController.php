@@ -2,43 +2,37 @@
 
 namespace newsletters\Http\Controllers\Api;
 
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
 use newsletters\Http\Requests\StoreCampaignRequest;
 use newsletters\Repositories\CampaignRepository;
+use newsletters\Services\CampaignService;
 
 class CampaignController extends Controller
 {
     /**
-     * @var CampaignRepository
+     * @var CampaignService
      */
-    private $repository;
+    private $service;
 
-    public function __construct(CampaignRepository $repository)
+    public function __construct(CampaignService $service)
     {
         $this->middleware('auth');
 
-        $this->repository = $repository;
+        $this->service = $service;
     }
 
     /**
      * Display a listing of the resource.
      *
      * @param Request $request
+     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request, CampaignRepository $repository)
     {
-        if ($request->has('paginate')) {
-            $perPage = ($request->has('per_page')) ? $request->input('per_page') : 15;
-            $campaigns = $this->repository->paginate($perPage);
-        } else {
-            $campaigns = $this->repository->all();
-        }
+        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), 10, $repository);
 
         return response()->json($campaigns, 200);
     }
@@ -47,43 +41,36 @@ class CampaignController extends Controller
      * Store a newly created resource in storage.
      *
      * @param StoreCampaignRequest $request
+     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreCampaignRequest $request)
+    public function store(StoreCampaignRequest $request, CampaignRepository $repository)
     {
-        try {
-            $campaign = $this->repository->create($request->all());
-            if (isset($campaign)) {
-                return response()->json(['status' => 200, 'campaign' => $campaign], 200);
-            }
-
-            return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
-                412);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
-                412);
+        $campaign = $this->service->createCampaign($request->all(), $repository);
+        if (isset($campaign)) {
+            return response()->json(['status' => 200, 'campaign' => $campaign], 200);
         }
+
+        return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
+            412);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int $id
+     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show($id, CampaignRepository $repository)
     {
-        try {
-            $campaign = $this->repository->find($id);
+        $campaign = $this->service->findCampaign($id, $repository);
 
+        if (isset($campaign)) {
             return response()->json($campaign, 200);
-        } catch (ModelNotFoundException $e) {
-            Log::error($e->getMessage());
-
-            return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
         }
+
+        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
     }
 
     /**
@@ -102,19 +89,18 @@ class CampaignController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int $id
+     * @param CampaignRepository $repository
      * @return Response
      */
-    public function destroy($id)
+    public function destroy($id, CampaignRepository $repository)
     {
-        try {
-            $this->repository->delete($id);
-
-            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'], 200);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return response()->json(['status' => 422, 'campaign' => ['The specified resource could not be deleted.']],
-                422);
+        if ($this->service->deleteCampaign($id, $repository)) {
+            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
+                200);
         }
+
+        return response()->json(['status' => 422, 'campaign' => ['The specified resource could not be deleted.']],
+            422);
+
     }
 }

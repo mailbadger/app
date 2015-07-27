@@ -114,10 +114,8 @@ var CampaignsTable = React.createClass({
                 </table>
                 <div className="col-lg-12 pagination text-center"></div>
             </div>
-
         );
     }
-
 });
 
 React.render(<CampaignsTable />, document.getElementById('campaigns'));

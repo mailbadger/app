@@ -2,49 +2,45 @@
 
 namespace newsletters\Http\Controllers\Api;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-
-use newsletters\Http\Requests;
 use newsletters\Http\Controllers\Controller;
+use newsletters\Http\Requests;
 use newsletters\Repositories\TemplateRepository;
+use newsletters\Services\TemplateService;
 
 class TemplateController extends Controller
 {
 
     /**
-     * @var TemplateRepository
+     * @var TemplateService
      */
-    private $repository;
+    private $service;
 
-    public function __construct(TemplateRepository $repository)
+    public function __construct(TemplateService $service)
     {
         $this->middleware('auth');
 
-        $this->repository = $repository;
+        $this->service = $service;
     }
 
     /**
      * Display a listing of the resource.
      *
      * @param Request $request
+     * @param TemplateRepository $repository
      * @return Response
      */
-    public function index(Request $request)
+    public function index(Request $request, TemplateRepository $repository)
     {
-        if($request->has('paginate')) {
-            $perPage = ($request->has('per_page')) ? $request->input('per_page') : 15;
-            $templates = $this->repository->paginate($perPage);
-        } else {
-            $templates = $this->repository->all();
-        }
+        $templates = $this->service->findAllTemplates($request->has('paginate'), 10, $repository);
+
         return response()->json($templates, 200);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param  Request $request
      * @return Response
      */
     public function store(Request $request)
@@ -55,25 +51,25 @@ class TemplateController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
+     * @param TemplateRepository $repository
      * @return Response
      */
-    public function show($id)
+    public function show($id, TemplateRepository $repository)
     {
-        try {
-            $template = $this->repository->find($id);
-
+        $template = $this->service->findTemplate($id, $repository);
+        if (isset($template)) {
             return response()->json($template, 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
         }
+
+        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  int  $id
+     * @param  Request $request
+     * @param  int $id
      * @return Response
      */
     public function update(Request $request, $id)
@@ -84,11 +80,18 @@ class TemplateController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
+     * @param TemplateService $service
+     * @param TemplateRepository $repository
      * @return Response
      */
-    public function destroy($id)
+    public function destroy($id, TemplateService $service, TemplateRepository $repository)
     {
-        //
+        if ($service->deleteUnusedTemplate($id, $repository)) {
+            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'], 200);
+        }
+
+        return response()->json(['status' => 422, 'message' => ['The specified resource could not be deleted.']],
+            422);
     }
 }
