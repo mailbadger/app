@@ -2,7 +2,9 @@
 
 namespace newsletters\Services;
 
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\TemplateRepository;
 
 /**
@@ -15,34 +17,59 @@ class TemplateService
 {
 
     /**
+     * @var TemplateRepository
+     */
+    private $templateRepository;
+
+    public function __construct(TemplateRepository $repository)
+    {
+        $this->templateRepository = $repository;
+    }
+
+    /**
      * Find all templates
      *
      * @param bool $paginate
      * @param int $perPage
-     * @param TemplateRepository $repository
      * @return mixed
      */
-    public function findAllTemplates($paginate = false, $perPage = 10, TemplateRepository $repository)
+    public function findAllTemplates($paginate = false, $perPage = 10)
     {
         if ($paginate) {
-            return $repository->paginate($perPage);
+            return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']);
         }
 
-        return $repository->all();
+        return $this->templateRepository->all(['id', 'name', 'created_at', 'updated_at']);
     }
 
     /**
      * Find a template by id
      *
      * @param $id
-     * @param TemplateRepository $repository
      * @return mixed|null
      */
-    public function findTemplate($id, TemplateRepository $repository)
+    public function findTemplate($id)
     {
         try {
-            return $repository->find($id);
+            return $this->templateRepository->find($id);
         } catch (ModelNotFoundException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Create campaign
+     *
+     * @param array $data
+     * @return mixed|null
+     */
+    public function createTemplate(array $data)
+    {
+        try {
+            return $this->templateRepository->create($data);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+
             return null;
         }
     }
@@ -51,13 +78,12 @@ class TemplateService
      * Deletes a template if it's unused by a campaign
      *
      * @param $templateId
-     * @param TemplateRepository $repository
      * @return bool|int
      */
-    public function deleteUnusedTemplate($templateId, TemplateRepository $repository)
+    public function deleteUnusedTemplate($templateId)
     {
         try {
-            return $repository
+            return $this->templateRepository
                 ->scopeQuery(function ($query) {
                     return $query->has('campaigns', '=', 0);
                 })

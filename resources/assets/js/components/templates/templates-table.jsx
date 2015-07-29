@@ -47,17 +47,29 @@ var DeleteButton = React.createClass({
 });
 
 var PreviewButton = React.createClass({
-    handleClick: function () {
-        t.get(this.props.tid)
-            .done(function (res) {
-
-            }).fail(function () {
-
-            });
+    componentDidMount: function () {
+        $('.preview').magnificPopup({
+            type: 'iframe',
+            iframe: {
+                markup: '<div class="mfp-iframe-scaler">' +
+                '<div class="mfp-close"></div>' +
+                '<iframe style="background: #fff none repeat scroll 0 0 !important" class="mfp-iframe" frameborder="0"></iframe>' +
+                '</div>',
+                patterns: {
+                    template: {
+                        index: '',
+                        src: '%id%'
+                    }
+                }
+            },
+            gallery: {
+                enabled: true
+            }
+        });
     },
     render: function () {
         return (
-            <a href="#" onClick={this.handleClick}><span
+            <a className="preview" href={url_base + '/api/templates/content/' + this.props.tid}><span
                 className="glyphicon glyphicon-eye-open"></span></a>
         )
     }

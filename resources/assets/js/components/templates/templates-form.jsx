@@ -29,10 +29,16 @@ var TemplateForm = React.createClass({
     handleSubmit: function (e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
+
+        for (instance in CKEDITOR.instances) {
+            CKEDITOR.instances[instance].updateElement();
+        }
+
         var data = {
             name: this.refs.name.getDOMNode().value,
-            content: ''
+            content: CKEDITOR.instances.content.getData()
         };
+
         t.create(data).done(this.handleSuccess).fail(this.handleErrors);
     },
     componentDidMount: function () {

@@ -27,12 +27,11 @@ class CampaignController extends Controller
      * Display a listing of the resource.
      *
      * @param Request $request
-     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request, CampaignRepository $repository)
+    public function index(Request $request)
     {
-        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), 10, $repository);
+        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), 10);
 
         return response()->json($campaigns, 200);
     }
@@ -41,14 +40,13 @@ class CampaignController extends Controller
      * Store a newly created resource in storage.
      *
      * @param StoreCampaignRequest $request
-     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreCampaignRequest $request, CampaignRepository $repository)
+    public function store(StoreCampaignRequest $request)
     {
-        $campaign = $this->service->createCampaign($request->all(), $repository);
+        $campaign = $this->service->createCampaign($request->all());
         if (isset($campaign)) {
-            return response()->json(['status' => 200, 'campaign' => $campaign], 200);
+            return response()->json(['status' => 200, 'campaign' => $campaign->id], 200);
         }
 
         return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
@@ -59,12 +57,11 @@ class CampaignController extends Controller
      * Display the specified resource.
      *
      * @param  int $id
-     * @param CampaignRepository $repository
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id, CampaignRepository $repository)
+    public function show($id)
     {
-        $campaign = $this->service->findCampaign($id, $repository);
+        $campaign = $this->service->findCampaign($id);
 
         if (isset($campaign)) {
             return response()->json($campaign, 200);
@@ -89,12 +86,11 @@ class CampaignController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int $id
-     * @param CampaignRepository $repository
      * @return Response
      */
-    public function destroy($id, CampaignRepository $repository)
+    public function destroy($id)
     {
-        if ($this->service->deleteCampaign($id, $repository)) {
+        if ($this->service->deleteCampaign($id)) {
             return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
                 200);
         }

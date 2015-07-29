@@ -5,6 +5,7 @@ namespace newsletters\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
+use newsletters\Http\Requests\StoreTemplateRequest;
 use newsletters\Repositories\TemplateRepository;
 use newsletters\Services\TemplateService;
 
@@ -27,12 +28,11 @@ class TemplateController extends Controller
      * Display a listing of the resource.
      *
      * @param Request $request
-     * @param TemplateRepository $repository
      * @return Response
      */
-    public function index(Request $request, TemplateRepository $repository)
+    public function index(Request $request)
     {
-        $templates = $this->service->findAllTemplates($request->has('paginate'), 10, $repository);
+        $templates = $this->service->findAllTemplates($request->has('paginate'), 10);
 
         return response()->json($templates, 200);
     }
@@ -40,24 +40,29 @@ class TemplateController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request $request
+     * @param StoreTemplateRequest $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(StoreTemplateRequest $request)
     {
-        //
+        $template = $this->service->createTemplate($request->all());
+        if (isset($template)) {
+            return response()->json(['status' => 200, 'template' => $template->id], 200);
+        }
+
+        return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
+            412);
     }
 
     /**
      * Display the specified resource.
      *
      * @param  int $id
-     * @param TemplateRepository $repository
      * @return Response
      */
-    public function show($id, TemplateRepository $repository)
+    public function show($id)
     {
-        $template = $this->service->findTemplate($id, $repository);
+        $template = $this->service->findTemplate($id);
         if (isset($template)) {
             return response()->json($template, 200);
         }
@@ -81,17 +86,31 @@ class TemplateController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int $id
-     * @param TemplateService $service
-     * @param TemplateRepository $repository
      * @return Response
      */
-    public function destroy($id, TemplateService $service, TemplateRepository $repository)
+    public function destroy($id)
     {
-        if ($service->deleteUnusedTemplate($id, $repository)) {
+        if ($this->service->deleteUnusedTemplate($id)) {
             return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'], 200);
         }
 
         return response()->json(['status' => 422, 'message' => ['The specified resource could not be deleted.']],
             422);
+    }
+
+    /**
+     * Display the content of the specified template
+     *
+     * @param $id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function showContent($id)
+    {
+        $template = $this->service->findTemplate($id);
+        if (isset($template)) {
+            return response($template->content, 200);
+        }
+
+        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
     }
 }

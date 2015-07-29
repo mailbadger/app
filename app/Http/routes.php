@@ -21,9 +21,10 @@ Route::post('password/reset', 'Auth\PasswordController@postReset');
 
 Route::controller('dashboard', 'DashboardController');
 
-Route::group(['namespace' => 'Api', 'prefix' => 'api'], function()
-{
+Route::group(['namespace' => 'Api', 'prefix' => 'api'], function () {
     Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
+
+    Route::get('templates/content/{id}', 'TemplateController@showContent');
 
     Route::resource('templates', 'TemplateController', ['except' => ['create', 'edit']]);
 });

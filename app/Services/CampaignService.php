@@ -18,33 +18,41 @@ class CampaignService
 {
 
     /**
+     * @var CampaignRepository
+     */
+    private $campaignRepository;
+
+    public function __construct(CampaignRepository $repository)
+    {
+        $this->campaignRepository = $repository;
+    }
+
+    /**
      * Find all templates
      *
      * @param bool $paginate
      * @param int $perPage
-     * @param CampaignRepository $repository
      * @return mixed
      */
-    public function findAllCampaigns($paginate = false, $perPage = 10, CampaignRepository $repository)
+    public function findAllCampaigns($paginate = false, $perPage = 10)
     {
         if ($paginate) {
-            return $repository->paginate($perPage);
+            return $this->campaignRepository->paginate($perPage);
         }
 
-        return $repository->all();
+        return $this->campaignRepository->all();
     }
 
     /**
      * Find a template by id
      *
      * @param $id
-     * @param CampaignRepository $repository
      * @return mixed|null
      */
-    public function findCampaign($id, CampaignRepository $repository)
+    public function findCampaign($id)
     {
         try {
-            return $repository->find($id);
+            return $this->campaignRepository->find($id);
         } catch (ModelNotFoundException $e) {
             return null;
         }
@@ -54,13 +62,12 @@ class CampaignService
      * Create campaign
      *
      * @param array $data
-     * @param CampaignRepository $repository
      * @return mixed|null
      */
-    public function createCampaign(array $data, CampaignRepository $repository)
+    public function createCampaign(array $data)
     {
         try {
-            return $repository->create($data);
+            return $this->campaignRepository->create($data);
         } catch (Exception $e) {
             Log::error($e->getMessage());
 
@@ -71,13 +78,12 @@ class CampaignService
      * Delete a campaign by its id
      *
      * @param $campaignId
-     * @param CampaignRepository $repository
      * @return bool|int
      */
-    public function deleteCampaign($campaignId, CampaignRepository $repository)
+    public function deleteCampaign($campaignId)
     {
         try {
-            return $repository->delete($campaignId);
+            return $this->campaignRepository->delete($campaignId);
         } catch (ModelNotFoundException $e) {
 
             return false;

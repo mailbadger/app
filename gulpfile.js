@@ -44,6 +44,7 @@ var inProduction = ('production' in gulputil.env),
         ],
         styles: [
             npmPath + 'select2/dist/css/select2.min.css',
+            npmPath + 'magnific-popup/dist/magnific-popup.css',
             'resources/assets/less/*.less'
         ],
         fonts: [
