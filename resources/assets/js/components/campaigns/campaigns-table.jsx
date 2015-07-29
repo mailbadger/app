@@ -1,18 +1,21 @@
+/**
+ * Created by filip on 22.7.15.
+ */
 /** @jsx React.DOM */
 
 require('bootpag/lib/jquery.bootpag.min.js');
 require('sweetalert');
 
 var React = require('react');
-var Template = require('../entities/template.js');
-var t = new Template();
+var Campaign = require('../../entities/campaign.js');
+var c = new Campaign();
 
 var DeleteButton = React.createClass({
     handleSubmit: function (e) {
         e.preventDefault();
         swal({
                 title: "Are you sure?",
-                text: "You will not be able to recover this template!",
+                text: "You will not be able to recover this campaign!",
                 type: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#DD6B55",
@@ -20,18 +23,18 @@ var DeleteButton = React.createClass({
                 closeOnConfirm: false
             },
             function () {
-                t.delete(this.props.tid)
+                c.delete(this.props.cid)
                     .done(function () {
                         swal({
                             title: "Success",
-                            text: "The template was successfully deleted!",
+                            text: "The campaign was successfully deleted!",
                             type: "success"
                         }, function () {
                             location.reload();
                         });
                     })
                     .fail(function () {
-                        swal('Could not delete', 'Check if the template belongs to a campaign.', 'error');
+                        swal('Error', 'The campaign was not deleted. Try again.', 'error');
                     });
             }.bind(this));
 
@@ -46,33 +49,24 @@ var DeleteButton = React.createClass({
     }
 });
 
-var PreviewButton = React.createClass({
-    handleClick: function () {
-        t.get(this.props.tid)
-            .done(function (res) {
-
-            }).fail(function () {
-
-            });
-    },
-    render: function () {
-        return (
-            <a href="#" onClick={this.handleClick}><span
-                className="delete-campaign glyphicon glyphicon-eye-open"></span></a>
-        )
-    }
-});
-
-var TemplateRow = React.createClass({
+var CampaignRow = React.createClass({
     render: function () {
         return (
             <tr>
                 <td>{this.props.data.name}</td>
+                <td>{this.props.data.recipients}</td>
+                <td>{(() => {
+                    switch (this.props.data.status) {
+                        case "draft":
+                            return <span className="label label-default">Draft</span>;
+                        case "sent":
+                            return <span className="label label-success">Sent</span>;
+                        case "sending":
+                            return <span className="label label-info">Sending</span>;
+                    }
+                })()}</td>
                 <td>
-                    <PreviewButton tid={this.props.data.id}/>
-                </td>
-                <td>
-                    <DeleteButton tid={this.props.data.id}/>
+                    <DeleteButton cid={this.props.data.id}/>
                 </td>
             </tr>
         );
@@ -81,19 +75,19 @@ var TemplateRow = React.createClass({
 
 var CampaignsTable = React.createClass({
     getInitialState: function () {
-        return {templates: {data: []}};
+        return {campaigns: {data: []}};
     },
     componentDidMount: function () {
-        t.all(true, 10, 1).done(function (response) {
-            this.setState({templates: response});
+        c.all(true, 10, 1).done(function (response) {
+            this.setState({campaigns: response});
 
             $('.pagination').bootpag({
                 total: response.last_page,
                 page: response.current_page,
                 maxVisible: 5
             }).on("page", function (event, num) {
-                t.all(true, 10, num).done(function (response) {
-                    this.setState({templates: response});
+                c.all(true, 10, num).done(function (response) {
+                    this.setState({campaigns: response});
                     $('.pagination').bootpag({page: response.current_page});
                 }.bind(this));
             }.bind(this));
@@ -101,20 +95,21 @@ var CampaignsTable = React.createClass({
     },
     render: function () {
         var rows = function (data) {
-            return <TemplateRow key={data.id} data={data}/>
+            return <CampaignRow key={data.id} data={data}/>
         };
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
                     <thead>
                     <tr>
-                        <th>Template</th>
-                        <th>Preview</th>
+                        <th>Campaign</th>
+                        <th>Recipients</th>
+                        <th>Status</th>
                         <th>Delete</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {this.state.templates.data.map(rows)}
+                    {this.state.campaigns.data.map(rows)}
                     </tbody>
                 </table>
                 <div className="col-lg-12 pagination text-center"></div>
@@ -123,5 +118,5 @@ var CampaignsTable = React.createClass({
     }
 });
 
+module.exports = CampaignsTable;
 
-React.render(<CampaignsTable />, document.getElementById('templates'));

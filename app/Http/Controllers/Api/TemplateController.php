@@ -18,7 +18,7 @@ class TemplateController extends Controller
 
     public function __construct(TemplateService $service)
     {
-        $this->middleware('auth');
+        $this->middleware('auth.basic');
 
         $this->service = $service;
     }

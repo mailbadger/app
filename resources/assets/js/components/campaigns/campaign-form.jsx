@@ -1,23 +1,11 @@
 /** @jsx React.DOM */
 require('sweetalert');
 
-var _ = require('underscore');
 var React = require('react');
-var Campaign = require('../entities/campaign.js');
-var c = new Campaign();
+var Campaign = require('../../entities/campaign.js');
+var ErrorsList = require('../errors-list.jsx');
 
-var ErrorsList = React.createClass({
-    handleErrors: function(errors, i) {
-        return <li key={i}>{errors[0]}</li>
-    },
-    render: function () {
-        return (
-            <div className="alert alert-danger alert-dismissible signin-alert" role="alert">
-                <ul>{_.map(this.props.errors, this.handleErrors)}</ul>
-            </div>
-        );
-    }
-});
+var c = new Campaign();
 
 var CampaignForm = React.createClass({
     getInitialState: function () {
@@ -73,7 +61,7 @@ var CampaignForm = React.createClass({
         });
     },
     render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors} /> : '';
+        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors} /> : null;
         return (
             <form onSubmit={this.handleSubmit}>
                 <div className="errors">{errors}</div>
@@ -102,7 +90,7 @@ var CampaignForm = React.createClass({
                 </div>
                 <div className="col-lg-6 template">
                     <label htmlFor="select-template">Select template:</label>
-                    <a href={this.props.templateUrl}>Don't have one? Create it here.</a>
+                    <a href={url_base + '/dashboard/new-template'}>Don't have one? Create it here.</a>
                     <select ref="template" id="select-template" style={{width: 75 + '%'}} required>
                         <option></option>
                     </select>
@@ -113,5 +101,4 @@ var CampaignForm = React.createClass({
 });
 
 
-React.render(<CampaignForm
-    templateUrl={url_base + '/dashboard/new-template'}/>, document.getElementById('new-campaign'));
+React.render(<CampaignForm />, document.getElementById('new-campaign'));

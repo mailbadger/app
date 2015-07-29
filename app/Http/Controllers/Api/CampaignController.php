@@ -18,7 +18,7 @@ class CampaignController extends Controller
 
     public function __construct(CampaignService $service)
     {
-        $this->middleware('auth');
+        $this->middleware('auth.basic');
 
         $this->service = $service;
     }
