@@ -38,10 +38,16 @@ var Template = function () {
         return $.ajax({
             type: 'POST',
             url: url,
-            data: {
-                name: data.name,
-                content: data.content
-            },
+            data: data,
+            dataType: 'json'
+        });
+    };
+
+    this.update = function(data, id) {
+        return $.ajax({
+            type: 'PUT',
+            url: url + '/' + id,
+            data: data,
             dataType: 'json'
         });
     }

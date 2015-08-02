@@ -74,6 +74,25 @@ class CampaignService
             return null;
         }
     }
+
+    /**
+     * Update campaign by id
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed|null
+     */
+    public function updateCampaign(array $data, $id)
+    {
+        try {
+            return $this->campaignRepository->update($data, $id);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+
+            return null;
+        }
+    }
+
     /**
      * Delete a campaign by its id
      *

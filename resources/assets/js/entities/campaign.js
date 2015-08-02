@@ -38,15 +38,16 @@ var Campaign = function () {
         return $.ajax({
             type: 'POST',
             url: url,
-            data: {
-                name: data.name,
-                subject: data.subject,
-                from_name: data.from_name,
-                from_email: data.from_email,
-                status: data.status,
-                recipients: data.recipients,
-                template_id: data.template_id
-            },
+            data: data,
+            dataType: 'json'
+        });
+    };
+
+    this.update = function(data, id) {
+        return $.ajax({
+            type: 'PUT',
+            url: url + '/' + id,
+            data: data,
             dataType: 'json'
         });
     }

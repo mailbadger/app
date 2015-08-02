@@ -75,6 +75,24 @@ class TemplateService
     }
 
     /**
+     * Update template by id
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed|null
+     */
+    public function updateTemplate(array $data, $id)
+    {
+        try {
+            return $this->templateRepository->update($data, $id);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
      * Deletes a template if it's unused by a campaign
      *
      * @param $templateId

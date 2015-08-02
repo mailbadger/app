@@ -1,7 +1,7 @@
 @extends('dashboard.layout')
 @section('scripts')
     @parent
-    <script type="text/javascript" src="{{asset('js/components/campaigns/campaign-form.bundle.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/create-new-campaign.bundle.js')}}"></script>
 @endsection
 @section('main')
     <h1 class="page-header">Create new campaign</h1>

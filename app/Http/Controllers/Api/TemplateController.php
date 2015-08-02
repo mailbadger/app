@@ -79,7 +79,13 @@ class TemplateController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $template = $this->service->updateTemplate($request->all(), $id);
+        if (isset($template)) {
+            return response()->json(['status' => 200, 'template' => $template->id], 200);
+        }
+
+        return response()->json(['status' => 412, 'template' => ['The specified resource could not be updated.']],
+            412);
     }
 
     /**

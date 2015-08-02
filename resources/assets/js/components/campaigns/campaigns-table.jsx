@@ -50,10 +50,17 @@ var DeleteButton = React.createClass({
 });
 
 var CampaignRow = React.createClass({
+    editCampaign: function() {
+        this.props.editCampaign(this.props.data.id);
+    },
+    sendCampaign: function() {
+        this.props.sendCampaign(this.props.data.id);
+    },
     render: function () {
+        var edit = (this.props.data.status == 'draft' || this.props.data.status == 'scheduled') ? <span> | <a href="#" onClick={this.editCampaign}>Edit</a></span> : null;
         return (
             <tr>
-                <td>{this.props.data.name}</td>
+                <td><a href="#" onClick={this.sendCampaign}>{this.props.data.name}</a>{edit}</td>
                 <td>{this.props.data.recipients}</td>
                 <td>{(() => {
                     switch (this.props.data.status) {
@@ -95,8 +102,8 @@ var CampaignsTable = React.createClass({
     },
     render: function () {
         var rows = function (data) {
-            return <CampaignRow key={data.id} data={data}/>
-        };
+            return <CampaignRow key={data.id} data={data} editCampaign={this.props.editCampaign} sendCampaign={this.props.sendCampaign}/>
+        }.bind(this);
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">

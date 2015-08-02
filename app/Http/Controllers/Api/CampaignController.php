@@ -79,7 +79,13 @@ class CampaignController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $campaign = $this->service->updateCampaign($request->all(), $id);
+        if (isset($campaign)) {
+            return response()->json(['status' => 200, 'campaign' => $campaign->id], 200);
+        }
+
+        return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be updated.']],
+            412);
     }
 
     /**

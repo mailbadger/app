@@ -76,10 +76,14 @@ var PreviewButton = React.createClass({
 });
 
 var TemplateRow = React.createClass({
+    editTemplate: function() {
+        this.props.editTemplate(this.props.data.id);
+    },
     render: function () {
         return (
             <tr>
                 <td>{this.props.data.name}</td>
+                <td><a href="#" onClick={this.editTemplate}>Edit</a></td>
                 <td>
                     <PreviewButton tid={this.props.data.id}/>
                 </td>
@@ -113,14 +117,15 @@ var TemplatesTable = React.createClass({
     },
     render: function () {
         var rows = function (data) {
-            return <TemplateRow key={data.id} data={data}/>
-        };
+            return <TemplateRow key={data.id} data={data} editTemplate={this.props.editTemplate}/>
+        }.bind(this);
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
                     <thead>
                     <tr>
                         <th>Template</th>
+                        <th>Edit</th>
                         <th>Preview</th>
                         <th>Delete</th>
                     </tr>
