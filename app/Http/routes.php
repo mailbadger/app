@@ -19,16 +19,19 @@ Route::post('password/email', 'Auth\PasswordController@postEmail');
 Route::get('password/reset/{token}', 'Auth\PasswordController@getReset');
 Route::post('password/reset', 'Auth\PasswordController@postReset');
 
+//Dashboard controller
 Route::controller('dashboard', 'DashboardController');
 
+//Api routes
 Route::group(['namespace' => 'Api', 'prefix' => 'api'], function () {
     Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
 
     Route::get('templates/content/{id}', 'TemplateController@showContent');
 
     Route::resource('templates', 'TemplateController', ['except' => ['create', 'edit']]);
-});
 
+    Route::resource('lists', 'ListsController', ['except' => ['create', 'edit']]);
+});
 
 Route::get('/', [
     'middleware' => 'guest',

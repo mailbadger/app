@@ -14,7 +14,7 @@ var Campaigns = React.createClass({
         return {step: '', campaign: {}}
     },
     editCampaign: function (id) {
-        c.get(id).done(function(res) {
+        c.get(id).done(function (res) {
             this.setState({step: 'edit', campaign: res});
         }.bind(this));
     },
@@ -28,16 +28,16 @@ var Campaigns = React.createClass({
         switch (this.state.step) {
             case 'edit':
                 return <CampaignForm data={this.state.campaign} edit={true} back={this.back}/>;
-           default:
-               return (
-                   <div>
-                       <CreateNewButton url={url_base + '/dashboard/new-campaign'} text="Create new campaign"/>
+            default:
+                return (
+                    <div>
+                        <CreateNewButton url={url_base + '/dashboard/new-campaign'} text="Create new campaign"/>
 
-                       <div className="row">
-                           <CampaignsTable editCampaign={this.editCampaign} sendCampaign={this.sendCampaign}/>
-                       </div>
-                   </div>
-               );
+                        <div className="row">
+                            <CampaignsTable editCampaign={this.editCampaign} sendCampaign={this.sendCampaign}/>
+                        </div>
+                    </div>
+                );
         }
     }
 

@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: filip
- * Date: 27.7.15
- * Time: 21:36
+ * Date: 3.8.15
+ * Time: 17:41
  */
 
 namespace newsletters\Services;
@@ -12,62 +12,62 @@ namespace newsletters\Services;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
-use newsletters\Repositories\CampaignRepository;
+use newsletters\Repositories\ListsRepository;
 
-class CampaignService
+class ListsService
 {
 
     /**
-     * @var CampaignRepository
+     * @var ListsRepository
      */
-    private $campaignRepository;
+    private $listsRepository;
 
-    public function __construct(CampaignRepository $repository)
+    public function __construct(ListsRepository $repository)
     {
-        $this->campaignRepository = $repository;
+        $this->listsRepository = $repository;
     }
 
     /**
-     * Find all campaigns
+     * Find all subscribers lists
      *
-     * @param bool $paginate
+     * @param bool|false $paginate
      * @param int $perPage
      * @return mixed
      */
-    public function findAllCampaigns($paginate = false, $perPage = 10)
+    public function findAllLists($paginate = false, $perPage = 10)
     {
         if ($paginate) {
-            return $this->campaignRepository->paginate($perPage);
+            return $this->listsRepository->paginate($perPage);
         }
 
-        return $this->campaignRepository->all();
+        return $this->listsRepository->all();
     }
 
     /**
-     * Find a campaign by id
+     * Find a list by id
      *
      * @param $id
      * @return mixed|null
      */
-    public function findCampaign($id)
+    public function findList($id)
     {
         try {
-            return $this->campaignRepository->find($id);
+            return $this->listsRepository->find($id);
         } catch (ModelNotFoundException $e) {
             return null;
         }
     }
 
     /**
-     * Create campaign
+     * Create list
      *
      * @param array $data
      * @return mixed|null
      */
-    public function createCampaign(array $data)
+    public function createList(array $data)
     {
         try {
-            return $this->campaignRepository->create($data);
+            return $this->listsRepository->create($data);
         } catch (Exception $e) {
             Log::error($e->getMessage());
 
@@ -76,16 +76,16 @@ class CampaignService
     }
 
     /**
-     * Update campaign by id
+     * Update list by id
      *
      * @param array $data
      * @param $id
      * @return mixed|null
      */
-    public function updateCampaign(array $data, $id)
+    public function updateList(array $data, $id)
     {
         try {
-            return $this->campaignRepository->update($data, $id);
+            return $this->listsRepository->update($data, $id);
         } catch (Exception $e) {
             Log::error($e->getMessage());
 
@@ -94,15 +94,15 @@ class CampaignService
     }
 
     /**
-     * Delete a campaign by its id
+     * Delete a list by its id
      *
      * @param $id
      * @return bool|int
      */
-    public function deleteCampaign($id)
+    public function deleteList($id)
     {
         try {
-            return $this->campaignRepository->delete($id);
+            return $this->listsRepository->delete($id);
         } catch (ModelNotFoundException $e) {
 
             return false;

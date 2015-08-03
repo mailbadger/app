@@ -83,7 +83,7 @@ var TemplateRow = React.createClass({
         return (
             <tr>
                 <td>{this.props.data.name}</td>
-                <td><a href="#" onClick={this.editTemplate}>Edit</a></td>
+                <td><a href="#" onClick={this.editTemplate}><span className="glyphicon glyphicon-pencil"></span></a></td>
                 <td>
                     <PreviewButton tid={this.props.data.id}/>
                 </td>

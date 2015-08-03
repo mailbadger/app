@@ -34,4 +34,14 @@ class DashboardController extends Controller
     {
         return view('dashboard.templates.create_new')->with('activeSidebar', 'new-template');
     }
+
+    public function getSubscribers()
+    {
+        return view('dashboard.subscribers.list')->with('activeSidebar', 'sub-lists');
+    }
+
+    public function getNewSubscribers()
+    {
+        return view('dashboard.subscribers.create_new')->with('activeSidebar', 'new-subs');
+    }
 }

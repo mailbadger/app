@@ -14,7 +14,7 @@ var Templates = React.createClass({
         return {step: '', template: {}}
     },
     editTemplate: function (id) {
-        t.get(id).done(function(res) {
+        t.get(id).done(function (res) {
             this.setState({step: 'edit', template: res});
         }.bind(this));
     },
@@ -28,9 +28,10 @@ var Templates = React.createClass({
             default:
                 return (
                     <div>
-                        <CreateNewButton url={url_base + '/dashboard/new-template'} text="Create new template" />
+                        <CreateNewButton url={url_base + '/dashboard/new-template'} text="Create new template"/>
+
                         <div className="row">
-                            <TemplatesTable editTemplate={this.editTemplate} />
+                            <TemplatesTable editTemplate={this.editTemplate}/>
                         </div>
                     </div>
                 );

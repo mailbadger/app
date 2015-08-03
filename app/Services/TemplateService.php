@@ -58,7 +58,7 @@ class TemplateService
     }
 
     /**
-     * Create campaign
+     * Create template
      *
      * @param array $data
      * @return mixed|null
