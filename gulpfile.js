@@ -1,5 +1,21 @@
 'use strict';
 
+/*
+ * usage:
+ *
+ * gulp (to manually run all tasks)
+ * gulp watch (for automatic awesomness while developing your js, css, less)
+ * gulp --production (to minify all the things)
+ *
+ * separate processing:
+ * gulp prune (removes all js, css fonts AND clear the internal cache)
+ * gulp scripts
+ * gulp styles
+ * gulp images
+ * gulp fonts
+ *
+ */
+
 // configuration, adapt paths/folders to your project
 var frontPath = './public/',
     npmPath = './node_modules/',
@@ -40,7 +56,9 @@ var inProduction = ('production' in gulputil.env),
             'resources/assets/js/campaigns-list.jsx',
             'resources/assets/js/templates-list.jsx',
             'resources/assets/js/create-new-campaign.jsx',
-            'resources/assets/js/create-new-template.jsx'
+            'resources/assets/js/create-new-template.jsx',
+            'resources/assets/js/create-new-list.jsx',
+            'resources/assets/js/sub-list.jsx'
         ],
         styles: [
             npmPath + 'select2/dist/css/select2.min.css',
@@ -128,20 +146,3 @@ gulp.task('watch', function () {
 
 // default task
 gulp.task('default', ['scripts', 'styles', 'images']);
-
-/*
- * usage:
- *
- * gulp (to manually run all tasks)
- * gulp watch (for automatic awesomness while developing your js, css, less)
- * gulp --production (to minify all the things)
- *
- * separate processing:
- * gulp prune (removes all js, css fonts AND clear the internal cache)
- * gulp scripts (only JS)
- * gulp styles (only CSS and LESS)
- * gulp images (only images)
- * gulp fonts (only bootstrap fonts)
- * gulp phpunit (only awesome PHP tests)
- * 
- */

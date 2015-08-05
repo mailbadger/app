@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
-require('sweetalert');
 
+require('sweetalert');
 var React = require('react');
 var Campaign = require('../../entities/campaign.js');
 var Template = require('../../entities/template.js');
