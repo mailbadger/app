@@ -53,6 +53,19 @@ var List = function () {
             data: data,
             dataType: 'json'
         });
+    };
+
+    this.getSubscribers = function (id, paginate, perPage, page) {
+        return $.ajax({
+            type: 'GET',
+            url: url + '/' + id + '/subscribers',
+            data: {
+                paginate: paginate,
+                per_page: perPage,
+                page: page
+            },
+            dataType: 'json'
+        });
     }
 };
 

@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\ListsRepository;
+use newsletters\Repositories\SubscriberRepository;
 
 class ListsService
 {
@@ -22,9 +23,15 @@ class ListsService
      */
     private $listsRepository;
 
-    public function __construct(ListsRepository $repository)
+    /**
+     * @var SubscriberRepository
+     */
+    private $subscriberRepository;
+
+    public function __construct(ListsRepository $listsRepository, SubscriberRepository $subscriberRepository)
     {
-        $this->listsRepository = $repository;
+        $this->listsRepository = $listsRepository;
+        $this->subscriberRepository = $subscriberRepository;
     }
 
     /**
@@ -41,6 +48,24 @@ class ListsService
         }
 
         return $this->listsRepository->all();
+    }
+
+    /**
+     * Find all subscribers on a list
+     * @param $listId
+     * @param bool|false $paginate
+     * @param int $perPage
+     * @return mixed
+     */
+    public function findAllSubscribersByListId($listId, $paginate = false, $perPage = 10)
+    {
+        $subscribers = $this->listsRepository->find($listId)->subscribers();
+
+        if ($paginate) {
+            return $subscribers->paginate($perPage);
+        }
+
+        return $subscribers->all();
     }
 
     /**

@@ -46,13 +46,16 @@ var DeleteButton = React.createClass({
 });
 
 var ListRow = React.createClass({
+    showList: function() {
+        this.props.showList(this.props.data.id);
+    },
     editList: function() {
         this.props.editList(this.props.data.id);
     },
     render: function () {
         return (
             <tr>
-                <td>{this.props.data.name}</td>
+                <td><a href="#" onClick={this.showList}>{this.props.data.name}</a></td>
                 <td>{this.props.data.total_subscribers}</td>
                 <td>
                     <a href="#" onClick={this.editList}><span className="glyphicon glyphicon-pencil"></span></a>
@@ -86,7 +89,7 @@ var ListsTable = React.createClass({
     },
     render: function () {
         var rows = function (data) {
-            return <ListRow key={data.id} data={data} editList={this.props.editList}/>
+            return <ListRow key={data.id} data={data} showList={this.props.showList} editList={this.props.editList}/>
         }.bind(this);
         return (
             <div>
