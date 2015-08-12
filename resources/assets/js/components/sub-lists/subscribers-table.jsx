@@ -12,7 +12,7 @@ var DeleteButton = React.createClass({
         e.preventDefault();
         swal({
                 title: "Are you sure?",
-                text: "You will not be able to recover this list!",
+                text: "You will not be able to recover this subscriber!",
                 type: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#DD6B55",
@@ -20,18 +20,18 @@ var DeleteButton = React.createClass({
                 closeOnConfirm: false
             },
             function () {
-                l.delete(this.props.lid)
+                l.deleteSubscriber(this.props.sid)
                     .done(function () {
                         swal({
                             title: "Success",
-                            text: "The list was successfully deleted!",
+                            text: "The subscriber was successfully removed!",
                             type: "success"
                         }, function () {
                             location.reload();
                         });
                     })
                     .fail(function () {
-                        swal('Could not delete', 'Could not delete the list. Try again.', 'error');
+                        swal('Could not delete', 'Could not delete the subscriber. Try again.', 'error');
                     });
             }.bind(this));
     },
@@ -45,43 +45,34 @@ var DeleteButton = React.createClass({
     }
 });
 
-var ListRow = React.createClass({
-    showList: function() {
-        this.props.showList(this.props.data.id);
-    },
-    editList: function() {
-        this.props.editList(this.props.data.id);
-    },
+var SubscriberRow = React.createClass({
     render: function () {
         return (
             <tr>
-                <td><a href="#" onClick={this.showList}>{this.props.data.name}</a></td>
-                <td>{this.props.data.total_subscribers}</td>
+                <td>{this.props.data.name}</td>
+                <td>{this.props.data.email}</td>
                 <td>
-                    <a href="#" onClick={this.editList}><span className="glyphicon glyphicon-pencil"></span></a>
-                </td>
-                <td>
-                    <DeleteButton lid={this.props.data.id}/>
+                    <DeleteButton sid={this.props.data.id}/>
                 </td>
             </tr>
         );
     }
 });
 
-var ListsTable = React.createClass({
+var SubscribersTable = React.createClass({
     getInitialState: function () {
-        return {lists: {data: []}};
+        return {subscribers: {data: []}};
     },
     componentDidMount: function () {
-        l.all(true, 10, 1).done(function (response) {
-            this.setState({lists: response});
+        l.getSubscribers(this.props.listId, true, 10, 1).done(function (response) {
+            this.setState({subscribers: response});
             $('.pagination').bootpag({
                 total: response.last_page,
                 page: response.current_page,
                 maxVisible: 5
             }).on("page", function (event, num) {
-                l.all(true, 10, num).done(function (response) {
-                    this.setState({lists: response});
+                l.getSubscribers(this.props.listId, true, 10, num).done(function (response) {
+                    this.setState({subscribers: response});
                     $('.pagination').bootpag({page: response.current_page});
                 }.bind(this));
             }.bind(this));
@@ -89,21 +80,20 @@ var ListsTable = React.createClass({
     },
     render: function () {
         var rows = function (data) {
-            return <ListRow key={data.id} data={data} showList={this.props.showList} editList={this.props.editList}/>
+            return <SubscriberRow key={data.id} data={data}/>
         }.bind(this);
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
                     <thead>
                     <tr>
-                        <th>List name</th>
-                        <th>Subscribers</th>
-                        <th>Edit</th>
+                        <th>Subscriber name</th>
+                        <th>Email</th>
                         <th>Delete</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {this.state.lists.data.map(rows)}
+                    {this.state.subscribers.data.map(rows)}
                     </tbody>
                 </table>
                 <div className="col-lg-12 pagination text-center"></div>
@@ -112,4 +102,4 @@ var ListsTable = React.createClass({
     }
 });
 
-module.exports = ListsTable;
+module.exports = SubscribersTable;

@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 
 var React = require('react');
+var SubscribersTable = require('./subscribers-table.jsx');
 var List = require('../../entities/list.js');
 
 var l = new List();
@@ -35,7 +36,7 @@ var ListInfo = React.createClass({
     },
     render: function () {
         return (
-            <div className="row" style={{'margin-top': '20px'}}>
+            <div className="row" style={{marginTop: '20px'}}>
                 <div className="col-lg-12 well">
                     <div className="pull-left">
                         List: <span className="label label-primary">{this.props.list.name}</span><span> | </span>
@@ -51,22 +52,13 @@ var ListInfo = React.createClass({
     }
 });
 
-var Subscribers = React.createClass({
-    render: function() {
-        return (
-            <div className="row">
-
-            </div>
-        )
-    }
-});
-
 var SubscribersList = React.createClass({
     render: function () {
         return (
             <div>
                 <SubscriberButtons />
                 <ListInfo list={this.props.list} editList={this.props.editList} back={this.props.back} />
+                <SubscribersTable listId={this.props.list.id} />
             </div>
         );
     }

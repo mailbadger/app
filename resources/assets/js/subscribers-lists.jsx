@@ -23,11 +23,8 @@ var Lists = React.createClass({
         }
     },
     showList: function(id) {
-        l.get(id).then(function(res) {
-            var list = res;
-            l.getSubscribers(id, true, 10).done(function(res) {
-                this.setState({content: <SubscribersList list={list} subscribers={res} editList={this.editList} back={this.back} />});
-            }.bind(this));
+        l.get(id).done(function(res) {
+            this.setState({content: <SubscribersList list={res} editList={this.editList} back={this.back} />});
         }.bind(this));
     },
     editList: function (id) {

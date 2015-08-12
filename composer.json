@@ -11,7 +11,8 @@
     "php": ">=5.5.9",
     "laravel/framework": "5.1.*",
     "predis/predis": "^1.0",
-    "prettus/l5-repository": "^2.1"
+    "prettus/l5-repository": "^2.1",
+    "phpoffice/phpexcel": "^1.8"
   },
   "require-dev": {
     "barryvdh/laravel-debugbar": "^2.0",

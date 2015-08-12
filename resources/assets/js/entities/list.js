@@ -66,7 +66,11 @@ var List = function () {
             },
             dataType: 'json'
         });
-    }
+    };
+
+    this.deleteSubscriber = function(listId, id) {
+
+    };
 };
 
 module.exports = List;

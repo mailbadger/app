@@ -19,3 +19,10 @@ $factory->define(newsletters\Entities\User::class, function (Faker\Generator $fa
         'remember_token' => str_random(10),
     ];
 });
+
+$factory->define(newsletters\Entities\Subscriber::class, function(Faker\Generator $faker) {
+    return [
+        'name' => $faker->name,
+        'email' => $faker->email
+    ];
+});

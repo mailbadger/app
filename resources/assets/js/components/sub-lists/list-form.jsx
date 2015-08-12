@@ -53,7 +53,7 @@ var ListForm = React.createClass({
                 <div className="errors">{errors}</div>
                 <div className="col-lg-4">
                     <div className="form-group">
-                        <label htmlFor="name">Template name:</label>
+                        <label htmlFor="name">List name:</label>
                         <input type="text" className="form-control" ref="name" name="name" id="name" placeholder="Name"
                                defaultValue={this.props.edit ? this.props.data.name : ''} required/>
                     </div>

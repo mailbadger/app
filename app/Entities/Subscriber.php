@@ -19,7 +19,15 @@ class Subscriber extends Model implements Transformable
 
 	public function lists()
 	{
-		return $this->belongsToMany('newsletters\Entities\List', 'subscribers_lists', 'subscriber_id',
+		return $this->belongsToMany('newsletters\Entities\Lists', 'subscribers_lists', 'subscriber_id',
 			'list_id')->withTimestamps();
+	}
+
+	public function fields()
+	{
+		return $this->belongsToMany('newsletters\Entities\Field', 'subscribers_fields', 'subscriber_id',
+			'field_id')
+			->withPivot('value')
+			->withTimestamps();
 	}
 }
