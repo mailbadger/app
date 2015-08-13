@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use newsletters\Http\Requests;
 use newsletters\Http\Controllers\Controller;
+use newsletters\Http\Requests\ImportSubscribersRequest;
 use newsletters\Services\ListsService;
 
 class ListsSubscriberController extends Controller
@@ -40,10 +41,11 @@ class ListsSubscriberController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param ImportSubscribersRequest $request
+     * @param $listId
      * @return Response
      */
-    public function store(Request $request, $listId)
+    public function store(ImportSubscribersRequest $request, $listId)
     {
         //
     }

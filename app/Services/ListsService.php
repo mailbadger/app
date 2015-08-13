@@ -61,11 +61,7 @@ class ListsService
     {
         $subscribers = $this->listsRepository->find($listId)->subscribers();
 
-        if ($paginate) {
-            return $subscribers->paginate($perPage);
-        }
-
-        return $subscribers->all();
+        return (!empty($paginate)) ? $subscribers->paginate($perPage) : $subscribers->all();
     }
 
     /**

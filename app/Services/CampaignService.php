@@ -36,11 +36,7 @@ class CampaignService
      */
     public function findAllCampaigns($paginate = false, $perPage = 10)
     {
-        if ($paginate) {
-            return $this->campaignRepository->paginate($perPage);
-        }
-
-        return $this->campaignRepository->all();
+        return (!empty($paginate)) ? $this->campaignRepository->paginate($perPage) : $this->campaignRepository->all();
     }
 
     /**

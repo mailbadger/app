@@ -35,11 +35,10 @@ class TemplateService
      */
     public function findAllTemplates($paginate = false, $perPage = 10)
     {
-        if ($paginate) {
-            return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']);
-        }
-
-        return $this->templateRepository->all(['id', 'name', 'created_at', 'updated_at']);
+        $columns = ['id', 'name', 'created_at', 'updated_at'];
+        return (!empty($paginate))
+            ? $this->templateRepository->paginate($perPage, $columns)
+            : $this->templateRepository->all($columns);
     }
 
     /**

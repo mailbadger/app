@@ -68,8 +68,27 @@ var List = function () {
         });
     };
 
-    this.deleteSubscriber = function(listId, id) {
+    this.createSubscribers = function(listId, file) {
+        var data = new FormData();
+        data.append('subscribers', file);
 
+        return $.ajax({
+            type: 'POST',
+            url: url + '/' + listId + '/subscribers',
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json'
+        });
+    };
+
+    this.deleteSubscriber = function(listId, id) {
+        return $.ajax({
+            type: 'DELETE',
+            url: url + '/' + listId + '/subscribers/' + id,
+            dataType: 'json'
+        });
     };
 };
 
