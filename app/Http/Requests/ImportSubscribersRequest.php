@@ -25,7 +25,7 @@ class ImportSubscribersRequest extends FormRequest
     public function rules()
     {
         return [
-            'subscribers' => 'mimes:csv,xls,xlsx',
+            'subscribers' => 'mimes:csv,xls,xlsx,txt',
         ];
     }
 }

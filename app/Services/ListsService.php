@@ -11,6 +11,7 @@ namespace newsletters\Services;
 
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\ListsRepository;
 use newsletters\Repositories\SubscriberRepository;
@@ -128,5 +129,22 @@ class ListsService
 
             return false;
         }
+    }
+
+    /**
+     * @param $file
+     * @param $listId
+     * @param FileService $fileService
+     * @return Collection
+     */
+    public function createSubscribers($file, $listId, FileService $fileService)
+    {
+        $subscribers = $fileService->importSubscribersFromFile($file)
+            ->map(function ($data) {
+                $subscriber = $this->subscriberRepository->create($data['subscriber']);
+                return $subscriber;
+            });
+
+        return $subscribers;
     }
 }

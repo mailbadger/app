@@ -3,10 +3,10 @@
 namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-
-use newsletters\Http\Requests;
 use newsletters\Http\Controllers\Controller;
+use newsletters\Http\Requests;
 use newsletters\Http\Requests\ImportSubscribersRequest;
+use newsletters\Services\FileService;
 use newsletters\Services\ListsService;
 
 class ListsSubscriberController extends Controller
@@ -42,18 +42,19 @@ class ListsSubscriberController extends Controller
      * Store a newly created resource in storage.
      *
      * @param ImportSubscribersRequest $request
+     * @param FileService $fileService
      * @param $listId
      * @return Response
      */
-    public function store(ImportSubscribersRequest $request, $listId)
+    public function store(ImportSubscribersRequest $request, FileService $fileService, $listId)
     {
-        //
+        $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return Response
      */
     public function show($listId, $id)
@@ -64,8 +65,8 @@ class ListsSubscriberController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  int  $id
+     * @param  Request $request
+     * @param  int $id
      * @return Response
      */
     public function update(Request $request, $listId, $id)
@@ -76,7 +77,7 @@ class ListsSubscriberController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return Response
      */
     public function destroy($listId, $id)
