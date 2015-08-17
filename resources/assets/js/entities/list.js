@@ -71,6 +71,7 @@ var List = function () {
     this.createSubscribers = function(listId, file) {
         var data = new FormData();
         data.append('subscribers', file);
+        data.append('list_id', listId);
 
         return $.ajax({
             type: 'POST',

@@ -45,7 +45,7 @@ class FileService
      * @param $file
      * @return PHPExcel|null
      */
-    private function loadFile($file)
+    public function loadFile($file)
     {
         try {
             $reader = PHPExcel_IOFactory::createReaderForFile($file);
@@ -65,7 +65,7 @@ class FileService
      * @param PHPExcel $object
      * @return Collection
      */
-    private function readFile(PHPExcel $object)
+    public function readFile(PHPExcel $object)
     {
         $sheet = $this->getWorksheet($object);
 
@@ -77,7 +77,7 @@ class FileService
      * @param int $sheetIndex
      * @return null|\PHPExcel_Worksheet
      */
-    private function getWorksheet(PHPExcel $object, $sheetIndex = 0)
+    public function getWorksheet(PHPExcel $object, $sheetIndex = 0)
     {
         try {
             $object->setActiveSheetIndex($sheetIndex);
@@ -94,7 +94,7 @@ class FileService
      * @param PHPExcel_Worksheet $worksheet
      * @return Collection
      */
-    private function readRows(PHPExcel_Worksheet $worksheet)
+    public function readRows(PHPExcel_Worksheet $worksheet)
     {
         $subscribers = new Collection();
 
@@ -120,7 +120,7 @@ class FileService
      * @param PHPExcel_Worksheet_RowIterator $rowIterator
      * @return array
      */
-    private function getHeaderRow(PHPExcel_Worksheet_RowIterator $rowIterator)
+    public function getHeaderRow(PHPExcel_Worksheet_RowIterator $rowIterator)
     {
         $cells = $rowIterator->current()->getCellIterator();
         $cells->setIterateOnlyExistingCells(false);
@@ -140,7 +140,7 @@ class FileService
      * @param $headerRow
      * @return array
      */
-    private function readCells(PHPExcel_Worksheet_Row $row, $headerRow)
+    public function readCells(PHPExcel_Worksheet_Row $row, $headerRow)
     {
         try {
             $cells = $row->getCellIterator();
@@ -154,7 +154,7 @@ class FileService
                 if ($column == 'name' || $column == 'email') {
                     $subscriber[$column] = $cell->getValue();
                 } else {
-                    $customFields[$column] = $cell->getValue();
+                    $customFields[] = ['name' => $column, 'value' => $cell->getValue()];
                 }
             }
 

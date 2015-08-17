@@ -2,6 +2,7 @@
 
 namespace newsletters\Providers;
 
+use Illuminate\Contracts\Validation\Factory;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //Bind repositories
+        $this->registerValidationRules($this->app['validator']);
+
+        $this->bindRepositories();
+    }
+
+    /**
+     * Register custom validation rules here with the Factory validator
+     *
+     * @param Factory $validator
+     */
+    public function registerValidationRules(Factory $validator)
+    {
+        $validator->extend('check_fields', 'newsletters\Validators\ListValidator@validateCheckFields');
+    }
+
+    public function bindRepositories()
+    {
         $this->app->bind('newsletters\Repositories\CampaignRepository',
             'newsletters\Repositories\CampaignRepositoryEloquent');
 

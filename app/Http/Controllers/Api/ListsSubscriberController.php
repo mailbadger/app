@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
 use newsletters\Http\Requests\ImportSubscribersRequest;
+use newsletters\Services\FieldService;
 use newsletters\Services\FileService;
 use newsletters\Services\ListsService;
 
@@ -43,12 +44,19 @@ class ListsSubscriberController extends Controller
      *
      * @param ImportSubscribersRequest $request
      * @param FileService $fileService
+     * @param FieldService $fieldService
      * @param $listId
      * @return Response
      */
-    public function store(ImportSubscribersRequest $request, FileService $fileService, $listId)
+    public function store(ImportSubscribersRequest $request, FileService $fileService, FieldService $fieldService, $listId)
     {
-        $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService);
+        //$subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService, $fieldService);
+        //if (!$subscribers->isEmpty()) {
+            return response()->json(['status' => 200, 'subscribers' => 'The specified resources have been created.'], 200);
+        //}
+
+        return response()->json(['status' => 412, 'subscribers' => ['The specified resource could not be created.']],
+            412);
     }
 
     /**

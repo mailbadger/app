@@ -11,7 +11,9 @@ namespace newsletters\Services;
 
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\ListsRepository;
 use newsletters\Repositories\SubscriberRepository;
@@ -135,16 +137,29 @@ class ListsService
      * @param $file
      * @param $listId
      * @param FileService $fileService
+     * @param FieldService $fieldService
      * @return Collection
      */
-    public function createSubscribers($file, $listId, FileService $fileService)
+    public function createSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
-        $subscribers = $fileService->importSubscribersFromFile($file)
-            ->map(function ($data) {
-                $subscriber = $this->subscriberRepository->create($data['subscriber']);
-                return $subscriber;
-            });
+        return $fileService->importSubscribersFromFile($file)
+            ->map(function ($data) use ($listId, $fieldService) {
+                return DB::transaction(function () use ($data, $listId, $fieldService) {
+                    try {
+                        $subscriber = $this->subscriberRepository->create($data['subscriber']);
+                        $fieldService->createSubscriberFields($subscriber, $data['custom_fields'], $listId);
+                        $subscriber->lists()->attach($listId);
 
-        return $subscribers;
+                        return $subscriber;
+                    } catch (QueryException $e) {
+                        Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+
+                        return null;
+                    }
+                });
+            })
+            ->reject(function ($s) {
+                return empty($s);
+            });
     }
 }

@@ -14,6 +14,7 @@ class Field extends Model implements Transformable
 
     protected $fillable = [
         'name',
+        'list_id'
     ];
 
     public function subList()

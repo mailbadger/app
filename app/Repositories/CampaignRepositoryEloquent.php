@@ -29,4 +29,15 @@ class CampaignRepositoryEloquent extends BaseRepository implements CampaignRepos
     {
         $this->pushCriteria( app(RequestCriteria::class) );
     }
+
+    /**
+     * Load trashed entities
+     *
+     * @return $this
+     */
+    public function withTrashed()
+    {
+        $this->model = $this->model->withTrashed();
+        return $this;
+    }
 }
