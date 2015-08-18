@@ -48,12 +48,18 @@ class ListsSubscriberController extends Controller
      * @param $listId
      * @return Response
      */
-    public function store(ImportSubscribersRequest $request, FileService $fileService, FieldService $fieldService, $listId)
-    {
-        //$subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService, $fieldService);
-        //if (!$subscribers->isEmpty()) {
-            return response()->json(['status' => 200, 'subscribers' => 'The specified resources have been created.'], 200);
-        //}
+    public function store(
+        ImportSubscribersRequest $request,
+        FileService $fileService,
+        FieldService $fieldService,
+        $listId
+    ) {
+        $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService,
+            $fieldService);
+        if (!$subscribers->isEmpty()) {
+            return response()->json(['status' => 200, 'subscribers' => 'The specified resources have been created.'],
+                200);
+        }
 
         return response()->json(['status' => 412, 'subscribers' => ['The specified resource could not be created.']],
             412);

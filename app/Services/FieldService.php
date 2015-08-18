@@ -9,6 +9,8 @@
 namespace newsletters\Services;
 
 
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +21,9 @@ use newsletters\Repositories\FieldRepository;
 class FieldService
 {
 
+    /**
+     * @var FieldRepository
+     */
     private $fieldRepository;
 
     public function __construct(FieldRepository $fieldRepository)
@@ -34,49 +39,28 @@ class FieldService
      * @param $listId
      * @return Collection
      */
-    public function createSubscriberFields(Subscriber $subscriber, array $data, $listId)
+    public function attachFieldsToSubscriber(Subscriber $subscriber, array $data, $listId)
     {
-        $fields = new Collection();
-
         try {
+            $fields = $this->findFieldsByListId($listId);
+
             foreach ($data as $fieldData) {
-                $field = DB::transaction(function () use ($fieldData, $listId, $subscriber) {
-                    $field = $this->createSubscriberField($fieldData['name'], $listId);
-                    $subscriber->fields()->attach($field->id, ['value' => $fieldData['value']]);
+                DB::transaction(function () use ($fieldData, $listId, $subscriber, $fields) {
+                    $key = $fields->search(function ($field) use ($fieldData) {
+                        return strtolower($field->name) === strtolower($fieldData['name']);
+                    });
 
-                    return $field;
+                    if ($key !== false) {
+                        $subscriber->fields()->attach($fields[$key]->id, ['value' => $fieldData['value']]);
+                    }
                 });
-
-                $fields->push($field);
-            }
-        } catch (QueryException $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-        }
-
-        return $fields;
-    }
-
-    /**
-     * Create and associate field with subscriber
-     *
-     * @param $name
-     * @param $listId
-     * @return mixed|null
-     */
-    public function createSubscriberField($name, $listId)
-    {
-        try {
-            $field = $this->findFieldByNameAndListId($name, $listId);
-
-            if (empty($field)) {
-                $field = $this->fieldRepository->create(['name' => $name, 'list_id' => $listId]);
             }
 
-            return $field;
+            return true;
         } catch (QueryException $e) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            return null;
+            return false;
         }
     }
 
@@ -95,5 +79,104 @@ class FieldService
             ->with($with)
             ->findWhere(['name' => $name, 'list_id' => $listId], $columns)
             ->first();
+    }
+
+    /**
+     * Find fields by list id
+     *
+     * @param $listId
+     * @param bool $paginate
+     * @param int $perPage
+     * @param array $with
+     * @param array $columns
+     * @return mixed
+     */
+    public function findFieldsByListId($listId, $paginate = false, $perPage = 10, $with = [], $columns = ['*'])
+    {
+        $query = $this->fieldRepository
+            ->with($with)
+            ->scopeQuery(function ($q) use ($listId) {
+                return $q->where('list_id', $listId);
+            });
+
+        return (!empty($paginate)) ? $query->paginate($perPage, $columns) : $query->all($columns);
+    }
+
+    /**
+     * Find all fields
+     *
+     * @param bool $paginate
+     * @param int $perPage
+     * @return mixed
+     */
+    public function findAllFields($paginate = false, $perPage = 10)
+    {
+        return (!empty($paginate)) ? $this->fieldRepository->paginate($perPage) : $this->fieldRepository->all();
+    }
+
+    /**
+     * Find a field by id
+     *
+     * @param $id
+     * @return mixed|null
+     */
+    public function findField($id)
+    {
+        try {
+            return $this->fieldRepository->find($id);
+        } catch (ModelNotFoundException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Create field
+     *
+     * @param array $data
+     * @return mixed|null
+     */
+    public function createField(array $data)
+    {
+        try {
+            return $this->fieldRepository->create($data);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
+     * Update field by id
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed|null
+     */
+    public function updateField(array $data, $id)
+    {
+        try {
+            return $this->fieldRepository->update($data, $id);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
+     * Delete a field by its id
+     *
+     * @param $id
+     * @return bool|int
+     */
+    public function deleteField($id)
+    {
+        try {
+            return $this->fieldRepository->delete($id);
+        } catch (ModelNotFoundException $e) {
+
+            return false;
+        }
     }
 }

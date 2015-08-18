@@ -9,7 +9,9 @@
 namespace newsletters\Validators;
 
 
+use Exception;
 use Illuminate\Validation\Validator;
+use newsletters\Services\FieldService;
 use newsletters\Services\FileService;
 
 class ListValidator
@@ -20,9 +22,15 @@ class ListValidator
      */
     private $fileService;
 
-    public function __construct(FileService $fileService)
+    /**
+     * @var FieldService
+     */
+    private $fieldService;
+
+    public function __construct(FileService $fileService, FieldService $fieldService)
     {
         $this->fileService = $fileService;
+        $this->fieldService = $fieldService;
     }
 
     public function validateCheckFields($attribute, $value, $parameters, Validator $validator)
@@ -30,13 +38,36 @@ class ListValidator
         $file = array_get($validator->getFiles(), $parameters[0]);
         $listId = array_get($validator->getData(), $parameters[1]);
 
-        $obj = $this->fileService->loadFile($file);
-        $sheet = $this->fileService->getWorksheet($obj, 0);
+        try {
+            $obj = $this->fileService->loadFile($file);
+            $sheet = $this->fileService->getWorksheet($obj, 0);
 
-        $headerRow = $this->fileService->getHeaderRow($sheet->getRowIterator(1, 1));
+            $headerRow = $this->fileService->getHeaderRow($sheet->getRowIterator(1, 1));
 
-        unset($file);
+            if (empty($headerRow)) {
+                return false;
+            }
 
-        return false;
+            $fields = $this->fieldService->findFieldsByListId($listId);
+            $fields->push(['name' => 'name'])->push(['name' => 'email']);
+
+            if (count($headerRow) !== $fields->count()) {
+                return false;
+            }
+
+            $flag = false;
+            foreach ($fields as $field) {
+                $name = strtolower($field['name']);
+                if (!($flag = in_array($name, $headerRow, true))) {
+                    break;
+                }
+            }
+
+            unset($file);
+
+            return $flag;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }

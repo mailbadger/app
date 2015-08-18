@@ -134,6 +134,8 @@ class ListsService
     }
 
     /**
+     * Create subscribers from a imported file
+     *
      * @param $file
      * @param $listId
      * @param FileService $fileService
@@ -142,12 +144,12 @@ class ListsService
      */
     public function createSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
-        return $fileService->importSubscribersFromFile($file)
+        $totalSubscribers = $fileService->importSubscribersFromFile($file)
             ->map(function ($data) use ($listId, $fieldService) {
                 return DB::transaction(function () use ($data, $listId, $fieldService) {
                     try {
                         $subscriber = $this->subscriberRepository->create($data['subscriber']);
-                        $fieldService->createSubscriberFields($subscriber, $data['custom_fields'], $listId);
+                        $fieldService->attachFieldsToSubscriber($subscriber, $data['custom_fields'], $listId);
                         $subscriber->lists()->attach($listId);
 
                         return $subscriber;
@@ -160,6 +162,33 @@ class ListsService
             })
             ->reject(function ($s) {
                 return empty($s);
-            });
+            })
+            ->count();
+
+        $this->updateTotalListSubscribers($listId, $totalSubscribers);
+
+        return $totalSubscribers;
+    }
+
+    /**
+     * Update total subscribers to list
+     *
+     * @param $listId
+     * @param $total
+     * @return bool
+     */
+    public function updateTotalListSubscribers($listId, $total)
+    {
+        try {
+            $list = $this->listsRepository->find($listId);
+            $list->total_subscribers = (!empty($list->total_subscribers)) ? $list->total_subscribers + $total : $total;
+            $list->save();
+
+            return true;
+        } catch (QueryException $e) {
+            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+
+            return false;
+        }
     }
 }

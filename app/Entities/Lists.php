@@ -22,4 +22,9 @@ class Lists extends Model implements Transformable
         return $this->belongsToMany('newsletters\Entities\Subscriber', 'subscribers_lists', 'list_id',
             'subscriber_id')->withTimestamps();
     }
+
+    public function fields()
+    {
+        return $this->hasMany('newsletters\Entities\Field');
+    }
 }
