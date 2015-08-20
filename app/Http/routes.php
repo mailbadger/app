@@ -30,11 +30,13 @@ Route::group(['namespace' => 'Api', 'prefix' => 'api'], function () {
 
     Route::resource('templates', 'TemplateController', ['except' => ['create', 'edit']]);
 
-    Route::resource('fields', 'FieldController', ['except' => ['create', 'edit', 'store', 'update']]);
+    Route::post('lists/{id}/import-subscribers', 'ListsSubscriberController@import');
 
     Route::resource('lists', 'ListsController', ['except' => ['create', 'edit']]);
 
     Route::resource('lists.subscribers', 'ListsSubscriberController', ['except' => ['create', 'edit']]);
+
+    Route::resource('lists.fields', 'ListsFieldController', ['except' => ['create', 'edit']]);
 });
 
 Route::get('/', [

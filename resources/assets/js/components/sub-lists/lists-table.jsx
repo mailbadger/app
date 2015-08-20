@@ -1,49 +1,11 @@
 /** @jsx React.DOM */
 
 require('bootpag/lib/jquery.bootpag.min.js');
-require('sweetalert');
 
 var React = require('react');
+var DeleteButton = require('../delete-button.jsx');
 var List = require('../../entities/list.js');
 var l = new List();
-
-var DeleteButton = React.createClass({
-    handleSubmit: function (e) {
-        e.preventDefault();
-        swal({
-                title: "Are you sure?",
-                text: "You will not be able to recover this list!",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: "Yes, delete it!",
-                closeOnConfirm: false
-            },
-            function () {
-                l.delete(this.props.lid)
-                    .done(function () {
-                        swal({
-                            title: "Success",
-                            text: "The list was successfully deleted!",
-                            type: "success"
-                        }, function () {
-                            location.reload();
-                        });
-                    })
-                    .fail(function () {
-                        swal('Could not delete', 'Could not delete the list. Try again.', 'error');
-                    });
-            }.bind(this));
-    },
-    render: function () {
-        return (
-            <form onSubmit={this.handleSubmit}>
-                <input type="hidden" name="_method" value="DELETE"/>
-                <button type="submit"><span className="glyphicon glyphicon-trash"></span></button>
-            </form>
-        );
-    }
-});
 
 var ListRow = React.createClass({
     showList: function() {
@@ -61,7 +23,7 @@ var ListRow = React.createClass({
                     <a href="#" onClick={this.editList}><span className="glyphicon glyphicon-pencil"></span></a>
                 </td>
                 <td>
-                    <DeleteButton lid={this.props.data.id}/>
+                    <DeleteButton delete={l.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );

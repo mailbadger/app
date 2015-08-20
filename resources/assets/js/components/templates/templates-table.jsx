@@ -1,50 +1,11 @@
 /** @jsx React.DOM */
 
 require('bootpag/lib/jquery.bootpag.min.js');
-require('sweetalert');
 
 var React = require('react');
+var DeleteButton = require('../delete-button.jsx');
 var Template = require('../../entities/template.js');
 var t = new Template();
-
-var DeleteButton = React.createClass({
-    handleSubmit: function (e) {
-        e.preventDefault();
-        swal({
-                title: "Are you sure?",
-                text: "You will not be able to recover this template!",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: "Yes, delete it!",
-                closeOnConfirm: false
-            },
-            function () {
-                t.delete(this.props.tid)
-                    .done(function () {
-                        swal({
-                            title: "Success",
-                            text: "The template was successfully deleted!",
-                            type: "success"
-                        }, function () {
-                            location.reload();
-                        });
-                    })
-                    .fail(function () {
-                        swal('Could not delete', 'Check if the template belongs to a campaign.', 'error');
-                    });
-            }.bind(this));
-
-    },
-    render: function () {
-        return (
-            <form onSubmit={this.handleSubmit}>
-                <input type="hidden" name="_method" value="DELETE"/>
-                <button type="submit"><span className="glyphicon glyphicon-trash"></span></button>
-            </form>
-        );
-    }
-});
 
 var PreviewButton = React.createClass({
     componentDidMount: function () {
@@ -88,7 +49,7 @@ var TemplateRow = React.createClass({
                     <PreviewButton tid={this.props.data.id}/>
                 </td>
                 <td>
-                    <DeleteButton tid={this.props.data.id}/>
+                    <DeleteButton delete={t.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );

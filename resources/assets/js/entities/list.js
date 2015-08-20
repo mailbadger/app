@@ -46,7 +46,7 @@ var List = function () {
         });
     };
 
-    this.update = function(data, id) {
+    this.update = function (data, id) {
         return $.ajax({
             type: 'PUT',
             url: url + '/' + id,
@@ -55,10 +55,10 @@ var List = function () {
         });
     };
 
-    this.getSubscribers = function (id, paginate, perPage, page) {
+    this.allSubscribers = function (listId, paginate, perPage, page) {
         return $.ajax({
             type: 'GET',
-            url: url + '/' + id + '/subscribers',
+            url: url + '/' + listId + '/subscribers',
             data: {
                 paginate: paginate,
                 per_page: perPage,
@@ -68,14 +68,14 @@ var List = function () {
         });
     };
 
-    this.createSubscribers = function(listId, file) {
+    this.createSubscribers = function (listId, file) {
         var data = new FormData();
         data.append('subscribers', file);
         data.append('list_id', listId);
 
         return $.ajax({
             type: 'POST',
-            url: url + '/' + listId + '/subscribers',
+            url: url + '/' + listId + '/import-subscribers',
             data: data,
             processData: false,
             contentType: false,
@@ -84,10 +84,53 @@ var List = function () {
         });
     };
 
-    this.deleteSubscriber = function(listId, id) {
+    this.deleteSubscribers = function (listId, file) {
+        //TODO add delete subscribers functionality
+    };
+
+    this.deleteSubscriber = function (listId, id) {
         return $.ajax({
             type: 'DELETE',
             url: url + '/' + listId + '/subscribers/' + id,
+            dataType: 'json'
+        });
+    };
+
+    this.allFields = function (listId, paginate, perPage, page) {
+        return $.ajax({
+            type: 'GET',
+            url: url + '/' + listId + '/fields',
+            data: {
+                paginate: paginate,
+                per_page: perPage,
+                page: page
+            },
+            dataType: 'json'
+        });
+    };
+
+    this.createField = function (listId, data) {
+        return $.ajax({
+            type: 'POST',
+            url: url + '/' + listId + '/fields',
+            data: data,
+            dataType: 'json'
+        });
+    };
+
+    this.updateField = function (listId, data, id) {
+        return $.ajax({
+            type: 'PUT',
+            url: url + '/' + listId + '/fields/' + id,
+            data: data,
+            dataType: 'json'
+        });
+    };
+
+    this.deleteField = function (listId, id) {
+        return $.ajax({
+            type: 'DELETE',
+            url: url + '/' + listId + '/fields/' + id,
             dataType: 'json'
         });
     };

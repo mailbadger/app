@@ -8,6 +8,7 @@ var l = new List();
 var AddSubscribers = React.createClass({
     getInitialState: function () {
         return {
+            fields: [],
             hasErrors: false,
             errors: {}
         };
@@ -32,8 +33,19 @@ var AddSubscribers = React.createClass({
             .done(this.handleSuccess)
             .fail(this.handleErrors);
     },
+    componentDidMount: function() {
+        l.allFields(this.props.listId).done(function(response) {
+            this.setState({fields: response});
+        }.bind(this));
+    },
     render: function () {
         var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+        var fields = function(field) {
+            return <th key={field.id}>{field.name}</th>;
+        };
+        var fieldVals = function(field, key) {
+            return <td key={field.id}>Example field {key}</td>
+        };
         return (
             <div>
                 <div className="row">
@@ -51,16 +63,19 @@ var AddSubscribers = React.createClass({
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
+                                {this.state.fields.map(fields)}
                             </tr>
                             </thead>
                             <tbody>
                             <tr>
                                 <td>John Doe</td>
                                 <td>john@doe.com</td>
+                                {this.state.fields.map(fieldVals)}
                             </tr>
                             <tr>
                                 <td>Jane Doe</td>
                                 <td>jane@doe.com</td>
+                                {this.state.fields.map(fieldVals)}
                             </tr>
                             </tbody>
                         </table>

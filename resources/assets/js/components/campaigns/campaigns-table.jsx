@@ -4,50 +4,12 @@
 /** @jsx React.DOM */
 
 require('bootpag/lib/jquery.bootpag.min.js');
-require('sweetalert');
 
 var React = require('react');
+var DeleteButton = require('../delete-button.jsx');
 var Campaign = require('../../entities/campaign.js');
 var c = new Campaign();
 
-var DeleteButton = React.createClass({
-    handleSubmit: function (e) {
-        e.preventDefault();
-        swal({
-                title: "Are you sure?",
-                text: "You will not be able to recover this campaign!",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: "Yes, delete it!",
-                closeOnConfirm: false
-            },
-            function () {
-                c.delete(this.props.cid)
-                    .done(function () {
-                        swal({
-                            title: "Success",
-                            text: "The campaign was successfully deleted!",
-                            type: "success"
-                        }, function () {
-                            location.reload();
-                        });
-                    })
-                    .fail(function () {
-                        swal('Error', 'The campaign was not deleted. Try again.', 'error');
-                    });
-            }.bind(this));
-
-    },
-    render: function () {
-        return (
-            <form onSubmit={this.handleSubmit}>
-                <input type="hidden" name="_method" value="DELETE"/>
-                <button type="submit"><span className="delete-campaign glyphicon glyphicon-trash"></span></button>
-            </form>
-        );
-    }
-});
 
 var CampaignRow = React.createClass({
     editCampaign: function() {
@@ -76,7 +38,7 @@ var CampaignRow = React.createClass({
                     }
                 })()}</td>
                 <td>
-                    <DeleteButton cid={this.props.data.id}/>
+                    <DeleteButton delete={c.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );

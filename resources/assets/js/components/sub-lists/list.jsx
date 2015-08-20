@@ -36,6 +36,9 @@ var ListInfo = React.createClass({
     editList: function () {
         this.props.editList(this.props.list.id);
     },
+    customFields: function () {
+        this.props.customFields(this.props.list.id);
+    },
     render: function () {
         return (
             <div className="row" style={{marginTop: '20px'}}>
@@ -47,7 +50,8 @@ var ListInfo = React.createClass({
                     <div className="col-lg-6 pull-right">
                         <a href="#" onClick={this.editList} className="pull-right col-lg-offset-1"><span
                             className="glyphicon glyphicon-wrench"></span> Edit list</a>
-                        <a href="#" className="pull-right"><span className="glyphicon glyphicon-list-alt"></span> Custom
+                        <a href="#" onClick={this.customFields} className="pull-right"><span
+                            className="glyphicon glyphicon-list-alt"></span> Custom
                             fields</a>
                     </div>
                 </div>
@@ -61,7 +65,8 @@ var ListView = React.createClass({
         return (
             <div>
                 <SubscriberButtons addSubscribers={this.props.addSubscribers}/>
-                <ListInfo list={this.props.list} editList={this.props.editList} back={this.props.back}/>
+                <ListInfo list={this.props.list} editList={this.props.editList} customFields={this.props.customFields}
+                          back={this.props.back}/>
                 <SubscribersTable listId={this.props.list.id}/>
             </div>
         );
@@ -75,13 +80,15 @@ var SubscribersList = React.createClass({
     back: function () {
         this.setState({
             component: <ListView addSubscribers={this.addSubscribers} list={this.props.list}
-                                 editList={this.props.editList} back={this.props.back}/>
+                                 editList={this.props.editList} customFields={this.props.customFields}
+                                 back={this.props.back}/>
         });
     },
     getInitialState: function () {
         return {
             component: <ListView addSubscribers={this.addSubscribers} list={this.props.list}
-                                 editList={this.props.editList} back={this.props.back}/>
+                                 editList={this.props.editList} customFields={this.props.customFields}
+                                 back={this.props.back}/>
         };
     },
     render: function () {
