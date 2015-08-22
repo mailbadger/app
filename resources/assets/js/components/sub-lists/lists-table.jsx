@@ -7,11 +7,27 @@ var DeleteButton = require('../delete-button.jsx');
 var List = require('../../entities/list.js');
 var l = new List();
 
+var getAllLists = function (component) {
+    l.all(true, 10, 1).done(function (res) {
+        component.setState({lists: res});
+        $('.pagination').bootpag({
+            total: res.last_page,
+            page: res.current_page,
+            maxVisible: 5
+        }).on("page", function (event, num) {
+            l.all(true, 10, num).done(function (res) {
+                component.setState({lists: res});
+                $('.pagination').bootpag({page: res.current_page});
+            });
+        });
+    });
+};
+
 var ListRow = React.createClass({
-    showList: function() {
+    showList: function () {
         this.props.showList(this.props.data.id);
     },
-    editList: function() {
+    editList: function () {
         this.props.editList(this.props.data.id);
     },
     render: function () {
@@ -23,7 +39,7 @@ var ListRow = React.createClass({
                     <a href="#" onClick={this.editList}><span className="glyphicon glyphicon-pencil"></span></a>
                 </td>
                 <td>
-                    <DeleteButton delete={l.delete.bind(this, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} delete={l.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );
@@ -35,23 +51,15 @@ var ListsTable = React.createClass({
         return {lists: {data: []}};
     },
     componentDidMount: function () {
-        l.all(true, 10, 1).done(function (response) {
-            this.setState({lists: response});
-            $('.pagination').bootpag({
-                total: response.last_page,
-                page: response.current_page,
-                maxVisible: 5
-            }).on("page", function (event, num) {
-                l.all(true, 10, num).done(function (response) {
-                    this.setState({lists: response});
-                    $('.pagination').bootpag({page: response.current_page});
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
+        getAllLists(this);
+    },
+    handleDelete: function () {
+        getAllLists(this);
     },
     render: function () {
         var rows = function (data) {
-            return <ListRow key={data.id} data={data} showList={this.props.showList} editList={this.props.editList}/>
+            return <ListRow key={data.id} data={data} handleDelete={this.handleDelete} showList={this.props.showList}
+                            editList={this.props.editList}/>
         }.bind(this);
         return (
             <div>

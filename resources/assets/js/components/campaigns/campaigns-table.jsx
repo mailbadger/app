@@ -10,16 +10,33 @@ var DeleteButton = require('../delete-button.jsx');
 var Campaign = require('../../entities/campaign.js');
 var c = new Campaign();
 
+var getAllCampaigns = function (component) {
+    c.all(true, 10, 1).done(function (res) {
+        component.setState({campaigns: res});
+
+        $('.pagination').bootpag({
+            total: res.last_page,
+            page: res.current_page,
+            maxVisible: 5
+        }).on("page", function (event, num) {
+            c.all(true, 10, num).done(function (res) {
+                component.setState({campaigns: res});
+                $('.pagination').bootpag({page: res.current_page});
+            });
+        });
+    });
+};
 
 var CampaignRow = React.createClass({
-    editCampaign: function() {
+    editCampaign: function () {
         this.props.editCampaign(this.props.data.id);
     },
-    sendCampaign: function() {
+    sendCampaign: function () {
         this.props.sendCampaign(this.props.data.id);
     },
     render: function () {
-        var edit = (this.props.data.status == 'draft' || this.props.data.status == 'scheduled') ? <span> | <a href="#" onClick={this.editCampaign}>Edit</a></span> : null;
+        var edit = (this.props.data.status == 'draft' || this.props.data.status == 'scheduled') ?
+            <span> | <a href="#" onClick={this.editCampaign}>Edit</a></span> : null;
         return (
             <tr>
                 <td><a href="#" onClick={this.sendCampaign}>{this.props.data.name}</a>{edit}</td>
@@ -38,7 +55,7 @@ var CampaignRow = React.createClass({
                     }
                 })()}</td>
                 <td>
-                    <DeleteButton delete={c.delete.bind(this, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} delete={c.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );
@@ -50,24 +67,15 @@ var CampaignsTable = React.createClass({
         return {campaigns: {data: []}};
     },
     componentDidMount: function () {
-        c.all(true, 10, 1).done(function (response) {
-            this.setState({campaigns: response});
-
-            $('.pagination').bootpag({
-                total: response.last_page,
-                page: response.current_page,
-                maxVisible: 5
-            }).on("page", function (event, num) {
-                c.all(true, 10, num).done(function (response) {
-                    this.setState({campaigns: response});
-                    $('.pagination').bootpag({page: response.current_page});
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
+        getAllCampaigns(this);
+    },
+    handleDelete: function () {
+        getAllCampaigns(this);
     },
     render: function () {
         var rows = function (data) {
-            return <CampaignRow key={data.id} data={data} editCampaign={this.props.editCampaign} sendCampaign={this.props.sendCampaign}/>
+            return <CampaignRow key={data.id} data={data} handleDelete={this.handleDelete}
+                                editCampaign={this.props.editCampaign} sendCampaign={this.props.sendCampaign}/>
         }.bind(this);
         return (
             <div>

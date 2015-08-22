@@ -6,6 +6,23 @@ var DeleteButton = require('../delete-button.jsx');
 var List = require('../../entities/list.js');
 var l = new List();
 
+var getAllFields = function (component, listId) {
+    l.allFields(listId, true, 10, 1).done(function (res) {
+        component.setState({fields: res});
+
+        $('.pagination').bootpag({
+            total: res.last_page,
+            page: res.current_page,
+            maxVisible: 5
+        }).on("page", function (event, num) {
+            l.allFields(listId, true, 10, num).done(function (res) {
+                component.setState({fields: res});
+                $('.pagination').bootpag({page: res.current_page});
+            });
+        });
+    });
+};
+
 var CustomFields = React.createClass({
     getInitialState: function () {
         return {
@@ -49,21 +66,14 @@ var CustomFields = React.createClass({
     handleEdit: function (name, id) {
         this.setState({edit: true, name: name, editField: id});
     },
+    handleDelete: function () {
+        getAllFields(this, this.props.listId);
+    },
+    cancelEdit: function () {
+        this.setState({edit: false, name: '', editField: null});
+    },
     componentDidMount: function () {
-        l.allFields(this.props.listId, true, 10, 1).done(function (res) {
-            this.setState({fields: res});
-
-            $('.pagination').bootpag({
-                total: response.last_page,
-                page: response.current_page,
-                maxVisible: 5
-            }).on("page", function (event, num) {
-                l.allFields(this.props.listId, true, 10, num).done(function (response) {
-                    this.setState({fields: response});
-                    $('.pagination').bootpag({page: response.current_page});
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
+        getAllFields(this, this.props.listId);
     },
     render: function () {
         var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
@@ -71,12 +81,16 @@ var CustomFields = React.createClass({
             return (
                 <tr key={field.id}>
                     <td>{field.name}</td>
-                    <td><a href="#" onClick={this.handleEdit.bind(this, field.name, field.id)}><span className="glyphicon glyphicon-pencil"></span></a>
+                    <td><a href="#" onClick={this.handleEdit.bind(this, field.name, field.id)}><span
+                        className="glyphicon glyphicon-pencil"></span></a>
                     </td>
-                    <td><DeleteButton delete={l.deleteField.bind(this, this.props.listId, field.id)}/></td>
+                    <td><DeleteButton success={this.handleDelete}
+                                      delete={l.deleteField.bind(this, this.props.listId, field.id)}/></td>
                 </tr>
             );
         }.bind(this);
+        var cancelBtn = (this.state.edit) ? <input type="button" onClick={this.cancelEdit} value="Cancel"
+                                                   className="col-lg-offset-1 col-lg-3 btn btn-default"/> : null;
         return (
             <div>
                 <div className="row">
@@ -92,10 +106,10 @@ var CustomFields = React.createClass({
                                            placeholder="Name" onChange={this.handleChange}
                                            value={this.state.name} required/>
                                 </div>
-                                <button className="col-lg-4 btn btn-default">
+                                <button className="col-lg-3 btn btn-default">
                                     {this.state.edit ? 'Edit field' : 'Save field'}
                                 </button>
-                                {this.state.edit ? <button className="col-lg-4 btn btn-default">Cancel</button> : null}
+                                {this.state.edit ? cancelBtn : null}
 
                                 <div className="col-lg-4 pull-right">
                                     <a href="#" onClick={this.props.back}>Back to lists</a>
@@ -104,7 +118,7 @@ var CustomFields = React.createClass({
                         </form>
                     </div>
 
-                    <div className="row">
+                    <div className="row" style={{marginTop: '20px'}}>
                         <h3 className="page-header">Existing fields</h3>
                         <table className="table table-responsive table-hover">
                             <thead>

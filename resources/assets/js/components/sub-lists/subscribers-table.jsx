@@ -8,6 +8,23 @@ var List = require('../../entities/list.js');
 
 var l = new List();
 
+var getAllSubscribers = function (component, listId) {
+    l.allSubscribers(listId, true, 10, 1).done(function (res) {
+        component.setState({subscribers: res});
+
+        $('.pagination').bootpag({
+            total: res.last_page,
+            page: res.current_page,
+            maxVisible: 5
+        }).on("page", function (event, num) {
+            l.allSubscribers(listId, true, 10, num).done(function (res) {
+                component.setState({subscribers: res});
+                $('.pagination').bootpag({page: res.current_page});
+            });
+        });
+    });
+};
+
 var SubscriberRow = React.createClass({
     render: function () {
         return (
@@ -15,7 +32,7 @@ var SubscriberRow = React.createClass({
                 <td>{this.props.data.name}</td>
                 <td>{this.props.data.email}</td>
                 <td>
-                    <DeleteButton delete={l.deleteSubscriber.bind(this, this.props.listId, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} delete={l.deleteSubscriber.bind(this, this.props.listId, this.props.data.id)}/>
                 </td>
             </tr>
         );
@@ -27,23 +44,14 @@ var SubscribersTable = React.createClass({
         return {subscribers: {data: []}};
     },
     componentDidMount: function () {
-        l.allSubscribers(this.props.listId, true, 10, 1).done(function (response) {
-            this.setState({subscribers: response});
-            $('.pagination').bootpag({
-                total: response.last_page,
-                page: response.current_page,
-                maxVisible: 5
-            }).on("page", function (event, num) {
-                l.allSubscribers(this.props.listId, true, 10, num).done(function (response) {
-                    this.setState({subscribers: response});
-                    $('.pagination').bootpag({page: response.current_page});
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
+        getAllSubscribers(this, this.props.listId);
+    },
+    handleDelete: function () {
+        getAllSubscribers(this, this.props.listId);
     },
     render: function () {
         var rows = function (data) {
-            return <SubscriberRow key={data.id} listId={this.props.listId} data={data}/>
+            return <SubscriberRow key={data.id} handleDelete={this.handleDelete} listId={this.props.listId} data={data}/>
         }.bind(this);
         return (
             <div>

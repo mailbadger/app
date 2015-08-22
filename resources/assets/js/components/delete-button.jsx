@@ -23,9 +23,9 @@ var DeleteButton = React.createClass({
                             text: "The entity was successfully removed!",
                             type: "success"
                         }, function () {
-                            location.reload();
-                        });
-                    })
+                            this.props.success();
+                        }.bind(this));
+                    }.bind(this))
                     .fail(function () {
                         swal('Could not delete', 'Could not delete the entity. Try again.', 'error');
                     });

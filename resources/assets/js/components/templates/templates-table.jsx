@@ -7,6 +7,23 @@ var DeleteButton = require('../delete-button.jsx');
 var Template = require('../../entities/template.js');
 var t = new Template();
 
+var getAllTemplates = function (component) {
+    t.all(true, 10, 1).done(function (res) {
+        component.setState({templates: res});
+
+        $('.pagination').bootpag({
+            total: res.last_page,
+            page: res.current_page,
+            maxVisible: 5
+        }).on("page", function (event, num) {
+            t.all(true, 10, num).done(function (res) {
+                component.setState({templates: res});
+                $('.pagination').bootpag({page: res.current_page});
+            });
+        });
+    });
+};
+
 var PreviewButton = React.createClass({
     componentDidMount: function () {
         $('.preview').magnificPopup({
@@ -37,19 +54,20 @@ var PreviewButton = React.createClass({
 });
 
 var TemplateRow = React.createClass({
-    editTemplate: function() {
+    editTemplate: function () {
         this.props.editTemplate(this.props.data.id);
     },
     render: function () {
         return (
             <tr>
                 <td>{this.props.data.name}</td>
-                <td><a href="#" onClick={this.editTemplate}><span className="glyphicon glyphicon-pencil"></span></a></td>
+                <td><a href="#" onClick={this.editTemplate}><span className="glyphicon glyphicon-pencil"></span></a>
+                </td>
                 <td>
                     <PreviewButton tid={this.props.data.id}/>
                 </td>
                 <td>
-                    <DeleteButton delete={t.delete.bind(this, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} delete={t.delete.bind(this, this.props.data.id)}/>
                 </td>
             </tr>
         );
@@ -61,24 +79,15 @@ var TemplatesTable = React.createClass({
         return {templates: {data: []}};
     },
     componentDidMount: function () {
-        t.all(true, 10, 1).done(function (response) {
-            this.setState({templates: response});
-
-            $('.pagination').bootpag({
-                total: response.last_page,
-                page: response.current_page,
-                maxVisible: 5
-            }).on("page", function (event, num) {
-                t.all(true, 10, num).done(function (response) {
-                    this.setState({templates: response});
-                    $('.pagination').bootpag({page: response.current_page});
-                }.bind(this));
-            }.bind(this));
-        }.bind(this));
+        getAllTemplates(this);
+    },
+    handleDelete: function () {
+        getAllTemplates(this);
     },
     render: function () {
         var rows = function (data) {
-            return <TemplateRow key={data.id} data={data} editTemplate={this.props.editTemplate}/>
+            return <TemplateRow key={data.id} data={data} handleDelete={this.handleDelete}
+                                editTemplate={this.props.editTemplate}/>
         }.bind(this);
         return (
             <div>

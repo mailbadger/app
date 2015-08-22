@@ -74,12 +74,19 @@ class ListsSubscriberController extends Controller
     /**
      * Remove the specified resource from storage.
      *
+     * @param $listId
      * @param  int $id
      * @return Response
      */
     public function destroy($listId, $id)
     {
-        //
+        if ($this->service->detachSubscriber($listId, $id)) {
+            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
+                200);
+        }
+
+        return response()->json(['status' => 422, 'campaign' => ['The specified resource could not be deleted.']],
+            422);
     }
 
     /**

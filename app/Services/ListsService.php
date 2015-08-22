@@ -171,6 +171,28 @@ class ListsService
     }
 
     /**
+     * Detaches a subscriber from a list
+     *
+     * @param $listId
+     * @param $id
+     * @return bool
+     */
+    public function detachSubscriber($listId, $id)
+    {
+        try {
+            $list = $this->listsRepository->find($listId);
+            $list->subscribers()->detach($id);
+
+            return true;
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+
+            return false;
+        }
+
+    }
+
+    /**
      * Update total subscribers to list
      *
      * @param $listId
