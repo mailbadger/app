@@ -13,7 +13,6 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use newsletters\Entities\Subscriber;
 use newsletters\Repositories\FieldRepository;
@@ -45,15 +44,13 @@ class FieldService
             $fields = $this->findFieldsByListId($listId);
 
             foreach ($data as $fieldData) {
-                DB::transaction(function () use ($fieldData, $listId, $subscriber, $fields) {
-                    $key = $fields->search(function ($field) use ($fieldData) {
-                        return strtolower($field->name) === strtolower($fieldData['name']);
-                    });
-
-                    if ($key !== false) {
-                        $subscriber->fields()->attach($fields[$key]->id, ['value' => $fieldData['value']]);
-                    }
+                $key = $fields->search(function ($field) use ($fieldData) {
+                    return strtolower($field->name) === strtolower($fieldData['name']);
                 });
+
+                if ($key !== false) {
+                    $subscriber->fields()->attach($fields[$key]->id, ['value' => $fieldData['value']]);
+                }
             }
 
             return true;
@@ -111,7 +108,7 @@ class FieldService
      */
     public function findAllFieldsByListId($listId, $paginate = false, $perPage = 10)
     {
-        $fields = $this->fieldRepository->scopeQuery(function($q) use ($listId) {
+        $fields = $this->fieldRepository->scopeQuery(function ($q) use ($listId) {
             return $q->where('list_id', $listId);
         });
 

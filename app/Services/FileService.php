@@ -28,7 +28,7 @@ class FileService
      * @param $file
      * @return Collection
      */
-    public function importSubscribersFromFile($file)
+    public function importSubscribers($file)
     {
         try {
             $obj = $this->loadFile($file);
@@ -38,6 +38,69 @@ class FileService
             Log::error($e->getMessage());
 
             return new Collection();
+        }
+    }
+
+    /**
+     * Export table data to excel file
+     *
+     * @param array $data
+     * @param array $header
+     * @param PHPExcel $excelObj
+     * @return PHPExcel
+     */
+    public function exportData(array $data, array $header, PHPExcel $excelObj)
+    {
+        $i = 0;
+        foreach ($header as $field) {
+            $excelObj->getActiveSheet()->setCellValueByColumnAndRow($i++, 1, $field);
+        }
+
+        $j = 2;
+        foreach ($data as $row) {
+            $i = 0;
+            foreach ($header as $field) {
+                $value = (isset($row[$field])) ? $row[$field] : '';
+                $excelObj->getActiveSheet()->setCellValueByColumnAndRow($i++, $j, $value);
+            }
+            $j++;
+        }
+
+        return $excelObj;
+    }
+
+    /**
+     * Creates a new PHPExcel object
+     *
+     * @param $title
+     * @param string $description
+     * @return PHPExcel
+     * @throws PHPExcel_Exception
+     */
+    public function createExcelFile($title, $description = '')
+    {
+        $excelObj = new PHPExcel();
+        $excelObj->getProperties()->setTitle($title)->setDescription($description);
+        $excelObj->setActiveSheetIndex(0);
+
+        return $excelObj;
+    }
+
+    /**
+     * Creates an excel writer
+     *
+     * @param PHPExcel $excelObj
+     * @param $writerType
+     * @return \PHPExcel_Writer_IWriter
+     */
+    public function createWriter(PHPExcel $excelObj, $writerType = 'CSV')
+    {
+        try {
+            return PHPExcel_IOFactory::createWriter($excelObj, $writerType);
+        } catch (\PHPExcel_Reader_Exception $e) {
+            Log::error($e->getMessage());
+
+            return null;
         }
     }
 
@@ -102,7 +165,7 @@ class FileService
             $headerRow = $this->getHeaderRow($worksheet->getRowIterator(1, 1));
 
             foreach ($worksheet->getRowIterator(2) as $row) { //Iterate from the second row
-                $subscriber = $this->readCells($row, $headerRow);
+                $subscriber = $this->getSubscriberData($row, $headerRow);
                 $subscribers->push($subscriber);
             }
 
@@ -140,7 +203,7 @@ class FileService
      * @param $headerRow
      * @return array
      */
-    public function readCells(PHPExcel_Worksheet_Row $row, $headerRow)
+    public function getSubscriberData(PHPExcel_Worksheet_Row $row, $headerRow)
     {
         try {
             $cells = $row->getCellIterator();
@@ -151,7 +214,7 @@ class FileService
             foreach ($cells as $cell) {
                 $column = $headerRow[$cell->getColumn()];
 
-                if ($column == 'name' || $column == 'email') {
+                if ('name' === strtolower($column) || 'email' === strtolower($column)) {
                     $subscriber[$column] = $cell->getValue();
                 } else {
                     $customFields[] = ['name' => $column, 'value' => $cell->getValue()];

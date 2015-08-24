@@ -144,7 +144,7 @@ class ListsService
      */
     public function createSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
-        $totalSubscribers = $fileService->importSubscribersFromFile($file)
+        $totalSubscribers = $fileService->importSubscribers($file)
             ->map(function ($data) use ($listId, $fieldService) {
                 return DB::transaction(function () use ($data, $listId, $fieldService) {
                     try {
@@ -170,6 +170,54 @@ class ListsService
         return $totalSubscribers;
     }
 
+    public function deleteSubscribers($file)
+    {
+        //TODO - delete subscribers from a file
+    }
+
+    /**
+     * Exports subscribers to an excel file
+     *
+     * @param $listId
+     * @param FileService $fileService
+     * @param FieldService $fieldService
+     * @return \PHPExcel
+     */
+    public function exportSubscribers($listId, FileService $fileService, FieldService $fieldService)
+    {
+        $header = $fieldService->findFieldsByListId($listId)
+            ->map(function ($field) {
+                return $field->name;
+            })
+            ->prepend('email')
+            ->prepend('name')
+            ->toArray();
+
+        $subscribers = $this->subscriberRepository
+            ->with('fields')
+            ->scopeQuery(function ($q) use ($listId) {
+                return $q->whereHas('lists', function ($q) use ($listId) {
+                    return $q->where('list_id', $listId);
+                });
+            })
+            ->all()
+            ->map(function ($sub) {
+                $sub->fields->each(function ($field) use ($sub) {
+                    $name = $field->name;
+                    $sub->$name = $field->pivot->value;
+                });
+
+                unset($sub->fields);
+
+                return $sub;
+            })
+            ->toArray();
+
+        $excelObj = $fileService->createExcelFile('subs');
+
+        return $fileService->exportData($subscribers, $header, $excelObj);
+    }
+
     /**
      * Detaches a subscriber from a list
      *
@@ -189,7 +237,6 @@ class ListsService
 
             return false;
         }
-
     }
 
     /**

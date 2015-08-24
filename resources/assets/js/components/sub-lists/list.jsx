@@ -13,18 +13,19 @@ var SubscriberButtons = React.createClass({
             <div className="row">
                 <div className="col-lg-6">
                     <div className="row">
-                        <button className="btn col-lg-3" onClick={this.props.addSubscribers}><span
+                        <a className="btn btn-default col-lg-3" onClick={this.props.addSubscribers}><span
                             className="glyphicon glyphicon-save-file"></span> Add
                             subscribers
-                        </button>
-                        <button className="btn col-lg-3 col-lg-offset-1"><span
+                        </a>
+                        <a className="btn btn-default col-lg-3 col-lg-offset-1"><span
                             className="glyphicon glyphicon-trash"></span> Delete
                             subscribers
-                        </button>
-                        <button className="btn col-lg-3 col-lg-offset-1"><span
+                        </a>
+                        <a href={url_base + '/api/lists/' + this.props.listId + '/export-subscribers'}
+                           className="btn btn-default col-lg-3 col-lg-offset-1"><span
                             className="glyphicon glyphicon-export"></span> Export
                             subscribers
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -64,7 +65,7 @@ var ListView = React.createClass({
     render: function () {
         return (
             <div>
-                <SubscriberButtons addSubscribers={this.props.addSubscribers}/>
+                <SubscriberButtons listId={this.props.list.id} addSubscribers={this.props.addSubscribers}/>
                 <ListInfo list={this.props.list} editList={this.props.editList} customFields={this.props.customFields}
                           back={this.props.back}/>
                 <SubscribersTable listId={this.props.list.id}/>

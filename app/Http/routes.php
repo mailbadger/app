@@ -32,6 +32,8 @@ Route::group(['namespace' => 'Api', 'prefix' => 'api'], function () {
 
     Route::post('lists/{id}/import-subscribers', 'ListsSubscriberController@import');
 
+    Route::get('lists/{id}/export-subscribers', 'ListsSubscriberController@export');
+
     Route::resource('lists', 'ListsController', ['except' => ['create', 'edit']]);
 
     Route::resource('lists.subscribers', 'ListsSubscriberController', ['except' => ['create', 'edit']]);

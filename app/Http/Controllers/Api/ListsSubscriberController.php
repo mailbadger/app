@@ -44,7 +44,8 @@ class ListsSubscriberController extends Controller
      *
      * @return Response
      */
-    public function store() {
+    public function store()
+    {
         //
     }
 
@@ -103,8 +104,7 @@ class ListsSubscriberController extends Controller
         FileService $fileService,
         FieldService $fieldService,
         $listId
-    )
-    {
+    ) {
         $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService,
             $fieldService);
         if (!$subscribers->isEmpty()) {
@@ -114,5 +114,23 @@ class ListsSubscriberController extends Controller
 
         return response()->json(['status' => 412, 'subscribers' => ['The specified resource could not be created.']],
             412);
+    }
+
+    public function export(
+        Request $request,
+        FileService $fileService,
+        FieldService $fieldService,
+        $listId
+    ) {
+        $excel = $this->service->exportSubscribers($listId, $fileService, $fieldService);
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename="Subscribers_'.date('dMy').'.csv"');
+        header('Cache-Control: max-age=0');
+
+        $writer = $fileService->createWriter($excel);
+        $writer->save('php://output');
+
+        exit;
     }
 }

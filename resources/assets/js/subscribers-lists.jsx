@@ -14,13 +14,15 @@ var l = new List();
 var Lists = React.createClass({
     getInitialState: function () {
         return {
-            content: <div>
-                <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
+            content: (
+                <div>
+                    <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
 
-                <div className="row">
-                    <ListsTable showList={this.showList} editList={this.editList}/>
+                    <div className="row">
+                        <ListsTable showList={this.showList} editList={this.editList}/>
+                    </div>
                 </div>
-            </div>
+            )
         }
     },
     showList: function (id) {
@@ -41,13 +43,15 @@ var Lists = React.createClass({
     },
     back: function () {
         this.setState({
-            content: <div>
-                <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
+            content: (
+                <div>
+                    <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
 
-                <div className="row">
-                    <ListsTable showList={this.showList} editList={this.editList}/>
+                    <div className="row">
+                        <ListsTable showList={this.showList} editList={this.editList}/>
+                    </div>
                 </div>
-            </div>
+            )
         });
     },
     render: function () {
