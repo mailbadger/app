@@ -27,7 +27,6 @@ class AddOnDeleteCascadeInSubscribersFieldsTable extends Migration
     {
         Schema::table('subscribers_fields', function (Blueprint $table) {
             $table->dropForeign('subscribers_fields_field_id_foreign');
-            $table->integer('field_id')->unsigned();
             $table->foreign('field_id')->references('id')->on('fields');
         });
     }

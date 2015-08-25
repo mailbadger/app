@@ -85,7 +85,19 @@ var List = function () {
     };
 
     this.deleteSubscribers = function (listId, file) {
-        //TODO add delete subscribers functionality
+        var data = new FormData();
+        data.append('subscribers', file);
+        data.append('list_id', listId);
+
+        return $.ajax({
+            type: 'POST',
+            url: url + '/' + listId + '/mass-delete-subscribers',
+            data: data,
+            processData: false,
+            contentType: false,
+            cache: false,
+            dataType: 'json'
+        });
     };
 
     this.deleteSubscriber = function (listId, id) {

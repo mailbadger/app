@@ -3,6 +3,7 @@
 var React = require('react');
 var SubscribersTable = require('./subscribers-table.jsx');
 var AddSubscribers = require('./add-subscribers.jsx');
+var DeleteSubscribers = require('./delete-subscribers.jsx');
 var List = require('../../entities/list.js');
 
 var l = new List();
@@ -17,9 +18,9 @@ var SubscriberButtons = React.createClass({
                             className="glyphicon glyphicon-save-file"></span> Add
                             subscribers
                         </a>
-                        <a className="btn btn-default col-lg-3 col-lg-offset-1"><span
-                            className="glyphicon glyphicon-trash"></span> Delete
-                            subscribers
+                        <a className="btn btn-default col-lg-3 col-lg-offset-1"
+                           onClick={this.props.deleteSubscribers}>
+                            <span className="glyphicon glyphicon-trash"></span> Delete subscribers
                         </a>
                         <a href={url_base + '/api/lists/' + this.props.listId + '/export-subscribers'}
                            className="btn btn-default col-lg-3 col-lg-offset-1"><span
@@ -65,7 +66,8 @@ var ListView = React.createClass({
     render: function () {
         return (
             <div>
-                <SubscriberButtons listId={this.props.list.id} addSubscribers={this.props.addSubscribers}/>
+                <SubscriberButtons listId={this.props.list.id} addSubscribers={this.props.addSubscribers}
+                                   deleteSubscribers={this.props.deleteSubscribers}/>
                 <ListInfo list={this.props.list} editList={this.props.editList} customFields={this.props.customFields}
                           back={this.props.back}/>
                 <SubscribersTable listId={this.props.list.id}/>
@@ -78,18 +80,21 @@ var SubscribersList = React.createClass({
     addSubscribers: function () {
         this.setState({component: <AddSubscribers listId={this.props.list.id} back={this.back}/>});
     },
+    deleteSubscribers: function () {
+        this.setState({component: <DeleteSubscribers listId={this.props.list.id} back={this.back}/>});
+    },
     back: function () {
         this.setState({
-            component: <ListView addSubscribers={this.addSubscribers} list={this.props.list}
-                                 editList={this.props.editList} customFields={this.props.customFields}
-                                 back={this.props.back}/>
+            component: <ListView addSubscribers={this.addSubscribers} deleteSubscribers={this.deleteSubscribers}
+                                 list={this.props.list} editList={this.props.editList}
+                                 customFields={this.props.customFields} back={this.props.back}/>
         });
     },
     getInitialState: function () {
         return {
-            component: <ListView addSubscribers={this.addSubscribers} list={this.props.list}
-                                 editList={this.props.editList} customFields={this.props.customFields}
-                                 back={this.props.back}/>
+            component: <ListView addSubscribers={this.addSubscribers} deleteSubscribers={this.deleteSubscribers}
+                                 list={this.props.list} editList={this.props.editList}
+                                 customFields={this.props.customFields} back={this.props.back}/>
         };
     },
     render: function () {

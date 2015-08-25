@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
 use newsletters\Http\Requests\ImportSubscribersRequest;
+use newsletters\Http\Requests\MassDeleteSubscribersRequest;
 use newsletters\Services\FieldService;
 use newsletters\Services\FileService;
 use newsletters\Services\ListsService;
@@ -81,7 +82,9 @@ class ListsSubscriberController extends Controller
      */
     public function destroy($listId, $id)
     {
-        if ($this->service->detachSubscriber($listId, $id)) {
+        $list = $this->service->findList($listId);
+
+        if ($this->service->detachSubscriber($list, $id)) {
             return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
                 200);
         }
@@ -107,7 +110,7 @@ class ListsSubscriberController extends Controller
     ) {
         $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService,
             $fieldService);
-        if (!$subscribers->isEmpty()) {
+        if (!empty($subscribers)) {
             return response()->json(['status' => 200, 'subscribers' => 'The specified resources have been created.'],
                 200);
         }
@@ -116,8 +119,14 @@ class ListsSubscriberController extends Controller
             412);
     }
 
+    /**
+     * Export subscribers to csv file
+     *
+     * @param FileService $fileService
+     * @param FieldService $fieldService
+     * @param $listId
+     */
     public function export(
-        Request $request,
         FileService $fileService,
         FieldService $fieldService,
         $listId
@@ -125,12 +134,24 @@ class ListsSubscriberController extends Controller
         $excel = $this->service->exportSubscribers($listId, $fileService, $fieldService);
 
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename="Subscribers_'.date('dMy').'.csv"');
+        header('Content-Disposition: attachment;filename="Subscribers_' . date('dMy') . '.csv"');
         header('Cache-Control: max-age=0');
 
         $writer = $fileService->createWriter($excel);
         $writer->save('php://output');
 
         exit;
+    }
+
+    /**
+     * Mass delete subscribers from a file
+     *
+     * @param MassDeleteSubscribersRequest $request
+     * @param FileService $fileService
+     * @param $listId
+     */
+    public function massDelete(MassDeleteSubscribersRequest $request, FileService $fileService, $listId)
+    {
+
     }
 }

@@ -10,11 +10,11 @@ namespace newsletters\Services;
 
 
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use newsletters\Entities\Lists;
 use newsletters\Repositories\ListsRepository;
 use newsletters\Repositories\SubscriberRepository;
 
@@ -75,11 +75,7 @@ class ListsService
      */
     public function findList($id)
     {
-        try {
-            return $this->listsRepository->find($id);
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return $this->listsRepository->find($id);
     }
 
     /**
@@ -90,13 +86,7 @@ class ListsService
      */
     public function createList(array $data)
     {
-        try {
-            return $this->listsRepository->create($data);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->listsRepository->create($data);
     }
 
     /**
@@ -108,13 +98,7 @@ class ListsService
      */
     public function updateList(array $data, $id)
     {
-        try {
-            return $this->listsRepository->update($data, $id);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->listsRepository->update($data, $id);
     }
 
     /**
@@ -125,12 +109,7 @@ class ListsService
      */
     public function deleteList($id)
     {
-        try {
-            return $this->listsRepository->delete($id);
-        } catch (ModelNotFoundException $e) {
-
-            return false;
-        }
+        return $this->listsRepository->delete($id);
     }
 
     /**
@@ -141,33 +120,35 @@ class ListsService
      * @param FileService $fileService
      * @param FieldService $fieldService
      * @return Collection
+     * @throws Exception
      */
     public function createSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
-        $totalSubscribers = $fileService->importSubscribers($file)
-            ->map(function ($data) use ($listId, $fieldService) {
-                return DB::transaction(function () use ($data, $listId, $fieldService) {
-                    try {
+        try {
+            $list = $this->findList($listId);
+
+            $totalSubscribers = $fileService->importSubscribers($file)
+                ->map(function ($data) use ($list, $fieldService) {
+                    return DB::transaction(function () use ($data, $list, $fieldService) {
                         $subscriber = $this->subscriberRepository->create($data['subscriber']);
-                        $fieldService->attachFieldsToSubscriber($subscriber, $data['custom_fields'], $listId);
-                        $subscriber->lists()->attach($listId);
+                        $fieldService->attachFieldsToSubscriber($subscriber, $data['custom_fields'], $list->id);
+                        $this->attachSubscriber($list, $subscriber->id);
 
                         return $subscriber;
-                    } catch (QueryException $e) {
-                        Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+                    });
+                })
+                ->reject(function ($s) {
+                    return empty($s);
+                })
+                ->count();
 
-                        return null;
-                    }
-                });
-            })
-            ->reject(function ($s) {
-                return empty($s);
-            })
-            ->count();
+            $this->updateTotalListSubscribers($list, $totalSubscribers);
 
-        $this->updateTotalListSubscribers($listId, $totalSubscribers);
-
-        return $totalSubscribers;
+            return $totalSubscribers;
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     public function deleteSubscribers($file)
@@ -219,16 +200,35 @@ class ListsService
     }
 
     /**
-     * Detaches a subscriber from a list
+     * Attaches a subscriber to a list
      *
-     * @param $listId
+     * @param Lists $list
      * @param $id
      * @return bool
      */
-    public function detachSubscriber($listId, $id)
+    public function attachSubscriber(Lists $list, $id)
     {
         try {
-            $list = $this->listsRepository->find($listId);
+            $list->subscribers()->attach($id);
+
+            return true;
+        } catch (Exception $e) {
+            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+
+            return false;
+        }
+    }
+
+    /**
+     * Detaches a subscriber from a list
+     *
+     * @param Lists $list
+     * @param $id
+     * @return bool
+     */
+    public function detachSubscriber(Lists $list, $id)
+    {
+        try {
             $list->subscribers()->detach($id);
 
             return true;
@@ -242,14 +242,13 @@ class ListsService
     /**
      * Update total subscribers to list
      *
-     * @param $listId
+     * @param Lists $list
      * @param $total
      * @return bool
      */
-    public function updateTotalListSubscribers($listId, $total)
+    public function updateTotalListSubscribers(Lists $list, $total)
     {
         try {
-            $list = $this->listsRepository->find($listId);
             $list->total_subscribers = (!empty($list->total_subscribers)) ? $list->total_subscribers + $total : $total;
             $list->save();
 
