@@ -3,8 +3,8 @@
 namespace newsletters\Exceptions;
 
 use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
@@ -16,7 +16,6 @@ class Handler extends ExceptionHandler
      */
     protected $dontReport = [
         HttpException::class,
-        ModelNotFoundException::class,
     ];
 
     /**
@@ -41,6 +40,12 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        if ($request->ajax()) {
+            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+
+            return response()->json(['message' => 'There was an error. Please try again.'], 500);
+        }
+
         return parent::render($request, $e);
     }
 }

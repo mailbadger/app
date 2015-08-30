@@ -49,12 +49,11 @@ class ListsController extends Controller
         try {
             $list = $this->service->createList($request->all());
 
-            return response()->json(['status' => 200, 'list' => $list->id], 200);
+            return response()->json(['list' => $list->id], 200);
         } catch (Exception $e) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            return response()->json(['status' => 412, 'list' => ['The specified resource could not be created.']],
-                412);
+            return response()->json(['message' => ['The specified resource could not be created.']], 412);
         }
     }
 
@@ -73,7 +72,7 @@ class ListsController extends Controller
         } catch (Exception $e) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
+            return response()->json(['message' => 'The specified resource does not exist.'], 404);
         }
     }
 
@@ -89,12 +88,11 @@ class ListsController extends Controller
         try {
             $list = $this->service->updateList($request->all(), $id);
 
-            return response()->json(['status' => 200, 'list' => $list->id], 200);
+            return response()->json(['list' => $list->id], 200);
         } catch (Exception $e) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            return response()->json(['status' => 412, 'list' => ['The specified resource could not be updated.']],
-                412);
+            return response()->json(['message' => ['The specified resource could not be updated.']], 412);
         }
     }
 
@@ -107,11 +105,9 @@ class ListsController extends Controller
     public function destroy($id)
     {
         if ($this->service->deleteList($id)) {
-            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
-                200);
+            return response()->json(['message' => ['The specified resource has been deleted.']], 200);
         }
 
-        return response()->json(['status' => 412, 'list' => ['The specified resource could not be deleted.']],
-            422);
+        return response()->json(['message' => ['The specified resource could not be deleted.']], 422);
     }
 }

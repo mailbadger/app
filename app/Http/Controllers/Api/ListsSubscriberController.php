@@ -85,11 +85,11 @@ class ListsSubscriberController extends Controller
         $list = $this->service->findList($listId);
 
         if ($this->service->detachSubscriber($list, $id)) {
-            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
+            return response()->json(['message' => 'The specified resource has been deleted.'],
                 200);
         }
 
-        return response()->json(['status' => 422, 'campaign' => ['The specified resource could not be deleted.']],
+        return response()->json(['message' => ['The specified resource could not be deleted.']],
             422);
     }
 
@@ -111,11 +111,11 @@ class ListsSubscriberController extends Controller
         $subscribers = $this->service->createSubscribers($request->file('subscribers'), $listId, $fileService,
             $fieldService);
         if (!empty($subscribers)) {
-            return response()->json(['status' => 200, 'subscribers' => 'The specified resources have been created.'],
+            return response()->json(['message' => 'The specified resources have been created.'],
                 200);
         }
 
-        return response()->json(['status' => 412, 'subscribers' => ['The specified resource could not be created.']],
+        return response()->json(['message' => ['The specified resource could not be created.']],
             412);
     }
 
@@ -149,9 +149,18 @@ class ListsSubscriberController extends Controller
      * @param MassDeleteSubscribersRequest $request
      * @param FileService $fileService
      * @param $listId
+     * @return \Illuminate\Http\JsonResponse
      */
     public function massDelete(MassDeleteSubscribersRequest $request, FileService $fileService, $listId)
     {
+        $count = $this->service->deleteSubscribers($request->file('subscribers'), $listId, $fileService);
 
+        if (!empty($count)) {
+            return response()->json(['message' => 'The specified resource have been deleted.'],
+                200);
+        }
+
+        return response()->json(['message' => ['The specified resource could not be deleted.']],
+            422);
     }
 }

@@ -47,11 +47,7 @@ class CampaignService
      */
     public function findCampaign($id)
     {
-        try {
-            return $this->campaignRepository->find($id);
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return $this->campaignRepository->find($id);
     }
 
     /**
@@ -62,13 +58,7 @@ class CampaignService
      */
     public function createCampaign(array $data)
     {
-        try {
-            return $this->campaignRepository->create($data);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->campaignRepository->create($data);
     }
 
     /**
@@ -80,13 +70,7 @@ class CampaignService
      */
     public function updateCampaign(array $data, $id)
     {
-        try {
-            return $this->campaignRepository->update($data, $id);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->campaignRepository->update($data, $id);
     }
 
     /**
@@ -97,11 +81,6 @@ class CampaignService
      */
     public function deleteCampaign($id)
     {
-        try {
-            return $this->campaignRepository->delete($id);
-        } catch (ModelNotFoundException $e) {
-
-            return false;
-        }
+        return $this->campaignRepository->delete($id);
     }
 }

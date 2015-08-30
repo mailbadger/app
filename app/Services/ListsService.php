@@ -124,36 +124,69 @@ class ListsService
      */
     public function createSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
-        try {
-            $list = $this->findList($listId);
+        $list = $this->findList($listId);
 
-            $totalSubscribers = $fileService->importSubscribers($file)
-                ->map(function ($data) use ($list, $fieldService) {
-                    return DB::transaction(function () use ($data, $list, $fieldService) {
-                        $subscriber = $this->subscriberRepository->create($data['subscriber']);
+        $totalSubscribers = $fileService->importSubscribers($file)
+            ->map(function ($data) use ($list, $fieldService) {
+                return DB::transaction(function () use ($data, $list, $fieldService) {
+                    try {
+                        $subscriber = $this->subscriberRepository->findByField('email',
+                            $data['subscriber']['email'])->first();
+
+                        if (empty($subscriber)) {
+                            $subscriber = $this->subscriberRepository->create($data['subscriber']);
+                        }
+
                         $fieldService->attachFieldsToSubscriber($subscriber, $data['custom_fields'], $list->id);
                         $this->attachSubscriber($list, $subscriber->id);
 
                         return $subscriber;
-                    });
-                })
-                ->reject(function ($s) {
-                    return empty($s);
-                })
-                ->count();
+                    } catch (Exception $e) {
+                        Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            $this->updateTotalListSubscribers($list, $totalSubscribers);
+                        return null;
+                    }
+                });
+            })
+            ->reject(function ($s) {
+                return empty($s);
+            })
+            ->count();
 
-            return $totalSubscribers;
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-            throw $e;
-        }
+        $total = $list->total_subscribers + $totalSubscribers;
+        $this->updateTotalListSubscribers($list, $total);
+
+        return $totalSubscribers;
     }
 
-    public function deleteSubscribers($file)
+    /**
+     * Mass detach subscribers from a list by importing a file with emails
+     *
+     * @param $file
+     * @param $listId
+     * @param FileService $fileService
+     * @return int
+     */
+    public function deleteSubscribers($file, $listId, FileService $fileService)
     {
-        //TODO - delete subscribers from a file
+        $list = $this->findList($listId);
+
+        $subscribers = $fileService->importSubscribers($file)
+            ->map(function ($data) use ($list) {
+                $subscriber = $this->subscriberRepository->findByField('email', $data['subscriber']['email'],
+                    ['id'])->first();
+
+                return (!empty($subscriber)) ? $this->detachSubscriber($list, $subscriber->id) : false;
+            })
+            ->reject(function ($s) {
+                return empty($s);
+            })
+            ->count();
+
+        $total = $list->total_subscribers - $subscribers;
+        $this->updateTotalListSubscribers($list, $total);
+
+        return $subscribers;
     }
 
     /**
@@ -194,7 +227,7 @@ class ListsService
             })
             ->toArray();
 
-        $excelObj = $fileService->createExcelFile('subs');
+        $excelObj = $fileService->createExcelFile('subscribers');
 
         return $fileService->exportData($subscribers, $header, $excelObj);
     }
@@ -229,9 +262,7 @@ class ListsService
     public function detachSubscriber(Lists $list, $id)
     {
         try {
-            $list->subscribers()->detach($id);
-
-            return true;
+            return $list->subscribers()->detach($id);
         } catch (Exception $e) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
@@ -249,7 +280,7 @@ class ListsService
     public function updateTotalListSubscribers(Lists $list, $total)
     {
         try {
-            $list->total_subscribers = (!empty($list->total_subscribers)) ? $list->total_subscribers + $total : $total;
+            $list->total_subscribers = (!is_numeric($total) || $total < 0) ? 0 : $total;
             $list->save();
 
             return true;

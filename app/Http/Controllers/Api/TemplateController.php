@@ -47,11 +47,10 @@ class TemplateController extends Controller
     {
         $template = $this->service->createTemplate($request->all());
         if (isset($template)) {
-            return response()->json(['status' => 200, 'template' => $template->id], 200);
+            return response()->json(['template' => $template->id], 200);
         }
 
-        return response()->json(['status' => 412, 'campaign' => ['The specified resource could not be created.']],
-            412);
+        return response()->json(['message' => ['The specified resource could not be created.']], 412);
     }
 
     /**
@@ -67,7 +66,7 @@ class TemplateController extends Controller
             return response()->json($template, 200);
         }
 
-        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
+        return response()->json(['message' => ['The specified resource does not exist.']], 404);
     }
 
     /**
@@ -81,10 +80,10 @@ class TemplateController extends Controller
     {
         $template = $this->service->updateTemplate($request->all(), $id);
         if (isset($template)) {
-            return response()->json(['status' => 200, 'template' => $template->id], 200);
+            return response()->json(['template' => $template->id], 200);
         }
 
-        return response()->json(['status' => 412, 'template' => ['The specified resource could not be updated.']],
+        return response()->json(['message' => ['The specified resource could not be updated.']],
             412);
     }
 
@@ -97,10 +96,10 @@ class TemplateController extends Controller
     public function destroy($id)
     {
         if ($this->service->deleteUnusedTemplate($id)) {
-            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'], 200);
+            return response()->json(['message' => ['The specified resource has been deleted.']], 200);
         }
 
-        return response()->json(['status' => 422, 'message' => ['The specified resource could not be deleted.']],
+        return response()->json(['message' => ['The specified resource could not be deleted.']],
             422);
     }
 
@@ -117,6 +116,6 @@ class TemplateController extends Controller
             return response($template->content, 200);
         }
 
-        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
+        return response()->json(['message' => ['The specified resource does not exist.']], 404);
     }
 }

@@ -135,11 +135,7 @@ class FieldService
      */
     public function findField($id)
     {
-        try {
-            return $this->fieldRepository->find($id);
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return $this->fieldRepository->find($id);
     }
 
     /**
@@ -150,13 +146,7 @@ class FieldService
      */
     public function createField(array $data)
     {
-        try {
-            return $this->fieldRepository->create($data);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->fieldRepository->create($data);
     }
 
     /**
@@ -168,13 +158,7 @@ class FieldService
      */
     public function updateField(array $data, $id)
     {
-        try {
-            return $this->fieldRepository->update($data, $id);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->fieldRepository->update($data, $id);
     }
 
     /**
@@ -185,11 +169,6 @@ class FieldService
      */
     public function deleteField($id)
     {
-        try {
-            return $this->fieldRepository->delete($id);
-        } catch (ModelNotFoundException $e) {
-
-            return false;
-        }
+        return $this->fieldRepository->delete($id);
     }
 }

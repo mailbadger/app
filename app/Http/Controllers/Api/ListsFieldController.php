@@ -50,11 +50,10 @@ class ListsFieldController extends Controller
         $field = $this->service->createField($data);
 
         if (isset($field)) {
-            return response()->json(['status' => 200, 'field' => $field->id], 200);
+            return response()->json(['field' => $field->id], 200);
         }
 
-        return response()->json(['status' => 412, 'field' => ['The specified resource could not be created.']],
-            412);
+        return response()->json(['message' => ['The specified resource could not be created.']], 412);
     }
 
     /**
@@ -71,7 +70,7 @@ class ListsFieldController extends Controller
             return response()->json($field, 200);
         }
 
-        return response()->json(['status' => 404, 'message' => 'The specified resource does not exist.'], 404);
+        return response()->json(['message' => 'The specified resource does not exist.'], 404);
     }
 
     /**
@@ -85,11 +84,10 @@ class ListsFieldController extends Controller
     {
         $field = $this->service->updateField($request->all(), $id);
         if (isset($field)) {
-            return response()->json(['status' => 200, 'field' => $field->id], 200);
+            return response()->json(['field' => $field->id], 200);
         }
 
-        return response()->json(['status' => 412, 'message' => ['The specified resource could not be updated.']],
-            412);
+        return response()->json(['message' => ['The specified resource could not be updated.']], 412);
     }
 
     /**
@@ -101,11 +99,9 @@ class ListsFieldController extends Controller
     public function destroy($listId, $id)
     {
         if ($this->service->deleteField($id)) {
-            return response()->json(['status' => 200, 'message' => 'The specified resource has been deleted.'],
-                200);
+            return response()->json(['message' => 'The specified resource has been deleted.'], 200);
         }
 
-        return response()->json(['status' => 422, 'message' => ['The specified resource could not be deleted.']],
-            422);
+        return response()->json(['message' => ['The specified resource could not be deleted.']], 422);
     }
 }
