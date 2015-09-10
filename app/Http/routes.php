@@ -24,6 +24,8 @@ Route::controller('dashboard', 'DashboardController');
 
 //Api routes
 Route::group(['namespace' => 'Api', 'prefix' => 'api'], function () {
+    Route::post('campaigns/{id}/test-send', 'CampaignController@testSend');
+
     Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
 
     Route::get('templates/content/{id}', 'TemplateController@showContent');

@@ -4,6 +4,7 @@ var React = require('react');
 
 var CampaignsTable = require('./components/campaigns/campaigns-table.jsx');
 var CampaignForm = require('./components/campaigns/campaign-form.jsx');
+var SendCampaign = require('./components/campaigns/send-campaign.jsx');
 var CreateNewButton = require('./components/create-new-button.jsx');
 var Campaign = require('./entities/campaign.js');
 
@@ -28,6 +29,8 @@ var Campaigns = React.createClass({
         switch (this.state.step) {
             case 'edit':
                 return <CampaignForm data={this.state.campaign} edit={true} back={this.back}/>;
+            case 'send':
+                return <SendCampaign cid={this.state.cid} back={this.back}/>;
             default:
                 return (
                     <div>

@@ -43,11 +43,23 @@ var Campaign = function () {
         });
     };
 
-    this.update = function(data, id) {
+    this.update = function (data, id) {
         return $.ajax({
             type: 'PUT',
             url: url + '/' + id,
             data: data,
+            dataType: 'json'
+        });
+    };
+
+    this.testSend = function (emails, id) {
+        return $.ajax({
+            type: 'POST',
+            url: url + '/' + id + '/test-send',
+            data: {
+                emails: emails,
+                id: id
+            },
             dataType: 'json'
         });
     }

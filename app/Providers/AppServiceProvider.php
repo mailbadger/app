@@ -27,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
     public function registerValidationRules(Factory $validator)
     {
         $validator->extend('check_fields', 'newsletters\Validators\ListValidator@validateCheckFields');
+
+        $validator->extend('array_of_emails', 'newsletters\Validators\CampaignValidator@validateArrayOfEmails');
     }
 
     public function bindRepositories()

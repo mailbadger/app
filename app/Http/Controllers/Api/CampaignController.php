@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
 use newsletters\Http\Requests\StoreCampaignRequest;
+use newsletters\Http\Requests\TestSendRequest;
 use newsletters\Services\CampaignService;
 
 class CampaignController extends Controller
@@ -98,5 +99,10 @@ class CampaignController extends Controller
         }
 
         return response()->json(['message' => ['The specified resource could not be deleted.']], 422);
+    }
+
+    public function testSend(TestSendRequest $request)
+    {
+        //TODO Test send the campaign to the emails specified in the request
     }
 }
