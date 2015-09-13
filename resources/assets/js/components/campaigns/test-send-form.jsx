@@ -15,8 +15,7 @@ var TestSend = React.createClass({
                 showCancelButton: true,
                 confirmButtonText: "Yes",
                 cancelButtonText: "No",
-                closeOnConfirm: false,
-                closeOnCancel: false
+                closeOnConfirm: false
             },
             function (isConfirm) {
                 if (isConfirm) {
@@ -35,7 +34,7 @@ var TestSend = React.createClass({
     },
     render: function () {
         return (
-            <div className="col-lg-4">
+            <div>
                 <h3>Test send this campaign</h3>
 
                 <form onSubmit={this.handleSubmit}>

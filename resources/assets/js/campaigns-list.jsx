@@ -20,7 +20,9 @@ var Campaigns = React.createClass({
         }.bind(this));
     },
     sendCampaign: function (id) {
-        this.setState({step: 'send', cid: id});
+        c.get(id).done(function (res) {
+            this.setState({step: 'send', campaign: res});
+        }.bind(this));
     },
     back: function () {
         this.setState({step: ''});
@@ -30,7 +32,7 @@ var Campaigns = React.createClass({
             case 'edit':
                 return <CampaignForm data={this.state.campaign} edit={true} back={this.back}/>;
             case 'send':
-                return <SendCampaign cid={this.state.cid} back={this.back}/>;
+                return <SendCampaign data={this.state.campaign} back={this.back}/>;
             default:
                 return (
                     <div>

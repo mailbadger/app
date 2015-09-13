@@ -116,6 +116,6 @@ class TemplateController extends Controller
             return response($template->content, 200);
         }
 
-        return response()->json(['message' => ['The specified resource does not exist.']], 404);
+        abort(404);
     }
 }
