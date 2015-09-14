@@ -20,7 +20,7 @@ var TestSend = React.createClass({
             function (isConfirm) {
                 if (isConfirm) {
                     c.testSend(emails.split(','), this.props.cid)
-                        .done(function (res) {
+                        .done(function () {
                             swal("Sent!", "Test emails have been sent.", "success");
                         }).fail(function () {
                             swal("Cancelled", "Test emails could not be sent, check the input if they are in a correct format. Use commas for separation.", "error");
@@ -30,7 +30,6 @@ var TestSend = React.createClass({
                     swal("Cancelled", "Test emails have been canceled", "error");
                 }
             }.bind(this));
-
     },
     render: function () {
         return (

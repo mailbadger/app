@@ -62,6 +62,18 @@ var Campaign = function () {
             },
             dataType: 'json'
         });
+    };
+
+    this.send = function(lists, id) {
+        return $.ajax({
+            type: 'POST',
+            url: url + '/' + id + '/send',
+            data: {
+                lists: lists,
+                id: id
+            },
+            dataType: 'json'
+        });
     }
 };
 
