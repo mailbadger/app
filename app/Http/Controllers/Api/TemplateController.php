@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests;
 use newsletters\Http\Requests\StoreTemplateRequest;
-use newsletters\Repositories\TemplateRepository;
 use newsletters\Services\TemplateService;
 
 class TemplateController extends Controller

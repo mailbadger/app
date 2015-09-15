@@ -2,9 +2,9 @@
 
 namespace newsletters\Repositories;
 
-use Prettus\Repository\Eloquent\BaseRepository;
-use Prettus\Repository\Criteria\RequestCriteria;
 use newsletters\Entities\Subscriber;
+use Prettus\Repository\Criteria\RequestCriteria;
+use Prettus\Repository\Eloquent\BaseRepository;
 
 /**
  * Class SubscriberRepositoryEloquent
@@ -27,6 +27,6 @@ class SubscriberRepositoryEloquent extends BaseRepository implements SubscriberR
      */
     public function boot()
     {
-        $this->pushCriteria( app(RequestCriteria::class) );
+        $this->pushCriteria(app(RequestCriteria::class));
     }
 }

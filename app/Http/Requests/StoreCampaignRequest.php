@@ -26,10 +26,10 @@ class StoreCampaignRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|max:255',
-            'subject' => 'required|max:255',
-            'from_name' => 'required|max:255',
-            'from_email' => 'required|max:255',
+            'name'        => 'required|max:255',
+            'subject'     => 'required|max:255',
+            'from_name'   => 'required|max:255',
+            'from_email'  => 'required|max:255',
             'template_id' => 'required',
         ];
     }

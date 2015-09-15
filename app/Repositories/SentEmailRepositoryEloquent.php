@@ -2,9 +2,9 @@
 
 namespace newsletters\Repositories;
 
-use Prettus\Repository\Eloquent\BaseRepository;
-use Prettus\Repository\Criteria\RequestCriteria;
 use newsletters\Entities\SentEmail;
+use Prettus\Repository\Criteria\RequestCriteria;
+use Prettus\Repository\Eloquent\BaseRepository;
 
 /**
  * Class SentEmailRepositoryEloquent
@@ -27,6 +27,6 @@ class SentEmailRepositoryEloquent extends BaseRepository implements SentEmailRep
      */
     public function boot()
     {
-        $this->pushCriteria( app(RequestCriteria::class) );
+        $this->pushCriteria(app(RequestCriteria::class));
     }
 }

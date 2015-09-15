@@ -27,7 +27,7 @@ class TestSendRequest extends FormRequest
     {
         return [
             'emails' => 'required|array_of_emails',
-            'id' => 'required'
+            'id'     => 'required',
         ];
     }
 }

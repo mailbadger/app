@@ -5,7 +5,7 @@ namespace newsletters\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class MassDeleteSubscribersRequest extends FormRequest
+class SendCampaignRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,8 +25,8 @@ class MassDeleteSubscribersRequest extends FormRequest
     public function rules()
     {
         return [
-            'subscribers' => 'mimes:csv,xls,xlsx,txt',
-            'list_id'     => 'required',
+            'id'    => 'required',
+            'lists' => 'required|array',
         ];
     }
 }

@@ -36,6 +36,7 @@ class TemplateService
     public function findAllTemplates($paginate = false, $perPage = 10)
     {
         $columns = ['id', 'name', 'created_at', 'updated_at'];
+
         return (!empty($paginate))
             ? $this->templateRepository->paginate($perPage, $columns)
             : $this->templateRepository->all($columns);

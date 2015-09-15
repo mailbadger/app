@@ -8,10 +8,6 @@
 
 namespace newsletters\Services;
 
-
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\CampaignRepository;
 
 class CampaignService

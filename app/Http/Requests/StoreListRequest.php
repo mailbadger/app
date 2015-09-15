@@ -25,8 +25,8 @@ class StoreListRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|max:255',
-            'total_subscribers' => 'required'
+            'name'              => 'required|max:255',
+            'total_subscribers' => 'required',
         ];
     }
 }

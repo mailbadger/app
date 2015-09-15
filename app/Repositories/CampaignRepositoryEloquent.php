@@ -2,9 +2,9 @@
 
 namespace newsletters\Repositories;
 
-use Prettus\Repository\Eloquent\BaseRepository;
-use Prettus\Repository\Criteria\RequestCriteria;
 use newsletters\Entities\Campaign;
+use Prettus\Repository\Criteria\RequestCriteria;
+use Prettus\Repository\Eloquent\BaseRepository;
 
 /**
  * Class CampaignRepositoryEloquent
@@ -27,7 +27,7 @@ class CampaignRepositoryEloquent extends BaseRepository implements CampaignRepos
      */
     public function boot()
     {
-        $this->pushCriteria( app(RequestCriteria::class) );
+        $this->pushCriteria(app(RequestCriteria::class));
     }
 
     /**
@@ -38,6 +38,7 @@ class CampaignRepositoryEloquent extends BaseRepository implements CampaignRepos
     public function withTrashed()
     {
         $this->model = $this->model->withTrashed();
+
         return $this;
     }
 }
