@@ -23,5 +23,5 @@ class Template extends Model implements Transformable
     public function campaigns()
     {
         return $this->hasMany('newsletters\Entities\Campaign');
-	}
+    }
 }

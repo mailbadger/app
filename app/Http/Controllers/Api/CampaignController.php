@@ -8,7 +8,9 @@ use newsletters\Http\Requests;
 use newsletters\Http\Requests\SendCampaignRequest;
 use newsletters\Http\Requests\StoreCampaignRequest;
 use newsletters\Http\Requests\TestSendRequest;
+use newsletters\Jobs\SendCampaign;
 use newsletters\Services\CampaignService;
+use newsletters\Services\ListsService;
 
 class CampaignController extends Controller
 {
@@ -102,13 +104,25 @@ class CampaignController extends Controller
         return response()->json(['message' => ['The specified resource could not be deleted.']], 422);
     }
 
+    /**
+     * Send campaign
+     *
+     * @param SendCampaignRequest $request
+     * @param ListsService $listsService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function send(SendCampaignRequest $request, ListsService $listsService)
+    {
+        $campaign = $this->service->findCampaign($request->input('id'));
+        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));
+
+        $this->dispatch(new SendCampaign($campaign, $subscribers));
+
+        return response()->json(['message' => ['The campaign has been started.']], 200);
+    }
+
     public function testSend(TestSendRequest $request)
     {
         //TODO Test send the campaign to the emails specified in the request
-    }
-
-    public function send(SendCampaignRequest $request)
-    {
-
     }
 }

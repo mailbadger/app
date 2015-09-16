@@ -11,7 +11,7 @@ class Campaign extends Model implements Transformable
 {
     use TransformableTrait, SoftDeletes;
 
-    protected $table = "campaigns";
+    protected $table = 'campaigns';
 
     protected $fillable = [
         'name',
@@ -20,7 +20,7 @@ class Campaign extends Model implements Transformable
         'from_email',
         'status',
         'recipients',
-        'template_id'
+        'template_id',
     ];
 
     protected $dates = ['deleted_at'];

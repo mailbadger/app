@@ -54,20 +54,6 @@ class ListsService
     }
 
     /**
-     * Find all subscribers on a list
-     * @param $listId
-     * @param bool|false $paginate
-     * @param int $perPage
-     * @return mixed
-     */
-    public function findAllSubscribersByListId($listId, $paginate = false, $perPage = 10)
-    {
-        $subscribers = $this->listsRepository->find($listId)->subscribers();
-
-        return (!empty($paginate)) ? $subscribers->paginate($perPage) : $subscribers->all();
-    }
-
-    /**
      * Find a list by id
      *
      * @param $id
@@ -110,6 +96,39 @@ class ListsService
     public function deleteList($id)
     {
         return $this->listsRepository->delete($id);
+    }
+
+    /**
+     * Find all subscribers on a list
+     *
+     * @param $listId
+     * @param bool|false $paginate
+     * @param int $perPage
+     * @return mixed
+     */
+    public function findAllSubscribersByListId($listId, $paginate = false, $perPage = 10)
+    {
+        $subscribers = $this->listsRepository->find($listId)->subscribers();
+
+        return (!empty($paginate)) ? $subscribers->paginate($perPage) : $subscribers->all();
+    }
+
+    /**
+     * Find all subscribers by list ids
+     *
+     * @param array $listIds
+     * @return mixed
+     */
+    public function findAllSubscribersByListIds(array $listIds)
+    {
+        return $this->subscriberRepository
+            ->with('fields')
+            ->scopeQuery(function ($q) use ($listIds) {
+                return $q->whereHas('lists', function ($q) use ($listIds) {
+                    return $q->whereIn('list_id', $listIds);
+                });
+            })
+            ->all();
     }
 
     /**
@@ -167,16 +186,23 @@ class ListsService
      * @param FileService $fileService
      * @return int
      */
-    public function deleteSubscribers($file, $listId, FileService $fileService)
+    public function deleteSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
     {
         $list = $this->findList($listId);
 
         $subscribers = $fileService->importSubscribers($file)
-            ->map(function ($data) use ($list) {
+            ->map(function ($data) use ($list, $fieldService) {
                 $subscriber = $this->subscriberRepository->findByField('email', $data['subscriber']['email'],
                     ['id'])->first();
 
-                return (!empty($subscriber)) ? $this->detachSubscriber($list, $subscriber->id) : false;
+                if (!empty($subscriber)) {
+                    $fieldService->detachSubscriberByListId($list->id, $subscriber);
+                    $this->detachSubscriber($list, $subscriber->id);
+
+                    return true;
+                }
+
+                return false;
             })
             ->reject(function ($s) {
                 return empty($s);

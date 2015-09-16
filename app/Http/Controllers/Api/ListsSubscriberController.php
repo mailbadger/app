@@ -148,12 +148,17 @@ class ListsSubscriberController extends Controller
      *
      * @param MassDeleteSubscribersRequest $request
      * @param FileService $fileService
+     * @param FieldService $fieldService
      * @param $listId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function massDelete(MassDeleteSubscribersRequest $request, FileService $fileService, $listId)
-    {
-        $count = $this->service->deleteSubscribers($request->file('subscribers'), $listId, $fileService);
+    public function massDelete(
+        MassDeleteSubscribersRequest $request,
+        FileService $fileService,
+        FieldService $fieldService,
+        $listId
+    ) {
+        $count = $this->service->deleteSubscribers($request->file('subscribers'), $listId, $fileService, $fieldService);
 
         if (!empty($count)) {
             return response()->json(['message' => 'The specified resource have been deleted.'],

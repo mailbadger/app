@@ -5,8 +5,8 @@ namespace newsletters\Http\Controllers\Auth;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Support\Facades\Validator;
+use newsletters\Entities\User;
 use newsletters\Http\Controllers\Controller;
-use newsletters\User;
 
 class AuthController extends Controller
 {

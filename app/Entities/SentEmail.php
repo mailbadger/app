@@ -13,8 +13,10 @@ class SentEmail extends Model implements Transformable
     protected $table = 'sent_emails';
 
     protected $fillable = [
-		'opens',
-	];
+        'subscriber_id',
+        'campaign_id',
+        'opens',
+    ];
 
     public function subscriber()
     {

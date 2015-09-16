@@ -98,22 +98,6 @@ class FieldService
     }
 
     /**
-     * Find all subscribers on a list
-     * @param $listId
-     * @param bool|false $paginate
-     * @param int $perPage
-     * @return mixed
-     */
-    public function findAllFieldsByListId($listId, $paginate = false, $perPage = 10)
-    {
-        $fields = $this->fieldRepository->scopeQuery(function ($q) use ($listId) {
-            return $q->where('list_id', $listId);
-        });
-
-        return (!empty($paginate)) ? $fields->paginate($perPage) : $fields->all();
-    }
-
-    /**
      * Find all fields
      *
      * @param bool $paginate
@@ -123,6 +107,19 @@ class FieldService
     public function findAllFields($paginate = false, $perPage = 10)
     {
         return (!empty($paginate)) ? $this->fieldRepository->paginate($perPage) : $this->fieldRepository->all();
+    }
+
+    /**
+     * Detach subscriber fields by list id
+     *
+     * @param $listId
+     * @param Subscriber $subscriber
+     * @return int
+     */
+    public function detachSubscriberByListId($listId, Subscriber $subscriber)
+    {
+        $fields = $this->findFieldsByListId($listId, false, 10, [], ['id'])->toArray();
+        return $subscriber->fields()->detach(array_flatten($fields));
     }
 
     /**
