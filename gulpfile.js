@@ -1,8 +1,24 @@
 'use strict';
 
+/*
+ * usage:
+ *
+ * gulp (to manually run all tasks)
+ * gulp watch (for automatic awesomness while developing your js, css, less)
+ * gulp --production (to minify all the things)
+ *
+ * separate processing:
+ * gulp prune (removes all js, css fonts AND clear the internal cache)
+ * gulp scripts
+ * gulp styles
+ * gulp images
+ * gulp fonts
+ *
+ */
+
 // configuration, adapt paths/folders to your project
 var frontPath = './public/',
-    bowerPath = './bower_components/',
+    npmPath = './node_modules/',
     destPaths = {
         scripts: frontPath + 'js/',
         styles: frontPath + 'css/',
@@ -13,6 +29,10 @@ var frontPath = './public/',
 // --------------------------------------------------------------
 
 var gulp = require('gulp'),
+    browserify = require('browserify'),
+    source = require('vinyl-source-stream'),
+    buffer = require('vinyl-buffer'),
+    rename = require('gulp-rename'),
     less = require('gulp-less'),
     concat = require('gulp-concat'),
     cache = require('gulp-cache'),
@@ -24,25 +44,32 @@ var gulp = require('gulp'),
     phpunit = require('gulp-phpunit'),
     gulputil = require('gulp-util'),
     gulpif = require('gulp-if'),
-    del = require('del');
+    del = require('del'),
+    es = require('event-stream'),
+    reactify = require('reactify');
 
 // use "--production" option to minify everything
 var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
-
-            'resources/assets/js/**/*.js'
+            'resources/assets/js/global.js',
+            'resources/assets/js/campaigns-list.jsx',
+            'resources/assets/js/templates-list.jsx',
+            'resources/assets/js/create-new-campaign.jsx',
+            'resources/assets/js/create-new-template.jsx',
+            'resources/assets/js/create-new-list.jsx',
+            'resources/assets/js/subscribers-lists.jsx'
         ],
         styles: [
-
+            npmPath + 'select2/dist/css/select2.min.css',
+            npmPath + 'magnific-popup/dist/magnific-popup.css',
             'resources/assets/less/*.less'
         ],
         fonts: [
-
+            npmPath + 'bootstrap/fonts/*.*',
             'resources/assets/fonts/*.*'
         ],
         images: [
-
             'resources/assets/images/**/*.*'
         ]
     };
@@ -53,18 +80,35 @@ gulp.task('prune', function (cb) {
         frontPath + 'js/*.min.js',
         frontPath + 'css/*.min.css',
         frontPath + 'fonts/*.*'
-    ], { force: true });
+    ], {force: true});
 
     return cache.clearAll(cb);
 });
 
-// minify and copy all JS (except vendor scripts, sourcemaps are commented and basically useless)
 gulp.task('scripts', function () {
-    return gulp.src(srcPaths.scripts)
-        .pipe(concat('app.min.js'))
-        .pipe(gulpif(inProduction, uglify()))
-        .pipe(gulp.dest(destPaths.scripts))
-        ;
+    // map them to our stream function
+    var tasks = srcPaths.scripts.map(function (entry) {
+        var dirnames = entry.substr(entry.indexOf('js') + 3).split('/');
+        dirnames.pop();
+        var dirname = dirnames.join('/');
+
+        return browserify({
+            entries: [entry],
+            transform: [reactify]
+        })
+            .bundle()
+            .pipe(source(entry))
+            // rename them to have "bundle as postfix"
+            .pipe(buffer())
+            .pipe(gulpif(inProduction, uglify()))
+            .pipe(rename({
+                dirname: dirname,
+                extname: '.bundle.js'
+            }))
+            .pipe(gulp.dest(destPaths.scripts));
+    });
+    // create a merged stream
+    return es.merge.apply(null, tasks);
 });
 
 // css, less
@@ -86,17 +130,11 @@ gulp.task('images', function () {
 });
 
 // copy bootstrap and other newer fonts
-gulp.task('fonts', function() {
+gulp.task('fonts', function () {
     return gulp.src(srcPaths.fonts)
         .pipe(newer(destPaths.fonts))
         .pipe(gulp.dest(destPaths.fonts))
         ;
-});
-
-// run phpunit tests
-gulp.task('phpunit', function () {
-    gulp.src('phpunit.xml')
-        .pipe(gulpif(inProduction, phpunit()));
 });
 
 // watch for file changes
@@ -107,21 +145,4 @@ gulp.task('watch', function () {
 });
 
 // default task
-gulp.task('default', ['scripts', 'styles', 'images', 'phpunit']);
-
-/*
- * usage:
- *
- * gulp (to manually run all tasks)
- * gulp watch (for automatic awesomness while developing your js, css, less)
- * gulp --production (to minify all the things)
- *
- * separate processing:
- * gulp prune (removes all js, css fonts AND clear the internal cache)
- * gulp scripts (only JS)
- * gulp styles (only CSS and LESS)
- * gulp images (only images)
- * gulp fonts (only bootstrap fonts)
- * gulp phpunit (only awesome PHP tests)
- * 
- */
+gulp.task('default', ['scripts', 'styles', 'images']);

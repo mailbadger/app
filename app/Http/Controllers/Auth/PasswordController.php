@@ -2,8 +2,8 @@
 
 namespace newsletters\Http\Controllers\Auth;
 
-use newsletters\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use newsletters\Http\Controllers\Controller;
 
 class PasswordController extends Controller
 {
@@ -22,8 +22,6 @@ class PasswordController extends Controller
 
     /**
      * Create a new password controller instance.
-     *
-     * @return void
      */
     public function __construct()
     {
