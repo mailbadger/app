@@ -9,7 +9,6 @@
 namespace newsletters\Services;
 
 
-use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use PHPExcel;
@@ -30,15 +29,9 @@ class FileService
      */
     public function importSubscribers($file)
     {
-        try {
-            $obj = $this->loadFile($file);
+        $obj = $this->loadFile($file);
 
-            return $this->readFile($obj);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return new Collection();
-        }
+        return $this->readFile($obj);
     }
 
     /**
@@ -95,31 +88,19 @@ class FileService
      */
     public function createWriter(PHPExcel $excelObj, $writerType = 'CSV')
     {
-        try {
-            return PHPExcel_IOFactory::createWriter($excelObj, $writerType);
-        } catch (\PHPExcel_Reader_Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return PHPExcel_IOFactory::createWriter($excelObj, $writerType);
     }
 
     /**
      * @param $file
-     * @return PHPExcel|null
+     * @return PHPExcel
      */
     public function loadFile($file)
     {
-        try {
-            $reader = PHPExcel_IOFactory::createReaderForFile($file);
-            $reader->setReadDataOnly(true);
+        $reader = PHPExcel_IOFactory::createReaderForFile($file);
+        $reader->setReadDataOnly(true);
 
-            return $reader->load($file);
-        } catch (PHPExcel_Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $reader->load($file);
     }
 
     /**
@@ -138,17 +119,13 @@ class FileService
     /**
      * @param PHPExcel $object
      * @param int $sheetIndex
-     * @return null|\PHPExcel_Worksheet
+     * @return \PHPExcel_Worksheet
      */
     public function getWorksheet(PHPExcel $object, $sheetIndex = 0)
     {
-        try {
-            $object->setActiveSheetIndex($sheetIndex);
+        $object->setActiveSheetIndex($sheetIndex);
 
-            return $object->getActiveSheet();
-        } catch (PHPExcel_Exception $e) {
-            return null;
-        }
+        return $object->getActiveSheet();
     }
 
     /**
@@ -205,30 +182,24 @@ class FileService
      */
     public function getSubscriberData(PHPExcel_Worksheet_Row $row, $headerRow)
     {
-        try {
-            $cells = $row->getCellIterator();
-            $cells->setIterateOnlyExistingCells(false);
+        $cells = $row->getCellIterator();
+        $cells->setIterateOnlyExistingCells(false);
 
-            $data = $subscriber = $customFields = [];
+        $data = $subscriber = $customFields = [];
 
-            foreach ($cells as $cell) {
-                $column = $headerRow[$cell->getColumn()];
+        foreach ($cells as $cell) {
+            $column = $headerRow[$cell->getColumn()];
 
-                if ('name' === strtolower($column) || 'email' === strtolower($column)) {
-                    $subscriber[$column] = $cell->getValue();
-                } else {
-                    $customFields[] = ['name' => $column, 'value' => $cell->getValue()];
-                }
+            if ('name' === strtolower($column) || 'email' === strtolower($column)) {
+                $subscriber[$column] = $cell->getValue();
+            } else {
+                $customFields[] = ['name' => $column, 'value' => $cell->getValue()];
             }
-
-            $data['subscriber'] = $subscriber;
-            $data['custom_fields'] = $customFields;
-
-            return $data;
-        } catch (PHPExcel_Exception $e) {
-            Log::error($e->getMessage());
-
-            return [];
         }
+
+        $data['subscriber'] = $subscriber;
+        $data['custom_fields'] = $customFields;
+
+        return $data;
     }
 }

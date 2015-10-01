@@ -4,7 +4,6 @@ namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
-use newsletters\Http\Requests;
 use newsletters\Http\Requests\SendCampaignRequest;
 use newsletters\Http\Requests\StoreCampaignRequest;
 use newsletters\Http\Requests\TestSendRequest;
