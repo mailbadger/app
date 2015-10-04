@@ -10,7 +10,6 @@ namespace newsletters\Services;
 
 
 use Exception;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -184,6 +183,7 @@ class ListsService
      * @param $file
      * @param $listId
      * @param FileService $fileService
+     * @param FieldService $fieldService
      * @return int
      */
     public function deleteSubscribers($file, $listId, FileService $fileService, FieldService $fieldService)
@@ -263,19 +263,11 @@ class ListsService
      *
      * @param Lists $list
      * @param $id
-     * @return bool
+     * @return void
      */
     public function attachSubscriber(Lists $list, $id)
     {
-        try {
-            $list->subscribers()->attach($id);
-
-            return true;
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return false;
-        }
+        $list->subscribers()->attach($id);
     }
 
     /**
@@ -287,13 +279,7 @@ class ListsService
      */
     public function detachSubscriber(Lists $list, $id)
     {
-        try {
-            return $list->subscribers()->detach($id);
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return false;
-        }
+        return $list->subscribers()->detach($id);
     }
 
     /**
@@ -305,15 +291,7 @@ class ListsService
      */
     public function updateTotalListSubscribers(Lists $list, $total)
     {
-        try {
-            $list->total_subscribers = (!is_numeric($total) || $total < 0) ? 0 : $total;
-            $list->save();
-
-            return true;
-        } catch (QueryException $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return false;
-        }
+        $list->total_subscribers = (!is_numeric($total) || $total < 0) ? 0 : $total;
+        $list->save();
     }
 }

@@ -5,6 +5,6 @@
     <script type="text/javascript" src="{{asset('js/templates-list.bundle.js')}}"></script>
 @endsection
 @section('main')
-    <h1 class="page-header">All templates</h1>
+    <h1 class="page-header">Templates</h1>
     <div id="templates"></div>
 @endsection

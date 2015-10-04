@@ -4,6 +4,6 @@
     <script type="text/javascript" src="{{asset('js/subscribers-lists.bundle.js')}}"></script>
 @endsection
 @section('main')
-    <h1 class="page-header">All lists</h1>
+    <h1 class="page-header">Lists</h1>
     <div id="sub-lists"></div>
 @endsection
