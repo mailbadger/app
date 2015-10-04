@@ -3,6 +3,7 @@
 namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use newsletters\Http\Controllers\Controller;
 use newsletters\Http\Requests\SendCampaignRequest;
 use newsletters\Http\Requests\StoreCampaignRequest;
@@ -10,6 +11,7 @@ use newsletters\Http\Requests\TestSendRequest;
 use newsletters\Jobs\SendCampaign;
 use newsletters\Services\CampaignService;
 use newsletters\Services\ListsService;
+use newsletters\Services\UserService;
 
 class CampaignController extends Controller
 {
@@ -107,13 +109,17 @@ class CampaignController extends Controller
      * Send campaign
      *
      * @param SendCampaignRequest $request
+     * @param UserService $userService
      * @param ListsService $listsService
      * @return \Illuminate\Http\JsonResponse
      */
-    public function send(SendCampaignRequest $request, ListsService $listsService)
+    public function send(SendCampaignRequest $request, UserService $userService, ListsService $listsService)
     {
         $campaign = $this->service->findCampaign($request->input('id'));
         $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));
+
+        $user = Auth::user();
+        $userService->setSesConfig($user->aws_key, $user->aws_secret, $user->aws_region);
 
         $this->dispatch(new SendCampaign($campaign, $subscribers));
 

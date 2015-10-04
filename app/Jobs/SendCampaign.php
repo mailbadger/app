@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use newsletters\Entities\Campaign;
+use newsletters\Services\CampaignService;
 use newsletters\Services\EmailService;
 
 class SendCampaign extends Job implements SelfHandling, ShouldQueue
@@ -40,8 +41,9 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      * Execute the job.
      *
      * @param EmailService $emailService
+     * @param CampaignService $campaignService
      */
-    public function handle(EmailService $emailService)
+    public function handle(EmailService $emailService, CampaignService $campaignService)
     {
         $campaign = $this->campaign;
 
@@ -55,5 +57,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                 'opens'         => 0,
             ]);
         });
+
+        $campaignService->updateCampaign(['status' => 'sent'], $this->campaign->id);
     }
 }

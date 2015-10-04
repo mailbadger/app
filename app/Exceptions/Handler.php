@@ -43,7 +43,7 @@ class Handler extends ExceptionHandler
         if ($request->ajax()) {
             Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
 
-            return response()->json(['message' => 'There was an error. Please try again.'], 500);
+            return response()->json(['message' => [$e->getMessage()]], 500);
         }
 
         return parent::render($request, $e);

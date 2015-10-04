@@ -12,7 +12,6 @@
         <div class="navbar-collapse collapse" id="navbar">
             <ul class="nav navbar-nav navbar-right">
                 @if(Auth::check())
-                    <li><a href="{{url('dashboard')}}">Dashboard</a></li>
                     <li><a href="{{url('dashboard/settings')}}">Settings</a></li>
                     <li><a href="{{url('auth/logout')}}">Logout</a></li>
                 @else

@@ -16,10 +16,10 @@
         </li>
     </ul>
     <ul class="nav nav-sidebar">
-        <li class="@if($activeSidebar == 'sub-lists') active @endif">
+        <li class="@if($activeSidebar == 'subscribers') active @endif">
             <a href="{{url('dashboard/subscribers')}}">Subscriber lists</a>
         </li>
-        <li class="@if($activeSidebar == 'new-subs') active @endif">
+        <li class="@if($activeSidebar == 'new-subscribers') active @endif">
             <a href="{{url('dashboard/new-subscribers')}}">Create new list</a>
         </li>
     </ul>
