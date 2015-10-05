@@ -13,7 +13,6 @@ use newsletters\Repositories\UserRepository;
 
 class UserService
 {
-
     /**
      * @var UserRepository
      */
@@ -33,7 +32,7 @@ class UserService
      */
     public function setSesConfig($key, $secret, $region)
     {
-        if(empty($key) || empty($secret) || empty($region)) {
+        if (empty($key) || empty($secret) || empty($region)) {
             throw new InvalidArgumentException('SES configuration is not set.');
         }
 

@@ -14,7 +14,6 @@ use Prettus\Repository\Eloquent\BaseRepository;
 
 class UserRepositoryEloquent extends BaseRepository implements UserRepository
 {
-
     /**
      * Specify Model class name
      *

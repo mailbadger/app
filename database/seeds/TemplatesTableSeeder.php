@@ -12,12 +12,11 @@ class TemplatesTableSeeder extends Seeder
      */
     public function run()
     {
-        for($i =0; $i < 10; $i++) {
+        for ($i =0; $i < 10; $i++) {
             DB::table('templates')->insert([
                 'name' => 'Template '.$i,
                 'content' => 'Dummy Content'
             ]);
         }
-
     }
 }

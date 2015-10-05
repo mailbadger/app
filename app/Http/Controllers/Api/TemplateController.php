@@ -9,7 +9,6 @@ use newsletters\Services\TemplateService;
 
 class TemplateController extends Controller
 {
-
     /**
      * @var TemplateService
      */

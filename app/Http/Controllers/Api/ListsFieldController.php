@@ -8,7 +8,6 @@ use newsletters\Services\FieldService;
 
 class ListsFieldController extends Controller
 {
-
     /**
      * @var FieldService
      */
