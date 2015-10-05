@@ -8,7 +8,6 @@
 
 namespace newsletters\Services;
 
-
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +18,6 @@ use newsletters\Repositories\SubscriberRepository;
 
 class ListsService
 {
-
     /**
      * @var ListsRepository
      */

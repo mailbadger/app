@@ -8,10 +8,8 @@
 
 namespace newsletters\Validators;
 
-
 class CampaignValidator
 {
-
     public function validateArrayOfEmails($attribute, $values, $parameters)
     {
         $checkEmails = function ($carry, $email) {

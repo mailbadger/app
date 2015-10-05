@@ -11,7 +11,6 @@ use newsletters\Services\ListsService;
 
 class ListsController extends Controller
 {
-
     /**
      * @var ListsService
      */

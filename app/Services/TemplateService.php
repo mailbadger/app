@@ -16,7 +16,6 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 class TemplateService
 {
-
     /**
      * @var TemplateRepository
      */

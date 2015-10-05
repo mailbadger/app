@@ -20,7 +20,7 @@ $factory->define(newsletters\Entities\User::class, function (Faker\Generator $fa
     ];
 });
 
-$factory->define(newsletters\Entities\Subscriber::class, function(Faker\Generator $faker) {
+$factory->define(newsletters\Entities\Subscriber::class, function (Faker\Generator $faker) {
     return [
         'name' => $faker->name,
         'email' => $faker->email

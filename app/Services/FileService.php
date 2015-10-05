@@ -8,7 +8,6 @@
 
 namespace newsletters\Services;
 
-
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use PHPExcel;
@@ -20,7 +19,6 @@ use PHPExcel_Worksheet_RowIterator;
 
 class FileService
 {
-
     /**
      * Reads the excel file and returns an array of subscribers
      *
