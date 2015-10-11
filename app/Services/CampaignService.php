@@ -12,7 +12,6 @@ use newsletters\Repositories\CampaignRepository;
 
 class CampaignService
 {
-
     /**
      * @var CampaignRepository
      */

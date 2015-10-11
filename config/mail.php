@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'driver' => env('MAIL_DRIVER', 'smtp'),
+    'driver' => env('MAIL_DRIVER', 'ses'),
 
     /*
     |--------------------------------------------------------------------------
@@ -119,6 +119,6 @@ return [
     |
     */
 
-    'pretend' => false,
+    'pretend' => true,
 
 ];

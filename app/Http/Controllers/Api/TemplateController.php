@@ -4,13 +4,11 @@ namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
-use newsletters\Http\Requests;
 use newsletters\Http\Requests\StoreTemplateRequest;
 use newsletters\Services\TemplateService;
 
 class TemplateController extends Controller
 {
-
     /**
      * @var TemplateService
      */

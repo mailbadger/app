@@ -24,9 +24,9 @@ return [
     ],
 
     'ses' => [
-        'key'    => '',
-        'secret' => '',
-        'region' => 'us-east-1',
+        'key'    => env('SES_KEY'),
+        'secret' => env('SES_SECRET'),
+        'region' => env('SES_REGION'),
     ],
 
     'stripe' => [

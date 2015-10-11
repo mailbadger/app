@@ -8,7 +8,6 @@
 
 namespace newsletters\Validators;
 
-
 use Exception;
 use Illuminate\Validation\Validator;
 use newsletters\Services\FieldService;
@@ -16,7 +15,6 @@ use newsletters\Services\FileService;
 
 class ListValidator
 {
-
     /**
      * @var FileService
      */

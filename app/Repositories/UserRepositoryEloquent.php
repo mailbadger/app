@@ -1,16 +1,18 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: filip
+ * Date: 4.10.15
+ * Time: 20:23
+ */
 
 namespace newsletters\Repositories;
 
-use newsletters\Entities\SentEmail;
+use newsletters\Entities\User;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
 
-/**
- * Class SentEmailRepositoryEloquent
- * @package namespace newsletters\Repositories;
- */
-class SentEmailRepositoryEloquent extends BaseRepository implements SentEmailRepository
+class UserRepositoryEloquent extends BaseRepository implements UserRepository
 {
     /**
      * Specify Model class name
@@ -19,7 +21,7 @@ class SentEmailRepositoryEloquent extends BaseRepository implements SentEmailRep
      */
     public function model()
     {
-        return SentEmail::class;
+        return User::class;
     }
 
     /**

@@ -4,7 +4,6 @@ namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
-use newsletters\Http\Requests;
 use newsletters\Http\Requests\ImportSubscribersRequest;
 use newsletters\Http\Requests\MassDeleteSubscribersRequest;
 use newsletters\Services\FieldService;
@@ -13,7 +12,6 @@ use newsletters\Services\ListsService;
 
 class ListsSubscriberController extends Controller
 {
-
     /**
      * @var ListsService
      */
@@ -47,7 +45,7 @@ class ListsSubscriberController extends Controller
      */
     public function store()
     {
-        //
+        //TODO create functionality
     }
 
     /**
@@ -58,19 +56,20 @@ class ListsSubscriberController extends Controller
      */
     public function show($listId, $id)
     {
-        //
+        //TODO show list subcsriber by id
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  Request $request
+     * @param $listId
      * @param  int $id
      * @return Response
      */
     public function update(Request $request, $listId, $id)
     {
-        //
+        //TODO update functionality
     }
 
     /**
@@ -85,6 +84,7 @@ class ListsSubscriberController extends Controller
         $list = $this->service->findList($listId);
 
         if ($this->service->detachSubscriber($list, $id)) {
+            $this->service->updateTotalListSubscribers($list, $list->total_subscribers - 1);
             return response()->json(['message' => 'The specified resource has been deleted.'],
                 200);
         }

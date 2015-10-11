@@ -6,13 +6,11 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use newsletters\Http\Controllers\Controller;
-use newsletters\Http\Requests;
 use newsletters\Http\Requests\StoreListRequest;
 use newsletters\Services\ListsService;
 
 class ListsController extends Controller
 {
-
     /**
      * @var ListsService
      */

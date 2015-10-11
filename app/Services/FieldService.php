@@ -8,7 +8,6 @@
 
 namespace newsletters\Services;
 
-
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +16,6 @@ use newsletters\Repositories\FieldRepository;
 
 class FieldService
 {
-
     /**
      * @var FieldRepository
      */

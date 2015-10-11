@@ -4,12 +4,10 @@ namespace newsletters\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use newsletters\Http\Controllers\Controller;
-use newsletters\Http\Requests;
 use newsletters\Services\FieldService;
 
 class ListsFieldController extends Controller
 {
-
     /**
      * @var FieldService
      */
