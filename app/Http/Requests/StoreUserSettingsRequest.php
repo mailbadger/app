@@ -36,8 +36,7 @@ class StoreUserSettingsRequest extends FormRequest
             'password'   => 'sometimes|required',
             'aws_key'    => 'required',
             'aws_secret' => 'required',
-            'aws_region' => 'required',    
+            'aws_region' => 'required',
         ];
     }
 }
-

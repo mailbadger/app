@@ -59,13 +59,12 @@ class DashboardController extends Controller
     {
         $data = $request->all();
         
-        if($request->has('password')) {
-            $data['password'] = bcrypt($data['password']);     
+        if ($request->has('password')) {
+            $data['password'] = bcrypt($data['password']);
         }
 
         $service->updateUser($data, Auth::user()->id);
 
         return response()->json(['message' => ['User settings have been updated']], 200);
     }
-
 }
