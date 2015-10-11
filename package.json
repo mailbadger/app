@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "bootpag": "^1.0.7",
+    "chart.js": "^1.0.2",
     "jquery.mousewheel": "^3.1.9",
     "select2": "^4.0.0",
     "summernote": "^0.6.10",

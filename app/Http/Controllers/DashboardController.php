@@ -9,6 +9,8 @@
 namespace newsletters\Http\Controllers;
 
 use Illuminate\Http\Request;
+use newsletters\Http\Requests\StoreUserSettingsRequest;
+use newsletters\Services\UserService;
 
 class DashboardController extends Controller
 {
@@ -52,4 +54,18 @@ class DashboardController extends Controller
     {
         return view('dashboard.settings');
     }
+
+    public function postSettings(StoreUserSettingsRequest $request, UserService $service)
+    {
+        $data = $request->all();
+        
+        if($request->has('password')) {
+            $data['password'] = bcrypt($data['password']);     
+        }
+
+        $service->updateUser($data, Auth::user()->id);
+
+        return response()->json(['message' => ['User settings have been updated']], 200);
+    }
+
 }

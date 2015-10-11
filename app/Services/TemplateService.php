@@ -50,11 +50,7 @@ class TemplateService
      */
     public function findTemplate($id)
     {
-        try {
-            return $this->templateRepository->find($id);
-        } catch (ModelNotFoundException $e) {
-            return null;
-        }
+        return $this->templateRepository->find($id);
     }
 
     /**
@@ -65,13 +61,7 @@ class TemplateService
      */
     public function createTemplate(array $data)
     {
-        try {
-            return $this->templateRepository->create($data);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->templateRepository->create($data);
     }
 
     /**
@@ -83,13 +73,7 @@ class TemplateService
      */
     public function updateTemplate(array $data, $id)
     {
-        try {
-            return $this->templateRepository->update($data, $id);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
-
-            return null;
-        }
+        return $this->templateRepository->update($data, $id);
     }
 
     /**

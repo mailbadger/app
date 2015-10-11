@@ -48,14 +48,18 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
         $campaign = $this->campaign;
 
         $this->subscribers->each(function ($subscriber) use ($campaign, $emailService) {
-            $emailService->sendEmail($subscriber->email, $subscriber->name, $campaign->from_email, $campaign->from_name,
-                $campaign->subject, $campaign->template_id, $subscriber->fields->toArray());
+            try {
+                $emailService->sendEmail($subscriber->email, $subscriber->name, $campaign->from_email, $campaign->from_name,
+                    $campaign->subject, $campaign->template_id, $subscriber->fields->toArray());
 
-            $emailService->createSentEmail([
-                'subscriber_id' => $subscriber->id,
-                'campaign_id'   => $campaign->id,
-                'opens'         => 0,
-            ]);
+                $emailService->createSentEmail([
+                    'subscriber_id' => $subscriber->id,
+                    'campaign_id'   => $campaign->id,
+                    'opens'         => 0,
+                ]);
+            } catch (Exception $e) {
+                Log::error('Mail not sent: ' . $e->message() . "\nStack trace: " . $e->getTraceAsString());
+            }
         });
 
         $campaignService->updateCampaign(['status' => 'sent'], $this->campaign->id);
