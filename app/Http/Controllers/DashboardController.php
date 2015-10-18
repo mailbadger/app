@@ -63,8 +63,14 @@ class DashboardController extends Controller
             $data['password'] = bcrypt($data['password']);
         }
 
-        $service->updateUser($data, Auth::user()->id);
+        $service->updateUser($data, $request->user()->id);
+        $service->setSesConfig($data['aws_key'], $data['aws_secret'], $data['aws_region']);
 
         return response()->json(['message' => ['User settings have been updated']], 200);
+    }
+
+    public function getUserSettings(Request $request)
+    {
+        return response()->json($request->user(), 200);
     }
 }

@@ -24,6 +24,18 @@ class UserService
     }
 
     /**
+     * Update user by id
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed|null
+     */
+    public function updateUser(array $data, $id)
+    {
+        return $this->userRepository->update($data, $id);
+    }
+
+    /**
      * Sets the SES user configuration
      *
      * @param $key
@@ -35,23 +47,14 @@ class UserService
         if (empty($key) || empty($secret) || empty($region)) {
             throw new InvalidArgumentException('SES configuration is not set.');
         }
+        
+        $path = base_path('.env');
+        
+        if (!file_exists($path)) {
+            throw new Exception('.env file was not found');
+        }
 
-        config([
-            'services.ses.key'    => $key,
-            'services.ses.secret' => $secret,
-            'services.ses.region' => $region,
-        ]);
-    }
+        //TODO update/add ses credentials in .env file 
 
-    /**
-     * Update user by id
-     *
-     * @param array $data
-     * @param $id
-     * @return mixed|null
-     */
-    public function updateUser(array $data, $id)
-    {
-        return $this->userRepository->update($data, $id);
     }
 }

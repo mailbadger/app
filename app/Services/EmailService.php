@@ -56,7 +56,7 @@ class EmailService
             'template_id'   => $templateId,
             'custom_fields' => $customFields,
         ];
-
+        
         $this->mailer->queueOn('emails', 'emails.template', $data,
             function ($message) use ($email, $fromEmail, $fromName, $subject, $cc) {
                 $message->from($fromEmail, $fromName);

@@ -12,6 +12,10 @@ use newsletters\Entities\User;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
 
+/**
+ * Class UserRepositoryEloquent
+ * @package namespace newsletters\Repositories;
+ */
 class UserRepositoryEloquent extends BaseRepository implements UserRepository
 {
     /**

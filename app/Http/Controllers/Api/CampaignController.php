@@ -116,10 +116,8 @@ class CampaignController extends Controller
     public function send(SendCampaignRequest $request, UserService $userService, ListsService $listsService)
     {
         $campaign = $this->service->findCampaign($request->input('id'));
-        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));
+        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));  
 
-        $user = Auth::user();
-        $userService->setSesConfig($user->aws_key, $user->aws_secret, $user->aws_region);
 
         $this->dispatch(new SendCampaign($campaign, $subscribers));
 
