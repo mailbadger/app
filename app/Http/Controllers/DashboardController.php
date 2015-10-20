@@ -64,7 +64,6 @@ class DashboardController extends Controller
         }
 
         $service->updateUser($data, $request->user()->id);
-        $service->setSesConfig($data['aws_key'], $data['aws_secret'], $data['aws_region']);
 
         return response()->json(['message' => ['User settings have been updated']], 200);
     }
