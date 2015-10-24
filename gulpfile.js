@@ -58,7 +58,8 @@ var inProduction = ('production' in gulputil.env),
             'resources/assets/js/create-new-campaign.jsx',
             'resources/assets/js/create-new-template.jsx',
             'resources/assets/js/create-new-list.jsx',
-            'resources/assets/js/subscribers-lists.jsx'
+            'resources/assets/js/subscribers-lists.jsx',
+            'resources/assets/js/settings.jsx'
         ],
         styles: [
             npmPath + 'select2/dist/css/select2.min.css',

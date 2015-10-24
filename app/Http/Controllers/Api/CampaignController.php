@@ -12,6 +12,7 @@ use newsletters\Jobs\SendCampaign;
 use newsletters\Services\CampaignService;
 use newsletters\Services\ListsService;
 use newsletters\Services\UserService;
+use newsletters\Services\EmailService;
 
 class CampaignController extends Controller
 {
@@ -116,18 +117,28 @@ class CampaignController extends Controller
     public function send(SendCampaignRequest $request, UserService $userService, ListsService $listsService)
     {
         $campaign = $this->service->findCampaign($request->input('id'));
-        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));
+        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));  
 
-        $user = Auth::user();
-        $userService->setSesConfig($user->aws_key, $user->aws_secret, $user->aws_region);
 
         $this->dispatch(new SendCampaign($campaign, $subscribers));
 
         return response()->json(['message' => ['The campaign has been started.']], 200);
     }
 
-    public function testSend(TestSendRequest $request)
-    {
-        //TODO Test send the campaign to the emails specified in the request
+    public function testSend(TestSendRequest $request, EmailService $emailService)
+    { 
+        $campaign = $this->service->findCampaign($request->input('id'));
+        
+        $user = $request->user();
+        
+        $emailService->setSesConfig($user->aws_key, $user->aws_secret, $user->aws_region);  
+
+        //TODO dispatch this from a queued job
+        foreach($request->input('emails') as $email) {
+            $emailService->sendEmail($email, 'Test Recipient', $user->email, 'Test Sender', 
+                'Test Subject', $campaign->template_id);
+        }
+
+        return response()->json(['message' => ['Test emails have been sent.']], 200);
     }
 }

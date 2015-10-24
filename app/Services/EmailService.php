@@ -10,6 +10,7 @@ namespace newsletters\Services;
 
 use Illuminate\Contracts\Mail\Mailer;
 use newsletters\Repositories\SentEmailRepository;
+use Mail;
 
 class EmailService
 {
@@ -18,15 +19,9 @@ class EmailService
      */
     protected $sentEmailRepository;
 
-    /**
-     * @var Mailer
-     */
-    protected $mailer;
-
-    public function __construct(SentEmailRepository $sentEmailRepository, Mailer $mailer)
+    public function __construct(SentEmailRepository $sentEmailRepository)
     {
         $this->sentEmailRepository = $sentEmailRepository;
-        $this->mailer = $mailer;
     }
 
     /**
@@ -51,21 +46,21 @@ class EmailService
         $customFields = [],
         $cc = null
     ) {
-        $data = [
-            'name'          => $name,
-            'template_id'   => $templateId,
-            'custom_fields' => $customFields,
-        ];
+    $data = [
+        'name'          => $name,
+        'template_id'   => $templateId,
+        'custom_fields' => $customFields,
+    ];
 
-        $this->mailer->queueOn('emails', 'emails.template', $data,
-            function ($message) use ($email, $fromEmail, $fromName, $subject, $cc) {
-                $message->from($fromEmail, $fromName);
-                $message->to($email);
+    Mail::send('emails.template', $data,
+        function ($message) use ($email, $fromEmail, $fromName, $subject, $cc) {
+            $message->from($fromEmail, $fromName);
+            $message->to($email)->subject($subject);
 
-                if (isset($cc)) {
-                    $message->cc($cc);
-                }
-            });
+            if (isset($cc)) {
+                $message->cc($cc);
+            }
+        });
     }
 
     /**
@@ -78,4 +73,25 @@ class EmailService
     {
         return $this->sentEmailRepository->create($data);
     }
+
+    /**
+     * Sets the SES user configuration
+     *
+     * @param $key
+     * @param $secret
+     * @param $region
+     */
+    public function setSesConfig($key, $secret, $region)
+    {
+        if (empty($key) || empty($secret) || empty($region)) {
+            throw new InvalidArgumentException('SES configuration is not set.');
+        }
+
+        config([
+            'services.ses.key'    => $key,
+            'services.ses.secret' => $secret,
+            'services.ses.region' => $region,
+        ]);
+    }
+
 }

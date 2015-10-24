@@ -46,6 +46,8 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     public function handle(EmailService $emailService, CampaignService $campaignService)
     {
         $campaign = $this->campaign;
+        
+        $emailService->setSesConfig($this->user->aws_key, $this->user->aws_secret, $this->user->aws_region);
 
         $this->subscribers->each(function ($subscriber) use ($campaign, $emailService) {
             try {
