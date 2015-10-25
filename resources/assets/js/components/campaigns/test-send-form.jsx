@@ -1,6 +1,7 @@
 /** @jsx React.DOM */
 
 require('sweetalert');
+var _ = require('underscore');
 var React = require('react');
 var Campaign = require('../../entities/campaign.js');
 var c = new Campaign();
@@ -15,22 +16,21 @@ var TestSend = React.createClass({
             text: "Do you want to send this campaign to the following emails: " + emails,
             type: "info",
             showCancelButton: true,
-            confirmButtonText: "Yes",
-            cancelButtonText: "No",
-            closeOnConfirm: false
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
         },
-        function (isConfirm) {
-            if (isConfirm) {
-                c.testSend(emails.split(','), this.props.cid)
-                .done(function (res) {
-                    swal("Sent!", "Test emails have been sent.", "success");
-                }).fail(function (xhr) {
-                    swal("Cancelled", "Test emails could not be sent, check the input if they are in a correct format. Use commas for separation.", "error");
+        function () {    
+            c.testSend(emails.split(','), this.props.cid)
+            .done(function (res) {
+                swal("Sent!", "Test emails have been sent.", "success");
+            }).fail(function (xhr) {
+                var html = '<ul>';
+                _.map(xhr.responseJSON, function(e) { 
+                    html += '<li>' + e[0] + '</li>'; 
                 });
-
-            } else {
-                swal("Cancelled", "Test emails have been canceled", "error");
-            }
+                html += '</ul>';
+                swal({html:true, title: "Cancelled", text: html, type: "error"});
+            });
         }.bind(this));
     },
     render: function () {

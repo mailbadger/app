@@ -48,6 +48,7 @@ class EmailService
     ) {
     $data = [
         'name'          => $name,
+        'email'         => $email,
         'template_id'   => $templateId,
         'custom_fields' => $customFields,
     ];

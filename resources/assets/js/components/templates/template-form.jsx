@@ -55,21 +55,40 @@ var TemplateForm = React.createClass({
         return (
             <form onSubmit={this.handleSubmit}>
                 <div className="errors">{errors}</div>
-                <div className="col-lg-4">
+                <div className="col-sm-4">
                     <div className="form-group">
                         <label htmlFor="name">Template name:</label>
                         <input type="text" className="form-control" ref="name" name="name" id="name" placeholder="Name"
                                defaultValue={this.props.edit ? this.props.data.name : ''} required/>
                     </div>
-                    <button className="col-lg-4 btn btn-default">Save template</button>
+                    <button className="col-sm-4 btn btn-default">Save template</button>
                 </div>
-                <div className="col-lg-7">
+                <div className="col-sm-7">
                     <div className="form-group">
                         <label htmlFor="content">Content:</label>
                         <textarea name="content" id="content" defaultValue={this.props.edit ? this.props.data.content : ''}></textarea>
                     </div>
                 </div>
-                <div className="col-lg-12">{backBtn}</div>
+                <div className="col-sm-4">{backBtn}</div>
+                <div className="col-sm-8">
+                    <div className="row col-sm-6">
+                        <h3>Essential tags (HTML)</h3>
+                        <p>The following tags can only be used in html</p>
+                        <h4>Unsubscribe link:</h4>
+                        <code>&lt;unsubscribe&gt;Unsubscribe here&lt;/unsubscribe&gt;</code>
+                    </div>
+                    <div className="row col-sm-6">
+                        <h3>Custom tags</h3>
+                        <p>You may use tags to personalize the email:</p>
+                        <h4>Name:</h4>
+                        <code>*|Name|*</code>
+                        <h4>Email:</h4>
+                        <code>*|Email|*</code>
+                        <p>You can also use custom fields eg.</p>
+                        <code>*|Country|*</code>
+                        <p>To add them go to the subscribers list and click the 'Custom fields' button.</p>
+                    </div>
+                </div>
             </form>
         );
     }

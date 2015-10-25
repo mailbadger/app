@@ -54,7 +54,7 @@ class CampaignController extends Controller
             return response()->json(['campaign' => $campaign->id], 200);
         }
 
-        return response()->json(['message' => ['The specified resource could not be created.']], 412);
+        return response()->json(['errors' => ['The specified resource could not be created.']], 412);
     }
 
     /**
@@ -71,7 +71,7 @@ class CampaignController extends Controller
             return response()->json($campaign, 200);
         }
 
-        return response()->json(['message' => ['The specified resource does not exist.']], 404);
+        return response()->json(['errors' => ['The specified resource does not exist.']], 404);
     }
 
     /**
@@ -88,7 +88,7 @@ class CampaignController extends Controller
             return response()->json(['campaign' => $campaign->id], 200);
         }
 
-        return response()->json(['message' => ['The specified resource could not be updated.']], 412);
+        return response()->json(['errors' => ['The specified resource could not be updated.']], 412);
     }
 
     /**
@@ -103,7 +103,7 @@ class CampaignController extends Controller
             return response()->json(['message' => ['The specified resource has been deleted.']], 200);
         }
 
-        return response()->json(['message' => ['The specified resource could not be deleted.']], 422);
+        return response()->json(['errors' => ['The specified resource could not be deleted.']], 422);
     }
 
     /**
@@ -125,6 +125,13 @@ class CampaignController extends Controller
         return response()->json(['message' => ['The campaign has been started.']], 200);
     }
 
+    /**
+     * Test send campaign
+     *
+     * @param TestSendRequest $request
+     * @param EmailService $emailService
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function testSend(TestSendRequest $request, EmailService $emailService)
     { 
         $campaign = $this->service->findCampaign($request->input('id'));
@@ -135,8 +142,8 @@ class CampaignController extends Controller
 
         //TODO dispatch this from a queued job
         foreach($request->input('emails') as $email) {
-            $emailService->sendEmail($email, 'Test Recipient', $user->email, 'Test Sender', 
-                'Test Subject', $campaign->template_id);
+            $emailService->sendEmail($email, 'Test Recipient', $campaign->from_email, $campaign->from_name, 
+                $campaign->subject, $campaign->template_id);
         }
 
         return response()->json(['message' => ['Test emails have been sent.']], 200);

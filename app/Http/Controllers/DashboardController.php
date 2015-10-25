@@ -11,6 +11,7 @@ namespace newsletters\Http\Controllers;
 use Illuminate\Http\Request;
 use newsletters\Http\Requests\StoreUserSettingsRequest;
 use newsletters\Services\UserService;
+use Aws\Common\Client\AbstractClient;
 
 class DashboardController extends Controller
 {

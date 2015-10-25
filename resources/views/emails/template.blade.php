@@ -1,3 +1,3 @@
 @inject('templates', 'newsletters\Services\TemplateService')
 
-{!! $templates->renderTemplate($template_id, $name, $custom_fields) !!}
+{!! $templates->renderTemplate($template_id, $name, $email, $custom_fields) !!}

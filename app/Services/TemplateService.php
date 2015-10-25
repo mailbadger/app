@@ -101,18 +101,20 @@ class TemplateService
      *
      * @param $templateId
      * @param $subscriberName
+     * @param $subscriberEmail
      * @param array $customFields
      * @return string
      */
-    public function renderTemplate($templateId, $subscriberName, array $customFields)
+    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, array $customFields)
     {
         $template = $this->templateRepository->find($templateId);
         $content = $template->content;
-        $content = str_replace('*|Name|*', $subscriberName, $content);
+        
+        $content = preg_replace('/\*\|Name\|\*/i', $subscriberName, $content);
+        $content = preg_replace('/\*\|Email\|\*/i', $subscriberEmail, $content);
 
-        foreach ($customFields as $key => $val) {
-            //TODO replace with preg_replace for other possible matches in the template such as *|Foo|* *|foo|* etc..
-            $content = str_replace('*|' . $key . '|*', $val, $content);
+        foreach ($customFields as $key => $val) { 
+            $content = preg_replace('/\*\|' . $key . '\|\*/i', $val, $content);
         }
 
         $html = new Crawler($content);

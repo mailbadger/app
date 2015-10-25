@@ -78,6 +78,8 @@ var SettingsForm = React.createClass({
                             <label htmlFor="aws_region">AWS Region</label>
                             <select className="form-control" id="aws_region" ref="aws_region" required >
                                 <option value="eu-west-1">EU (Ireland)</option> 
+                                <option value="us-east-1">US East (N. Virginia)</option>
+                                <option value="us-west-2">US West (Oregon)</option>
                             </select>
                         </div>
                     </div>
