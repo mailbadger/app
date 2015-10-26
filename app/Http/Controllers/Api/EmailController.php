@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use newsletters\Http\Requests;
 use newsletters\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Aws\Sns\Message;
+use Aws\Sns\MessageValidator;
+use GuzzleHttp\Client;
 
 class EmailController extends Controller
 {
@@ -64,15 +67,35 @@ class EmailController extends Controller
         //
     }
 
-    public function bounces(Request $request)
+    public function bounces(MessageValidator $validator)
     {
-        Log::info('Amazon SNS bounce data: ' . print_r($request->all()));
-        return response()->json(['message' => ['ok']], 200);
+        try {
+            $message = Message::fromRawPostData();
+            $validator->validate($message);
+        } catch(Exception $e) {
+            abort(404);
+        }
+
+        if ('SubscriptionConfirmation' === $message['Type']) {
+            (new Client)->get($message['SubscribeURL']);
+        } else {
+            Log::info('Amazon SNS bounce data: ' . print_r($message, true)); 
+        }  
     }
 
-    public function complaints(Request $request)
+    public function complaints(MessageValidator $validator)
     {
-        Log::info('Amazon SNS complaint data: ' . print_r($request->all()));
-        return response()->json(['message' => ['ok']], 200);
+        try {
+            $message = Message::fromRawPostData();
+            $validator->validate($message);
+        } catch(Exception $e) {
+            abort(404);
+        }
+
+        if ('SubscriptionConfirmation' === $message['Type']) {
+            (new Client)->get($message['SubscribeURL']);
+        } else {
+            Log::info('Amazon SNS complaints data: ' . print_r($message, true)); 
+        }
     }
 }

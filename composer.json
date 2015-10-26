@@ -13,7 +13,9 @@
     "predis/predis": "^1.0",
     "prettus/l5-repository": "^2.1",
     "phpoffice/phpexcel": "^1.8",
-    "aws/aws-sdk-php": "^3.4"
+    "aws/aws-sdk-php": "^3.4",
+    "aws/aws-php-sns-message-validator": "^1.1",
+    "guzzlehttp/guzzle": "^6.1"
   },
   "require-dev": {
     "fzaninotto/faker": "~1.4",
