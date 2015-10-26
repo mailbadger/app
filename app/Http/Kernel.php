@@ -23,8 +23,7 @@ class Kernel extends HttpKernel
         EncryptCookies::class,
         AddQueuedCookiesToResponse::class,
         StartSession::class,
-        ShareErrorsFromSession::class,
-        VerifyCsrfToken::class,
+        ShareErrorsFromSession::class, 
     ];
 
     /**
@@ -36,5 +35,6 @@ class Kernel extends HttpKernel
         'auth'       => Middleware\Authenticate::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,
         'guest'      => Middleware\RedirectIfAuthenticated::class,
+        'csrf'       => VerifyCsrfToken::class, 
     ];
 }
