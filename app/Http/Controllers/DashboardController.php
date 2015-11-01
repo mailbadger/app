@@ -51,6 +51,11 @@ class DashboardController extends Controller
         return view('dashboard.subscribers.create_new');
     }
 
+    public function getReports()
+    {
+        return view('dashboard.reports.list');
+    }
+
     public function getSettings()
     {
         return view('dashboard.settings');

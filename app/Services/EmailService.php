@@ -10,7 +10,9 @@ namespace newsletters\Services;
 
 use Illuminate\Contracts\Mail\Mailer;
 use newsletters\Repositories\SentEmailRepository;
-use Mail;
+use newsletters\Repositories\BounceRepository;
+use newsletters\Repositories\ComplaintRepository;
+use Aws\Ses\SesClient;
 
 class EmailService
 {
@@ -19,9 +21,24 @@ class EmailService
      */
     protected $sentEmailRepository;
 
-    public function __construct(SentEmailRepository $sentEmailRepository)
-    {
+    /**
+     * @var BounceRepository
+     */
+    protected $bounceRepository;
+
+    /**
+     * @var ComplaintRepository
+     */
+    protected $complaintRepository;
+
+    public function __construct(
+        SentEmailRepository $sentEmailRepository, 
+        BounceRepository $bounceRepository, 
+        ComplaintRepository $complaintRepository
+    ) {
         $this->sentEmailRepository = $sentEmailRepository;
+        $this->bounceRepository = $bounceRepository;
+        $this->complaintRepository = $complaintRepository;
     }
 
     /**
@@ -35,8 +52,11 @@ class EmailService
      * @param $templateId
      * @param array $customFields
      * @param null $cc
+     * @return mixed 
      */
     public function sendEmail(
+        SesClient $client,
+        TemplateService $templateService,
         $email,
         $name,
         $fromEmail,
@@ -46,22 +66,42 @@ class EmailService
         $customFields = [],
         $cc = null
     ) {
-    $data = [
-        'name'          => $name,
-        'email'         => $email,
-        'template_id'   => $templateId,
-        'custom_fields' => $customFields,
-    ];
+        $data = [
+            'Destination' => [   
+                'ToAddresses' => [$email],
+            ],
+            'Message' => [ 
+                'Body' => [
+                    'Html' => [
+                        'Charset' => 'UTF-8',
+                        'Data' => $templateService->renderTemplate($templateId, $name, $email, $customFields), 
+                    ],
+                ],
+                'Subject' => [ 
+                    'Charset' => 'UTF-8',
+                    'Data' => $subject, 
+                ],
+            ],
+            'Source' => $fromEmail, 
+        ]; 
 
-    Mail::send('emails.template', $data,
-        function ($message) use ($email, $fromEmail, $fromName, $subject, $cc) {
-            $message->from($fromEmail, $fromName);
-            $message->to($email)->subject($subject);
+        if(isset($cc)) {
+            $data['Destination']['CcAddresses'] = [$cc];
+        }
 
-            if (isset($cc)) {
-                $message->cc($cc);
-            }
-        });
+        $response = $client->sendEmail($data);
+ 
+        return $response->get('MessageId'); 
+    }
+
+    /**
+     * Find a sent email by the message id
+     * @param $messageId
+     * @return mixed
+     */
+    public function findSentEmailByMessageId($messageId)
+    {
+        return $this->sentEmailRepository->findByField('message_id', $messageId);
     }
 
     /**
@@ -76,23 +116,24 @@ class EmailService
     }
 
     /**
-     * Sets the SES user configuration
+     * Create bounce
      *
-     * @param $key
-     * @param $secret
-     * @param $region
+     * @param array $data
+     * @return mixed
      */
-    public function setSesConfig($key, $secret, $region)
+    public function createBounce(array $data)
     {
-        if (empty($key) || empty($secret) || empty($region)) {
-            throw new InvalidArgumentException('SES configuration is not set.');
-        }
-
-        config([
-            'services.ses.key'    => $key,
-            'services.ses.secret' => $secret,
-            'services.ses.region' => $region,
-        ]);
+        return $this->bounceRepository->create($data);
     }
 
+    /**
+     * Create complaint
+     *
+     * @param array $data
+     * @return mixed
+     */
+    public function createComplaint(array $data)
+    {
+        return $this->complaintRepository->create($data);
+    }
 }

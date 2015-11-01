@@ -10,9 +10,11 @@ use newsletters\Http\Requests\StoreCampaignRequest;
 use newsletters\Http\Requests\TestSendRequest;
 use newsletters\Jobs\SendCampaign;
 use newsletters\Services\CampaignService;
-use newsletters\Services\ListsService;
+use newsletters\Services\SubscriberService;
 use newsletters\Services\UserService;
 use newsletters\Services\EmailService;
+use newsletters\Services\TemplateService;
+use Aws\Ses\SesClient;
 
 class CampaignController extends Controller
 {
@@ -114,13 +116,22 @@ class CampaignController extends Controller
      * @param ListsService $listsService
      * @return \Illuminate\Http\JsonResponse
      */
-    public function send(SendCampaignRequest $request, UserService $userService, ListsService $listsService)
+    public function send(SendCampaignRequest $request, UserService $userService, SubscriberService $subscriberService)
     {
         $campaign = $this->service->findCampaign($request->input('id'));
-        $subscribers = $listsService->findAllSubscribersByListIds($request->input('lists'));  
+        $subscribers = $subscriberService->findAllSubscribersByListIds($request->input('lists'));  
+        
+        $user = \Auth::user();
+        $awsConfig = [
+            'credentials' => [
+                'key'    => $user->aws_key, 
+                'secret' => $user->aws_secret,
+            ], 
+            'region'     => $user->aws_region,
+            'version'    => 'latest',
+        ];
 
-
-        $this->dispatch(new SendCampaign($campaign, $subscribers));
+        $this->dispatch(new SendCampaign($campaign, $subscribers, $awsConfig));
 
         return response()->json(['message' => ['The campaign has been started.']], 200);
     }
@@ -132,18 +143,25 @@ class CampaignController extends Controller
      * @param EmailService $emailService
      * @return \Illuminate\Http\JsonResponse
      */
-    public function testSend(TestSendRequest $request, EmailService $emailService)
-    { 
-        $campaign = $this->service->findCampaign($request->input('id'));
+    public function testSend(TestSendRequest $request, EmailService $emailService, TemplateService $templateService)
+    {  
+        $campaign = $this->service->findCampaign($request->input('id')); 
         
-        $user = $request->user();
+        $user = \Auth::user();
+ 
+        $client = new SesClient([
+            'credentials' => [
+                'key'    => $user->aws_key, 
+                'secret' => $user->aws_secret,
+            ], 
+            'region'     => $user->aws_region,
+            'version'    => 'latest',
+        ]);
         
-        $emailService->setSesConfig($user->aws_key, $user->aws_secret, $user->aws_region);  
-
         //TODO dispatch this from a queued job
         foreach($request->input('emails') as $email) {
-            $emailService->sendEmail($email, 'Test Recipient', $campaign->from_email, $campaign->from_name, 
-                $campaign->subject, $campaign->template_id);
+            $emailService->sendEmail($client, $templateService, $email, 'Test Recipient', $campaign->from_email, $campaign->from_name, 
+                $campaign->subject, $campaign->template_id); 
         }
 
         return response()->json(['message' => ['Test emails have been sent.']], 200);

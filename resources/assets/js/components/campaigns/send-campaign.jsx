@@ -12,7 +12,9 @@ var c = new Campaign();
 var t = new Template();
 
 var SendCampaign = React.createClass({
-    handleSubmit: function () {
+    handleSubmit: function (e) {
+        e.preventDefault();
+
         var lists = $('#subscribers').val();
         swal({
                 title: "Are you sure?",

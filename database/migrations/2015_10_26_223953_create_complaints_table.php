@@ -14,6 +14,10 @@ class CreateComplaintsTable extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('recipient');
+            $table->string('sender');
+            $table->string('type');
+            $table->dateTime('timestamp');
             $table->timestamps();
         });
     }

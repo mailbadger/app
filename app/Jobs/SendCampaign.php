@@ -10,6 +10,8 @@ use Illuminate\Queue\SerializesModels;
 use newsletters\Entities\Campaign;
 use newsletters\Services\CampaignService;
 use newsletters\Services\EmailService;
+use newsletters\Services\TemplateService;
+use Aws\Ses\SesClient;
 
 class SendCampaign extends Job implements SelfHandling, ShouldQueue
 {
@@ -25,16 +27,19 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      */
     protected $subscribers;
 
+    protected $awsConfig;
+
     /**
      * Create a new job instance.
      *
      * @param Campaign $campaign
      * @param Collection $subscribers
      */
-    public function __construct(Campaign $campaign, Collection $subscribers)
+    public function __construct(Campaign $campaign, Collection $subscribers, array $awsConfig)
     {
         $this->campaign = $campaign;
         $this->subscribers = $subscribers;
+        $this->awsConfig = $awsConfig; 
     }
 
     /**
@@ -43,20 +48,22 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      * @param EmailService $emailService
      * @param CampaignService $campaignService
      */
-    public function handle(EmailService $emailService, CampaignService $campaignService)
+    public function handle(EmailService $emailService, CampaignService $campaignService, TemplateService $templateService)
     {
-        $campaign = $this->campaign;
-        
-        $emailService->setSesConfig($this->user->aws_key, $this->user->aws_secret, $this->user->aws_region);
+        $campaign = $this->campaign; 
+       
+        $client = new SesClient($this->awsConfig);
 
-        $this->subscribers->each(function ($subscriber) use ($campaign, $emailService) {
+        $this->subscribers->each(function ($subscriber) use ($campaign, $emailService, $templateService, $client) {
             try {
-                $emailService->sendEmail($subscriber->email, $subscriber->name, $campaign->from_email, $campaign->from_name,
-                    $campaign->subject, $campaign->template_id, $subscriber->fields->toArray());
+                $messageId = $emailService->sendEmail($client, $templateService, $subscriber->email, 
+                    $subscriber->name, $campaign->from_email, $campaign->from_name, $campaign->subject, 
+                    $campaign->template_id, $subscriber->fields->toArray());
 
                 $emailService->createSentEmail([
                     'subscriber_id' => $subscriber->id,
                     'campaign_id'   => $campaign->id,
+                    'message_id'    => $messageId,
                     'opens'         => 0,
                 ]);
             } catch (Exception $e) {

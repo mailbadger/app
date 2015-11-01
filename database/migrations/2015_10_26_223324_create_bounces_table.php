@@ -14,6 +14,12 @@ class CreateBouncesTable extends Migration
     {
         Schema::create('bounces', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('recipient');
+            $table->string('sender');
+            $table->string('type');
+            $table->string('sub_type');
+            $table->string('action');
+            $table->dateTime('timestamp');
             $table->timestamps();
         });
     }

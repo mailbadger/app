@@ -9,6 +9,7 @@ use newsletters\Http\Requests\MassDeleteSubscribersRequest;
 use newsletters\Services\FieldService;
 use newsletters\Services\FileService;
 use newsletters\Services\ListsService;
+use newsletters\Services\SubscriberService;
 
 class ListsSubscriberController extends Controller
 {
@@ -31,9 +32,9 @@ class ListsSubscriberController extends Controller
      * @param $listId
      * @return Response
      */
-    public function index(Request $request, $listId)
+    public function index(Request $request, $listId, SubscriberService $subscriberService)
     {
-        $subscribers = $this->service->findAllSubscribersByListId($listId, $request->has('paginate'), 10);
+        $subscribers = $subscriberService->findAllSubscribersByListId($listId, $request->has('paginate'), 10);
 
         return response()->json($subscribers, 200);
     }

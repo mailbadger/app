@@ -15,6 +15,7 @@ class SentEmail extends Model implements Transformable
     protected $fillable = [
         'subscriber_id',
         'campaign_id',
+        'message_id',
         'opens',
     ];
 

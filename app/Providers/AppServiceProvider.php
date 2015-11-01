@@ -56,6 +56,12 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind('newsletters\Repositories\UserRepository',
             'newsletters\Repositories\UserRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\BounceRepository',
+            'newsletters\Repositories\BounceRepositoryEloquent');
+
+        $this->app->bind('newsletters\Repositories\ComplaintRepository',
+            'newsletters\Repositories\ComplaintRepositoryEloquent');
     }
 
     /**
