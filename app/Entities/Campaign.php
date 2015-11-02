@@ -19,8 +19,9 @@ class Campaign extends Model implements Transformable
         'from_name',
         'from_email',
         'status',
-        'recipients',
         'template_id',
+        'recipient',
+        'sent_date',
     ];
 
     protected $dates = ['deleted_at'];

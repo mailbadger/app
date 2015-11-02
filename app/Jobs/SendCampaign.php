@@ -4,13 +4,13 @@ namespace newsletters\Jobs;
 
 use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use newsletters\Entities\Campaign;
 use newsletters\Services\CampaignService;
 use newsletters\Services\EmailService;
 use newsletters\Services\TemplateService;
+use newsletters\Services\SubscriberService;
 use Aws\Ses\SesClient;
 
 class SendCampaign extends Job implements SelfHandling, ShouldQueue
@@ -23,10 +23,13 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     protected $campaign;
 
     /**
-     * @var Collection
+     * @var array
      */
-    protected $subscribers;
+    protected $listIds;
 
+    /**
+     * @var array
+     */
     protected $awsConfig;
 
     /**
@@ -35,11 +38,11 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      * @param Campaign $campaign
      * @param Collection $subscribers
      */
-    public function __construct(Campaign $campaign, Collection $subscribers, array $awsConfig)
+    public function __construct(Campaign $campaign, array $listIds, array $awsConfig)
     {
         $this->campaign = $campaign;
-        $this->subscribers = $subscribers;
-        $this->awsConfig = $awsConfig; 
+        $this->listIds = $listIds;
+        $this->awsConfig = $awsConfig;
     }
 
     /**
@@ -48,17 +51,22 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      * @param EmailService $emailService
      * @param CampaignService $campaignService
      */
-    public function handle(EmailService $emailService, CampaignService $campaignService, TemplateService $templateService)
-    {
-        $campaign = $this->campaign; 
-       
+    public function handle(
+        EmailService $emailService,
+        CampaignService $campaignService,
+        SubscriberService $subscriberService,
+        TemplateService $templateService
+    ) {
+        $campaign = $this->campaign;
+
         $client = new SesClient($this->awsConfig);
 
-        $this->subscribers->each(function ($subscriber) use ($campaign, $emailService, $templateService, $client) {
-            try {
-                $messageId = $emailService->sendEmail($client, $templateService, $subscriber->email, 
-                    $subscriber->name, $campaign->from_email, $campaign->from_name, $campaign->subject, 
-                    $campaign->template_id, $subscriber->fields->toArray());
+        $campaignService->updateCampaign(['status' => 'sending'], $this->campaign->id);
+
+        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) use ($campaign, $emailService, $templateService, $client) {
+            foreach($subscribers as $subscriber) {
+                $html = $templateService->renderTemplate($campaign->template_id, 'Test Recipient', $subscriber->email, $subscriber->fields->toArray());
+                $messageId = $emailService->sendEmail($client, $html, $subscriber->email, $campaign->from_email, $campaign->from_name, $campaign->subject);
 
                 $emailService->createSentEmail([
                     'subscriber_id' => $subscriber->id,
@@ -66,8 +74,6 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                     'message_id'    => $messageId,
                     'opens'         => 0,
                 ]);
-            } catch (Exception $e) {
-                Log::error('Mail not sent: ' . $e->message() . "\nStack trace: " . $e->getTraceAsString());
             }
         });
 

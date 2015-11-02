@@ -119,19 +119,18 @@ class CampaignController extends Controller
     public function send(SendCampaignRequest $request, UserService $userService, SubscriberService $subscriberService)
     {
         $campaign = $this->service->findCampaign($request->input('id'));
-        $subscribers = $subscriberService->findAllSubscribersByListIds($request->input('lists'));  
-        
+
         $user = \Auth::user();
         $awsConfig = [
             'credentials' => [
-                'key'    => $user->aws_key, 
+                'key'    => $user->aws_key,
                 'secret' => $user->aws_secret,
-            ], 
+            ],
             'region'     => $user->aws_region,
             'version'    => 'latest',
         ];
 
-        $this->dispatch(new SendCampaign($campaign, $subscribers, $awsConfig));
+        $this->dispatch(new SendCampaign($campaign, $request->input('lists'), $awsConfig));
 
         return response()->json(['message' => ['The campaign has been started.']], 200);
     }
@@ -144,24 +143,23 @@ class CampaignController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function testSend(TestSendRequest $request, EmailService $emailService, TemplateService $templateService)
-    {  
-        $campaign = $this->service->findCampaign($request->input('id')); 
-        
+    {
+        $campaign = $this->service->findCampaign($request->input('id'));
+
         $user = \Auth::user();
- 
+
         $client = new SesClient([
             'credentials' => [
-                'key'    => $user->aws_key, 
+                'key'    => $user->aws_key,
                 'secret' => $user->aws_secret,
-            ], 
+            ],
             'region'     => $user->aws_region,
             'version'    => 'latest',
         ]);
-        
-        //TODO dispatch this from a queued job
+
         foreach($request->input('emails') as $email) {
-            $emailService->sendEmail($client, $templateService, $email, 'Test Recipient', $campaign->from_email, $campaign->from_name, 
-                $campaign->subject, $campaign->template_id); 
+            $html = $templateService->renderTemplate($campaign->template_id,'Test Recipient', $email);
+            $emailService->sendEmail($client, $html, $email, $campaign->from_email, $campaign->from_name, $campaign->subject);
         }
 
         return response()->json(['message' => ['Test emails have been sent.']], 200);

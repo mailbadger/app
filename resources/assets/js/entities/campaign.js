@@ -5,14 +5,15 @@ var Campaign = function () {
 
     var url = url_base + '/api/campaigns';
 
-    this.all = function (paginate, perPage, page) {
+    this.all = function (paginate, perPage, page, filters) {
         return $.ajax({
             type: 'GET',
             url: url,
             data: {
                 paginate: paginate,
                 per_page: perPage,
-                page: page
+                page: page,
+                filters: filters
             },
             dataType: 'json'
         });

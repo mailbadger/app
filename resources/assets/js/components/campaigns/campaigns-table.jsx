@@ -35,15 +35,17 @@ var CampaignRow = React.createClass({
         this.props.sendCampaign(this.props.data.id);
     },
     render: function () {
-        var edit = (this.props.data.status == 'draft' || this.props.data.status == 'scheduled') ?
+        var edit = (this.props.data.status === 'draft' || this.props.data.status === 'scheduled') ?
             <span> | <a href="#" onClick={this.editCampaign}>Edit</a></span> : null;
+        var campaignName = (this.props.data.status !== 'sent' || this.props.data.status === 'sending') 
+                ? <span><a href="#" onClick={this.sendCampaign}>{this.props.data.name}</a>{edit}</span>
+                : this.props.data.name; 
         return (
             <tr>
-                <td><a href="#" onClick={this.sendCampaign}>{this.props.data.name}</a>{edit}</td>
+                <td>{campaignName}</td>
                 <td>{this.props.data.subject}</td>
                 <td>{this.props.data.from_name}</td>
                 <td>{this.props.data.from_email}</td>
-                <td>{this.props.data.recipients}</td>
                 <td>{(() => {
                     switch (this.props.data.status) {
                         case "draft":
@@ -85,8 +87,7 @@ var CampaignsTable = React.createClass({
                         <th>Campaign</th>
                         <th>Subject</th>
                         <th>From name</th>
-                        <th>From email</th>
-                        <th>Recipients</th>
+                        <th>From email</th> 
                         <th>Status</th>
                         <th>Delete</th>
                     </tr>

@@ -105,7 +105,7 @@ class TemplateService
      * @param array $customFields
      * @return string
      */
-    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, array $customFields)
+    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, array $customFields = [])
     {
         $template = $this->templateRepository->find($templateId);
         $content = $template->content;

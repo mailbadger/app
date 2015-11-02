@@ -3,6 +3,7 @@
 namespace newsletters\Services;
 
 use newsletters\Repositories\SubscriberRepository;
+use Closure;
 
 class SubscriberService
 {
@@ -46,12 +47,14 @@ class SubscriberService
     }
 
     /**
-     * Find all subscribers by list ids
+     * Find all subscribers by list ids. Returns chunks of data for processing
      *
      * @param array $listIds
+     * @param int $chunks
+     * @param Closure $closure
      * @return mixed
      */
-    public function findAllSubscribersByListIds(array $listIds)
+    public function findSubscribersByListIdsByChunks(array $listIds, $chunks = 1000, Closure $closure)
     {
         return $this->subscriberRepository
             ->with('fields')
@@ -60,9 +63,15 @@ class SubscriberService
                     return $q->whereIn('list_id', $listIds);
                 });
             })
-            ->all();
+            ->chunk($chunks, $closure); 
     }
 
+    /**
+     * Update subscriber by id
+     * @param array $data
+     * @param int $id
+     * @return int
+     */
     public function updateSubscriber(array $data, $id)
     {
         return $this->subscriberRepository->update($data, $id);

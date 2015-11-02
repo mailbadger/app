@@ -32,8 +32,8 @@ class EmailService
     protected $complaintRepository;
 
     public function __construct(
-        SentEmailRepository $sentEmailRepository, 
-        BounceRepository $bounceRepository, 
+        SentEmailRepository $sentEmailRepository,
+        BounceRepository $bounceRepository,
         ComplaintRepository $complaintRepository
     ) {
         $this->sentEmailRepository = $sentEmailRepository;
@@ -47,51 +47,46 @@ class EmailService
      * @param $email
      * @param $name
      * @param $fromEmail
-     * @param $fromName
      * @param $subject
-     * @param $templateId
-     * @param array $customFields
      * @param null $cc
-     * @return mixed 
+     * @return mixed
      */
     public function sendEmail(
         SesClient $client,
-        TemplateService $templateService,
+        $html,
         $email,
-        $name,
         $fromEmail,
         $fromName,
         $subject,
-        $templateId,
         $customFields = [],
         $cc = null
     ) {
         $data = [
-            'Destination' => [   
+            'Destination' => [
                 'ToAddresses' => [$email],
             ],
-            'Message' => [ 
+            'Message' => [
                 'Body' => [
                     'Html' => [
                         'Charset' => 'UTF-8',
-                        'Data' => $templateService->renderTemplate($templateId, $name, $email, $customFields), 
+                        'Data'    => $html
                     ],
                 ],
-                'Subject' => [ 
+                'Subject' => [
                     'Charset' => 'UTF-8',
-                    'Data' => $subject, 
+                    'Data'    => $subject,
                 ],
             ],
-            'Source' => $fromEmail, 
-        ]; 
+            'Source' => $fromEmail,
+        ];
 
         if(isset($cc)) {
             $data['Destination']['CcAddresses'] = [$cc];
         }
 
         $response = $client->sendEmail($data);
- 
-        return $response->get('MessageId'); 
+
+        return $response->get('MessageId');
     }
 
     /**

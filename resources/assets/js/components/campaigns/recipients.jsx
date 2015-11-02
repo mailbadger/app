@@ -7,7 +7,7 @@ var l = new List();
 
 var Recipients = React.createClass({
     getInitialState: function () {
-        return {lists: []};
+        return {lists: [], total: 0};
     },
     componentDidMount: function () {
         l.all().done(function (res) {
@@ -24,9 +24,9 @@ var Recipients = React.createClass({
 
                 <div className="form-group">
                     <label htmlFor="subscribers">Select subscriber list(s)</label>
-                    <select className="form-control" ref="subscribers" id="subscribers" multiple="multiple" required>
+                    <select className="form-control" ref="subscribers" id="subscribers" multiple={true} onChange={this.handleChange} required>
                         {this.state.lists.map(listOpts)}
-                    </select>
+                    </select> 
                 </div>
             </div>
         )
