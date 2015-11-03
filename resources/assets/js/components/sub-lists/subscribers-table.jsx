@@ -9,7 +9,13 @@ var List = require('../../entities/list.js');
 var l = new List();
 
 var getAllSubscribers = function (component, listId) {
-    l.allSubscribers(listId, true, 10, 1).done(function (res) {
+    var data = {
+        paginate: true,
+        per_page: 10,
+        page: 1
+    };
+
+    l.allSubscribers(listId, data).done(function (res) {
         component.setState({subscribers: res});
 
         $('.pagination').bootpag({
@@ -17,7 +23,8 @@ var getAllSubscribers = function (component, listId) {
             page: res.current_page,
             maxVisible: 5
         }).on("page", function (event, num) {
-            l.allSubscribers(listId, true, 10, num).done(function (res) {
+            data.page = num;
+            l.allSubscribers(listId, data).done(function (res) {
                 component.setState({subscribers: res});
                 $('.pagination').bootpag({page: res.current_page});
             });

@@ -5,15 +5,11 @@ var Template = function () {
 
     var url = url_base + '/api/templates';
 
-    this.all = function (paginate, perPage, page) {
+    this.all = function (data) {
         return $.ajax({
             type: 'GET',
             url: url,
-            data: {
-                paginate: paginate,
-                per_page: perPage,
-                page: page
-            },
+            data: data,
             dataType: 'json'
         });
     };

@@ -8,14 +8,21 @@ var List = require('../../entities/list.js');
 var l = new List();
 
 var getAllLists = function (component) {
-    l.all(true, 10, 1).done(function (res) {
+    var data = {
+        paginate: true,
+        per_page: 10,
+        page: 1
+    };
+
+    l.all(data).done(function (res) {
         component.setState({lists: res});
         $('.pagination').bootpag({
             total: res.last_page,
             page: res.current_page,
             maxVisible: 5
         }).on("page", function (event, num) {
-            l.all(true, 10, num).done(function (res) {
+            data.page = num;
+            l.all(data).done(function (res) {
                 component.setState({lists: res});
                 $('.pagination').bootpag({page: res.current_page});
             });

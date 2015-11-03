@@ -12,6 +12,7 @@ use newsletters\Services\EmailService;
 use newsletters\Services\TemplateService;
 use newsletters\Services\SubscriberService;
 use Aws\Ses\SesClient;
+use Carbon\Carbon;
 
 class SendCampaign extends Job implements SelfHandling, ShouldQueue
 {
@@ -63,7 +64,8 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
 
         $campaignService->updateCampaign(['status' => 'sending'], $this->campaign->id);
 
-        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) use ($campaign, $emailService, $templateService, $client) {
+        $total = 0;
+        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) use ($campaign, $emailService, $templateService, $client, &$total) {
             foreach($subscribers as $subscriber) {
                 $html = $templateService->renderTemplate($campaign->template_id, 'Test Recipient', $subscriber->email, $subscriber->fields->toArray());
                 $messageId = $emailService->sendEmail($client, $html, $subscriber->email, $campaign->from_email, $campaign->from_name, $campaign->subject);
@@ -74,9 +76,12 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                     'message_id'    => $messageId,
                     'opens'         => 0,
                 ]);
+
+                $total++;
             }
         });
 
-        $campaignService->updateCampaign(['status' => 'sent'], $this->campaign->id);
+        $campaignService->updateCampaign(['status' => 'sent', 'recipients' => $total, 'sent_at' => Carbon::now()],
+            $this->campaign->id);
     }
 }

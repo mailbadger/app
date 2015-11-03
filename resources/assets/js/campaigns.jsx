@@ -45,7 +45,6 @@ var Campaigns = React.createClass({
                 );
         }
     }
-
 });
 
 React.render(<Campaigns />, document.getElementById('campaigns'));

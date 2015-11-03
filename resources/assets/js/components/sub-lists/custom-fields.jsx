@@ -7,7 +7,13 @@ var List = require('../../entities/list.js');
 var l = new List();
 
 var getAllFields = function (component, listId) {
-    l.allFields(listId, true, 10, 1).done(function (res) {
+    var data = {
+        paginate: true,
+        per_page: 10,
+        page: 1
+    };
+
+    l.allFields(listId, data).done(function (res) {
         component.setState({fields: res});
 
         $('.pagination').bootpag({
@@ -15,7 +21,8 @@ var getAllFields = function (component, listId) {
             page: res.current_page,
             maxVisible: 5
         }).on("page", function (event, num) {
-            l.allFields(listId, true, 10, num).done(function (res) {
+            data.page = num;
+            l.allFields(listId, data).done(function (res) {
                 component.setState({fields: res});
                 $('.pagination').bootpag({page: res.current_page});
             });

@@ -20,11 +20,11 @@ class Campaign extends Model implements Transformable
         'from_email',
         'status',
         'template_id',
-        'recipient',
-        'sent_date',
+        'recipients',
+        'sent_at',
     ];
 
-    protected $dates = ['deleted_at'];
+    protected $dates = ['deleted_at', 'sent_at'];
 
     public function template()
     {

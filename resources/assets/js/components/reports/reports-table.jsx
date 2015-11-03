@@ -8,9 +8,15 @@ var Campaign = require('../../entities/campaign.js');
 var c = new Campaign();
 
 var getSentCampaigns = function (component) {
-    var filter = {status: 'sent'};
+    var data = {
+        paginate: true,
+        per_page: 10,
+        page: 1,
+        search: 'sent',
+        searchFields: 'status:='
+    };
 
-    c.all(true, 10, 1, filter).done(function (res) {
+    c.all(data).done(function (res) {
         component.setState({campaigns: res});
 
         $('.pagination').bootpag({
@@ -18,7 +24,8 @@ var getSentCampaigns = function (component) {
             page: res.current_page,
             maxVisible: 5
         }).on("page", function (event, num) {
-            c.all(true, 10, num, filter).done(function (res) {
+            data.page = num;
+            c.all(data).done(function (res) {
                 component.setState({campaigns: res});
                 $('.pagination').bootpag({page: res.current_page});
             });

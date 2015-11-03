@@ -11,7 +11,13 @@ var Campaign = require('../../entities/campaign.js');
 var c = new Campaign();
 
 var getAllCampaigns = function (component) {
-    c.all(true, 10, 1).done(function (res) {
+    var data = {
+        paginate: true,
+        per_page: 10,
+        page: 1
+    };
+
+    c.all(data).done(function (res) {
         component.setState({campaigns: res});
 
         $('.pagination').bootpag({
@@ -19,7 +25,8 @@ var getAllCampaigns = function (component) {
             page: res.current_page,
             maxVisible: 5
         }).on("page", function (event, num) {
-            c.all(true, 10, num).done(function (res) {
+            data.page = num;
+            c.all(data).done(function (res) {
                 component.setState({campaigns: res});
                 $('.pagination').bootpag({page: res.current_page});
             });

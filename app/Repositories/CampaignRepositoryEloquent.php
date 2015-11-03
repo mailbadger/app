@@ -13,6 +13,14 @@ use Prettus\Repository\Eloquent\BaseRepository;
 class CampaignRepositoryEloquent extends BaseRepository implements CampaignRepository
 {
     /**
+     * @var array
+     */
+    protected $fieldSearchable = [
+        'name',
+        'status',
+    ];
+
+    /**
      * Specify Model class name
      *
      * @return string

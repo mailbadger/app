@@ -8,15 +8,11 @@ var List = function () {
 
     var url = url_base + '/api/lists';
 
-    this.all = function (paginate, perPage, page) {
+    this.all = function (data) {
         return $.ajax({
             type: 'GET',
             url: url,
-            data: {
-                paginate: paginate,
-                per_page: perPage,
-                page: page
-            },
+            data: data,
             dataType: 'json'
         });
     };
@@ -55,15 +51,11 @@ var List = function () {
         });
     };
 
-    this.allSubscribers = function (listId, paginate, perPage, page) {
+    this.allSubscribers = function (listId, data) {
         return $.ajax({
             type: 'GET',
             url: url + '/' + listId + '/subscribers',
-            data: {
-                paginate: paginate,
-                per_page: perPage,
-                page: page
-            },
+            data: data,
             dataType: 'json'
         });
     };
@@ -108,15 +100,11 @@ var List = function () {
         });
     };
 
-    this.allFields = function (listId, paginate, perPage, page) {
+    this.allFields = function (listId, data) {
         return $.ajax({
             type: 'GET',
             url: url + '/' + listId + '/fields',
-            data: {
-                paginate: paginate,
-                per_page: perPage,
-                page: page
-            },
+            data: data,
             dataType: 'json'
         });
     };

@@ -38,7 +38,9 @@ class CampaignController extends Controller
      */
     public function index(Request $request)
     {
-        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
+        
+        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), $perPage);
 
         return response()->json($campaigns, 200);
     }
