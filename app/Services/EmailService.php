@@ -90,6 +90,24 @@ class EmailService
     }
 
     /**
+     * Find all sent emails from campaign
+     * @param $campaignId
+     * @param bool $paginate
+     * @param int $perPage
+     * @return mixed
+     */
+    public function findAllSentEmailsByCampaignId($campaignId, $paginate = false, $perPage = 10)
+    {
+        $emails = $this->sentEmailRepository->with(['bounces', 'complaints'])->scopeQuery(function ($q) use ($campaignId) {
+            return $q->whereHas('campaign', function ($q) use ($campaignId) {
+                return $q->where('id', $campaignId);
+            });
+        });
+
+        return (!empty($paginate)) ? $emails->paginate($perPage) : $emails->all(); 
+    }
+
+    /**
      * Find a sent email by the message id
      * @param $messageId
      * @return mixed
@@ -97,6 +115,29 @@ class EmailService
     public function findSentEmailByMessageId($messageId)
     {
         return $this->sentEmailRepository->findByField('message_id', $messageId);
+    }
+
+    /**
+     * Find campaign reports for sent emails
+     *
+     * @param $campaignId
+     * @return mixed
+     */
+    public function findSendsReportByCampaignId($campaignId)
+    {
+        $complaints = $bounces = $sent = $opens = 0;
+
+        //TODO fetch sent emails by chunks
+        $this->sentEmailRepository->with(['complaintsCount', 'bouncesCount'])
+            ->findByField('campaign_id', $campaignId)
+            ->each(function ($e) use(&$complaints, &$bounces, &$sent, &$opens) { 
+                $sent++;
+                $opens += $e->opens;
+                $complaints += $e->complaintsCount->sum('complaints'); 
+                $bounces += $e->bouncesCount->sum('bounces');
+            });
+
+        return ['bounces' => $bounces, 'complaints' => $complaints, 'sent' => $sent, 'opens' => $opens];  
     }
 
     /**

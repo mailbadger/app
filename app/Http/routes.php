@@ -5,6 +5,7 @@
 | Application Routes
 |--------------------------------------------------------------------------
  */
+
 //No csrf middleware on these routes
 Route::post('api/emails/bounces', 'Api\EmailController@bounces');
 
@@ -36,6 +37,8 @@ Route::group(['middleware' => 'csrf'], function () {
 
         Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
 
+        Route::resource('campaigns.emails', 'CampaignEmailController', ['except' => ['create', 'edit']]);
+
         Route::get('templates/content/{id}', 'TemplateController@showContent');
 
         Route::resource('templates', 'TemplateController', ['except' => ['create', 'edit']]);
@@ -52,7 +55,6 @@ Route::group(['middleware' => 'csrf'], function () {
 
         Route::resource('lists.fields', 'ListsFieldController', ['except' => ['create', 'edit']]);
 
-        Route::resource('emails', 'EmailController', ['except' => ['create', 'edit']]);
     });
 });
 

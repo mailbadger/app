@@ -28,4 +28,28 @@ class SentEmail extends Model implements Transformable
     {
         return $this->belongsTo('newsletters\Entities\Campaign');
     }
+
+    public function bounces()
+    {
+        return $this->hasMany('newsletters\Entities\Bounce');
+    }
+
+    public function complaints()
+    {
+        return $this->hasMany('newsletters\Entities\Complaint');
+    }
+
+    public function complaintsCount()
+    {
+        return $this->complaints()
+            ->selectRaw('sent_email_id, count(*) as complaints')
+            ->groupBy('sent_email_id');
+    }
+
+    public function bouncesCount()
+    {
+        return $this->bounces()
+            ->selectRaw('sent_email_id, count(*) as bounces')
+            ->groupBy('sent_email_id');
+    }
 }
