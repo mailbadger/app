@@ -13,49 +13,44 @@ var l = new List();
 
 var Lists = React.createClass({
     getInitialState: function () {
-        return {
-            content: (
-                <div>
-                    <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
-
-                    <div className="row">
-                        <ListsTable showList={this.showList} editList={this.editList}/>
-                    </div>
-                </div>
-            )
-        }
+        return {step: '', list: {}};
     },
     showList: function (id) {
         l.get(id).done(function (res) {
-            this.setState({
-                content: <SubscribersList list={res} editList={this.editList} customFields={this.customFields}
-                                          back={this.back}/>
-            });
+            this.setState({step: 'show', list: res});
         }.bind(this));
     },
     editList: function (id) {
         l.get(id).done(function (res) {
-            this.setState({content: <ListForm data={res} edit={true} back={this.back}/>});
+            this.setState({step: 'edit', list: res});
         }.bind(this));
     },
     customFields: function (id) {
-        this.setState({content: <CustomFields listId={id} back={this.back}/>});
+        this.setState({step: 'custom-fields'});
     },
     back: function () {
-        this.setState({
-            content: (
-                <div>
-                    <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
-
-                    <div className="row">
-                        <ListsTable showList={this.showList} editList={this.editList}/>
-                    </div>
-                </div>
-            )
-        });
+        this.setState({step: ''});
     },
     render: function () {
-        return this.state.content;
+        switch (this.state.step) {
+            case 'show':
+                return <SubscribersList list={this.state.list} editList={this.editList} customFields={this.customFields}
+                    back={this.back}/>;
+            case 'edit':
+                return <ListForm data={this.state.list} edit={true} back={this.back}/>;
+            case 'custom-fields':
+                return <CustomFields listId={this.state.list.id} back={this.back}/>;
+            default:
+                return (
+                    <div>
+                        <CreateNewButton url={url_base + '/dashboard/new-subscribers'} text="Create new list"/>
+
+                        <div className="row">
+                            <ListsTable showList={this.showList} editList={this.editList}/>
+                        </div>
+                    </div>
+                );     
+        }
     }
 });
 
