@@ -35,9 +35,7 @@ Route::group(['middleware' => 'csrf'], function () {
 
         Route::post('campaigns/{id}/test-send', 'CampaignController@testSend');
 
-        Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);
-
-        Route::resource('campaigns.emails', 'CampaignEmailController', ['except' => ['create', 'edit']]);
+        Route::resource('campaigns', 'CampaignController', ['except' => ['create', 'edit']]);  
 
         Route::get('templates/content/{id}', 'TemplateController@showContent');
 

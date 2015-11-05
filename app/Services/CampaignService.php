@@ -40,9 +40,9 @@ class CampaignService
      * @param $id
      * @return mixed|null
      */
-    public function findCampaign($id)
+    public function findCampaign($id, array $with = [])
     {
-        return $this->campaignRepository->find($id);
+        return $this->campaignRepository->with($with)->find($id);
     }
 
     /**

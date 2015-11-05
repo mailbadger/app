@@ -118,29 +118,6 @@ class EmailService
     }
 
     /**
-     * Find campaign reports for sent emails
-     *
-     * @param $campaignId
-     * @return mixed
-     */
-    public function findSendsReportByCampaignId($campaignId)
-    {
-        $complaints = $bounces = $sent = $opens = 0;
-
-        //TODO fetch sent emails by chunks
-        $this->sentEmailRepository->with(['complaintsCount', 'bouncesCount'])
-            ->findByField('campaign_id', $campaignId)
-            ->each(function ($e) use(&$complaints, &$bounces, &$sent, &$opens) { 
-                $sent++;
-                $opens += $e->opens;
-                $complaints += $e->complaintsCount->sum('complaints'); 
-                $bounces += $e->bouncesCount->sum('bounces');
-            });
-
-        return ['bounces' => $bounces, 'complaints' => $complaints, 'sent' => $sent, 'opens' => $opens];  
-    }
-
-    /**
      * Create sent email
      *
      * @param array $data

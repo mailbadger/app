@@ -37,19 +37,5 @@ class SentEmail extends Model implements Transformable
     public function complaints()
     {
         return $this->hasMany('newsletters\Entities\Complaint');
-    }
-
-    public function complaintsCount()
-    {
-        return $this->complaints()
-            ->selectRaw('sent_email_id, count(*) as complaints')
-            ->groupBy('sent_email_id');
-    }
-
-    public function bouncesCount()
-    {
-        return $this->bounces()
-            ->selectRaw('sent_email_id, count(*) as bounces')
-            ->groupBy('sent_email_id');
-    }
+    } 
 }
