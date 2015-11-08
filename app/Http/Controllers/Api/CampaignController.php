@@ -69,7 +69,7 @@ class CampaignController extends Controller
      */
     public function show($id)
     {
-        $campaign = $this->service->findCampaign($id, ['opensCount', 'complaintsCount']);
+        $campaign = $this->service->findCampaign($id, ['opensCount', 'complaintsCount', 'bouncesCount']);
 
         if (isset($campaign)) {
             return response()->json($campaign, 200);

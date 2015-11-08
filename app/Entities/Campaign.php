@@ -69,7 +69,8 @@ class Campaign extends Model implements Transformable
     public function opensCount()
     {
         return $this->sentEmails()
-            ->selectRaw('campaign_id, sum(opens) as opens')
+            ->selectRaw('campaign_id, sum(opens) as opens, count(opens) as unique_opens')
+            ->where('opens', '>', 0)
             ->groupBy('campaign_id');
     }
 }

@@ -87,4 +87,3 @@ var ReportsTable = React.createClass({
 });
 
 module.exports = ReportsTable;
-
