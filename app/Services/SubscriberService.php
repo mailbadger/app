@@ -31,19 +31,31 @@ class SubscriberService
      * Find all subscribers on a list
      *
      * @param $listId
-     * @param bool|false $paginate
-     * @param int $perPage
      * @return mixed
      */
     public function findAllSubscribersByListId($listId, $paginate = false, $perPage = 10)
     {
-        $subscribers = $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
+        return $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
             return $q->whereHas('lists', function ($q) use ($listId) {
                 return $q->where('list_id', $listId);
             });
-        });
+        })->all();
+    }
 
-        return (!empty($paginate)) ? $subscribers->paginate($perPage) : $subscribers->all();
+    /**
+     * Find all subscribers on a list paginated
+     * 
+     * @param $listId
+     * @param $perPage
+     * @return mixed
+     */
+    public function findAllSubscribersByListIdPaginated($listId, $perPage = 10)
+    {
+       return $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
+            return $q->whereHas('lists', function ($q) use ($listId) {
+                return $q->where('list_id', $listId);
+            });
+        })->paginate($perPage);
     }
 
     /**
@@ -59,7 +71,7 @@ class SubscriberService
         return $this->subscriberRepository
             ->with('fields')
             ->scopeQuery(function ($q) use ($listIds) {
-                return $q->whereHas('lists', function ($q) use ($listIds) {
+                return $q->distinct()->whereHas('lists', function ($q) use ($listIds) {
                     return $q->whereIn('list_id', $listIds);
                 });
             })
@@ -67,7 +79,30 @@ class SubscriberService
     }
 
     /**
+     * Find a subscriber by id
+     *
+     * @param $id
+     * @return mixed|null
+     */
+    public function findSubscriber($id)
+    {
+        return $this->subscriberRepository->find($id);
+    }
+
+
+    /**
+     * Create subscriber
+     *
+     * @param array $data
+     * @return mixed 
+     */
+    public function createSubscriber(array $data)
+    {
+        return $this->subscriberRepository->create($data);
+    }
+    /**
      * Update subscriber by id
+     *
      * @param array $data
      * @param int $id
      * @return int

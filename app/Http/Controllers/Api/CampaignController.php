@@ -40,7 +40,11 @@ class CampaignController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
         
-        $campaigns = $this->service->findAllCampaigns($request->has('paginate'), $perPage);
+        if($request->has('paginate')) {
+            $campaigns = $this->service->findAllCampaignsPaginated($perPage);
+        } else {
+            $campaigns = $this->service->findAllCampaigns();
+        }
 
         return response()->json($campaigns, 200);
     }
@@ -88,6 +92,7 @@ class CampaignController extends Controller
     public function update(Request $request, $id)
     {
         $campaign = $this->service->updateCampaign($request->all(), $id);
+        
         if (isset($campaign)) {
             return response()->json(['campaign' => $campaign->id], 200);
         }

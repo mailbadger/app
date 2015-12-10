@@ -96,6 +96,20 @@ class FieldService
     }
 
     /**
+     * Detach subscriber fields by list id
+     *
+     * @param $listId
+     * @param Subscriber $subscriber
+     * @return int
+     */
+    public function detachSubscriberByListId($listId, Subscriber $subscriber)
+    {
+        $fields = $this->findFieldsByListId($listId, false, 10, [], ['id'])->toArray();
+
+        return $subscriber->fields()->detach(array_flatten($fields));
+    }
+
+    /**
      * Find all fields
      *
      * @param bool $paginate
@@ -107,18 +121,6 @@ class FieldService
         return (!empty($paginate)) ? $this->fieldRepository->paginate($perPage) : $this->fieldRepository->all();
     }
 
-    /**
-     * Detach subscriber fields by list id
-     *
-     * @param $listId
-     * @param Subscriber $subscriber
-     * @return int
-     */
-    public function detachSubscriberByListId($listId, Subscriber $subscriber)
-    {
-        $fields = $this->findFieldsByListId($listId, false, 10, [], ['id'])->toArray();
-        return $subscriber->fields()->detach(array_flatten($fields));
-    }
 
     /**
      * Find a field by id
