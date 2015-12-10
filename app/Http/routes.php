@@ -11,6 +11,8 @@ Route::post('api/emails/bounces', 'Api\EmailController@bounces');
 
 Route::post('api/emails/complaints', 'Api\EmailController@complaints');
 
+Route::get('api/emails/opens', 'Api\EmailController@opens');
+
 //Api routes
 Route::group(['middleware' => 'csrf'], function () {
     // Authentication routes
@@ -59,6 +61,6 @@ Route::group(['middleware' => 'csrf'], function () {
 Route::get('/', [
     'middleware' => 'guest',
     function () {
-        return view('home');
+        return view('auth.login');
     },
 ]);

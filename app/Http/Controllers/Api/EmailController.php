@@ -102,6 +102,20 @@ class EmailController extends Controller
         }
     }
 
+    public function opens(Request $request)
+    {
+        $this->validate($request, [
+            '_t' => 'required'
+        ]); 
+
+        $this->service->incrementOpensByToken($request->input('_t')); 
+    }
+
+    public function subscribe(Request $request)
+    {
+        //
+    }
+
     public function unsubscribe(Request $request)
     {
         //

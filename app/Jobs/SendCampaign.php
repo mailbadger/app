@@ -68,7 +68,9 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
         $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) 
             use ($campaign, $emailService, $templateService, $client, &$total) {
             foreach($subscribers as $subscriber) {
-                $opensTrackerUrl = url('/api/emails/opens?cid='.$campaign->id.'&sid='.$subscriber->id);
+                $token = $emailService->generateUniqueToken();
+
+                $opensTrackerUrl = url('/api/emails/opens?_t='.$token);
 
                 $tags = $this->createTagsFromSubscriberFields($subscriber->name, $subscriber->email, $subscriber->fields->toArray());
 
@@ -82,6 +84,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                     'subscriber_id' => $subscriber->id,
                     'campaign_id'   => $campaign->id,
                     'message_id'    => $messageId,
+                    'token'         => $token,
                     'opens'         => 0,
                 ]);
 

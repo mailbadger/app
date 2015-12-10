@@ -12,6 +12,7 @@ use Illuminate\Contracts\Mail\Mailer;
 use newsletters\Repositories\SentEmailRepository;
 use newsletters\Repositories\BounceRepository;
 use newsletters\Repositories\ComplaintRepository;
+use newsletters\Exceptions\ModelNotFoundException;
 use Aws\Ses\SesClient;
 
 class EmailService
@@ -99,9 +100,7 @@ class EmailService
     public function findAllSentEmailsByCampaignId($campaignId, $paginate = false, $perPage = 10)
     {
         $emails = $this->sentEmailRepository->with(['bounces', 'complaints'])->scopeQuery(function ($q) use ($campaignId) {
-            return $q->whereHas('campaign', function ($q) use ($campaignId) {
-                return $q->where('id', $campaignId);
-            });
+            return $q->where('campaign_id', $id); 
         });
 
         return (!empty($paginate)) ? $emails->paginate($perPage) : $emails->all(); 
@@ -118,6 +117,42 @@ class EmailService
     }
 
     /**
+     * Increments the sent email opens
+     * @param $campaignId
+     * @param $subscriberId
+     * @return mixed 
+     */
+    public function incrementOpensByToken($token)
+    {
+        $sentEmail = $this->sentEmailRepository->findByField('token', $token)->first();
+
+        if(empty($sentEmail)) {
+            throw new ModelNotFoundException();
+        }
+
+        return $this->updateSentEmail(['opens' => $sentEmail->opens + 1], $sentEmail->id);
+    }
+
+    /**
+     * Generates a random unique token for tracking email opens
+     *
+     * @param $length
+     * @return mixed
+     */
+    public function generateUniqueToken($length = 32)
+    {
+        $token = str_random($length);
+
+        $check = $this->sentEmailRepository->findByField('token', $token)->first();
+
+        if(!empty($check)) {
+            return $this->generateUniqueToken($length);
+        }
+
+        return $token;
+    }
+
+    /**
      * Create sent email
      *
      * @param array $data
@@ -126,6 +161,18 @@ class EmailService
     public function createSentEmail(array $data)
     {
         return $this->sentEmailRepository->create($data);
+    }
+
+    /**
+     * Update sent email
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed
+     */
+    public function updateSentEmail(array $data, $id)
+    {
+        return $this->sentEmailRepository->update($data, $id);
     }
 
     /**

@@ -252,7 +252,7 @@ class ListsService
      *
      * @param Lists $list
      * @param $total
-     * @return bool
+     * @return void 
      */
     public function updateTotalListSubscribers(Lists $list, $total)
     {
