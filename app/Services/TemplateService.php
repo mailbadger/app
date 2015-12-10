@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\TemplateRepository;
-use Symfony\Component\DomCrawler\Crawler;
+use Sunra\PhpSimple\HtmlDomParser;
 
 /**
  * Created by PhpStorm.
@@ -102,23 +102,60 @@ class TemplateService
      * @param $templateId
      * @param $subscriberName
      * @param $subscriberEmail
-     * @param array $customFields
+     * @param $opensTrackerUrl
+     * @param array $customTags
      * @return string
      */
-    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, array $customFields = [])
-    {
-        $template = $this->templateRepository->find($templateId);
-        $content = $template->content;
-        
-        $content = preg_replace('/\*\|Name\|\*/i', $subscriberName, $content);
-        $content = preg_replace('/\*\|Email\|\*/i', $subscriberEmail, $content);
+    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, $opensTrackerUrl, array $customTags = [])
+    { 
+        $template = $this->templateRepository->find($templateId);  
 
-        foreach ($customFields as $key => $val) { 
-            $content = preg_replace('/\*\|' . $key . '\|\*/i', $val, $content);
+        $dom = HtmlDomParser::str_get_html($template->content);
+
+        $dom = $this->replaceTagsInTemplate($dom, $customTags); 
+        
+        $dom = $this->appendImg($dom, $opensTrackerUrl);
+
+        $html = $dom->outertext;
+
+        $dom->clear();
+        unset($dom);
+
+        return $html;
+    }
+
+    /**
+     * @param $content
+     * @param array $tags
+     * @return Dom 
+     */
+    private function replaceTagsInTemplate($dom, array $tags)
+    {
+        foreach($tags as $key => $val) {
+            $dom->outertext = preg_replace($key, $val, $dom->outertext);
         }
 
-        $html = new Crawler($content);
+        return $dom;
+    }
 
-        return $html->html();
+    /**
+     * Append image tag used for tracking the email opens
+     * @param $content
+     * @param $url
+     * @return string
+     */
+    private function appendImg($dom, $url)
+    {
+        $img = '<img src="'.$url.'"/>'.PHP_EOL;
+ 
+        $body = $dom->find('html body', 0);
+ 
+        if(!empty($body)) {
+            $body->innertext .= $img;
+        } else {
+            $dom->outertext .= $img;
+        }
+  
+        return $dom;
     }
 }

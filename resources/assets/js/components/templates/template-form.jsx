@@ -47,7 +47,17 @@ var TemplateForm = React.createClass({
         }
     },
     componentDidMount: function () {
-        CKEDITOR.replace('content');
+        CKEDITOR.replace('content', {
+            allowedContent: {
+                $1: {
+                    elements: CKEDITOR.dtd,
+                    attributes: true,
+                    styles: true,
+                    classes: true
+                }
+            },
+            disallowedContent:  'script; *[on*]'
+        });
     },
     render: function () {
         var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;

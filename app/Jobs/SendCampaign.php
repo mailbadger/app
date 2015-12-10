@@ -29,9 +29,9 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     protected $listIds;
 
     /**
-     * @var array
+     * @var SesClient 
      */
-    protected $awsConfig;
+    protected $client;
 
     /**
      * Create a new job instance.
@@ -43,7 +43,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     {
         $this->campaign = $campaign;
         $this->listIds = $listIds;
-        $this->awsConfig = $awsConfig;
+        $this->client = new SesClient($this->awsConfig); 
     }
 
     /**
@@ -58,17 +58,25 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
         SubscriberService $subscriberService,
         TemplateService $templateService
     ) {
-        $campaign = $this->campaign;
-
-        $client = new SesClient($this->awsConfig);
+        $campaign = $this->campaign; 
+        $client = $this->client;
 
         $campaignService->updateCampaign(['status' => 'sending'], $this->campaign->id);
 
         $total = 0;
-        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) use ($campaign, $emailService, $templateService, $client, &$total) {
+
+        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) 
+            use ($campaign, $emailService, $templateService, $client, &$total) {
             foreach($subscribers as $subscriber) {
-                $html = $templateService->renderTemplate($campaign->template_id, 'Test Recipient', $subscriber->email, $subscriber->fields->toArray());
-                $messageId = $emailService->sendEmail($client, $html, $subscriber->email, $campaign->from_email, $campaign->from_name, $campaign->subject);
+                $opensTrackerUrl = url('/api/emails/opens?cid='.$campaign->id.'&sid='.$subscriber->id);
+
+                $tags = $this->createTagsFromSubscriberFields($subscriber->name, $subscriber->email, $subscriber->fields->toArray());
+
+                $html = $templateService->renderTemplate($campaign->template_id, 
+                    $subscriber->name, $subscriber->email, $opensTrackerUrl, $tags);
+
+                $messageId = $emailService->sendEmail($client, $html, $subscriber->email,
+                    $campaign->from_email, $campaign->from_name, $campaign->subject);
 
                 $emailService->createSentEmail([
                     'subscriber_id' => $subscriber->id,
@@ -83,5 +91,25 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
 
         $campaignService->updateCampaign(['status' => 'sent', 'recipients' => $total, 'sent_at' => Carbon::now()],
             $this->campaign->id);
+    }
+
+    /**
+     * @param $subscriberName
+     * @param $subscriberEmail
+     * @param array $fields
+     * @return array
+     */
+    private function createTagsFromSubscriberFields($subscriberName, $subscriberEmail, array $fields)
+    { 
+        $tags = [
+            '/\*\|Name\|\*/i'  => $subscriberName,
+            '/\*\|Email\|\*/i' => $subscriberEmail,
+        ];
+
+        foreach ($customFields as $key => $val) { 
+            $tags['/\*\|' . $key . '\|\*/i'] = $val;
+        } 
+
+        return $tags;
     }
 }
