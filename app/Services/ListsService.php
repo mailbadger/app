@@ -35,67 +35,6 @@ class ListsService
     }
 
     /**
-     * Find all subscribers lists
-     *
-     * @param bool|false $paginate
-     * @param int $perPage
-     * @return mixed
-     */
-    public function findAllLists($paginate = false, $perPage = 10)
-    {
-        if ($paginate) {
-            return $this->listsRepository->paginate($perPage);
-        }
-
-        return $this->listsRepository->all();
-    }
-
-    /**
-     * Find a list by id
-     *
-     * @param $id
-     * @return mixed|null
-     */
-    public function findList($id)
-    {
-        return $this->listsRepository->find($id);
-    }
-
-    /**
-     * Create list
-     *
-     * @param array $data
-     * @return mixed|null
-     */
-    public function createList(array $data)
-    {
-        return $this->listsRepository->create($data);
-    }
-
-    /**
-     * Update list by id
-     *
-     * @param array $data
-     * @param $id
-     * @return mixed|null
-     */
-    public function updateList(array $data, $id)
-    {
-        return $this->listsRepository->update($data, $id);
-    }
-
-    /**
-     * Delete a list by its id
-     *
-     * @param $id
-     * @return bool|int
-     */
-    public function deleteList($id)
-    {
-        return $this->listsRepository->delete($id);
-    }
-
-    /**
      * Create subscribers from a imported file
      *
      * @param $file
@@ -137,7 +76,7 @@ class ListsService
             ->count();
 
         $total = $list->total_subscribers + $totalSubscribers;
-        $this->updateTotalListSubscribers($list, $total);
+        $this->updateTotalListSubscribers($list->id, $total);
 
         return $totalSubscribers;
     }
@@ -190,13 +129,7 @@ class ListsService
      */
     public function exportSubscribers($listId, FileService $fileService, FieldService $fieldService)
     {
-        $header = $fieldService->findFieldsByListId($listId)
-            ->map(function ($field) {
-                return $field->name;
-            })
-            ->prepend('email')
-            ->prepend('name')
-            ->toArray();
+        $header = $fieldService->makeHeaderForExportFileByListId($listId);
 
         $subscribers = $this->subscriberRepository
             ->with('fields')
@@ -250,13 +183,80 @@ class ListsService
     /**
      * Update total subscribers to list
      *
-     * @param Lists $list
+     * @param $listId
      * @param $total
-     * @return void 
+     * @return mixed 
      */
-    public function updateTotalListSubscribers(Lists $list, $total)
+    public function updateTotalListSubscribers($listId, $total)
     {
-        $list->total_subscribers = (!is_numeric($total) || $total < 0) ? 0 : $total;
-        $list->save();
+        $totalSubs  = (!is_numeric($total) || $total < 0) ? 0 : $total;
+
+        return $this->updateList(['total_subscribers' => $totalSubs], $listId);
+    }
+
+    /**
+     * Find all subscribers lists
+     *
+     * @return mixed
+     */
+    public function findAllLists()
+    {
+        return $this->listsRepository->all();
+    }
+
+    /**
+     * Find all subscribers lists paginated
+     *
+     * @param int $perPage
+     * @return mixed
+     */
+    public function findAllListsPaginated($perPage = 10)
+    {
+        return $this->listsRepository->paginate($perPage);
+    }
+
+    /**
+     * Find a list by id
+     *
+     * @param $id
+     * @return mixed|null
+     */
+    public function findList($id)
+    {
+        return $this->listsRepository->find($id);
+    }
+
+    /**
+     * Create list
+     *
+     * @param array $data
+     * @return mixed|null
+     */
+    public function createList(array $data)
+    {
+        return $this->listsRepository->create($data);
+    }
+
+    /**
+     * Update list by id
+     *
+     * @param array $data
+     * @param $id
+     * @return mixed|null
+     */
+    public function updateList(array $data, $id)
+    {
+        return $this->listsRepository->update($data, $id);
+    }
+
+    /**
+     * Delete a list by its id
+     *
+     * @param $id
+     * @return bool|int
+     */
+    public function deleteList($id)
+    {
+        return $this->listsRepository->delete($id);
     }
 }

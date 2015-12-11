@@ -2,7 +2,6 @@
 
 namespace newsletters\Services;
 
-use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\TemplateRepository;
@@ -29,17 +28,22 @@ class TemplateService
     /**
      * Find all templates
      *
-     * @param bool $paginate
+     * @return mixed
+     */
+    public function findAllTemplates()
+    {
+        return $this->templateRepository->all(['id', 'name', 'created_at', 'updated_at']);
+    }
+
+    /**
+     * Find all templates paginated
+     *
      * @param int $perPage
      * @return mixed
      */
-    public function findAllTemplates($paginate = false, $perPage = 10)
+    public function findAllTemplatesPaginated($perPage = 10)
     {
-        $columns = ['id', 'name', 'created_at', 'updated_at'];
-
-        return (!empty($paginate))
-            ? $this->templateRepository->paginate($perPage, $columns)
-            : $this->templateRepository->all($columns);
+        return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']); 
     }
 
     /**
@@ -125,6 +129,9 @@ class TemplateService
     }
 
     /**
+     * Replace the personalization tags that are put in the template content
+     * eg tags: *|Name|*, *|Email|* etc..
+     *
      * @param $content
      * @param array $tags
      * @return Dom 
@@ -140,6 +147,7 @@ class TemplateService
 
     /**
      * Append image tag used for tracking the email opens
+     *
      * @param $content
      * @param $url
      * @return string
@@ -148,6 +156,7 @@ class TemplateService
     {
         $img = '<img src="'.$url.'"/>'.PHP_EOL;
  
+        //append the image inside the body tag if the dom has it
         $body = $dom->find('html body', 0);
  
         if(!empty($body)) {

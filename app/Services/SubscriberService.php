@@ -33,7 +33,7 @@ class SubscriberService
      * @param $listId
      * @return mixed
      */
-    public function findAllSubscribersByListId($listId, $paginate = false, $perPage = 10)
+    public function findAllSubscribersByListId($listId, $perPage = 10)
     {
         return $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
             return $q->whereHas('lists', function ($q) use ($listId) {
@@ -89,7 +89,6 @@ class SubscriberService
         return $this->subscriberRepository->find($id);
     }
 
-
     /**
      * Create subscriber
      *
@@ -100,6 +99,7 @@ class SubscriberService
     {
         return $this->subscriberRepository->create($data);
     }
+
     /**
      * Update subscriber by id
      *

@@ -30,7 +30,13 @@ class ListsController extends Controller
      */
     public function index(Request $request)
     {
-        $lists = $this->service->findAllLists($request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
+
+        if($request->has('paginate')) {
+            $lists = $this->service->findAllListsPaginated($perPage);
+        } else {
+            $lists = $this->service->findAllLists();
+        }
 
         return response()->json($lists, 200);
     }

@@ -6,6 +6,7 @@ use Illuminate\Contracts\Bus\SelfHandling;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use newsletters\Entities\Campaign;
 use newsletters\Services\CampaignService;
 use newsletters\Services\EmailService;
@@ -13,6 +14,7 @@ use newsletters\Services\TemplateService;
 use newsletters\Services\SubscriberService;
 use Aws\Ses\SesClient;
 use Carbon\Carbon;
+use Exception;
 
 class SendCampaign extends Job implements SelfHandling, ShouldQueue
 {
@@ -68,32 +70,40 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
         $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) 
             use ($campaign, $emailService, $templateService, $client, &$total) {
             foreach($subscribers as $subscriber) {
-                $token = $emailService->generateUniqueToken();
+                try {
+                    $token = $emailService->generateUniqueToken();
 
-                $opensTrackerUrl = url('/api/emails/opens?_t='.$token);
+                    $opensTrackerUrl = url('/api/emails/opens?_t='.$token);
 
-                $tags = $this->createTagsFromSubscriberFields($subscriber->name, $subscriber->email, $subscriber->fields->toArray());
+                    $tags = $this->createTagsFromSubscriberFields($subscriber->name, $subscriber->email,
+                        $subscriber->fields->toArray());
 
-                $html = $templateService->renderTemplate($campaign->template_id, 
-                    $subscriber->name, $subscriber->email, $opensTrackerUrl, $tags);
+                    $html = $templateService->renderTemplate($campaign->template_id, 
+                        $subscriber->name, $subscriber->email, $opensTrackerUrl, $tags);
 
-                $messageId = $emailService->sendEmail($client, $html, $subscriber->email,
-                    $campaign->from_email, $campaign->from_name, $campaign->subject);
+                    $messageId = $emailService->sendEmail($client, $html, $subscriber->email,
+                        $campaign->from_email, $campaign->from_name, $campaign->subject);
 
-                $emailService->createSentEmail([
-                    'subscriber_id' => $subscriber->id,
-                    'campaign_id'   => $campaign->id,
-                    'message_id'    => $messageId,
-                    'token'         => $token,
-                    'opens'         => 0,
-                ]);
+                    $emailService->createSentEmail([
+                        'subscriber_id' => $subscriber->id,
+                        'campaign_id'   => $campaign->id,
+                        'message_id'    => $messageId,
+                        'token'         => $token,
+                        'opens'         => 0,
+                    ]);
 
-                $total++;
+                    $total++;
+                } catch(Exception $e) {
+                    Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
+                }
             }
         });
 
-        $campaignService->updateCampaign(['status' => 'sent', 'recipients' => $total, 'sent_at' => Carbon::now()],
-            $this->campaign->id);
+        $campaignService->updateCampaign([
+            'status'     => 'sent',
+            'recipients' => $total,
+            'sent_at'    => Carbon::now()
+        ], $this->campaign->id);
     }
 
     /**

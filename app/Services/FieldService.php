@@ -73,26 +73,40 @@ class FieldService
             ->findWhere(['name' => $name, 'list_id' => $listId], $columns)
             ->first();
     }
-
+    
     /**
      * Find fields by list id
      *
      * @param $listId
-     * @param bool $paginate
      * @param int $perPage
      * @param array $with
      * @param array $columns
      * @return mixed
      */
-    public function findFieldsByListId($listId, $paginate = false, $perPage = 10, $with = [], $columns = ['*'])
+    public function findFieldsByListIdPaginated($listId, $perPage = 10, $with = [], $columns = ['*'])
     {
-        $query = $this->fieldRepository
+        return $this->fieldRepository
             ->with($with)
             ->scopeQuery(function ($q) use ($listId) {
                 return $q->where('list_id', $listId);
-            });
+            })->paginate($perPage, $columns);
+    }
 
-        return (!empty($paginate)) ? $query->paginate($perPage, $columns) : $query->all($columns);
+    /**
+     * Find fields by list id
+     *
+     * @param $listId
+     * @param array $with
+     * @param array $columns
+     * @return mixed
+     */
+    public function findFieldsByListId($listId, $with = [], $columns = ['*'])
+    {
+        return $this->fieldRepository
+            ->with($with)
+            ->scopeQuery(function ($q) use ($listId) {
+                return $q->where('list_id', $listId);
+            })->all($columns);
     }
 
     /**
@@ -104,23 +118,47 @@ class FieldService
      */
     public function detachSubscriberByListId($listId, Subscriber $subscriber)
     {
-        $fields = $this->findFieldsByListId($listId, false, 10, [], ['id'])->toArray();
+        $fields = $this->findFieldsByListId($listId, [], ['id'])->toArray();
 
         return $subscriber->fields()->detach(array_flatten($fields));
     }
 
     /**
+     * Creates an array that is used for the header in the subscribers export file
+     * 
+     * @param $listId
+     * @return array
+     */
+    public function makeHeaderForExportFileByListId($listId)
+    {
+        return $this->findFieldsByListId($listId)
+            ->map(function ($field) {
+                return $field->name;
+            })
+            ->prepend('email')
+            ->prepend('name')
+            ->toArray();
+    }
+
+    /**
      * Find all fields
      *
-     * @param bool $paginate
+     * @return mixed
+     */
+    public function findAllFields()
+    {
+        return $this->fieldRepository->all();
+    }
+
+    /** Find all fields paginated
+     *
      * @param int $perPage
      * @return mixed
      */
-    public function findAllFields($paginate = false, $perPage = 10)
+    public function findAllFieldsPaginated($perPage = 10)
     {
-        return (!empty($paginate)) ? $this->fieldRepository->paginate($perPage) : $this->fieldRepository->all();
+        return $this->fieldRepository->paginate($perPage);
     }
-
 
     /**
      * Find a field by id
