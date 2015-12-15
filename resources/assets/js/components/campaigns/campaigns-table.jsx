@@ -1,52 +1,62 @@
 /**
  * Created by filip on 22.7.15.
  */
-/** @jsx React.DOM */
 
-require('bootpag/lib/jquery.bootpag.min.js');
+import * as bootpag from 'bootpag/lib/jquery.bootpag.min.js';
+import React, {Component} from 'react';
+import DeleteButton from '../delete-button.jsx';
+import Campaign from '../../entities/campaign.js';
 
-var React = require('react');
-var DeleteButton = require('../delete-button.jsx');
-var Campaign = require('../../entities/campaign.js');
-var c = new Campaign();
+const c = new Campaign();
 
-var getAllCampaigns = function (component) {
-    var data = {
+const getAllCampaigns = (component) => {
+    let data = {
         paginate: true,
         per_page: 10,
         page: 1
     };
 
-    c.all(data).done(function (res) {
+    c.all(data).done((res) => {
         component.setState({campaigns: res});
 
         $('.pagination').bootpag({
             total: res.last_page,
             page: res.current_page,
             maxVisible: 5
-        }).on("page", function (event, num) {
+        }).on("page", (event, num) => {
             data.page = num;
-            c.all(data).done(function (res) {
+            c.all(data).done((res) => {
                 component.setState({campaigns: res});
                 $('.pagination').bootpag({page: res.current_page});
             });
         });
     });
-};
+}
 
-var CampaignRow = React.createClass({
-    editCampaign: function () {
+class CampaignRow extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.editCampaign = this.editCampaign.bind(this);
+        this.sendCampaign = this.sendCampaign.bind(this);
+    }
+
+    editCampaign() {
         this.props.editCampaign(this.props.data.id);
-    },
-    sendCampaign: function () {
+    }
+    
+    sendCampaign() {
         this.props.sendCampaign(this.props.data.id);
-    },
-    render: function () {
-        var edit = (this.props.data.status === 'draft' || this.props.data.status === 'scheduled') ?
+    }
+    
+    render() {
+        let edit = (this.props.data.status === 'draft' || this.props.data.status === 'scheduled') ?
             <span> | <a href="#" onClick={this.editCampaign}>Edit</a></span> : null;
-        var campaignName = (this.props.data.status !== 'sent' || this.props.data.status === 'sending') 
+        let campaignName = (this.props.data.status !== 'sent' || this.props.data.status === 'sending') 
                 ? <span><a href="#" onClick={this.sendCampaign}>{this.props.data.name}</a>{edit}</span>
                 : this.props.data.name; 
+
         return (
             <tr>
                 <td>{campaignName}</td>
@@ -64,28 +74,40 @@ var CampaignRow = React.createClass({
                     }
                 })()}</td>
                 <td>
-                    <DeleteButton success={this.props.handleDelete} delete={c.delete.bind(this, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} resourceId={this.props.data.id} entity={c}/>
                 </td>
             </tr>
         );
     }
-});
+}
 
-var CampaignsTable = React.createClass({
-    getInitialState: function () {
-        return {campaigns: {data: []}};
-    },
-    componentDidMount: function () {
+export default class CampaignsTable extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            campaigns: {
+                data: []
+            }
+        };
+
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+
+    componentDidMount() {
         getAllCampaigns(this);
-    },
-    handleDelete: function () {
+    }
+
+    handleDelete() {
         getAllCampaigns(this);
-    },
-    render: function () {
-        var rows = function (data) {
+    }
+
+    render() {
+        let rows = (data) => {
             return <CampaignRow key={data.id} data={data} handleDelete={this.handleDelete}
                                 editCampaign={this.props.editCampaign} sendCampaign={this.props.sendCampaign}/>
-        }.bind(this);
+        }
+
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
@@ -107,7 +129,4 @@ var CampaignsTable = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = CampaignsTable;
-
+}

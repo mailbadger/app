@@ -1,34 +1,43 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var User = require('../entities/user.js');
+import sweetalert from 'sweetalert';
+import React, {Component} from 'react';
+import User from '../entities/user.js';
 
-var u = new User();
+const u = new User();
 
-var SettingsForm = React.createClass({
-    getInitialState: function () {
-        return {
+export default class SettingsForm extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
             hasErrors: false,
-            errors: {},
+            errors: {}
         };
-    },
-    handleSuccess: function () {
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSuccess() {
         this.setState({hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The settings have been saved",
             type: "success"
         });
-    },
-    handleErrors: function (xhr) {
+    }
+    
+    handleErrors(xhr) {
         this.setState({hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
 
-        var data = {
+        let data = {
             name: this.refs.name.getDOMNode().value,
             email: this.refs.email.getDOMNode().value, 
             aws_key: this.refs.aws_key.getDOMNode().value,
@@ -36,16 +45,17 @@ var SettingsForm = React.createClass({
             aws_region: this.refs.aws_region.getDOMNode().value,
         };
 
-        var password = this.refs.password.getDOMNode().value;
+        let password = this.refs.password.getDOMNode().value;
         
         if(password.trim() !== '') {
             data.password = password.trim();
         }
 
         u.saveSettings(data).done(this.handleSuccess).fail(this.handleErrors);
-    },
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+    }
+
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
         return (
             <div>
                 <form onSubmit={this.handleSubmit}>
@@ -90,7 +100,4 @@ var SettingsForm = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = SettingsForm;
-
+}

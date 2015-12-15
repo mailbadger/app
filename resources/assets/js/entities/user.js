@@ -1,21 +1,19 @@
 
-var User = function () {
+export default class User {
    
-    this.getSettings = function () {
+    getSettings() {
         return $.ajax({
             type: 'GET',
             url: url_base + '/dashboard/user-settings'
         });
-    };
+    }
 
-    this.saveSettings = function (data) {
+    saveSettings(data) {
         return $.ajax({
             type: 'POST',
             url: url_base + '/dashboard/settings',
             data: data,
             dataType: 'json'
         });
-    };
+    }
 }
-
-module.exports = User;

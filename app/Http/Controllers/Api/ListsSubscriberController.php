@@ -51,7 +51,7 @@ class ListsSubscriberController extends Controller
      * @return Response
      */
     public function store(StoreSubscriberRequest $request, $listId, SubscriberService $subscriberService)
-    { 
+    {
         $subscriber = $subscriberService->findSubscriberByEmail($request->input('email'));
 
         if(empty($subscriber)) {

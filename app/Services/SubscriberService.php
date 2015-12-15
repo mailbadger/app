@@ -9,7 +9,7 @@ class SubscriberService
 {
     /**
      * @var SubscriberRepository
-     */    
+     */
     protected $subscriberRepository;
 
     public function __construct(SubscriberRepository $subscriberRepository)
@@ -44,7 +44,7 @@ class SubscriberService
 
     /**
      * Find all subscribers on a list paginated
-     * 
+     *
      * @param $listId
      * @param $perPage
      * @return mixed
@@ -75,7 +75,7 @@ class SubscriberService
                     return $q->whereIn('list_id', $listIds);
                 });
             })
-            ->chunk($chunks, $closure); 
+            ->chunk($chunks, $closure);
     }
 
     /**
@@ -93,7 +93,7 @@ class SubscriberService
      * Create subscriber
      *
      * @param array $data
-     * @return mixed 
+     * @return mixed
      */
     public function createSubscriber(array $data)
     {

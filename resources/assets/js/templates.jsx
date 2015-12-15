@@ -1,27 +1,37 @@
-/** @jsx React.DOM */
 
-var React = require('react');
+import React, {Component} from 'react';
 
-var TemplateForm = require('./components/templates/template-form.jsx');
-var TemplatesTable = require('./components/templates/templates-table.jsx');
-var CreateNewButton = require('./components/create-new-button.jsx');
-var Template = require('./entities/template.js');
+import TemplateForm from './components/templates/template-form.jsx';
+import TemplatesTable from './components/templates/templates-table.jsx';
+import CreateNewButton from './components/create-new-button.jsx';
+import Template from './entities/template.js';
 
-var t = new Template();
+const t = new Template();
 
-var Templates = React.createClass({
-    getInitialState: function () {
-        return {step: '', template: {}}
-    },
-    editTemplate: function (id) {
-        t.get(id).done(function (res) {
+class Templates extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            step: '',
+            campaign: {}
+        };
+
+        this.editTemplate = this.editTemplate.bind(this);
+        this.back = this.back.bind(this);
+    }
+
+    editTemplate(id) {
+        t.get(id).done((res) => {
             this.setState({step: 'edit', template: res});
-        }.bind(this));
-    },
-    back: function () {
+        });
+    }
+
+    back() {
         this.setState({step: ''});
-    },
-    render: function () {
+    }
+    
+    render() {
         switch (this.state.step) {
             case 'edit':
                 return <TemplateForm data={this.state.template} edit={true} back={this.back}/>;
@@ -37,6 +47,6 @@ var Templates = React.createClass({
                 );
         }
     }
-});
+}
 
 React.render(<Templates />, document.getElementById('templates'));

@@ -1,17 +1,24 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var _ = require('underscore');
-var React = require('react');
-var Campaign = require('../../entities/campaign.js');
-var c = new Campaign();
+import sweetalert from 'sweetalert';
+import _ from 'underscore';
+import React, {Component} from 'react';
+import Campaign from '../../entities/campaign.js';
 
-var TestSend = React.createClass({
-    handleTestSend: function (e) {
+const c = new Campaign();
+
+export default class TestSend extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.handleTestSend = this.handleTestSend.bind(this);
+    }
+
+    handleTestSend(e) {
         e.preventDefault();
 
-        var emails = this.refs.emails.getDOMNode().value;
-        swal({
+        let emails = this.refs.emails.getDOMNode().value;
+        sweetalert({
             title: "Are you sure?",
             text: "Do you want to send this campaign to the following emails: " + emails,
             type: "info",
@@ -21,19 +28,20 @@ var TestSend = React.createClass({
         },
         function () {    
             c.testSend(emails.split(','), this.props.cid)
-            .done(function (res) {
+            .done((res) => {
                 swal("Sent!", "Test emails have been sent.", "success");
-            }).fail(function (xhr) {
-                var html = '<ul>';
+            }).fail((xhr) => {
+                let html = '<ul>';
                 _.map(xhr.responseJSON, function(e) { 
                     html += '<li>' + e[0] + '</li>'; 
                 });
                 html += '</ul>';
-                swal({html:true, title: "Cancelled", text: html, type: "error"});
+                sweetalert({html:true, title: "Cancelled", text: html, type: "error"});
             });
         }.bind(this));
-    },
-    render: function () {
+    }
+    
+    render() {
         return (
             <div>
                 <h3>Test send this campaign</h3>
@@ -52,6 +60,4 @@ var TestSend = React.createClass({
             </div>
         )
     }
-});
-
-module.exports = TestSend;
+}

@@ -1,26 +1,36 @@
-/** @jsx React.DOM */
 
-var React = require('react');
+import React, {Component} from 'react';
 
-var ReportsTable = require('./components/reports/reports-table.jsx');
-var Report = require('./components/reports/report.jsx');
-var Campaign = require('./entities/campaign.js');
+import ReportsTable from './components/reports/reports-table.jsx';
+import Report from './components/reports/report.jsx';
+import Campaign from './entities/campaign.js';
 
-var c = new Campaign();
+const c = new Campaign();
 
-var Reports = React.createClass({
-    getInitialState: function () {
-        return {step: '', campaign: {}}
-    },
-    viewReport: function (id) {
-        c.get(id).done(function (res) {
+class Reports extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            step: '',
+            campaign: {}
+        };
+
+        this.viewReport = this.viewReport.bind(this);
+        this.back = this.back.bind(this);
+    }
+    
+    viewReport(id) {
+        c.get(id).done((res) => {
             this.setState({step: 'view', campaign: res});
-        }.bind(this)); 
-    },
-    back: function () {
+        }); 
+    }
+
+    back() {
         this.setState({step: ''});
-    },
-    render: function () { 
+    }
+
+    render() { 
         switch (this.state.step) {
             case 'view':
                 return <Report data={this.state.campaign} back={this.back}/>;
@@ -32,6 +42,6 @@ var Reports = React.createClass({
                 ); 
         }
     }
-});
+}
 
 React.render(<Reports />, document.getElementById('reports'));

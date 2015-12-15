@@ -1,69 +1,30 @@
 /**
  * Created by filip on 22.7.15.
  */
-var Campaign = function () {
+import Entity from './entity'
 
-    var url = url_base + '/api/campaigns';
+export default class Campaign extends Entity {
+    
+    constructor() {
+        super('campaigns');
+    }
 
-    this.all = function (data) { 
-        return $.ajax({
-            type: 'GET',
-            url: url,
-            data: data,
-            dataType: 'json'
-        });
-    };
-
-    this.get = function (id) {
-        return $.ajax({
-            type: 'GET',
-            url: url + '/' + id,
-            dataType: 'json'
-        });
-    };
-
-    this.delete = function (id) {
-        return $.ajax({
-            type: 'DELETE',
-            url: url + '/' + id,
-            dataType: 'json'
-        });
-    };
-
-    this.create = function (data) {
+    testSend(emails, id) {
         return $.ajax({
             type: 'POST',
-            url: url,
-            data: data,
-            dataType: 'json'
-        });
-    };
-
-    this.update = function (data, id) {
-        return $.ajax({
-            type: 'PUT',
-            url: url + '/' + id,
-            data: data,
-            dataType: 'json'
-        });
-    };
-
-    this.testSend = function (emails, id) {
-        return $.ajax({
-            type: 'POST',
-            url: url + '/' + id + '/test-send',
+            url: this.url + '/' + id + '/test-send',
             data: {
                 emails: emails,
                 id: id
             },
             dataType: 'json'
         });
-    };
+    }
 
-    this.send = function(lists, id) {
+    send(lists, id) {
         return $.ajax({
             type: 'POST',
-            url: url + '/' + id + '/send',
+            url: this.url + '/' + id + '/send',
             data: {
                 lists: lists,
                 id: id
@@ -71,6 +32,4 @@ var Campaign = function () {
             dataType: 'json'
         });
     }
-};
-
-module.exports = Campaign;
+}

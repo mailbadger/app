@@ -1,11 +1,11 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var SettingsForm = require('./components/settings-form.jsx');
-var User = require('./entities/user.js');
-var u = new User();
+import React from 'react';
+import SettingsForm from './components/settings-form.jsx';
+import User from './entities/user.js';
 
-u.getSettings().done(function(res) {  
+const u = new User();
+
+u.getSettings().done((res) => {  
     React.render(<SettingsForm data={res} />, document.getElementById('settings'));
 });
 

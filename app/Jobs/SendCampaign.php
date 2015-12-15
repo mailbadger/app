@@ -31,7 +31,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     protected $listIds;
 
     /**
-     * @var SesClient 
+     * @var SesClient
      */
     protected $client;
 
@@ -45,7 +45,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
     {
         $this->campaign = $campaign;
         $this->listIds = $listIds;
-        $this->client = new SesClient($this->awsConfig); 
+        $this->client = new SesClient($this->awsConfig);
     }
 
     /**
@@ -60,14 +60,14 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
         SubscriberService $subscriberService,
         TemplateService $templateService
     ) {
-        $campaign = $this->campaign; 
+        $campaign = $this->campaign;
         $client = $this->client;
 
         $campaignService->updateCampaign(['status' => 'sending'], $this->campaign->id);
 
         $total = 0;
 
-        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) 
+        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers)
             use ($campaign, $emailService, $templateService, $client, &$total) {
             foreach($subscribers as $subscriber) {
                 try {
@@ -78,7 +78,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                     $tags = $this->createTagsFromSubscriberFields($subscriber->name, $subscriber->email,
                         $subscriber->fields->toArray());
 
-                    $html = $templateService->renderTemplate($campaign->template_id, 
+                    $html = $templateService->renderTemplate($campaign->template_id,
                         $subscriber->name, $subscriber->email, $opensTrackerUrl, $tags);
 
                     $messageId = $emailService->sendEmail($client, $html, $subscriber->email,
@@ -113,15 +113,15 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
      * @return array
      */
     private function createTagsFromSubscriberFields($subscriberName, $subscriberEmail, array $fields)
-    { 
+    {
         $tags = [
             '/\*\|Name\|\*/i'  => $subscriberName,
             '/\*\|Email\|\*/i' => $subscriberEmail,
         ];
 
-        foreach ($customFields as $key => $val) { 
+        foreach ($customFields as $key => $val) {
             $tags['/\*\|' . $key . '\|\*/i'] = $val;
-        } 
+        }
 
         return $tags;
     }

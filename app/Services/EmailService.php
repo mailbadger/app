@@ -100,10 +100,10 @@ class EmailService
     public function findAllSentEmailsByCampaignId($campaignId, $paginate = false, $perPage = 10)
     {
         $emails = $this->sentEmailRepository->with(['bounces', 'complaints'])->scopeQuery(function ($q) use ($campaignId) {
-            return $q->where('campaign_id', $id); 
+            return $q->where('campaign_id', $id);
         });
 
-        return (!empty($paginate)) ? $emails->paginate($perPage) : $emails->all(); 
+        return (!empty($paginate)) ? $emails->paginate($perPage) : $emails->all();
     }
 
     /**
@@ -120,7 +120,7 @@ class EmailService
      * Increments the sent email opens
      * @param $campaignId
      * @param $subscriberId
-     * @return mixed 
+     * @return mixed
      */
     public function incrementOpensByToken($token)
     {

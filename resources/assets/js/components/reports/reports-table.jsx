@@ -1,14 +1,14 @@
-/** @jsx React.DOM */
 
-require('bootpag/lib/jquery.bootpag.min.js');
+import * as bootpag from 'bootpag/lib/jquery.bootpag.min.js';
 
-var React = require('react');
-var DeleteButton = require('../delete-button.jsx');
-var Campaign = require('../../entities/campaign.js');
-var c = new Campaign();
+import React, {Component} from 'react';
+import DeleteButton from '../delete-button.jsx';
+import Campaign from '../../entities/campaign.js';
 
-var getSentCampaigns = function (component) {
-    var data = {
+const c = new Campaign();
+
+const getSentCampaigns = (component) => {
+    let data = {
         paginate: true,
         per_page: 10,
         page: 1,
@@ -16,28 +16,36 @@ var getSentCampaigns = function (component) {
         searchFields: 'status:='
     };
 
-    c.all(data).done(function (res) {
+    c.all(data).done((res) => {
         component.setState({campaigns: res});
 
         $('.pagination').bootpag({
             total: res.last_page,
             page: res.current_page,
             maxVisible: 5
-        }).on("page", function (event, num) {
+        }).on("page", (event, num) => {
             data.page = num;
-            c.all(data).done(function (res) {
+            c.all(data).done((res) => {
                 component.setState({campaigns: res});
                 $('.pagination').bootpag({page: res.current_page});
             });
         });
     });
-};
+}
 
-var ReportRow = React.createClass({
-    viewReport: function () {
+class ReportRow extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.viewReport = this.viewReport.bind(this);
+    }
+
+    viewReport() {
         this.props.viewReport(this.props.data.id);
-    },
-    render: function () {
+    }
+
+    render() {
         return (
             <tr>
                 <td><a href="#" onClick={this.viewReport}>{this.props.data.name}</a></td>
@@ -49,19 +57,27 @@ var ReportRow = React.createClass({
             </tr>
         );
     }
-});
+}
 
-var ReportsTable = React.createClass({
-    getInitialState: function () {
-        return {campaigns: {data: []}};
-    },
-    componentDidMount: function () {
+export default class ReportsTable extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            campaigns: {
+                data: []
+            }
+        };
+    } 
+
+    componentDidMount() {
         getSentCampaigns(this);
-    },
-    render: function () {
-        var rows = function (data) {
+    }
+
+    render() {
+        let rows = (data) => {
             return <ReportRow key={data.id} data={data} viewReport={this.props.viewReport} />
-        }.bind(this);
+        };
 
         return (
             <div>
@@ -84,6 +100,4 @@ var ReportsTable = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = ReportsTable;
+}

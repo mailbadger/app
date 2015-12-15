@@ -1,33 +1,45 @@
-/** @jsx React.DOM */
 
-var React = require('react');
+import React, {Component} from 'react';
 
-var CampaignsTable = require('./components/campaigns/campaigns-table.jsx');
-var CampaignForm = require('./components/campaigns/campaign-form.jsx');
-var SendCampaign = require('./components/campaigns/send-campaign.jsx');
-var CreateNewButton = require('./components/create-new-button.jsx');
-var Campaign = require('./entities/campaign.js');
+import Campaign from './entities/campaign.js';
+import CampaignsTable from './components/campaigns/campaigns-table.jsx';
+import CampaignForm from './components/campaigns/campaign-form.jsx';
+import SendCampaign from './components/campaigns/send-campaign.jsx';
+import CreateNewButton from './components/create-new-button.jsx';
 
-var c = new Campaign();
+const c = new Campaign();
 
-var Campaigns = React.createClass({
-    getInitialState: function () {
-        return {step: '', campaign: {}}
-    },
-    editCampaign: function (id) {
-        c.get(id).done(function (res) {
+class Campaigns extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            step: '',
+            campaign: {}
+        };
+
+        this.editCampaign = this.editCampaign.bind(this);
+        this.sendCampaign = this.sendCampaign.bind(this);
+        this.back = this.back.bind(this);
+    }
+
+    editCampaign(id) {
+        c.get(id).done((res) => {
             this.setState({step: 'edit', campaign: res});
-        }.bind(this));
-    },
-    sendCampaign: function (id) {
-        c.get(id).done(function (res) {
+        });
+    }
+
+    sendCampaign(id) {
+        c.get(id).done((res) => {
             this.setState({step: 'send', campaign: res});
-        }.bind(this));
-    },
-    back: function () {
+        });
+    }
+
+    back() {
         this.setState({step: ''});
-    },
-    render: function () {
+    }
+
+    render() {
         switch (this.state.step) {
             case 'edit':
                 return <CampaignForm data={this.state.campaign} edit={true} back={this.back}/>;
@@ -45,6 +57,6 @@ var Campaigns = React.createClass({
                 );
         }
     }
-});
+}
 
 React.render(<Campaigns />, document.getElementById('campaigns'));

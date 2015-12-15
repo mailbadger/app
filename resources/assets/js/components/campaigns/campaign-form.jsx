@@ -1,39 +1,48 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var Campaign = require('../../entities/campaign.js');
-var Template = require('../../entities/template.js');
-var ErrorsList = require('../errors-list.jsx');
+import sweetalert from 'sweetalert';
+import React from 'react';
+import Campaign from '../../entities/campaign.js';
+import Template from '../../entities/template.js';
+import ErrorsList from '../errors-list.jsx';
 
-var c = new Campaign();
-var t = new Template();
+const c = new Campaign();
+const t = new Template();
 
-var CampaignForm = React.createClass({
-    getInitialState: function () {
-        return {
+export default class CampaignForm extends React.Component { 
+
+    constructor(props) {
+        super(props);
+        this.state = {
             hasErrors: false,
             errors: {},
             templates: []
         };
-    },
-    handleSuccess: function () {
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSuccess() {
         this.setState({hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The campaign was successfully created!",
             type: "success"
-        }, function () {
+        }, () => {
             window.location.href = url_base + '/dashboard';
         });
-    },
-    handleErrors: function (xhr) {
+    }
+
+    handleErrors(xhr) {
         this.setState({hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
-        var data = {};
+        let data = {};
+
         if (!this.props.edit) {
             data = {
                 name: this.refs.name.getDOMNode().value,
@@ -55,23 +64,26 @@ var CampaignForm = React.createClass({
             };
             c.update(data, this.props.data.id).done(this.handleSuccess).fail(this.handleErrors);
         }
-    },
-    componentDidMount: function () {
-        t.all().done(function (res) {
+    }
+
+    componentDidMount() {
+        t.all().done((res) => {
             this.setState({templates: res});
             if (this.props.edit) {
                 $('#select-template').select2('val', this.props.data.template_id);
             }
-        }.bind(this));
+        });
 
         $('#select-template').select2({placeholder: 'Select a template'});
-    },
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
-        var backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
-        var templates = function (t) {
+    }
+
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+        let backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
+        let templates = function (t) {
             return <option value={t.id} key={t.id}>{t.name}</option>
         };
+
         return (
             <div>
                 <form onSubmit={this.handleSubmit}>
@@ -116,6 +128,4 @@ var CampaignForm = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = CampaignForm;
+}

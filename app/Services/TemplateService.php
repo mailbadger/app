@@ -43,7 +43,7 @@ class TemplateService
      */
     public function findAllTemplatesPaginated($perPage = 10)
     {
-        return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']); 
+        return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']);
     }
 
     /**
@@ -111,13 +111,13 @@ class TemplateService
      * @return string
      */
     public function renderTemplate($templateId, $subscriberName, $subscriberEmail, $opensTrackerUrl, array $customTags = [])
-    { 
-        $template = $this->templateRepository->find($templateId);  
+    {
+        $template = $this->templateRepository->find($templateId);
 
         $dom = HtmlDomParser::str_get_html($template->content);
 
-        $dom = $this->replaceTagsInTemplate($dom, $customTags); 
-        
+        $dom = $this->replaceTagsInTemplate($dom, $customTags);
+
         $dom = $this->appendImg($dom, $opensTrackerUrl);
 
         $html = $dom->outertext;
@@ -134,7 +134,7 @@ class TemplateService
      *
      * @param $content
      * @param array $tags
-     * @return Dom 
+     * @return Dom
      */
     private function replaceTagsInTemplate($dom, array $tags)
     {
@@ -155,16 +155,16 @@ class TemplateService
     private function appendImg($dom, $url)
     {
         $img = '<img src="'.$url.'"/>'.PHP_EOL;
- 
+
         //append the image inside the body tag if the dom has it
         $body = $dom->find('html body', 0);
- 
+
         if(!empty($body)) {
             $body->innertext .= $img;
         } else {
             $dom->outertext .= $img;
         }
-  
+
         return $dom;
     }
 }

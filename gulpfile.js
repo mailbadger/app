@@ -46,6 +46,7 @@ var gulp = require('gulp'),
     gulpif = require('gulp-if'),
     del = require('del'),
     es = require('event-stream'),
+    babelify = require('babelify'),
     reactify = require('reactify');
 
 // use "--production" option to minify everything
@@ -96,7 +97,7 @@ gulp.task('scripts', function () {
 
         return browserify({
             entries: [entry],
-            transform: [reactify]
+            transform: [babelify.configure({ presets: ['es2015', 'react'] })]
         })
             .bundle()
             .pipe(source(entry))

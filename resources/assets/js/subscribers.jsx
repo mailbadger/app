@@ -1,37 +1,51 @@
-/** @jsx React.DOM */
 
-var React = require('react');
+import React, {Component} from 'react';
 
-var SubscribersList = require('./components/sub-lists/list.jsx');
-var ListForm = require('./components/sub-lists/list-form.jsx');
-var CustomFields = require('./components/sub-lists/custom-fields.jsx');
-var ListsTable = require('./components/sub-lists/lists-table.jsx');
-var CreateNewButton = require('./components/create-new-button.jsx');
-var List = require('./entities/list.js');
+import SubscribersList from './components/sub-lists/list.jsx';
+import ListForm from './components/sub-lists/list-form.jsx';
+import CustomFields from './components/sub-lists/custom-fields.jsx';
+import ListsTable from './components/sub-lists/lists-table.jsx';
+import CreateNewButton from './components/create-new-button.jsx';
+import List from './entities/list.js';
 
-var l = new List();
+const l = new List();
 
-var Lists = React.createClass({
-    getInitialState: function () {
-        return {step: '', list: {}};
-    },
-    showList: function (id) {
-        l.get(id).done(function (res) {
+class Lists extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            step: '',
+            list: {}
+        };
+
+        this.showList = this.showList.bind(this);
+        this.editList = this.editList.bind(this);
+        this.customFields = this.customFields.bind(this);
+        this.back = this.back.bind(this);
+    }
+ 
+    showList(id) {
+        l.get(id).done((res) => {
             this.setState({step: 'show', list: res});
-        }.bind(this));
-    },
-    editList: function (id) {
-        l.get(id).done(function (res) {
+        });
+    }
+
+    editList(id) {
+        l.get(id).done((res) => {
             this.setState({step: 'edit', list: res});
-        }.bind(this));
-    },
-    customFields: function (id) {
+        });
+    }
+    
+    customFields(id) {
         this.setState({step: 'custom-fields'});
-    },
-    back: function () {
+    }
+
+    back() {
         this.setState({step: ''});
-    },
-    render: function () {
+    }
+
+    render() {
         switch (this.state.step) {
             case 'show':
                 return <SubscribersList list={this.state.list} editList={this.editList} customFields={this.customFields}
@@ -52,6 +66,6 @@ var Lists = React.createClass({
                 );     
         }
     }
-});
+}
 
 React.render(<Lists />, document.getElementById('sub-lists'));

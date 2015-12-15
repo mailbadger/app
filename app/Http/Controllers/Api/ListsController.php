@@ -72,7 +72,7 @@ class ListsController extends Controller
             return response()->json($list, 200);
         }
 
-        return response()->json(['message' => 'The specified resource does not exist.'], 404); 
+        return response()->json(['message' => 'The specified resource does not exist.'], 404);
     }
 
     /**

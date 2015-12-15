@@ -73,7 +73,7 @@ class FieldService
             ->findWhere(['name' => $name, 'list_id' => $listId], $columns)
             ->first();
     }
-    
+
     /**
      * Find fields by list id
      *
@@ -125,7 +125,7 @@ class FieldService
 
     /**
      * Creates an array that is used for the header in the subscribers export file
-     * 
+     *
      * @param $listId
      * @return array
      */

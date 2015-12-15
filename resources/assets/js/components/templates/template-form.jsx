@@ -1,33 +1,41 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var Template = require('../../entities/template.js');
-var ErrorsList = require('../errors-list.jsx');
+import sweetalert from 'sweetalert';
+import React, {Component} from 'react';
+import Template from '../../entities/template.js';
+import ErrorsList from '../errors-list.jsx';
 
-var t = new Template();
+const t = new Template();
 
-var TemplateForm = React.createClass({
-    getInitialState: function () {
-        return {
+export default class TemplateForm extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
             hasErrors: false,
             errors: {}
         };
-    },
-    handleSuccess: function () {
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSuccess() {
         this.setState({hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The template was successfully created!",
             type: "success"
-        }, function () {
+        }, () => {
             window.location.href = url_base + '/dashboard/templates';
         });
-    },
-    handleErrors: function (xhr) {
+    }
+
+    handleErrors(xhr) {
         this.setState({hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
 
@@ -35,7 +43,7 @@ var TemplateForm = React.createClass({
             CKEDITOR.instances[instance].updateElement();
         }
 
-        var data = {
+        let data = {
             name: this.refs.name.getDOMNode().value,
             content: CKEDITOR.instances.content.getData()
         };
@@ -45,8 +53,9 @@ var TemplateForm = React.createClass({
         } else {
             t.update(data, this.props.data.id).done(this.handleSuccess).fail(this.handleErrors);
         }
-    },
-    componentDidMount: function () {
+    }
+
+    componentDidMount() {
         CKEDITOR.replace('content', {
             allowedContent: {
                 $1: {
@@ -58,10 +67,11 @@ var TemplateForm = React.createClass({
             },
             disallowedContent:  'script; *[on*]'
         });
-    },
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
-        var backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
+    }
+
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+        let backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
         return (
             <form onSubmit={this.handleSubmit}>
                 <div className="errors">{errors}</div>
@@ -102,6 +112,4 @@ var TemplateForm = React.createClass({
             </form>
         );
     }
-});
-
-module.exports = TemplateForm;
+}

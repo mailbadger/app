@@ -1,43 +1,53 @@
-/** @jsx React.DOM */
 
-require('bootpag/lib/jquery.bootpag.min.js');
+import * as bootpag from 'bootpag/lib/jquery.bootpag.min.js';
 
-var React = require('react');
-var DeleteButton = require('../delete-button.jsx');
-var List = require('../../entities/list.js');
-var l = new List();
+import React, {Component} from 'react';
+import DeleteButton from '../delete-button.jsx';
+import List from '../../entities/list.js';
 
-var getAllLists = function (component) {
-    var data = {
+const l = new List();
+
+const getAllLists = (component) => {
+    let data = {
         paginate: true,
         per_page: 10,
         page: 1
     };
 
-    l.all(data).done(function (res) {
+    l.all(data).done((res) => {
         component.setState({lists: res});
         $('.pagination').bootpag({
             total: res.last_page,
             page: res.current_page,
             maxVisible: 5
-        }).on("page", function (event, num) {
+        }).on("page", (event, num) => {
             data.page = num;
-            l.all(data).done(function (res) {
+            l.all(data).done((res) =>{
                 component.setState({lists: res});
                 $('.pagination').bootpag({page: res.current_page});
             });
         });
     });
-};
+}
 
-var ListRow = React.createClass({
-    showList: function () {
+class ListRow extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.showList = this.showList.bind(this);
+        this.editList = this.editList.bind(this);
+    }
+
+    showList() {
         this.props.showList(this.props.data.id);
-    },
-    editList: function () {
+    }
+
+    editList() {
         this.props.editList(this.props.data.id);
-    },
-    render: function () {
+    }
+
+    render() {
         return (
             <tr>
                 <td><a href="#" onClick={this.showList}>{this.props.data.name}</a></td>
@@ -46,28 +56,40 @@ var ListRow = React.createClass({
                     <a href="#" onClick={this.editList}><span className="glyphicon glyphicon-pencil"></span></a>
                 </td>
                 <td>
-                    <DeleteButton success={this.props.handleDelete} delete={l.delete.bind(this, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} entity={l} resourceId={this.props.data.id} />
                 </td>
             </tr>
         );
     }
-});
+}
 
-var ListsTable = React.createClass({
-    getInitialState: function () {
-        return {lists: {data: []}};
-    },
-    componentDidMount: function () {
+export default class ListsTable extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            lists: {
+                data: []
+            }
+        };
+
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+
+    componentDidMount() {
         getAllLists(this);
-    },
-    handleDelete: function () {
+    }
+
+    handleDelete() {
         getAllLists(this);
-    },
-    render: function () {
-        var rows = function (data) {
+    }
+
+    render() {
+        let rows = (data) => {
             return <ListRow key={data.id} data={data} handleDelete={this.handleDelete} showList={this.props.showList}
                             editList={this.props.editList}/>
-        }.bind(this);
+        };
+
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
@@ -87,6 +109,4 @@ var ListsTable = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = ListsTable;
+}

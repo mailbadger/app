@@ -185,7 +185,7 @@ class ListsService
      *
      * @param $listId
      * @param $total
-     * @return mixed 
+     * @return mixed
      */
     public function updateTotalListSubscribers($listId, $total)
     {

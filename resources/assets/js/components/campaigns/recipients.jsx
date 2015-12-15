@@ -1,21 +1,27 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var List = require('../../entities/list.js');
-var l = new List();
+import React, {Component} from 'react';
+import List from '../../entities/list.js';
 
-var Recipients = React.createClass({
-    getInitialState: function () {
-        return {lists: [], total: 0};
-    },
-    componentDidMount: function () {
-        l.all().done(function (res) {
+const l = new List();
+
+export default class Recipients extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            lists: [],
+            total: 0
+        };
+    }
+
+    componentDidMount() {
+        l.all().done((res) => {
             this.setState({lists: res});
-        }.bind(this));
-    },
-    render: function () {
-        var listOpts = function (list) {
+        });
+    }
+
+    render() {
+        let listOpts = (list) => {
             return <option key={list.id} value={list.id}>{list.name}</option>
         };
         return (
@@ -31,6 +37,4 @@ var Recipients = React.createClass({
             </div>
         )
     }
-});
-
-module.exports = Recipients;
+}

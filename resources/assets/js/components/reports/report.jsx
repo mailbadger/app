@@ -1,10 +1,9 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var Chart = require('chart.js');
+import React, {Component} from 'react';
+import Chart from 'chart.js';
 
-var ReportInfo = React.createClass({
-    render: function () {
+class ReportInfo extends Component {
+    render() {
         return (
             <div className="col-xs-4 well">
                 <h4>Name: <strong>{this.props.data.name}</strong></h4>
@@ -14,13 +13,13 @@ var ReportInfo = React.createClass({
             </div>
         );
     }
-});
+}
 
-var ReportStatistics = React.createClass({
-    render: function () {
-        var opensPercent = this.props.data.opens_count[0].unique_opens / this.props.data.recipients * 100;
-        var bouncesPercent = this.props.data.bounces_count[0].bounces / this.props.data.recipients * 100;
-        var complaintsPercent = this.props.data.complaints_count[0].complaints / this.props.data.recipients * 100;
+class ReportStatistics extends Component {
+    render() {
+        let opensPercent = this.props.data.opens_count[0].unique_opens / this.props.data.recipients * 100;
+        let bouncesPercent = this.props.data.bounces_count[0].bounces / this.props.data.recipients * 100;
+        let complaintsPercent = this.props.data.complaints_count[0].complaints / this.props.data.recipients * 100;
 
         return (
             <div className="col-xs-6 col-xs-offset-1 well">
@@ -45,11 +44,11 @@ var ReportStatistics = React.createClass({
             </div>
         );
     }
-});
+}
 
-var ReportChart = React.createClass({
-    componentDidMount: function () { 
-        var data = {
+class ReportChart extends Component { 
+    componentDidMount() { 
+        let data = {
             labels: ['Recipients', 'Bounces', 'Complaints', 'Opened', 'Unopened'],
             datasets: [
                 {
@@ -69,10 +68,11 @@ var ReportChart = React.createClass({
             ]
         };
 
-        var ctx = document.getElementById('bar-chart').getContext('2d');
-        var barChart = new Chart(ctx).Bar(data);
-    },
-    render: function () {
+        let ctx = document.getElementById('bar-chart').getContext('2d');
+        let barChart = new Chart(ctx).Bar(data);
+    }
+
+    render() {
         return (
             <div>
                 <ReportInfo data={this.props.data}/>
@@ -83,12 +83,10 @@ var ReportChart = React.createClass({
             </div>
         );
     }
-});
+}
 
-var  Report = React.createClass({
-    render: function () {
+export default class Report extends Component {
+    render() {
         return <ReportChart data={this.props.data}/>;
     }
-});
-
-module.exports = Report;
+}
