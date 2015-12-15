@@ -1,6 +1,5 @@
 
 import React, {Component} from 'react';
-
 import TemplateForm from './components/templates/template-form.jsx';
 import TemplatesTable from './components/templates/templates-table.jsx';
 import CreateNewButton from './components/create-new-button.jsx';

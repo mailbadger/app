@@ -1,6 +1,5 @@
 
 import React, {Component} from 'react';
-
 import ReportsTable from './components/reports/reports-table.jsx';
 import Report from './components/reports/report.jsx';
 import Campaign from './entities/campaign.js';

@@ -1,6 +1,5 @@
 
 import React, {Component} from 'react';
-
 import Campaign from './entities/campaign.js';
 import CampaignsTable from './components/campaigns/campaigns-table.jsx';
 import CampaignForm from './components/campaigns/campaign-form.jsx';

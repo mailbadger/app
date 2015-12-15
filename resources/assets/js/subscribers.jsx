@@ -1,6 +1,5 @@
 
 import React, {Component} from 'react';
-
 import SubscribersList from './components/sub-lists/list.jsx';
 import ListForm from './components/sub-lists/list-form.jsx';
 import CustomFields from './components/sub-lists/custom-fields.jsx';
