@@ -36,7 +36,7 @@ class ListsSubscriberController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        if($request->has('paginate')) {
+        if ($request->has('paginate')) {
             $subscribers = $subscriberService->findAllSubscribersByListIdPaginated($listId, $perPage);
         } else {
             $subscribers = $subscriberService->findAllSubscribersByListId($listId);
@@ -54,7 +54,7 @@ class ListsSubscriberController extends Controller
     {
         $subscriber = $subscriberService->findSubscriberByEmail($request->input('email'));
 
-        if(empty($subscriber)) {
+        if (empty($subscriber)) {
             $subscriber = $subscriberService->createSubscriber($request->all());
         }
 

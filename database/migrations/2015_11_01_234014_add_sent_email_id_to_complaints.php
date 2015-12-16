@@ -12,7 +12,7 @@ class AddSentEmailIdToComplaints extends Migration
      */
     public function up()
     {
-        Schema::table('complaints', function (Blueprint $table) { 
+        Schema::table('complaints', function (Blueprint $table) {
             $table->integer('sent_email_id')->unsigned()->after('type');
             $table->foreign('sent_email_id')->references('id')->on('sent_emails');
         });
