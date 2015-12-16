@@ -14,8 +14,7 @@ class Complaint extends Model implements Transformable
         'recipient',
         'sender',
         'type',
-        'timestamp', 
+        'timestamp',
         'sent_email_id',
     ];
-
 }

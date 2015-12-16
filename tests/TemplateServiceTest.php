@@ -10,9 +10,9 @@ class TestTemplateService extends TestCase
     {
         parent::__construct($name, $data, $dataName);
 
-        $app = $this->createApplication(); 
+        $app = $this->createApplication();
         
-        $this->service = $app->make(newsletters\Services\TemplateService::class); 
+        $this->service = $app->make(newsletters\Services\TemplateService::class);
     }
 
     /**
@@ -21,9 +21,9 @@ class TestTemplateService extends TestCase
      * @param $expected
      *
      * @dataProvider providerAppendImageToDom
-     */ 
+     */
     public function testAppendImageToDom($html, $url, $expected)
-    { 
+    {
         $dom = HtmlDomParser::str_get_html($html);
 
         $newDom = $this->callMethod($this->service, 'appendImg', [$dom, $url]);
@@ -48,7 +48,7 @@ class TestTemplateService extends TestCase
     }
 
     public function providerAppendImageToDom()
-    { 
+    {
         return [
             ['<html><body></body></html>', 'http://test.com', "<html><body><img src=\"http://test.com\"/>\n</body></html>"],
             ['<html><body><div>something here</div></body></html>', 'http://test.com', "<html><body><div>something here</div><img src=\"http://test.com\"/>\n</body></html>"],

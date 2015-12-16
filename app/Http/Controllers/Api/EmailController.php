@@ -20,7 +20,7 @@ class EmailController extends Controller
     private $service;
 
     public function __construct(EmailService $service)
-    { 
+    {
         $this->service = $service;
     }
 
@@ -29,7 +29,7 @@ class EmailController extends Controller
         try {
             $message = Message::fromRawPostData();
             $validator->validate($message);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             abort(404);
         }
 
@@ -40,11 +40,11 @@ class EmailController extends Controller
 
             $sentEmail = $this->service->findSentEmailByMessageId($bounce['mail']['messageId'])->first();
             
-            if(empty($sentEmail)) {
+            if (empty($sentEmail)) {
                 abort(404); //If a sent email doesn't exist with that message id, don't write the bounce
             }
 
-            foreach($bounce['bounce']['bouncedRecipients'] as $recipient) {
+            foreach ($bounce['bounce']['bouncedRecipients'] as $recipient) {
                 $this->service->createBounce([
                     'recipient'     => $recipient['emailAddress'],
                     'sender'        => $bounce['mail']['source'],
@@ -61,7 +61,7 @@ class EmailController extends Controller
                     $subscriberService->updateSubscriber(['blacklisted' => true], $subscriber->id);
                 }
             }
-        }  
+        }
     }
 
     public function complaints(MessageValidator $validator)
@@ -69,7 +69,7 @@ class EmailController extends Controller
         try {
             $message = Message::fromRawPostData();
             $validator->validate($message);
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             abort(404);
         }
 
@@ -80,15 +80,15 @@ class EmailController extends Controller
 
             $sentEmail = $this->service->findSentEmailByMessageId($complaint['mail']['messageId'])->first();
  
-            if(empty($sentEmail)) {
+            if (empty($sentEmail)) {
                 abort(404); //If a sent email doesn't exist with that message id, don't write the bounce
             }
 
-            foreach($complaint['complaint']['complainedRecipients'] as $recipient) {
+            foreach ($complaint['complaint']['complainedRecipients'] as $recipient) {
                 $this->service->createComplaint([
-                    'recipient' => $recipient['emailAddress'], 
+                    'recipient' => $recipient['emailAddress'],
                     'sender'    => $complaint['mail']['source'],
-                    'type'      => $complaint['complaint']['complaintFeedbackType'], 
+                    'type'      => $complaint['complaint']['complaintFeedbackType'],
                     'timestamp' => $complaint['complaint']['timestamp'],
                     'sent_email_id' => $sentEmail->id,
                 ]);
@@ -97,7 +97,7 @@ class EmailController extends Controller
 
                 if (!empty($subscriber)) {
                     $subscriberService->updateSubscriber(['blacklisted' => true], $subscriber->id);
-                } 
+                }
             }
         }
     }
@@ -106,9 +106,9 @@ class EmailController extends Controller
     {
         $this->validate($request, [
             '_t' => 'required'
-        ]); 
+        ]);
 
-        $this->service->incrementOpensByToken($request->input('_t')); 
+        $this->service->incrementOpensByToken($request->input('_t'));
     }
 
     public function subscribe(Request $request)

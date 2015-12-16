@@ -31,7 +31,7 @@ class ListsFieldController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        if($request->has('paginate')) {
+        if ($request->has('paginate')) {
             $fields = $this->service->findFieldsByListIdPaginated($listId, $perPage);
         } else {
             $fields = $this->service->findFieldsByListId($listId);

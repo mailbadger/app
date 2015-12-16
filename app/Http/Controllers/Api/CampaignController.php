@@ -40,7 +40,7 @@ class CampaignController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        if($request->has('paginate')) {
+        if ($request->has('paginate')) {
             $campaigns = $this->service->findAllCampaignsPaginated($perPage);
         } else {
             $campaigns = $this->service->findAllCampaigns();
@@ -164,8 +164,8 @@ class CampaignController extends Controller
             'version'    => 'latest',
         ]);
 
-        foreach($request->input('emails') as $email) {
-            $html = $templateService->renderTemplate($campaign->template_id,'Test Recipient', $email);
+        foreach ($request->input('emails') as $email) {
+            $html = $templateService->renderTemplate($campaign->template_id, 'Test Recipient', $email);
             $emailService->sendEmail($client, $html, $email, $campaign->from_email, $campaign->from_name, $campaign->subject);
         }
 

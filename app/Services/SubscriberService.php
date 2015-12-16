@@ -51,7 +51,7 @@ class SubscriberService
      */
     public function findAllSubscribersByListIdPaginated($listId, $perPage = 10)
     {
-       return $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
+        return $this->subscriberRepository->scopeQuery(function ($q) use ($listId) {
             return $q->whereHas('lists', function ($q) use ($listId) {
                 return $q->where('list_id', $listId);
             });

@@ -67,9 +67,8 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
 
         $total = 0;
 
-        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers)
-            use ($campaign, $emailService, $templateService, $client, &$total) {
-            foreach($subscribers as $subscriber) {
+        $subscriberService->findSubscribersByListIdsByChunks($this->listIds, 1000, function ($subscribers) use ($campaign, $emailService, $templateService, $client, &$total) {
+            foreach ($subscribers as $subscriber) {
                 try {
                     $token = $emailService->generateUniqueToken();
 
@@ -93,7 +92,7 @@ class SendCampaign extends Job implements SelfHandling, ShouldQueue
                     ]);
 
                     $total++;
-                } catch(Exception $e) {
+                } catch (Exception $e) {
                     Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
                 }
             }

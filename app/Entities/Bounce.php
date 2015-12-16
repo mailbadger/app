@@ -16,8 +16,7 @@ class Bounce extends Model implements Transformable
         'action',
         'type',
         'sub_type',
-        'timestamp', 
+        'timestamp',
         'sent_email_id',
     ];
-
 }

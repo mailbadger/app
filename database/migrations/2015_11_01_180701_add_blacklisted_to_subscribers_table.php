@@ -13,7 +13,7 @@ class AddBlacklistedToSubscribersTable extends Migration
     public function up()
     {
         Schema::table('subscribers', function (Blueprint $table) {
-            $table->boolean('blacklisted')->after('name')->default(false); 
+            $table->boolean('blacklisted')->after('name')->default(false);
         });
     }
 
@@ -25,7 +25,7 @@ class AddBlacklistedToSubscribersTable extends Migration
     public function down()
     {
         Schema::table('subscribers', function (Blueprint $table) {
-            $table->dropColumn('blacklisted'); 
+            $table->dropColumn('blacklisted');
         });
     }
 }

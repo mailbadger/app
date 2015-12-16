@@ -32,7 +32,7 @@ class ListsController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        if($request->has('paginate')) {
+        if ($request->has('paginate')) {
             $lists = $this->service->findAllListsPaginated($perPage);
         } else {
             $lists = $this->service->findAllLists();
@@ -51,7 +51,7 @@ class ListsController extends Controller
     {
         $list = $this->service->createList($request->all());
 
-        if(isset($list)) {
+        if (isset($list)) {
             return response()->json(['list' => $list->id], 200);
         }
 
@@ -68,7 +68,7 @@ class ListsController extends Controller
     {
         $list = $this->service->findList($id);
 
-        if(isset($list)) {
+        if (isset($list)) {
             return response()->json($list, 200);
         }
 
@@ -86,7 +86,7 @@ class ListsController extends Controller
     {
         $list = $this->service->updateList($request->all(), $id);
 
-        if(isset($list)) {
+        if (isset($list)) {
             return response()->json(['list' => $list->id], 200);
         }
 

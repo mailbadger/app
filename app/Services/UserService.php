@@ -34,5 +34,4 @@ class UserService
     {
         return $this->userRepository->update($data, $id);
     }
-
 }
