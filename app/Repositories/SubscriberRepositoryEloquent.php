@@ -5,6 +5,7 @@ namespace newsletters\Repositories;
 use newsletters\Entities\Subscriber;
 use Prettus\Repository\Criteria\RequestCriteria;
 use Prettus\Repository\Eloquent\BaseRepository;
+use Closure;
 
 /**
  * Class SubscriberRepositoryEloquent
@@ -28,5 +29,23 @@ class SubscriberRepositoryEloquent extends BaseRepository implements SubscriberR
     public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
+    }
+
+    /**
+     * Returns chunked data
+     * @param int $chunks
+     * @param Closure $closure
+     * @return mixed
+     */
+    public function chunk($chunks, Closure $closure)
+    {
+        $this->applyCriteria();
+        $this->applyScope();
+
+        $results = $this->model->chunk($chunks, $closure);
+  
+        $this->resetModel();
+
+        return $this->parserResult($results);
     }
 }

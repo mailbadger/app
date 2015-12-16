@@ -29,9 +29,15 @@ class ListsFieldController extends Controller
      */
     public function index(Request $request, $listId)
     {
-        $subscribers = $this->service->findFieldsByListId($listId, $request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        return response()->json($subscribers, 200);
+        if ($request->has('paginate')) {
+            $fields = $this->service->findFieldsByListIdPaginated($listId, $perPage);
+        } else {
+            $fields = $this->service->findFieldsByListId($listId);
+        }
+
+        return response()->json($fields, 200);
     }
 
     /**

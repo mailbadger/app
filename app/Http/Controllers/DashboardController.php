@@ -11,6 +11,7 @@ namespace newsletters\Http\Controllers;
 use Illuminate\Http\Request;
 use newsletters\Http\Requests\StoreUserSettingsRequest;
 use newsletters\Services\UserService;
+use Aws\Common\Client\AbstractClient;
 
 class DashboardController extends Controller
 {
@@ -50,6 +51,11 @@ class DashboardController extends Controller
         return view('dashboard.subscribers.create_new');
     }
 
+    public function getReports()
+    {
+        return view('dashboard.reports.list');
+    }
+
     public function getSettings()
     {
         return view('dashboard.settings');
@@ -63,8 +69,13 @@ class DashboardController extends Controller
             $data['password'] = bcrypt($data['password']);
         }
 
-        $service->updateUser($data, Auth::user()->id);
+        $service->updateUser($data, $request->user()->id);
 
         return response()->json(['message' => ['User settings have been updated']], 200);
+    }
+
+    public function getUserSettings(Request $request)
+    {
+        return response()->json($request->user(), 200);
     }
 }

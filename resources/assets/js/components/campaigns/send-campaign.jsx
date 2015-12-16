@@ -1,43 +1,50 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var TestSend = require('./test-send-form.jsx');
-var Recipients = require('./recipients.jsx');
-var PreviewTemplate = require('./preview-template.jsx');
-var Campaign = require('../../entities/campaign.js');
-var Template = require('../../entities/template.js');
+import sweetalert from 'sweetalert';
+import React, {Component} from 'react';
+import Campaign from '../../entities/campaign.js';
+import ErrorsList from '../errors-list.jsx';
+import TestSend from './test-send-form.jsx';
+import Recipients from './recipients.jsx';
+import PreviewTemplate from './preview-template.jsx';
 
-var c = new Campaign();
-var t = new Template();
+const c = new Campaign();
 
-var SendCampaign = React.createClass({
-    handleSubmit: function () {
-        var lists = $('#subscribers').val();
-        swal({
-                title: "Are you sure?",
-                text: "Do you want to send this campaign?",
-                type: "info",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                closeOnConfirm: false
-            },
-            function (isConfirm) {
-                if (isConfirm) {
-                    c.send(lists, this.props.data.id)
-                        .done(function () {
-                            swal("Sent!", "The campaign has been started!", "success");
-                        }).fail(function () {
-                            swal("Cancelled", "There has been an error. The campaign could not be started.", "error");
-                        });
+export default class SendCampaign extends Component {
 
-                } else {
-                    swal("Cancelled", "The campaign is canceled", "error");
-                }
-            }.bind(this));
-    },
-    render: function () {
+    constructor(props) {
+        super(props);
+
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+
+        let lists = $('#subscribers').val();
+        sweetalert({
+            title: "Are you sure?",
+            text: "Do you want to send this campaign?",
+            type: "info",
+            showCancelButton: true,
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            closeOnConfirm: false
+        }, (isConfirm) => {
+            if (isConfirm) {
+                c.send(lists, this.props.data.id)
+                .done(() => {
+                    sweetalert("Sent!", "The campaign has been started!", "success");
+                }).fail(() => {
+                    sweetalert("Cancelled", "There has been an error. The campaign could not be started.", "error");
+                });
+
+            } else {
+                sweetalert("Cancelled", "The campaign is canceled", "error");
+            }
+        });
+    }
+
+    render() {
         return (
             <div className="row">
                 <div className="col-lg-7 pull-right">
@@ -59,6 +66,4 @@ var SendCampaign = React.createClass({
             </div>
         )
     }
-});
-
-module.exports = SendCampaign;
+}

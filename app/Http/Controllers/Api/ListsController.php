@@ -2,7 +2,6 @@
 
 namespace newsletters\Http\Controllers\Api;
 
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use newsletters\Http\Controllers\Controller;
@@ -31,7 +30,13 @@ class ListsController extends Controller
      */
     public function index(Request $request)
     {
-        $lists = $this->service->findAllLists($request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
+
+        if ($request->has('paginate')) {
+            $lists = $this->service->findAllListsPaginated($perPage);
+        } else {
+            $lists = $this->service->findAllLists();
+        }
 
         return response()->json($lists, 200);
     }
@@ -44,15 +49,13 @@ class ListsController extends Controller
      */
     public function store(StoreListRequest $request)
     {
-        try {
-            $list = $this->service->createList($request->all());
+        $list = $this->service->createList($request->all());
 
+        if (isset($list)) {
             return response()->json(['list' => $list->id], 200);
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return response()->json(['message' => ['The specified resource could not be created.']], 412);
         }
+
+        return response()->json(['message' => ['The specified resource could not be created.']], 422);
     }
 
     /**
@@ -63,15 +66,13 @@ class ListsController extends Controller
      */
     public function show($id)
     {
-        try {
-            $list = $this->service->findList($id);
+        $list = $this->service->findList($id);
 
+        if (isset($list)) {
             return response()->json($list, 200);
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return response()->json(['message' => 'The specified resource does not exist.'], 404);
         }
+
+        return response()->json(['message' => 'The specified resource does not exist.'], 404);
     }
 
     /**
@@ -83,15 +84,13 @@ class ListsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            $list = $this->service->updateList($request->all(), $id);
+        $list = $this->service->updateList($request->all(), $id);
 
+        if (isset($list)) {
             return response()->json(['list' => $list->id], 200);
-        } catch (Exception $e) {
-            Log::error($e->getMessage() . '\nLine: ' . $e->getLine() . '\nStack trace: ' . $e->getTraceAsString());
-
-            return response()->json(['message' => ['The specified resource could not be updated.']], 412);
         }
+
+        return response()->json(['message' => ['The specified resource could not be updated.']], 422);
     }
 
     /**

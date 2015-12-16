@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddRecipientsInCampaignsTable extends Migration
+class AddSentDateAndRecipientsInCampaigns extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,8 @@ class AddRecipientsInCampaignsTable extends Migration
     public function up()
     {
         Schema::table('campaigns', function (Blueprint $table) {
-            $table->integer('recipients');
+            $table->dateTime('sent_at')->nullable()->after('template_id');
+            $table->integer('recipients')->default(0)->after('template_id');
         });
     }
 
@@ -25,6 +26,7 @@ class AddRecipientsInCampaignsTable extends Migration
     public function down()
     {
         Schema::table('campaigns', function (Blueprint $table) {
+            $table->dropColumn('sent_at');
             $table->dropColumn('recipients');
         });
     }

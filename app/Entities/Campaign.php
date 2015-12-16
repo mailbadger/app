@@ -19,11 +19,12 @@ class Campaign extends Model implements Transformable
         'from_name',
         'from_email',
         'status',
-        'recipients',
         'template_id',
+        'recipients',
+        'sent_at',
     ];
 
-    protected $dates = ['deleted_at'];
+    protected $dates = ['deleted_at', 'sent_at'];
 
     public function template()
     {
@@ -34,5 +35,42 @@ class Campaign extends Model implements Transformable
     {
         return $this->belongsToMany('newsletters\Entities\Tag', 'campaigns_tags', 'campaign_id',
             'tag_id')->withTimestamps();
+    }
+
+    public function sentEmails()
+    {
+        return $this->hasMany('newsletters\Entities\SentEmail');
+    }
+
+    public function complaints()
+    {
+        return $this->hasManyThrough('newsletters\Entities\Complaint', 'newsletters\Entities\SentEmail');
+    }
+
+    public function bounces()
+    {
+        return $this->hasManyThrough('newsletters\Entities\Bounce', 'newsletters\Entities\SentEmail');
+    }
+
+    public function complaintsCount()
+    {
+        return $this->complaints()
+            ->selectRaw('count(*) as complaints')
+            ->groupBy('campaign_id');
+    }
+
+    public function bouncesCount()
+    {
+        return $this->bounces()
+            ->selectRaw('count(*) as bounces')
+            ->groupBy('campaign_id');
+    }
+
+    public function opensCount()
+    {
+        return $this->sentEmails()
+            ->selectRaw('campaign_id, sum(opens) as opens, count(opens) as unique_opens')
+            ->where('opens', '>', 0)
+            ->groupBy('campaign_id');
     }
 }

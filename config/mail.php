@@ -119,6 +119,6 @@ return [
     |
     */
 
-    'pretend' => true,
+    'pretend' => false,
 
 ];

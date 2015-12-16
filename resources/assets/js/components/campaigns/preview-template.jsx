@@ -1,11 +1,11 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var Template = require('../../entities/template.js');
-var t = new Template();
+import React, {Component} from 'react';
+import Template from '../../entities/template.js';
 
-var PreviewTemplate = React.createClass({
-    render: function () {
+const t = new Template();
+
+export default class PreviewTemplate extends Component {
+    render() {
         return (
             <div>
                 <h3>Preview template</h3>
@@ -21,6 +21,4 @@ var PreviewTemplate = React.createClass({
             </div>
         )
     }
-});
-
-module.exports = PreviewTemplate;
+}

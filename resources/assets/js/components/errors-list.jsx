@@ -1,19 +1,17 @@
-/** @jsx React.DOM */
 
-var _ = require('underscore');
-var React = require('react');
+import _ from 'underscore';
+import React, {Component} from 'react';
 
-var ErrorsList = React.createClass({
-    handleErrors: function(errors, i) {
+export default class ErrorsList extends Component {
+    handleErrors(errors, i) {
         return <li key={i}>{errors[0]}</li>
-    },
-    render: function () {
+    }
+
+    render() {
         return (
             <div className="alert alert-danger alert-dismissible signin-alert" role="alert">
                 <ul>{_.map(this.props.errors, this.handleErrors)}</ul>
             </div>
         );
     }
-});
-
-module.exports = ErrorsList;
+}

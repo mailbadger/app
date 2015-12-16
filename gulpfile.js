@@ -46,6 +46,7 @@ var gulp = require('gulp'),
     gulpif = require('gulp-if'),
     del = require('del'),
     es = require('event-stream'),
+    babelify = require('babelify'),
     reactify = require('reactify');
 
 // use "--production" option to minify everything
@@ -53,12 +54,14 @@ var inProduction = ('production' in gulputil.env),
     srcPaths = {
         scripts: [
             'resources/assets/js/global.js',
-            'resources/assets/js/campaigns-list.jsx',
-            'resources/assets/js/templates-list.jsx',
+            'resources/assets/js/campaigns.jsx',
+            'resources/assets/js/templates.jsx',
             'resources/assets/js/create-new-campaign.jsx',
             'resources/assets/js/create-new-template.jsx',
             'resources/assets/js/create-new-list.jsx',
-            'resources/assets/js/subscribers-lists.jsx'
+            'resources/assets/js/subscribers.jsx',
+            'resources/assets/js/reports.jsx',
+            'resources/assets/js/settings.jsx'
         ],
         styles: [
             npmPath + 'select2/dist/css/select2.min.css',
@@ -94,7 +97,7 @@ gulp.task('scripts', function () {
 
         return browserify({
             entries: [entry],
-            transform: [reactify]
+            transform: [babelify.configure({ presets: ['es2015', 'react'] })]
         })
             .bundle()
             .pipe(source(entry))

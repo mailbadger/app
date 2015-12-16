@@ -41,7 +41,7 @@ class ListValidator
             $sheet = $this->fileService->getWorksheet($obj, 0);
 
             $headerRow = $this->fileService->getHeaderRow($sheet->getRowIterator(1, 1));
-
+ 
             if (empty($headerRow)) {
                 return false;
             }

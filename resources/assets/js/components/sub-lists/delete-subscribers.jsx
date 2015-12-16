@@ -1,40 +1,50 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var ErrorsList = require('../errors-list.jsx');
-var List = require('../../entities/list.js');
-var l = new List();
+import sweetalert from 'sweetalert';
+import React, {Component} from 'react';
+import ErrorsList from '../errors-list.jsx';
+import List from '../../entities/list.js';
 
-var DeleteSubscribers = React.createClass({
-    getInitialState: function () {
-        return {
+const l = new List();
+
+export default class DeleteSubscribers extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
             hasErrors: false,
             errors: {}
         };
-    },
-    handleSuccess: function () {
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bint(this);
+    }
+
+    handleSuccess() {
         this.setState({hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The subscribers were successfully deleted!",
             type: "success"
-        }, function () {
+        }, () => {
             this.props.back();
-        }.bind(this));
-    },
-    handleErrors: function (xhr) {
+        });
+    }
+
+    handleErrors(xhr) {
         this.setState({hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
 
         l.deleteSubscribers(this.props.listId, this.refs.subscribers.getDOMNode().files[0])
             .done(this.handleSuccess)
             .fail(this.handleErrors);
-    },
+    }
 
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
 
         return (
             <div>
@@ -82,6 +92,4 @@ var DeleteSubscribers = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = DeleteSubscribers;
+}

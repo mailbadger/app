@@ -24,26 +24,6 @@ class UserService
     }
 
     /**
-     * Sets the SES user configuration
-     *
-     * @param $key
-     * @param $secret
-     * @param $region
-     */
-    public function setSesConfig($key, $secret, $region)
-    {
-        if (empty($key) || empty($secret) || empty($region)) {
-            throw new InvalidArgumentException('SES configuration is not set.');
-        }
-
-        config([
-            'services.ses.key'    => $key,
-            'services.ses.secret' => $secret,
-            'services.ses.region' => $region,
-        ]);
-    }
-
-    /**
      * Update user by id
      *
      * @param array $data

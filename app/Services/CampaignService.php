@@ -25,13 +25,22 @@ class CampaignService
     /**
      * Find all campaigns
      *
-     * @param bool $paginate
-     * @param int $perPage
      * @return mixed
      */
-    public function findAllCampaigns($paginate = false, $perPage = 10)
+    public function findAllCampaigns()
     {
-        return (!empty($paginate)) ? $this->campaignRepository->paginate($perPage) : $this->campaignRepository->all();
+        return $this->campaignRepository->all();
+    }
+
+    /**
+     * Find all campaigns in a paginated list
+     *
+     * @param $perPage
+     * @return mixed
+     */
+    public function findAllCampaignsPaginated($perPage = 10)
+    {
+        return $this->campaignRepository->paginate($perPage);
     }
 
     /**
@@ -40,16 +49,16 @@ class CampaignService
      * @param $id
      * @return mixed|null
      */
-    public function findCampaign($id)
+    public function findCampaign($id, array $with = [])
     {
-        return $this->campaignRepository->find($id);
+        return $this->campaignRepository->with($with)->find($id);
     }
 
     /**
      * Create campaign
      *
      * @param array $data
-     * @return mixed|null
+     * @return mixed
      */
     public function createCampaign(array $data)
     {
@@ -61,7 +70,7 @@ class CampaignService
      *
      * @param array $data
      * @param $id
-     * @return mixed|null
+     * @return mixed
      */
     public function updateCampaign(array $data, $id)
     {

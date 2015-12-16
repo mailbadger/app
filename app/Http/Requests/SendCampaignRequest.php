@@ -14,7 +14,9 @@ class SendCampaignRequest extends FormRequest
      */
     public function authorize()
     {
-        return Auth::check();
+        $user = Auth::user();
+
+        return Auth::check() && !empty($user->aws_key) && !empty($user->aws_secret) && !empty($user->aws_region);
     }
 
     /**

@@ -1,46 +1,56 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var Campaign = require('../../entities/campaign.js');
-var c = new Campaign();
+import sweetalert from 'sweetalert';
+import _ from 'underscore';
+import React, {Component} from 'react';
+import Campaign from '../../entities/campaign.js';
 
-var TestSend = React.createClass({
-    handleSubmit: function () {
-        var emails = this.refs.emails.getDOMNode().value;
-        swal({
-                title: "Are you sure?",
-                text: "Do you want to send this campaign to the following emails: " + emails,
-                type: "info",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-                cancelButtonText: "No",
-                closeOnConfirm: false
-            },
-            function (isConfirm) {
-                if (isConfirm) {
-                    c.testSend(emails.split(','), this.props.cid)
-                        .done(function () {
-                            swal("Sent!", "Test emails have been sent.", "success");
-                        }).fail(function () {
-                            swal("Cancelled", "Test emails could not be sent, check the input if they are in a correct format. Use commas for separation.", "error");
-                        });
+const c = new Campaign();
 
-                } else {
-                    swal("Cancelled", "Test emails have been canceled", "error");
-                }
-            }.bind(this));
-    },
-    render: function () {
+export default class TestSend extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.handleTestSend = this.handleTestSend.bind(this);
+    }
+
+    handleTestSend(e) {
+        e.preventDefault();
+
+        let emails = this.refs.emails.getDOMNode().value;
+        sweetalert({
+            title: "Are you sure?",
+            text: "Do you want to send this campaign to the following emails: " + emails,
+            type: "info",
+            showCancelButton: true,
+            closeOnConfirm: false,
+            showLoaderOnConfirm: true
+        },
+        function () {    
+            c.testSend(emails.split(','), this.props.cid)
+            .done((res) => {
+                swal("Sent!", "Test emails have been sent.", "success");
+            }).fail((xhr) => {
+                let html = '<ul>';
+                _.map(xhr.responseJSON, function(e) { 
+                    html += '<li>' + e[0] + '</li>'; 
+                });
+                html += '</ul>';
+                sweetalert({html:true, title: "Cancelled", text: html, type: "error"});
+            });
+        }.bind(this));
+    }
+    
+    render() {
         return (
             <div>
                 <h3>Test send this campaign</h3>
 
-                <form onSubmit={this.handleSubmit}>
+                <form onSubmit={this.handleTestSend}>
                     <div className="form-group">
                         <label htmlFor="emails">Email addresses</label>
                         <input type="text" className="form-control" ref="emails" id="emails"
-                               placeholder="Emails, separated by comma"/>
+                            placeholder="Emails, separated by comma"/>
                     </div>
 
                     <button type="submit" className="btn btn-default">
@@ -50,6 +60,4 @@ var TestSend = React.createClass({
             </div>
         )
     }
-});
-
-module.exports = TestSend;
+}

@@ -1,15 +1,14 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var SubscribersTable = require('./subscribers-table.jsx');
-var AddSubscribers = require('./add-subscribers.jsx');
-var DeleteSubscribers = require('./delete-subscribers.jsx');
-var List = require('../../entities/list.js');
+import React, {Component} from 'react';
+import SubscribersTable from './subscribers-table.jsx';
+import AddSubscribers from './add-subscribers.jsx';
+import DeleteSubscribers from './delete-subscribers.jsx';
+import List from '../../entities/list.js';
 
-var l = new List();
+const l = new List();
 
-var SubscriberButtons = React.createClass({
-    render: function () {
+class SubscriberButtons extends Component {
+    render() {
         return (
             <div className="row">
                 <div className="col-lg-6">
@@ -32,16 +31,26 @@ var SubscriberButtons = React.createClass({
             </div>
         )
     }
-});
+}
 
-var ListInfo = React.createClass({
-    editList: function () {
+class ListInfo extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.editList = this.editList.bind(this);
+        this.customFields = this.customFields.bind(this);
+    }
+
+    editList() {
         this.props.editList(this.props.list.id);
-    },
-    customFields: function () {
+    }
+
+    customFields() {
         this.props.customFields(this.props.list.id);
-    },
-    render: function () {
+    }
+
+    render() {
         return (
             <div className="row" style={{marginTop: '20px'}}>
                 <div className="col-lg-12 well">
@@ -60,10 +69,10 @@ var ListInfo = React.createClass({
             </div>
         )
     }
-});
+}
 
-var ListView = React.createClass({
-    render: function () {
+class ListView extends Component {
+    render() {
         return (
             <div>
                 <SubscriberButtons listId={this.props.list.id} addSubscribers={this.props.addSubscribers}
@@ -74,32 +83,42 @@ var ListView = React.createClass({
             </div>
         );
     }
-});
+}
 
-var SubscribersList = React.createClass({
-    addSubscribers: function () {
+export default class SubscribersList extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.addSubscribers = this.addSubscribers.bind(this);
+        this.deleteSubscribers = this.deleteSubscribers.bind(this);
+    }
+
+    addSubscribers() {
         this.setState({component: <AddSubscribers listId={this.props.list.id} back={this.back}/>});
-    },
-    deleteSubscribers: function () {
+    }
+
+    deleteSubscribers() {
         this.setState({component: <DeleteSubscribers listId={this.props.list.id} back={this.back}/>});
-    },
-    back: function () {
+    }
+
+    back() {
         this.setState({
             component: <ListView addSubscribers={this.addSubscribers} deleteSubscribers={this.deleteSubscribers}
                                  list={this.props.list} editList={this.props.editList}
                                  customFields={this.props.customFields} back={this.props.back}/>
         });
-    },
-    getInitialState: function () {
+    }
+
+    getInitialState() {
         return {
             component: <ListView addSubscribers={this.addSubscribers} deleteSubscribers={this.deleteSubscribers}
                                  list={this.props.list} editList={this.props.editList}
                                  customFields={this.props.customFields} back={this.props.back}/>
         };
-    },
-    render: function () {
+    }
+
+    render() {
         return this.state.component;
     }
-});
-
-module.exports = SubscribersList;
+}
