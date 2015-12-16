@@ -23,7 +23,8 @@ abstract class TestCase extends Illuminate\Foundation\Testing\TestCase
         return $app;
     }
 
-    public function callMethod($obj, $name, array $args) {
+    public function callMethod($obj, $name, array $args)
+    {
         $class = new \ReflectionClass($obj);
 
         $method = $class->getMethod($name);

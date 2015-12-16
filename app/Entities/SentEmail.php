@@ -37,5 +37,5 @@ class SentEmail extends Model implements Transformable
     public function complaints()
     {
         return $this->hasMany('newsletters\Entities\Complaint');
-    } 
+    }
 }

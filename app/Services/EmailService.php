@@ -81,7 +81,7 @@ class EmailService
             'Source' => $fromEmail,
         ];
 
-        if(isset($cc)) {
+        if (isset($cc)) {
             $data['Destination']['CcAddresses'] = [$cc];
         }
 
@@ -126,7 +126,7 @@ class EmailService
     {
         $sentEmail = $this->sentEmailRepository->findByField('token', $token)->first();
 
-        if(empty($sentEmail)) {
+        if (empty($sentEmail)) {
             throw new ModelNotFoundException();
         }
 
@@ -145,7 +145,7 @@ class EmailService
 
         $check = $this->sentEmailRepository->findByField('token', $token)->first();
 
-        if(!empty($check)) {
+        if (!empty($check)) {
             return $this->generateUniqueToken($length);
         }
 

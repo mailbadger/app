@@ -25,7 +25,7 @@ class AddSentEmailIdToBounces extends Migration
      */
     public function down()
     {
-        Schema::table('bounces', function (Blueprint $table) { 
+        Schema::table('bounces', function (Blueprint $table) {
             $table->dropForeign('sent_email_id');
             $table->dropColumn('sent_email_id');
         });

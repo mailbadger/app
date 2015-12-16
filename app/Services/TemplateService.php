@@ -138,7 +138,7 @@ class TemplateService
      */
     private function replaceTagsInTemplate($dom, array $tags)
     {
-        foreach($tags as $key => $val) {
+        foreach ($tags as $key => $val) {
             $dom->outertext = preg_replace($key, $val, $dom->outertext);
         }
 
@@ -159,7 +159,7 @@ class TemplateService
         //append the image inside the body tag if the dom has it
         $body = $dom->find('html body', 0);
 
-        if(!empty($body)) {
+        if (!empty($body)) {
             $body->innertext .= $img;
         } else {
             $dom->outertext .= $img;

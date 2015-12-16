@@ -64,7 +64,7 @@ class Campaign extends Model implements Transformable
         return $this->bounces()
             ->selectRaw('count(*) as bounces')
             ->groupBy('campaign_id');
-    } 
+    }
 
     public function opensCount()
     {

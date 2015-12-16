@@ -31,7 +31,7 @@ class TemplateController extends Controller
     {
         $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
 
-        if($request->has('paginate')) {
+        if ($request->has('paginate')) {
             $templates = $this->service->findAllTemplatesPaginated($perPage);
         } else {
             $templates = $this->service->findAllTemplates();
