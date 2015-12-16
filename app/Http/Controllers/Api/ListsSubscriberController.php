@@ -9,6 +9,7 @@ use newsletters\Http\Requests\MassDeleteSubscribersRequest;
 use newsletters\Services\FieldService;
 use newsletters\Services\FileService;
 use newsletters\Services\ListsService;
+use newsletters\Services\SubscriberService;
 
 class ListsSubscriberController extends Controller
 {
@@ -31,9 +32,15 @@ class ListsSubscriberController extends Controller
      * @param $listId
      * @return Response
      */
-    public function index(Request $request, $listId)
+    public function index(Request $request, $listId, SubscriberService $subscriberService)
     {
-        $subscribers = $this->service->findAllSubscribersByListId($listId, $request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
+
+        if($request->has('paginate')) {
+            $subscribers = $subscriberService->findAllSubscribersByListIdPaginated($listId, $perPage);
+        } else {
+            $subscribers = $subscriberService->findAllSubscribersByListId($listId);
+        }
 
         return response()->json($subscribers, 200);
     }
@@ -43,20 +50,39 @@ class ListsSubscriberController extends Controller
      *
      * @return Response
      */
-    public function store()
+    public function store(StoreSubscriberRequest $request, $listId, SubscriberService $subscriberService)
     {
-        //TODO create functionality
+        $subscriber = $subscriberService->findSubscriberByEmail($request->input('email'));
+
+        if(empty($subscriber)) {
+            $subscriber = $subscriberService->createSubscriber($request->all());
+        }
+
+        if (!empty($subscriber)) {
+            $list = $this->service->findList($listId);
+            $this->service->attachSubscriber($list, $subscriber->id);
+
+            return response()->json(['subscriber' => $subscriber->id], 200);
+        }
+
+        return response()->json(['errors' => ['The specified resource could not be created.']], 412);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param int $id
      * @return Response
      */
-    public function show($listId, $id)
+    public function show($listId, $id, SubscriberService $subscriberService)
     {
-        //TODO show list subcsriber by id
+        $subscriber = $subscriberService->findSubscriber($id);
+
+        if (isset($subscriber)) {
+            return response()->json($subscriber, 200);
+        }
+
+        return response()->json(['errors' => ['The specified resource does not exist.']], 404);
     }
 
     /**
@@ -67,9 +93,15 @@ class ListsSubscriberController extends Controller
      * @param  int $id
      * @return Response
      */
-    public function update(Request $request, $listId, $id)
+    public function update(Request $request, $listId, $id, SubscriberService $subscriberService)
     {
-        //TODO update functionality
+        $subscriber = $subscriberService->updateSubscriber($request->all(), $id);
+
+        if (isset($subscriber)) {
+            return response()->json(['subscriber' => $subscriber->id], 200);
+        }
+
+        return response()->json(['errors' => ['The specified resource could not be updated.']], 412);
     }
 
     /**

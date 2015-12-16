@@ -29,7 +29,13 @@ class TemplateController extends Controller
      */
     public function index(Request $request)
     {
-        $templates = $this->service->findAllTemplates($request->has('paginate'), 10);
+        $perPage = ($request->has('per_page')) ? $request->input('per_page') : 10;
+
+        if($request->has('paginate')) {
+            $templates = $this->service->findAllTemplatesPaginated($perPage);
+        } else {
+            $templates = $this->service->findAllTemplates();
+        }
 
         return response()->json($templates, 200);
     }
@@ -43,6 +49,7 @@ class TemplateController extends Controller
     public function store(StoreTemplateRequest $request)
     {
         $template = $this->service->createTemplate($request->all());
+
         if (isset($template)) {
             return response()->json(['template' => $template->id], 200);
         }
@@ -59,6 +66,7 @@ class TemplateController extends Controller
     public function show($id)
     {
         $template = $this->service->findTemplate($id);
+
         if (isset($template)) {
             return response()->json($template, 200);
         }
@@ -76,6 +84,7 @@ class TemplateController extends Controller
     public function update(Request $request, $id)
     {
         $template = $this->service->updateTemplate($request->all(), $id);
+
         if (isset($template)) {
             return response()->json(['template' => $template->id], 200);
         }

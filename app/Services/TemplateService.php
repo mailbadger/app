@@ -2,11 +2,10 @@
 
 namespace newsletters\Services;
 
-use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use newsletters\Repositories\TemplateRepository;
-use Symfony\Component\DomCrawler\Crawler;
+use Sunra\PhpSimple\HtmlDomParser;
 
 /**
  * Created by PhpStorm.
@@ -29,17 +28,22 @@ class TemplateService
     /**
      * Find all templates
      *
-     * @param bool $paginate
+     * @return mixed
+     */
+    public function findAllTemplates()
+    {
+        return $this->templateRepository->all(['id', 'name', 'created_at', 'updated_at']);
+    }
+
+    /**
+     * Find all templates paginated
+     *
      * @param int $perPage
      * @return mixed
      */
-    public function findAllTemplates($paginate = false, $perPage = 10)
+    public function findAllTemplatesPaginated($perPage = 10)
     {
-        $columns = ['id', 'name', 'created_at', 'updated_at'];
-
-        return (!empty($paginate))
-            ? $this->templateRepository->paginate($perPage, $columns)
-            : $this->templateRepository->all($columns);
+        return $this->templateRepository->paginate($perPage, ['id', 'name', 'created_at', 'updated_at']);
     }
 
     /**
@@ -101,22 +105,66 @@ class TemplateService
      *
      * @param $templateId
      * @param $subscriberName
-     * @param array $customFields
+     * @param $subscriberEmail
+     * @param $opensTrackerUrl
+     * @param array $customTags
      * @return string
      */
-    public function renderTemplate($templateId, $subscriberName, array $customFields)
+    public function renderTemplate($templateId, $subscriberName, $subscriberEmail, $opensTrackerUrl, array $customTags = [])
     {
         $template = $this->templateRepository->find($templateId);
-        $content = $template->content;
-        $content = str_replace('*|Name|*', $subscriberName, $content);
 
-        foreach ($customFields as $key => $val) {
-            //TODO replace with preg_replace for other possible matches in the template such as *|Foo|* *|foo|* etc..
-            $content = str_replace('*|' . $key . '|*', $val, $content);
+        $dom = HtmlDomParser::str_get_html($template->content);
+
+        $dom = $this->replaceTagsInTemplate($dom, $customTags);
+
+        $dom = $this->appendImg($dom, $opensTrackerUrl);
+
+        $html = $dom->outertext;
+
+        $dom->clear();
+        unset($dom);
+
+        return $html;
+    }
+
+    /**
+     * Replace the personalization tags that are put in the template content
+     * eg tags: *|Name|*, *|Email|* etc..
+     *
+     * @param $content
+     * @param array $tags
+     * @return Dom
+     */
+    private function replaceTagsInTemplate($dom, array $tags)
+    {
+        foreach($tags as $key => $val) {
+            $dom->outertext = preg_replace($key, $val, $dom->outertext);
         }
 
-        $html = new Crawler($content);
+        return $dom;
+    }
 
-        return $html->html();
+    /**
+     * Append image tag used for tracking the email opens
+     *
+     * @param $content
+     * @param $url
+     * @return string
+     */
+    private function appendImg($dom, $url)
+    {
+        $img = '<img src="'.$url.'"/>'.PHP_EOL;
+
+        //append the image inside the body tag if the dom has it
+        $body = $dom->find('html body', 0);
+
+        if(!empty($body)) {
+            $body->innertext .= $img;
+        } else {
+            $dom->outertext .= $img;
+        }
+
+        return $dom;
     }
 }

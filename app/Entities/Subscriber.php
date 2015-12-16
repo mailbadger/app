@@ -15,6 +15,7 @@ class Subscriber extends Model implements Transformable
     protected $fillable = [
         'email',
         'name',
+        'blacklisted',
     ];
 
     public function lists()

@@ -1,36 +1,45 @@
-/** @jsx React.DOM */
 
-require('sweetalert');
-var React = require('react');
-var List = require('../../entities/list.js');
-var ErrorsList = require('../errors-list.jsx');
 
-var l = new List();
+import sweetalert from 'sweetalert';
+import React, {Component} from 'react';
+import List from '../../entities/list.js';
+import ErrorsList from '../errors-list.jsx';
 
-var ListForm = React.createClass({
-    getInitialState: function () {
-        return {
+const l = new List();
+
+export default class ListForm extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
             hasErrors: false,
             errors: {}
         };
-    },
-    handleSuccess: function () {
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    } 
+    
+    handleSuccess() {
         this.setState({hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The list was successfully created!",
             type: "success"
-        }, function () {
+        }, () => {
             window.location.href = url_base + '/dashboard/subscribers';
         });
-    },
-    handleErrors: function (xhr) {
+    }
+
+    handleErrors(xhr) {
         this.setState({hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
-        var data;
+        let data;
 
         if(!this.props.edit) {
             data = {
@@ -44,10 +53,11 @@ var ListForm = React.createClass({
             };
             l.update(data, this.props.data.id).done(this.handleSuccess).fail(this.handleErrors);
         }
-    },
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
-        var backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
+    }
+
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+        let backBtn = (this.props.edit) ? <a href="#" onClick={this.props.back}>Back</a> : null;
         return (
             <form onSubmit={this.handleSubmit}>
                 <div className="errors">{errors}</div>
@@ -63,6 +73,4 @@ var ListForm = React.createClass({
             </form>
         );
     }
-});
-
-module.exports = ListForm;
+}

@@ -1,7 +1,7 @@
 @extends('dashboard.layout')
 @section('scripts')
     @parent
-    <script type="text/javascript" src="{{asset('js/subscribers-lists.bundle.js')}}"></script>
+    <script type="text/javascript" src="{{asset('js/subscribers.bundle.js')}}"></script>
 @endsection
 @section('main')
     <h1 class="page-header">Lists</h1>

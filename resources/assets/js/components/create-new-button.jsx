@@ -1,9 +1,8 @@
-/** @jsx React.DOM */
 
-var React = require('react');
+import React, {Component} from 'react';
 
-var CreateNewButton = React.createClass({
-    render: function() {
+export default class CreateNewButton extends Component {
+    render() {
         return (
             <div className="row">
                 <div className="col-lg-4">
@@ -14,6 +13,4 @@ var CreateNewButton = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = CreateNewButton;
+}

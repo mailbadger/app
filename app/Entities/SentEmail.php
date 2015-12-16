@@ -15,6 +15,7 @@ class SentEmail extends Model implements Transformable
     protected $fillable = [
         'subscriber_id',
         'campaign_id',
+        'message_id',
         'opens',
     ];
 
@@ -27,4 +28,14 @@ class SentEmail extends Model implements Transformable
     {
         return $this->belongsTo('newsletters\Entities\Campaign');
     }
+
+    public function bounces()
+    {
+        return $this->hasMany('newsletters\Entities\Bounce');
+    }
+
+    public function complaints()
+    {
+        return $this->hasMany('newsletters\Entities\Complaint');
+    } 
 }

@@ -1,31 +1,14 @@
-/** @jsx React.DOM */
 
-var React = require('react');
-var ErrorsList = require('../errors-list.jsx');
-var DeleteButton = require('../delete-button.jsx');
-var List = require('../../entities/list.js');
-var l = new List();
+import React, {Component} from 'react';
+import ErrorsList from '../errors-list.jsx';
+import DeleteButton from '../delete-button.jsx';
+import Field from '../../entities/field.js';
 
-var getAllFields = function (component, listId) {
-    l.allFields(listId, true, 10, 1).done(function (res) {
-        component.setState({fields: res});
+export default class CustomFields extends Component {
 
-        $('.pagination').bootpag({
-            total: res.last_page,
-            page: res.current_page,
-            maxVisible: 5
-        }).on("page", function (event, num) {
-            l.allFields(listId, true, 10, num).done(function (res) {
-                component.setState({fields: res});
-                $('.pagination').bootpag({page: res.current_page});
-            });
-        });
-    });
-};
-
-var CustomFields = React.createClass({
-    getInitialState: function () {
-        return {
+    constructor(props) {
+        super(props);
+        this.state = {
             fields: {data: []},
             edit: false,
             name: '',
@@ -33,24 +16,37 @@ var CustomFields = React.createClass({
             hasErrors: false,
             errors: {}
         };
-    },
-    handleSuccess: function () {
+
+        this.f = new Field(this.props.listId);
+
+        this.handleSuccess = this.handleSuccess.bind(this);
+        this.handleErrors = this.handleErrors.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+        this.handleEdit = this.handleEdit.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
+        this.cancelEdit = this.cancelEdit.bind(this);
+    }
+
+    handleSuccess() {
         this.setState({edit: false, editField: {name: ''}, hasErrors: false, errors: []});
-        swal({
+        sweetalert({
             title: "Success",
             text: "The field was successfully created!",
             type: "success"
-        }, function () {
+        }, () => {
             this.props.back();
-        }.bind(this));
-    },
-    handleErrors: function (xhr) {
+        });
+    }
+
+    handleErrors(xhr) {
         this.setState({edit: false, editField: {name: ''}, hasErrors: true, errors: xhr.responseJSON});
-    },
-    handleSubmit: function (e) {
+    }
+
+    handleSubmit(e) {
         e.preventDefault();
         this.setState({hasErrors: false, errors: []});
-        var data = {
+        let data = {
             name: this.refs.name.getDOMNode().value
         };
 
@@ -59,37 +55,66 @@ var CustomFields = React.createClass({
         } else {
             l.updateField(this.props.listId, data, this.state.editField).done(this.handleSuccess).fail(this.handleErrors);
         }
-    },
-    handleChange: function (event) {
+    }
+
+    getAllFields() {
+        let data = {
+            paginate: true,
+            per_page: 10,
+            page: 1
+        };
+
+        f.all(data).done((res) => {
+            this.setState({fields: res});
+
+            $('.pagination').bootpag({
+                total: res.last_page,
+                page: res.current_page,
+                maxVisible: 5
+            }).on("page", (event, num) => {
+                data.page = num;
+                f.all(data).done((res) => {
+                    this.setState({fields: res});
+                    $('.pagination').bootpag({page: res.current_page});
+                });
+            });
+        });
+    }
+
+    handleChange(event) {
         this.setState({name: event.target.value});
-    },
-    handleEdit: function (name, id) {
+    }
+
+    handleEdit(name, id) {
         this.setState({edit: true, name: name, editField: id});
-    },
-    handleDelete: function () {
-        getAllFields(this, this.props.listId);
-    },
-    cancelEdit: function () {
+    }
+
+    handleDelete() {
+        getAllFields();
+    }
+
+    cancelEdit() {
         this.setState({edit: false, name: '', editField: null});
-    },
-    componentDidMount: function () {
-        getAllFields(this, this.props.listId);
-    },
-    render: function () {
-        var errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
-        var rows = function (field) {
+    }
+
+    componentDidMount() {
+        getAllFields();
+    }
+
+    render() {
+        let errors = (this.state.hasErrors) ? <ErrorsList errors={this.state.errors}/> : null;
+        let rows = function (field) {
             return (
                 <tr key={field.id}>
                     <td>{field.name}</td>
                     <td><a href="#" onClick={this.handleEdit.bind(this, field.name, field.id)}><span
                         className="glyphicon glyphicon-pencil"></span></a>
                     </td>
-                    <td><DeleteButton success={this.handleDelete}
-                                      delete={l.deleteField.bind(this, this.props.listId, field.id)}/></td>
+                    <td><DeleteButton success={this.handleDelete} entity={this.f} resourceId={field.id} /></td>
                 </tr>
             );
-        }.bind(this);
-        var cancelBtn = (this.state.edit) ? <input type="button" onClick={this.cancelEdit} value="Cancel"
+        };
+        let cancelBtn = (this.state.edit) ? <input type="button" onClick={this.cancelEdit} value="Cancel"
                                                    className="col-lg-offset-1 col-lg-3 btn btn-default"/> : null;
         return (
             <div>
@@ -138,6 +163,4 @@ var CustomFields = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = CustomFields;
+}

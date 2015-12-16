@@ -1,58 +1,77 @@
-/** @jsx React.DOM */
 
-require('bootpag/lib/jquery.bootpag.min.js');
+import * as bootpag from 'bootpag/lib/jquery.bootpag.min.js';
 
-var React = require('react');
-var DeleteButton = require('../delete-button.jsx');
-var List = require('../../entities/list.js');
+import React, {Component} from 'react';
+import DeleteButton from '../delete-button.jsx';
+import Subscriber from '../../entities/subscriber.js';
 
-var l = new List();
-
-var getAllSubscribers = function (component, listId) {
-    l.allSubscribers(listId, true, 10, 1).done(function (res) {
-        component.setState({subscribers: res});
-
-        $('.pagination').bootpag({
-            total: res.last_page,
-            page: res.current_page,
-            maxVisible: 5
-        }).on("page", function (event, num) {
-            l.allSubscribers(listId, true, 10, num).done(function (res) {
-                component.setState({subscribers: res});
-                $('.pagination').bootpag({page: res.current_page});
-            });
-        });
-    });
-};
-
-var SubscriberRow = React.createClass({
-    render: function () {
+class SubscriberRow extends Component {
+    render() {
         return (
             <tr>
                 <td>{this.props.data.name}</td>
                 <td>{this.props.data.email}</td>
                 <td>
-                    <DeleteButton success={this.props.handleDelete} delete={l.deleteSubscriber.bind(this, this.props.listId, this.props.data.id)}/>
+                    <DeleteButton success={this.props.handleDelete} entity={this.props.entity} resourceId={this.props.data.id} />
                 </td>
             </tr>
         );
     }
-});
+}
 
-var SubscribersTable = React.createClass({
-    getInitialState: function () {
-        return {subscribers: {data: []}};
-    },
-    componentDidMount: function () {
-        getAllSubscribers(this, this.props.listId);
-    },
-    handleDelete: function () {
-        getAllSubscribers(this, this.props.listId);
-    },
-    render: function () {
-        var rows = function (data) {
-            return <SubscriberRow key={data.id} handleDelete={this.handleDelete} listId={this.props.listId} data={data}/>
-        }.bind(this);
+export default class SubscribersTable extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.s = new Subscriber(this.props.listId);
+
+        this.state = {
+            subscribers: {
+                data: []
+            }
+        };
+
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+    
+    getAllSubscribers(component) {
+        let data = {
+            paginate: true,
+            per_page: 10,
+            page: 1
+        };
+
+        this.s.all(data).done((res) => {
+            this.setState({subscribers: res});
+
+            $('.pagination').bootpag({
+                total: res.last_page,
+                page: res.current_page,
+                maxVisible: 5
+            }).on("page", (event, num) => {
+                data.page = num;
+                s.all(data).done((res) => {
+                    this.setState({subscribers: res});
+                    $('.pagination').bootpag({page: res.current_page});
+                });
+            });
+        });
+    }
+
+    componentDidMount() {
+        getAllSubscribers();
+    }
+
+    handleDelete() {
+        getAllSubscribers();
+    }
+
+    render() {
+        let rows = (data) => {
+            return <SubscriberRow key={data.id} entity={this.s} handleDelete={this.handleDelete} listId={this.props.listId} data={data}/>
+        };
+
         return (
             <div>
                 <table className="table table-responsive table-striped table-hover">
@@ -71,6 +90,4 @@ var SubscribersTable = React.createClass({
             </div>
         );
     }
-});
-
-module.exports = SubscribersTable;
+}
