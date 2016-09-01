@@ -1,0 +1,4 @@
+{
+  "database": "news_maily.db",
+  "migrations_dir": "db/migrations"
+}
