@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS "sent_emails" ("id" integer primary key autoincrement
 CREATE TABLE IF NOT EXISTS "bounces" ("id" integer primary key autoincrement, "recipient" varchar(255), "sender" varchar(255), "type" varchar(255), "sub_type" varchar(255), "action" varchar(255), "created_at" datetime, "updated_at" datetime);
 CREATE TABLE IF NOT EXISTS "events" ("id" integer primary key autoincrement, "campaign_id" bigint, "subscriber_id" bigint, "created_at" datetime, "message" varchar(255));
 -- +goose Down
+-- SQL section 'Down' is executed when this migration is rolled back
 DROP TABLE "users";
 DROP TABLE "templates";
 DROP TABLE "campaigns";
@@ -23,4 +24,3 @@ DROP TABLE "fields";
 DROP TABLE "subscribers_fields";
 DROP TABLE "sent_emails";
 DROP TABLE "bounces";
--- SQL section 'Down' is executed when this migration is rolled back

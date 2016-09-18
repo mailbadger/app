@@ -5,7 +5,7 @@ import (
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 	"github.com/FilipNikolovski/news-maily/config"
-	rand "github.com/FilipNikolovski/news-maily/utils"
+	"github.com/FilipNikolovski/news-maily/utils"
 	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
@@ -24,11 +24,6 @@ func Setup() error {
 	fresh_db := false
 	if _, err = os.Stat(config.Config.Database); err != nil || config.Config.Database == ":memory:" {
 		fresh_db = true
-	}
-
-	err = createDbConn()
-	if err != nil {
-		return err
 	}
 
 	//Goose configuration
@@ -50,6 +45,11 @@ func Setup() error {
 		return err
 	}
 
+	err = createDbConn()
+	if err != nil {
+		return err
+	}
+
 	//Run migrations
 	err = goose.RunMigrationsOnDb(migrateConfig, migrateConfig.MigrationsDir, latest, db.DB())
 	if err != nil {
@@ -65,7 +65,7 @@ func Setup() error {
 			return err
 		}
 
-		key, err := rand.GenerateRandomBytes(16)
+		key, err := utils.GenerateRandomString(32)
 		if err != nil {
 			Logger.Println(err)
 			return err

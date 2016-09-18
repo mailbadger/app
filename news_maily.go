@@ -30,6 +30,7 @@ import (
 	"runtime"
 
 	"github.com/FilipNikolovski/news-maily/entities"
+	"github.com/FilipNikolovski/news-maily/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,9 +43,34 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	r.GET("/user", func(c *gin.Context) {
+		user, err := entities.GetUser(1)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": err,
+			})
+		}
 		c.JSON(200, gin.H{
-			"message": "pong",
+			"user": user,
+		})
+	})
+
+	r.GET("/templates", middleware.Paginate, func(c *gin.Context) {
+		pagination, ok := c.MustGet("pagination").(middleware.Pagination)
+		if !ok {
+			c.JSON(400, gin.H{
+				"status":  "failure",
+				"message": "There was an error.",
+			})
+		}
+
+		entities.GetTemplates(1, &pagination)
+
+		c.JSON(200, gin.H{
+			"collection": pagination.Collection,
+			"total":      pagination.Total,
+			"page":       pagination.Page,
+			"per_page":   pagination.PerPage,
 		})
 	})
 
