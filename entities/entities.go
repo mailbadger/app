@@ -1,17 +1,19 @@
 package entities
 
 import (
-	"log"
 	"os"
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 	"github.com/FilipNikolovski/news-maily/config"
+	rand "github.com/FilipNikolovski/news-maily/utils"
+	log "github.com/Sirupsen/logrus"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 //Global logger
-var Logger = log.New(os.Stdout, " ", log.Ldate|log.Ltime|log.Lshortfile)
+var Logger = log.New()
 
 var db *gorm.DB
 var err error
@@ -19,6 +21,11 @@ var err error
 //Opens database connection and runs the most recent migrations\
 //If the db is not created it creates it and seeds it with a default user
 func Setup() error {
+	fresh_db := false
+	if _, err = os.Stat(config.Config.Database); err != nil || config.Config.Database == ":memory:" {
+		fresh_db = true
+	}
+
 	err = createDbConn()
 	if err != nil {
 		return err
@@ -50,6 +57,33 @@ func Setup() error {
 		return err
 	}
 
+	if fresh_db {
+		// Hashing the password with the default cost of 10
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("secret"), bcrypt.DefaultCost)
+		if err != nil {
+			Logger.Println(err)
+			return err
+		}
+
+		key, err := rand.GenerateRandomBytes(16)
+		if err != nil {
+			Logger.Println(err)
+			return err
+		}
+
+		//Create the default user
+		admin := User{
+			Username: "admin",
+			Password: string(hashedPassword),
+			ApiKey:   string(key),
+		}
+
+		err = db.Save(&admin).Error
+		if err != nil {
+			Logger.Println(err)
+			return err
+		}
+	}
 	return nil
 }
 
