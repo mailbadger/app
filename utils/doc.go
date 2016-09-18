@@ -1,5 +1,3 @@
-package main
-
 /*
 news-maily - Open-Source Newsletter Mail System
 
@@ -25,28 +23,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-import (
-	"fmt"
-	"runtime"
 
-	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/gin-gonic/gin"
-)
-
-func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	error := entities.Setup()
-	if error != nil {
-		fmt.Println(error)
-	}
-
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	r.Run() // listen and server on 0.0.0.0:8080
-}
+//Package utils has general utility functions.
+package utils
