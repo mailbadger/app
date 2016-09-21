@@ -4,13 +4,13 @@
 	"GodepVersion": "v74",
 	"Deps": [
 		{
-			"ImportPath": "bitbucket.org/liamstask/goose/lib/goose",
-			"Rev": "8488cc47d90c8a502b1c41a462a6d9cc8ee0a895"
-		},
-		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.10.0-38-g3ec0642",
 			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
+		},
+		{
+			"ImportPath": "github.com/gin-gonic/contrib/ginrus",
+			"Rev": "547e518040cfb96576b507d2f26779ab9c6fc829"
 		},
 		{
 			"ImportPath": "github.com/gin-gonic/gin",
@@ -28,69 +28,12 @@
 			"Rev": "f931d1ea80ae95a6fc739213cdd9399bd2967fb6"
 		},
 		{
-			"ImportPath": "github.com/go-sql-driver/mysql",
-			"Comment": "v1.2-198-g0b58b37",
-			"Rev": "0b58b37b664c21f3010e836f1b931e1d0b0b0685"
-		},
-		{
 			"ImportPath": "github.com/golang/protobuf/proto",
 			"Rev": "1f49d83d9aa00e6ce4fc8258c71cc7786aec968a"
 		},
 		{
-			"ImportPath": "github.com/jinzhu/gorm",
-			"Comment": "v1.0-64-gf26fa24",
-			"Rev": "f26fa242cc1bf884f9a4f98849f70fb8e73f441f"
-		},
-		{
-			"ImportPath": "github.com/jinzhu/inflection",
-			"Rev": "74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff"
-		},
-		{
-			"ImportPath": "github.com/kylelemons/go-gypsy/yaml",
-			"Comment": "go.weekly.2011-11-02-19-g42fc2c7",
-			"Rev": "42fc2c7ee9b8bd0ff636cd2d7a8c0a49491044c5"
-		},
-		{
-			"ImportPath": "github.com/lib/pq",
-			"Comment": "go1.0-cutoff-117-g50761b0",
-			"Rev": "50761b0867bd1d9d069276790bcd4a3bccf2324a"
-		},
-		{
-			"ImportPath": "github.com/lib/pq/oid",
-			"Comment": "go1.0-cutoff-117-g50761b0",
-			"Rev": "50761b0867bd1d9d069276790bcd4a3bccf2324a"
-		},
-		{
 			"ImportPath": "github.com/manucorporat/sse",
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-sqlite3",
-			"Comment": "v1.1.0-78-gb5c99a7",
-			"Rev": "b5c99a720374818b629fd1fbf6d2cbb4fb9a5644"
-		},
-		{
-			"ImportPath": "github.com/ziutek/mymysql/godrv",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
-		},
-		{
-			"ImportPath": "github.com/ziutek/mymysql/mysql",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
-		},
-		{
-			"ImportPath": "github.com/ziutek/mymysql/native",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
-		},
-		{
-			"ImportPath": "golang.org/x/crypto/bcrypt",
-			"Rev": "81372b2fc2f10bef2a7f338da115c315a56b2726"
-		},
-		{
-			"ImportPath": "golang.org/x/crypto/blowfish",
-			"Rev": "81372b2fc2f10bef2a7f338da115c315a56b2726"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",

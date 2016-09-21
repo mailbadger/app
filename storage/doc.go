@@ -20,5 +20,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//Package config implements global config to be used within the application.
-package config
+// The storage package provides an interface to the database
+// it supports "mysql", "postgres" and "sqlite" database servers
+package storage

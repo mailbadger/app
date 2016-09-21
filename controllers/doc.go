@@ -20,5 +20,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//Package config implements global config to be used within the application.
-package config
+// The controllers package handles the API endpoints.
+package controllers
