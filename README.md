@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/FilipNikolovski/news-maily.svg?branch=golang)](https://travis-ci.org/FilipNikolovski/news-maily)
-[![Software License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE.md)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/FilipNikolovski/news-maily/master/LICENSE.md)
 
 # news-maily
 
