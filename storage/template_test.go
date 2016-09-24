@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/FilipNikolovski/news-maily/entities"
@@ -35,7 +34,7 @@ func TestTemplate(t *testing.T) {
 		Content: "Foo bar",
 	})
 
-	assert.Equal(t, err, errors.New("Name not specified"))
+	assert.Equal(t, err, entities.ErrNameInvalid)
 
 	//Test create template when content is empty
 	err = store.CreateTemplate(&entities.Template{
@@ -43,5 +42,9 @@ func TestTemplate(t *testing.T) {
 		UserId: 1,
 	})
 
-	assert.Equal(t, err, errors.New("Content not specified"))
+	assert.Equal(t, err, entities.ErrContentInvalid)
+
+	// Test delete template
+	err = store.DeleteTemplate(1, 1)
+	assert.Nil(t, err)
 }

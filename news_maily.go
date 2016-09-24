@@ -30,13 +30,15 @@ import (
 	"time"
 
 	"github.com/FilipNikolovski/news-maily/routes"
+	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/contrib/ginrus"
 )
 
 func main() {
-	handler := routes.From(
+	handler := routes.New(
 		ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true),
+		middleware.Storage(),
 	)
 
 	logrus.Info("Starting server...")

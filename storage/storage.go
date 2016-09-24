@@ -4,7 +4,8 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/routes/middleware"
+	"github.com/FilipNikolovski/news-maily/utils"
+	"github.com/gin-gonic/gin"
 )
 
 const key = "storage"
@@ -16,7 +17,7 @@ type Storage interface {
 
 	UpdateUser(user *entities.User) error
 
-	GetTemplates(user_id int64, p *middleware.Pagination)
+	GetTemplates(user_id int64, p *utils.Pagination)
 
 	GetTemplate(id int64, user_id int64) (entities.Template, error)
 
@@ -25,6 +26,16 @@ type Storage interface {
 	UpdateTemplate(t *entities.Template) error
 
 	DeleteTemplate(id int64, user_id int64) error
+}
+
+// SetToContext sets the storage to the context
+func SetToContext(c *gin.Context, storage Storage) {
+	c.Set(key, storage)
+}
+
+// GetFromContext returns the Storage associated with the context
+func GetFromContext(c context.Context) Storage {
+	return c.Value(key).(Storage)
 }
 
 func GetUser(c context.Context, id int64) (entities.User, error) {
@@ -41,7 +52,7 @@ func UpdateUser(c context.Context, user *entities.User) error {
 
 // GetTemplates populates the Pagination object with a collection of templates
 // and page data.
-func GetTemplates(c context.Context, user_id int64, p *middleware.Pagination) {
+func GetTemplates(c context.Context, user_id int64, p *utils.Pagination) {
 	c.Value(key).(Storage).GetTemplates(user_id, p)
 }
 

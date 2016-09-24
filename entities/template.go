@@ -18,14 +18,17 @@ type Template struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+var ErrNameInvalid = errors.New("The name you provided is invalid.")
+var ErrContentInvalid = errors.New("The content you provided is invalid.")
+
 // Validate template properties,
 // the template should be able to execute with the given variables
 func (t *Template) Validate() error {
 	switch {
 	case t.Name == "":
-		return errors.New("Name not specified")
+		return ErrNameInvalid
 	case t.Content == "":
-		return errors.New("Content not specified")
+		return ErrContentInvalid
 	}
 
 	var buff bytes.Buffer

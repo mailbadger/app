@@ -6,7 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func From(middleware ...gin.HandlerFunc) http.Handler {
+// New creates a new HTTP handler with the specified middleware.
+func New(middleware ...gin.HandlerFunc) http.Handler {
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
