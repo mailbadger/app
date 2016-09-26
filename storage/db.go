@@ -8,7 +8,9 @@ import (
 	"github.com/FilipNikolovski/news-maily/entities"
 	"github.com/FilipNikolovski/news-maily/utils"
 	log "github.com/Sirupsen/logrus"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,8 +37,9 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.Fatalln("db connection failed!")
 	}
 
-	db.DB().SetMaxOpenConns(1)
-	db.LogMode(false)
+	if driver == "mysql" {
+		db.DB().SetMaxIdleConns(0)
+	}
 
 	if err := pingDb(db); err != nil {
 		log.Errorln(err)
@@ -56,12 +59,11 @@ func openDbConn(driver, config string) *gorm.DB {
 func setupDb(driver, config string, db *gorm.DB) error {
 	//Goose configuration
 	migrateConfig := &goose.DBConf{
-		MigrationsDir: "../storage/migrations",
+		MigrationsDir: "./migrations/sqlite3",
 		Env:           "production",
 		Driver: goose.DBDriver{
 			Name:    driver,
 			OpenStr: config,
-			Import:  "github.com/mattn/go-sqlite3",
 			Dialect: &goose.Sqlite3Dialect{},
 		},
 	}
@@ -140,6 +142,11 @@ func openTestDb() *gorm.DB {
 		driver = "sqlite3"
 		config = ":memory:"
 	)
+
+	if os.Getenv("DATABASE_DRIVER") != "" && os.Getenv("DATABASE_CONFIG") != "" {
+		driver = os.Getenv("DATABASE_DRIVER")
+		config = os.Getenv("DATABASE_CONFIG")
+	}
 
 	return openDbConn(driver, config)
 }

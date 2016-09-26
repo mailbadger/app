@@ -20,5 +20,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//Package utils has general utility functions.
+// Package utils has general utilities that are shared between the other packages.
 package utils
