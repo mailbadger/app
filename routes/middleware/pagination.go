@@ -5,16 +5,16 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/FilipNikolovski/news-maily/utils"
+	"github.com/FilipNikolovski/news-maily/utils/pagination"
 	"github.com/gin-gonic/gin"
 )
 
 func Paginate() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var pagination utils.Pagination
+		var pagination pagination.Pagination
 
 		pagination.Page = 0
-		pagination.PerPage = utils.DefaultPerPage
+		pagination.PerPage = pagination.DefaultPerPage
 		pagination.Total = math.MaxUint32
 		pagination.Collection = make([]interface{}, 0)
 

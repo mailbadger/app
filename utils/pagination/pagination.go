@@ -1,4 +1,4 @@
-package utils
+package pagination
 
 var DefaultPerPage uint = 10
 
