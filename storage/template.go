@@ -2,11 +2,11 @@ package storage
 
 import (
 	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/utils"
+	"github.com/FilipNikolovski/news-maily/utils/pagination"
 )
 
 // GetTemplates fetches templates by user id, and populates the pagination obj
-func (db *store) GetTemplates(user_id int64, p *utils.Pagination) {
+func (db *store) GetTemplates(user_id int64, p *pagination.Pagination) {
 	var templates []entities.Template
 	var count uint64
 

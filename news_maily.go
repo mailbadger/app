@@ -27,19 +27,13 @@ THE SOFTWARE.
 */
 import (
 	"net/http"
-	"time"
 
 	"github.com/FilipNikolovski/news-maily/routes"
-	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/Sirupsen/logrus"
-	"github.com/gin-gonic/contrib/ginrus"
 )
 
 func main() {
-	handler := routes.New(
-		ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true),
-		middleware.Storage(),
-	)
+	handler := routes.New()
 
 	logrus.Info("Starting server...")
 	logrus.Fatal(http.ListenAndServe(

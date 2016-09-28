@@ -4,7 +4,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/utils"
+	"github.com/FilipNikolovski/news-maily/utils/pagination"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +17,7 @@ type Storage interface {
 
 	UpdateUser(user *entities.User) error
 
-	GetTemplates(user_id int64, p *utils.Pagination)
+	GetTemplates(user_id int64, p *pagination.Pagination)
 
 	GetTemplate(id int64, user_id int64) (entities.Template, error)
 
@@ -52,7 +52,7 @@ func UpdateUser(c context.Context, user *entities.User) error {
 
 // GetTemplates populates the Pagination object with a collection of templates
 // and page data.
-func GetTemplates(c context.Context, user_id int64, p *utils.Pagination) {
+func GetTemplates(c context.Context, user_id int64, p *pagination.Pagination) {
 	c.Value(key).(Storage).GetTemplates(user_id, p)
 }
 
