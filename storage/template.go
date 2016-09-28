@@ -19,9 +19,9 @@ func (db *store) GetTemplates(user_id int64, p *pagination.Pagination) {
 }
 
 // GetTemplate returns the template by the given id and user id
-func (db *store) GetTemplate(id int64, user_id int64) (entities.Template, error) {
-	template := entities.Template{}
-	err := db.Where("user_id = ? and id = ?", user_id, id).Find(&template).Error
+func (db *store) GetTemplate(id int64, user_id int64) (*entities.Template, error) {
+	var template = new(entities.Template)
+	err := db.Where("user_id = ? and id = ?", user_id, id).Find(template).Error
 	return template, err
 }
 

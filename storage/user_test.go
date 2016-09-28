@@ -20,7 +20,7 @@ func TestUser(t *testing.T) {
 
 	//Update user test
 	user.Username = "foo"
-	err = store.UpdateUser(&user)
+	err = store.UpdateUser(user)
 	assert.Nil(t, err)
 
 	user, err = store.GetUser(1)

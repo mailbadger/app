@@ -11,21 +11,21 @@ import (
 const key = "storage"
 
 type Storage interface {
-	GetUser(id int64) (entities.User, error)
+	GetUser(int64) (*entities.User, error)
 
-	GetUserByApiKey(api_key string) (entities.User, error)
+	GetUserByApiKey(string) (*entities.User, error)
 
-	UpdateUser(user *entities.User) error
+	UpdateUser(*entities.User) error
 
-	GetTemplates(user_id int64, p *pagination.Pagination)
+	GetTemplates(int64, *pagination.Pagination)
 
-	GetTemplate(id int64, user_id int64) (entities.Template, error)
+	GetTemplate(int64, int64) (*entities.Template, error)
 
-	CreateTemplate(t *entities.Template) error
+	CreateTemplate(*entities.Template) error
 
-	UpdateTemplate(t *entities.Template) error
+	UpdateTemplate(*entities.Template) error
 
-	DeleteTemplate(id int64, user_id int64) error
+	DeleteTemplate(int64, int64) error
 }
 
 // SetToContext sets the storage to the context
@@ -38,11 +38,11 @@ func GetFromContext(c context.Context) Storage {
 	return c.Value(key).(Storage)
 }
 
-func GetUser(c context.Context, id int64) (entities.User, error) {
+func GetUser(c context.Context, id int64) (*entities.User, error) {
 	return c.Value(key).(Storage).GetUser(id)
 }
 
-func GetUserByApiKey(c context.Context, api_key string) (entities.User, error) {
+func GetUserByApiKey(c context.Context, api_key string) (*entities.User, error) {
 	return c.Value(key).(Storage).GetUserByApiKey(api_key)
 }
 
@@ -56,7 +56,7 @@ func GetTemplates(c context.Context, user_id int64, p *pagination.Pagination) {
 	c.Value(key).(Storage).GetTemplates(user_id, p)
 }
 
-func GetTemplate(c context.Context, id int64, user_id int64) (entities.Template, error) {
+func GetTemplate(c context.Context, id int64, user_id int64) (*entities.Template, error) {
 	return c.Value(key).(Storage).GetTemplate(id, user_id)
 }
 

@@ -19,7 +19,7 @@ func SetUser() gin.HandlerFunc {
 
 		if err == nil {
 			if id, err := strconv.ParseInt(t.Value, 10, 64); err == nil {
-				if user, err = storage.GetUser(id); err == nil {
+				if user, err = storage.GetUser(c, id); err == nil {
 					c.Set("user", user)
 				}
 			}
