@@ -11,12 +11,12 @@ import (
 
 func Paginate() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var pagination pagination.Pagination
+		var p pagination.Pagination
 
-		pagination.Page = 0
-		pagination.PerPage = pagination.DefaultPerPage
-		pagination.Total = math.MaxUint32
-		pagination.Collection = make([]interface{}, 0)
+		p.Page = 0
+		p.PerPage = pagination.DefaultPerPage
+		p.Total = math.MaxUint32
+		p.Collection = make([]interface{}, 0)
 
 		if len(c.Query("per_page")) > 0 {
 			if len(c.Query("per_page")) > 1 {
@@ -27,11 +27,11 @@ func Paginate() gin.HandlerFunc {
 				panic(fmt.Sprintf("Error parsing 'per_page': %s", err))
 			}
 
-			pagination.PerPage = uint(perpage)
+			p.PerPage = uint(perpage)
 
 			//Lock on 100 if the user requests more than 100 items per page
-			if pagination.PerPage > 100 {
-				pagination.PerPage = 100
+			if p.PerPage > 100 {
+				p.PerPage = 100
 			}
 		}
 		if len(c.Query("page")) > 0 {
@@ -42,11 +42,11 @@ func Paginate() gin.HandlerFunc {
 			if err != nil {
 				panic(fmt.Sprintf("Error parsing 'page': %s", err))
 			}
-			pagination.Page = uint(page)
-			pagination.Offset = uint(page * uint64(pagination.PerPage))
+			p.Page = uint(page)
+			p.Offset = uint(page * uint64(p.PerPage))
 		}
 
-		c.Set("pagination", pagination)
+		c.Set("pagination", p)
 		c.Next()
 	}
 }

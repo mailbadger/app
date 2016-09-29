@@ -38,7 +38,7 @@ func Authorized() gin.HandlerFunc {
 			c.String(401, "User not authorized")
 			c.Abort()
 		}
-		user, ok := val.(*model.User)
+		_, ok = val.(*entities.User)
 		if !ok {
 			c.String(401, "User not authorized")
 			c.Abort()

@@ -15,7 +15,6 @@ func New() http.Handler {
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
-	handler.Use(middleware...)
 	handler.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.SetUser())
