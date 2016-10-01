@@ -4,3 +4,26 @@
 # news-maily
 
 Self hosted newsletter mail system written in go.
+
+# TODO
+
+- [ ] Add login and logout actions.
+- [ ] Refactor jwt secret key func.
+- [ ] Add template actions - get template(s), add template, delete template.
+- [ ] Add campaign storage functions - add, get, delete etc.
+- [ ] Add campaign actions.
+- [ ] Add lists storage functions.
+- [ ] Import subscribers from csv/excel feature.
+- [ ] Create and edit list fields.
+- [ ] Subscriber import file proper validation by fields = columns.
+- [ ] Mass delete subscribers via csv/excel file.
+- [ ] Test send email functionality.
+- [ ] Send campaign (should be done as a background process).
+- [ ] Schedule campaigns.
+- [ ] Export subscribers.
+- [ ] Track emails route.
+- [ ] Account settings.
+- [ ] Bounces/Complaints webhook (for now it would only work with SES).
+- [ ] Environment vars.
+- [ ] Create docker image for easier installation.
+- [ ] Proper README, website and logo.
