@@ -31,6 +31,11 @@ func From(db *gorm.DB) Storage {
 
 // openDbConn creates a database connection using the driver and config string
 func openDbConn(driver, config string) *gorm.DB {
+	fresh := false
+	if _, err := os.Stat(config); err != nil || config == ":memory:" {
+		fresh = true
+	}
+
 	db, err := gorm.Open(driver, config)
 	if err != nil {
 		log.Errorln(err)
@@ -46,7 +51,7 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.Fatalln("database ping attempts failed")
 	}
 
-	if err := setupDb(driver, config, db); err != nil {
+	if err := setupDb(driver, config, fresh, db); err != nil {
 		log.Errorln(err)
 		log.Fatalln("migrations failed")
 	}
@@ -56,11 +61,10 @@ func openDbConn(driver, config string) *gorm.DB {
 
 // setupDb runs the necessary migrations and creates a new user if the database
 // hasn't been setup yet
-func setupDb(driver, config string, db *gorm.DB) error {
+func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	//Goose configuration
 	migrateConfig := &goose.DBConf{
 		MigrationsDir: "./migrations/sqlite3",
-		Env:           "production",
 		Driver: goose.DBDriver{
 			Name:    driver,
 			OpenStr: config,
@@ -79,44 +83,44 @@ func setupDb(driver, config string, db *gorm.DB) error {
 		log.Errorln(err)
 	}
 
-	err = initDb(config, db)
-	if err != nil {
-		log.Errorln(err)
-		return err
+	// If the database didn't exist, initialize it with an admin user
+	if fresh {
+		err = initDb(config, db)
+		if err != nil {
+			log.Errorln(err)
+			return err
+		}
 	}
-
 	return nil
 }
 
 // initDb seeds the database with the admin user, if the database has not been
 // initialized before
 func initDb(config string, db *gorm.DB) error {
-	if _, err := os.Stat(config); err != nil || config == ":memory:" {
-		// Hashing the password with the default cost of 10
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("secret"), bcrypt.DefaultCost)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
+	// Hashing the password with the default cost of 10
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("secret"), bcrypt.DefaultCost)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
-		key, err := utils.GenerateRandomString(32)
-		if err != nil {
-			log.Errorln(err)
-			return err
-		}
+	key, err := utils.GenerateRandomString(32)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
 
-		//Create the default user
-		admin := entities.User{
-			Username: "admin",
-			Password: string(hashedPassword),
-			ApiKey:   string(key),
-		}
+	//Create the default user
+	admin := entities.User{
+		Username: "admin",
+		Password: string(hashedPassword),
+		ApiKey:   string(key),
+	}
 
-		err = db.Save(&admin).Error
-		if err != nil {
-			log.Errorln(err)
-			return err
-		}
+	err = db.Save(&admin).Error
+	if err != nil {
+		log.Errorln(err)
+		return err
 	}
 
 	return nil

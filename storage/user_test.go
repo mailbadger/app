@@ -20,6 +20,7 @@ func TestUser(t *testing.T) {
 
 	//Update user test
 	user.Username = "foo"
+
 	err = store.UpdateUser(user)
 	assert.Nil(t, err)
 
@@ -30,4 +31,16 @@ func TestUser(t *testing.T) {
 	key, _ := base64.URLEncoding.DecodeString(user.ApiKey)
 	assert.Nil(t, err)
 	assert.Len(t, key, 32)
+
+	// Test get user by api key
+	user.ApiKey = "bar"
+	store.UpdateUser(user)
+
+	user, err = store.GetUserByApiKey("bar")
+	assert.Equal(t, user.ApiKey, "bar")
+
+	// Test get user by username
+	user, err = store.GetUserByUsername("foo")
+	assert.Nil(t, err)
+	assert.Equal(t, user.ApiKey, "bar")
 }

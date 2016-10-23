@@ -21,3 +21,11 @@ func (db *store) GetUserByApiKey(api_key string) (*entities.User, error) {
 	err := db.Where("api_key = ?", api_key).First(user).Error
 	return user, err
 }
+
+//GetUserByUsername returns user by username. If no user is found,
+//an error is returned
+func (db *store) GetUserByUsername(username string) (*entities.User, error) {
+	var user = new(entities.User)
+	err := db.Where("username = ?", username).First(user).Error
+	return user, err
+}

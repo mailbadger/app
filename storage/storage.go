@@ -15,6 +15,8 @@ type Storage interface {
 
 	GetUserByApiKey(string) (*entities.User, error)
 
+	GetUserByUsername(string) (*entities.User, error)
+
 	UpdateUser(*entities.User) error
 
 	GetTemplates(int64, *pagination.Pagination)
@@ -44,6 +46,10 @@ func GetUser(c context.Context, id int64) (*entities.User, error) {
 
 func GetUserByApiKey(c context.Context, api_key string) (*entities.User, error) {
 	return c.Value(key).(Storage).GetUserByApiKey(api_key)
+}
+
+func GetUserByUsername(c context.Context, username string) (*entities.User, error) {
+	return c.Value(key).(Storage).GetUserByUsername(username)
 }
 
 func UpdateUser(c context.Context, user *entities.User) error {

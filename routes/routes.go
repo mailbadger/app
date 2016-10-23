@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/FilipNikolovski/news-maily/actions"
 	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/contrib/ginrus"
@@ -18,6 +19,11 @@ func New() http.Handler {
 	handler.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.SetUser())
+
+	// Guest
+	handler.POST("/login", actions.PostLogin)
+
+	// Authorized
 
 	return handler
 }

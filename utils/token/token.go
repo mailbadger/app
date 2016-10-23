@@ -8,11 +8,18 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-const SignerAlgorithm = "HS256"
+const (
+	SignerAlgorithm = "HS256"
+	SessionToken    = "session_token"
+)
 
 type Token struct {
 	Type  string
 	Value string
+}
+
+func New(t, v string) *Token {
+	return &Token{Type: t, Value: v}
 }
 
 // ParseToken parses the token from the raw string and returns it
