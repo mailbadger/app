@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"strconv"
+	"net/http"
 
 	"github.com/FilipNikolovski/news-maily/entities"
 	"github.com/FilipNikolovski/news-maily/storage"
@@ -15,18 +15,33 @@ func SetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user *entities.User
 
-		t, err := token.FromRequest(c.Request)
+		_, err := token.FromRequest(c.Request, func(t *token.Token) (string, error) {
+			var err error
+			user, err = storage.GetUserByUsername(c, t.Value)
+			return user.AuthKey, err
+		})
 
 		if err == nil {
-			if id, err := strconv.ParseInt(t.Value, 10, 64); err == nil {
-				if user, err = storage.GetUser(c, id); err == nil {
-					c.Set("user", user)
-				}
-			}
+			c.Set("user", user)
 		}
 
 		c.Next()
 	}
+}
+
+// GetUser returns the user set in the context
+func GetUser(c *gin.Context) *entities.User {
+	val, ok := c.Get("user")
+	if !ok {
+		return nil
+	}
+
+	user, ok := val.(*entities.User)
+	if !ok {
+		return nil
+	}
+
+	return user
 }
 
 // Authorized is a middleware that checks if the user is authorized to do the
@@ -35,13 +50,15 @@ func Authorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, ok := c.Get("user")
 		if !ok {
-			c.String(401, "User not authorized")
+			c.JSON(http.StatusUnauthorized, gin.H{"reason": "User not authorized"})
 			c.Abort()
+			return
 		}
 		_, ok = val.(*entities.User)
 		if !ok {
-			c.String(401, "User not authorized")
+			c.JSON(http.StatusUnauthorized, gin.H{"reason": "User not authorized"})
 			c.Abort()
+			return
 		}
 
 		c.Next()

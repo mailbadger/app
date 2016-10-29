@@ -7,8 +7,8 @@ Self hosted newsletter mail system written in go.
 
 # TODO
 
-- [ ] Add login and logout actions.
-- [ ] Refactor jwt secret key func.
+- [ x ] Add login and logout actions.
+- [ x ] Refactor jwt secret key func.
 - [ ] Add template actions - get template(s), add template, delete template.
 - [ ] Add campaign storage functions - add, get, delete etc.
 - [ ] Add campaign actions.

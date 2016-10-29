@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS "users" (
   "id"       integer primary key autoincrement,
   "username" varchar(255) NOT NULL UNIQUE,
   "password" varchar(255),
-  "api_key"  varchar(255) NOT NULL UNIQUE
+  "api_key"  varchar(255) NOT NULL UNIQUE,
+  "auth_key" varchar(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS "templates" (

@@ -3,11 +3,11 @@ package pagination
 var DefaultPerPage uint = 10
 
 type Pagination struct {
-	Page       uint
-	Offset     uint
-	PerPage    uint
-	Total      uint64
-	Collection []interface{}
+	Page       uint          `json:"page"`
+	Offset     uint          `json:"offset"`
+	PerPage    uint          `json:"per_page"`
+	Total      uint64        `json:"total"`
+	Collection []interface{} `json:"collection"`
 }
 
 func (pagination *Pagination) SetTotal(total uint64) {

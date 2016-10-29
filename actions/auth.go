@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/FilipNikolovski/news-maily/storage"
 
 	"github.com/FilipNikolovski/news-maily/utils/token"
@@ -41,7 +42,7 @@ func PostLogin(c *gin.Context) {
 
 	exp := time.Now().Add(time.Hour * 72).Unix()
 	t := token.New(token.SessionToken, user.Username)
-	tokenStr, err := t.SignWithExp("secret", exp)
+	tokenStr, err := t.SignWithExp(user.AuthKey, exp)
 	if err != nil {
 		logrus.Errorf("cannot create token for %s. %s", user.Username, err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -52,6 +53,10 @@ func PostLogin(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &tokenPayload{
 		Access:    tokenStr,
-		ExpiresIn: exp - time.Now().Unix(),
+		ExpiresIn: exp - time.Now().Unix(), //seconds
 	})
+}
+
+func GetMe(c *gin.Context) {
+	c.JSON(http.StatusOK, middleware.GetUser(c))
 }

@@ -64,7 +64,7 @@ func openDbConn(driver, config string) *gorm.DB {
 func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	//Goose configuration
 	migrateConfig := &goose.DBConf{
-		MigrationsDir: "./migrations/sqlite3",
+		MigrationsDir: "./migrations/sqlite3", //TODO Fix The dir path
 		Driver: goose.DBDriver{
 			Name:    driver,
 			OpenStr: config,
@@ -104,7 +104,13 @@ func initDb(config string, db *gorm.DB) error {
 		return err
 	}
 
-	key, err := utils.GenerateRandomString(32)
+	apiKey, err := utils.GenerateRandomString(32)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+
+	authKey, err := utils.GenerateRandomString(32)
 	if err != nil {
 		log.Errorln(err)
 		return err
@@ -114,7 +120,8 @@ func initDb(config string, db *gorm.DB) error {
 	admin := entities.User{
 		Username: "admin",
 		Password: string(hashedPassword),
-		ApiKey:   string(key),
+		ApiKey:   string(apiKey),
+		AuthKey:  string(authKey),
 	}
 
 	err = db.Save(&admin).Error

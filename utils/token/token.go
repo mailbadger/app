@@ -13,6 +13,8 @@ const (
 	SessionToken    = "session_token"
 )
 
+type SecretFunc func(*Token) (string, error)
+
 type Token struct {
 	Type  string
 	Value string
@@ -23,7 +25,7 @@ func New(t, v string) *Token {
 }
 
 // ParseToken parses the token from the raw string and returns it
-func ParseToken(tokenStr string) (*Token, error) {
+func ParseToken(tokenStr string, secretFn SecretFunc) (*Token, error) {
 	token := &Token{}
 	parsedToken, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 
@@ -45,8 +47,8 @@ func ParseToken(tokenStr string) (*Token, error) {
 		token.Type = typev.(string)
 		token.Value = val.(string)
 
-		// Todo change this
-		return []byte("secret"), nil
+		secret, err := secretFn(token)
+		return []byte(secret), err
 	})
 
 	if err != nil {
@@ -60,7 +62,7 @@ func ParseToken(tokenStr string) (*Token, error) {
 
 // FromRequest attempts to parse the token from the Authorization header, or
 // if the header is not present, it attempts to fetch the token from the cookie.
-func FromRequest(r *http.Request) (*Token, error) {
+func FromRequest(r *http.Request, secretFn SecretFunc) (*Token, error) {
 	var authHeader = r.Header.Get("Authorization")
 
 	if authHeader != "" {
@@ -69,7 +71,7 @@ func FromRequest(r *http.Request) (*Token, error) {
 			return nil, errors.New("Invalid auth header")
 		}
 
-		return ParseToken(parts[1])
+		return ParseToken(parts[1], secretFn)
 	}
 
 	return nil, errors.New("Unable to parse token from request")

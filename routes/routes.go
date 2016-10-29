@@ -20,10 +20,21 @@ func New() http.Handler {
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.SetUser())
 
-	// Guest
+	// Guest routes
 	handler.POST("/login", actions.PostLogin)
 
-	// Authorized
+	// Authorized routes
+	users := handler.Group("/api/users")
+	{
+		users.Use(middleware.Authorized())
+		users.GET("", actions.GetMe)
+	}
+
+	templates := handler.Group("/api/templates")
+	{
+		templates.Use(middleware.Authorized())
+		templates.GET("", middleware.Paginate(), actions.GetTemplates)
+	}
 
 	return handler
 }
