@@ -38,22 +38,24 @@ func TestTemplate(t *testing.T) {
 
 	//Test update template when invalid
 	template.Name = ""
-	err = store.UpdateTemplate(template)
+	err = template.Validate()
 	assert.Equal(t, err, entities.ErrNameInvalid)
 
 	//Test create template when name is empty
-	err = store.CreateTemplate(&entities.Template{
+	template = &entities.Template{
 		UserId:  1,
 		Content: "Foo bar",
-	})
+	}
+	err = template.Validate()
 
 	assert.Equal(t, err, entities.ErrNameInvalid)
 
-	//Test create template when content is empty
-	err = store.CreateTemplate(&entities.Template{
-		Name:   "foo",
+	//Test create template when name is empty
+	template = &entities.Template{
 		UserId: 1,
-	})
+		Name:   "Foo bar",
+	}
+	err = template.Validate()
 
 	assert.Equal(t, err, entities.ErrContentInvalid)
 
@@ -65,5 +67,4 @@ func TestTemplate(t *testing.T) {
 	// Test delete template
 	err = store.DeleteTemplate(1, 1)
 	assert.Nil(t, err)
-
 }

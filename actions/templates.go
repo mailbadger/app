@@ -3,7 +3,9 @@ package actions
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/FilipNikolovski/news-maily/entities"
 	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/FilipNikolovski/news-maily/storage"
 	"github.com/FilipNikolovski/news-maily/utils/pagination"
@@ -25,4 +27,105 @@ func GetTemplates(c *gin.Context) {
 
 	storage.GetTemplates(c, middleware.GetUser(c).Id, p)
 	c.JSON(http.StatusOK, p)
+}
+
+func GetTemplate(c *gin.Context) {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+		if t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id); err == nil {
+			c.JSON(http.StatusOK, t)
+			return
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Template not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"reason": "Id must be an integer",
+	})
+	return
+}
+
+func PostTemplate(c *gin.Context) {
+	name, content := c.PostForm("name"), c.PostForm("content")
+	t := &entities.Template{
+		Name:    name,
+		Content: content,
+		UserId:  middleware.GetUser(c).Id,
+	}
+
+	if err := t.Validate(); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"reason": err.Error(),
+		})
+		return
+	}
+
+	err := storage.CreateTemplate(c, t)
+
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"reason": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, t)
+}
+
+func PutTemplate(c *gin.Context) {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+		name, content := c.PostForm("name"), c.PostForm("content")
+		t := &entities.Template{
+			Id:      id,
+			Name:    name,
+			Content: content,
+			UserId:  middleware.GetUser(c).Id,
+		}
+
+		if err := t.Validate(); err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": err.Error(),
+			})
+			return
+		}
+
+		err := storage.UpdateTemplate(c, t)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": err.Error(),
+			})
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"reason": "Id must be an integer",
+	})
+	return
+}
+
+func DeleteTemplate(c *gin.Context) {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+		err := storage.DeleteTemplate(c, id, middleware.GetUser(c).Id)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": err.Error(),
+			})
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"reason": "Id must be an integer",
+	})
+	return
 }

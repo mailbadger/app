@@ -4,8 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"html/template"
+	"net/http"
 	"time"
+
+	valid "github.com/asaskevich/govalidator"
 )
+
+type InputValidator interface {
+	Validate(r *http.Request) error
+}
 
 // Template represents the template entity i.e. the email template to be sent
 // to subscribers
@@ -25,9 +32,9 @@ var ErrContentInvalid = errors.New("The content you provided is invalid.")
 // the template should be able to execute with the given variables
 func (t *Template) Validate() error {
 	switch {
-	case t.Name == "":
+	case valid.Trim(t.Name, "") == "":
 		return ErrNameInvalid
-	case t.Content == "":
+	case valid.Trim(t.Content, "") == "":
 		return ErrContentInvalid
 	}
 

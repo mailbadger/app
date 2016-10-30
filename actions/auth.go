@@ -20,7 +20,7 @@ type tokenPayload struct {
 }
 
 func PostLogin(c *gin.Context) {
-	username, password := c.Request.PostFormValue("username"), c.Request.PostFormValue("password")
+	username, password := c.PostForm("username"), c.PostForm("password")
 
 	user, err := storage.GetUserByUsername(c, username)
 	if err != nil {

@@ -27,19 +27,12 @@ func (db *store) GetTemplate(id int64, user_id int64) (*entities.Template, error
 
 // CreateTemplate
 func (db *store) CreateTemplate(t *entities.Template) error {
-	if err := t.Validate(); err != nil {
-		return err
-	}
-	return db.Save(t).Error
+	return db.Create(t).Error
 }
 
 // UpdateTemplate edits an existing template in the database.
 func (db *store) UpdateTemplate(t *entities.Template) error {
-	if err := t.Validate(); err != nil {
-		return err
-	}
-
-	return db.Where("id = ?", t.Id).Save(t).Error
+	return db.Where("id = ? and user_id = ?", t.Id, t.UserId).Save(t).Error
 }
 
 // DeleteTemplate deletes an existing template in the database.
