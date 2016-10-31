@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "template_id"  integer,
   "status"       varchar(255),
   "created_at"   datetime,
+  "updated_at" datetime,
   "scheduled_at" datetime,
   "completed_at" datetime
 );

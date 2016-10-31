@@ -35,35 +35,28 @@ func TestTemplate(t *testing.T) {
 	template.Name = "bar"
 	err = store.UpdateTemplate(template)
 	assert.Nil(t, err)
+	assert.Equal(t, template.Name, "bar")
 
-	//Test update template when invalid
+	//Test template validation when name is invalid
 	template.Name = ""
-	err = template.Validate()
-	assert.Equal(t, err, entities.ErrNameInvalid)
+	template.Validate()
+	assert.Equal(t, template.Errors["name"], entities.ErrTemplateNameEmpty.Error())
 
-	//Test create template when name is empty
+	//Test template validation with invalid template vars
 	template = &entities.Template{
 		UserId:  1,
-		Content: "Foo bar",
+		Name:    "foo",
+		Content: "{{.FooBar}}",
 	}
-	err = template.Validate()
-
-	assert.Equal(t, err, entities.ErrNameInvalid)
-
-	//Test create template when name is empty
-	template = &entities.Template{
-		UserId: 1,
-		Name:   "Foo bar",
-	}
-	err = template.Validate()
-
-	assert.Equal(t, err, entities.ErrContentInvalid)
+	template.Validate()
+	assert.Equal(t, template.Errors["content"], entities.ErrInvalidTemplateVars.Error())
 
 	//Test get templates
 	p := &pagination.Pagination{}
 	store.GetTemplates(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
+
 	// Test delete template
 	err = store.DeleteTemplate(1, 1)
 	assert.Nil(t, err)

@@ -10,7 +10,7 @@ Self hosted newsletter mail system written in go.
 - [x] Add login and logout actions.
 - [x] Refactor jwt secret key func.
 - [x] Add template actions - get template(s), add template, delete template.
-- [ ] Add campaign storage functions - add, get, delete etc.
+- [x] Add campaign storage functions - add, get, delete etc.
 - [ ] Add campaign actions.
 - [ ] Add lists storage functions.
 - [ ] Import subscribers from csv/excel feature.

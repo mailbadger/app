@@ -56,9 +56,10 @@ func PostTemplate(c *gin.Context) {
 		UserId:  middleware.GetUser(c).Id,
 	}
 
-	if err := t.Validate(); err != nil {
+	if !t.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+			"reason": "Invalid data",
+			"errors": t.Errors,
 		})
 		return
 	}
@@ -85,9 +86,10 @@ func PutTemplate(c *gin.Context) {
 			UserId:  middleware.GetUser(c).Id,
 		}
 
-		if err := t.Validate(); err != nil {
+		if !t.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"reason": "Invalid data",
+				"errors": t.Errors,
 			})
 			return
 		}
