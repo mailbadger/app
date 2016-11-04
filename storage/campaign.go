@@ -6,11 +6,11 @@ import (
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj
-func (db *store) GetCampaigns(user_id int64, p *pagination.Pagination) {
+func (db *store) GetCampaigns(userID int64, p *pagination.Pagination) {
 	var campaigns []entities.Campaign
 	var count uint64
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", user_id).Find(&campaigns).Count(&count)
+	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Find(&campaigns).Count(&count)
 	p.SetTotal(count)
 
 	for _, t := range campaigns {
@@ -19,9 +19,9 @@ func (db *store) GetCampaigns(user_id int64, p *pagination.Pagination) {
 }
 
 // GetCampaign returns the campaign by the given id and user id
-func (db *store) GetCampaign(id int64, user_id int64) (*entities.Campaign, error) {
+func (db *store) GetCampaign(id int64, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", user_id, id).Find(campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Find(campaign).Error
 	return campaign, err
 }
 
@@ -36,6 +36,6 @@ func (db *store) UpdateCampaign(c *entities.Campaign) error {
 }
 
 // DeleteCampaign deletes an existing campaign in the database.
-func (db *store) DeleteCampaign(id int64, user_id int64) error {
-	return db.Where("user_id = ?", user_id).Delete(entities.Campaign{Id: id}).Error
+func (db *store) DeleteCampaign(id int64, userID int64) error {
+	return db.Where("user_id = ?", userID).Delete(entities.Campaign{Id: id}).Error
 }

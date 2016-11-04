@@ -14,11 +14,11 @@ func (db *store) GetUser(id int64) (*entities.User, error) {
 	return user, err
 }
 
-//GetUserByApiKey returns user by api key. If no user is found,
+//GetUserByAPIKey returns user by api key. If no user is found,
 //an error is returned
-func (db *store) GetUserByApiKey(api_key string) (*entities.User, error) {
+func (db *store) GetUserByAPIKey(apiKey string) (*entities.User, error) {
 	var user = new(entities.User)
-	err := db.Where("api_key = ?", api_key).First(user).Error
+	err := db.Where("api_key = ?", apiKey).First(user).Error
 	return user, err
 }
 

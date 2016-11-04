@@ -20,6 +20,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// The storage package provides an interface to the database
+// Package storage provides an interface to the database
 // it supports "mysql", "postgres" and "sqlite" database servers
 package storage

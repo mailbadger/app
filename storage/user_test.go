@@ -36,7 +36,7 @@ func TestUser(t *testing.T) {
 	user.ApiKey = "bar"
 	store.UpdateUser(user)
 
-	user, err = store.GetUserByApiKey("bar")
+	user, err = store.GetUserByAPIKey("bar")
 	assert.Equal(t, user.ApiKey, "bar")
 
 	// Test get user by username

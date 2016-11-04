@@ -25,6 +25,7 @@ func New(driver, config string) Storage {
 	return From(openDbConn(driver, config))
 }
 
+// From creates a new store object.
 func From(db *gorm.DB) Storage {
 	return &store{db}
 }

@@ -10,10 +10,12 @@ import (
 
 const key = "storage"
 
+// Storage is the central interface for accessing and
+// writing data in the datastore.
 type Storage interface {
 	GetUser(int64) (*entities.User, error)
 
-	GetUserByApiKey(string) (*entities.User, error)
+	GetUserByAPIKey(string) (*entities.User, error)
 
 	GetUserByUsername(string) (*entities.User, error)
 
@@ -50,58 +52,74 @@ func GetFromContext(c context.Context) Storage {
 	return c.Value(key).(Storage)
 }
 
+// GetUser returns a User entity from the specified id.
 func GetUser(c context.Context, id int64) (*entities.User, error) {
 	return c.Value(key).(Storage).GetUser(id)
 }
 
-func GetUserByApiKey(c context.Context, api_key string) (*entities.User, error) {
-	return c.Value(key).(Storage).GetUserByApiKey(api_key)
+// GetUserByAPIKey returns a User entity from the specified api key.
+func GetUserByAPIKey(c context.Context, apiKey string) (*entities.User, error) {
+	return c.Value(key).(Storage).GetUserByAPIKey(apiKey)
 }
 
+// GetUserByUsername returns a User entity from the specified username.
 func GetUserByUsername(c context.Context, username string) (*entities.User, error) {
 	return c.Value(key).(Storage).GetUserByUsername(username)
 }
 
+// UpdateUser updates the User entity.
 func UpdateUser(c context.Context, user *entities.User) error {
 	return c.Value(key).(Storage).UpdateUser(user)
 }
 
-func GetTemplates(c context.Context, user_id int64, p *pagination.Pagination) {
-	c.Value(key).(Storage).GetTemplates(user_id, p)
+// GetTemplates populates a pagination object with a collection of
+// templates by the specified user id.
+func GetTemplates(c context.Context, userID int64, p *pagination.Pagination) {
+	c.Value(key).(Storage).GetTemplates(userID, p)
 }
 
-func GetTemplate(c context.Context, id int64, user_id int64) (*entities.Template, error) {
-	return c.Value(key).(Storage).GetTemplate(id, user_id)
+// GetTemplate returns a Template entity by the given id and the user id.
+func GetTemplate(c context.Context, id int64, userID int64) (*entities.Template, error) {
+	return c.Value(key).(Storage).GetTemplate(id, userID)
 }
 
+// CreateTemplate persists a new Template entity in the datastore.
 func CreateTemplate(c context.Context, t *entities.Template) error {
 	return c.Value(key).(Storage).CreateTemplate(t)
 }
 
+// UpdateTemplate updates the Template entity.
 func UpdateTemplate(c context.Context, t *entities.Template) error {
 	return c.Value(key).(Storage).UpdateTemplate(t)
 }
 
-func DeleteTemplate(c context.Context, id int64, user_id int64) error {
-	return c.Value(key).(Storage).DeleteTemplate(id, user_id)
+// DeleteTemplate deletes a Template entity by the given id.
+func DeleteTemplate(c context.Context, id int64, userID int64) error {
+	return c.Value(key).(Storage).DeleteTemplate(id, userID)
 }
 
-func GetCampaigns(c context.Context, user_id int64, p *pagination.Pagination) {
-	c.Value(key).(Storage).GetCampaigns(user_id, p)
+// GetCampaigns populates a pagination object with a collection of
+// campaigns by the specified user id.
+func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
+	c.Value(key).(Storage).GetCampaigns(userID, p)
 }
 
-func GetCampaign(c context.Context, id int64, user_id int64) (*entities.Campaign, error) {
-	return c.Value(key).(Storage).GetCampaign(id, user_id)
+// GetCampaign returns a Campaign entity by the given id and user id.
+func GetCampaign(c context.Context, id int64, userID int64) (*entities.Campaign, error) {
+	return c.Value(key).(Storage).GetCampaign(id, userID)
 }
 
+// CreateCampaign persists a new Campaign entity in the datastore.
 func CreateCampaign(c context.Context, t *entities.Campaign) error {
 	return c.Value(key).(Storage).CreateCampaign(t)
 }
 
+// UpdateCampaign updates a Campaign entity.
 func UpdateCampaign(c context.Context, t *entities.Campaign) error {
 	return c.Value(key).(Storage).UpdateCampaign(t)
 }
 
-func DeleteCampaign(c context.Context, id int64, user_id int64) error {
-	return c.Value(key).(Storage).DeleteCampaign(id, user_id)
+// DeleteCampaign deletes a Campaign entity by the given id.
+func DeleteCampaign(c context.Context, id int64, userID int64) error {
+	return c.Value(key).(Storage).DeleteCampaign(id, userID)
 }
