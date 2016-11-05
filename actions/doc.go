@@ -20,5 +20,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// The actions package handles the API endpoints.
+// Package actions handles the API endpoints.
 package actions

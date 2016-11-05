@@ -20,9 +20,9 @@ func TestCampaign(t *testing.T) {
 		Content: "Foo bar",
 		UserId:  1,
 	}
-
 	store.CreateTemplate(template)
 
+	//Test create campaign
 	campaign := &entities.Campaign{
 		Name:       "foo",
 		TemplateId: template.Id,

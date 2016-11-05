@@ -13,6 +13,7 @@ Self hosted newsletter mail system written in go.
 - [x] Add campaign storage functions - add, get, delete etc.
 - [x] Add campaign actions.
 - [ ] Add lists storage functions.
+- [ ] Add lists actions.
 - [ ] Import subscribers from csv/excel feature.
 - [ ] Create and edit list fields.
 - [ ] Subscriber import file proper validation by fields = columns.
@@ -27,3 +28,6 @@ Self hosted newsletter mail system written in go.
 - [ ] Environment vars.
 - [ ] Create docker image for easier installation.
 - [ ] Proper README, website and logo.
+- [ ] Campaign http tests
+- [ ] Template http tests
+- [ ] User http tests

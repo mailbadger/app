@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
 
 CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"         integer primary key autoincrement,
-  "name"       varchar(255),
-  "email"      varchar(255),
+  "name"       varchar(255) NOT NULL,
+  "email"      varchar(255) NOT NULL UNIQUE,
   "created_at" datetime,
   "updated_at" datetime
 );
@@ -43,27 +43,28 @@ CREATE TABLE IF NOT EXISTS "lists" (
   "id"                integer primary key autoincrement,
   "user_id"           integer,
   "name"              varchar(255),
-  "total_subscribers" integer,
   "created_at"        datetime,
   "updated_at"        datetime
 );
+
 CREATE TABLE IF NOT EXISTS "subscribers_lists" (
   "list_id"       integer,
   "subscriber_id" integer
 );
 
-CREATE TABLE IF NOT EXISTS "fields" (
+CREATE TABLE IF NOT EXISTS "list_metadata" (
   "id"         integer primary key autoincrement,
-  "name"       varchar(255),
   "list_id"    integer,
+  "key"        varchar(255),
+  "value"      varchar(255),
   "created_at" datetime,
   "updated_at" datetime
 );
 
-CREATE TABLE IF NOT EXISTS "subscribers_fields" (
+CREATE TABLE IF NOT EXISTS "subscriber_metadata" (
   "id"            integer primary key autoincrement,
-  "field_id"      integer,
   "subscriber_id" integer,
+  "key"           varchar(255),
   "value"         varchar(255),
   "created_at"    datetime,
   "updated_at"    datetime
