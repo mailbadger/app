@@ -40,6 +40,15 @@ func New() http.Handler {
 			templates.PUT("/:id", actions.PutTemplate)
 			templates.DELETE("/:id", actions.DeleteTemplate)
 		}
+
+		campaigns := authorized.Group("/campaigns")
+		{
+			campaigns.GET("", middleware.Paginate(), actions.GetCampaigns)
+			campaigns.GET("/:id", actions.GetCampaign)
+			campaigns.POST("", actions.PostCampaign)
+			campaigns.PUT("/:id", actions.PutCampaign)
+			campaigns.DELETE("/:id", actions.DeleteCampaign)
+		}
 	}
 
 	return handler

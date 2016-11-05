@@ -78,13 +78,18 @@ func PostTemplate(c *gin.Context) {
 
 func PutTemplate(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		name, content := c.PostForm("name"), c.PostForm("content")
-		t := &entities.Template{
-			Id:      id,
-			Name:    name,
-			Content: content,
-			UserId:  middleware.GetUser(c).Id,
+		t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "Template not found",
+			})
+			return
 		}
+
+		name, content := c.PostForm("name"), c.PostForm("content")
+
+		t.Name = name
+		t.Content = content
 
 		if !t.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -94,7 +99,7 @@ func PutTemplate(c *gin.Context) {
 			return
 		}
 
-		err := storage.UpdateTemplate(c, t)
+		err = storage.UpdateTemplate(c, t)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": err.Error(),

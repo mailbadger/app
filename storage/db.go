@@ -65,7 +65,7 @@ func openDbConn(driver, config string) *gorm.DB {
 func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	//Goose configuration
 	migrateConfig := &goose.DBConf{
-		MigrationsDir: "./migrations/sqlite3", //TODO Fix The dir path
+		MigrationsDir: "/home/fic/Documents/go/src/github.com/FilipNikolovski/news-maily/storage/migrations/sqlite3", //TODO Fix The dir path
 		Driver: goose.DBDriver{
 			Name:    driver,
 			OpenStr: config,

@@ -20,8 +20,8 @@ type Campaign struct {
 	UserId      int64             `json:"-" gorm:"column:user_id; index"`
 	Name        string            `json:"name" gorm:"not null"`
 	Subject     string            `json:"subject"`
-	TemplateId  int64             `json:"-" gorm:"column:template_id; index"`
-	Template    Template          `json:"template"`
+	TemplateId  int64             `json:"template_id" gorm:"column:template_id; index"`
+	Template    Template          `json:"-"`
 	Status      string            `json:"status"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
