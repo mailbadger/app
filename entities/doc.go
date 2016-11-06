@@ -20,5 +20,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//Package entities represents the domain layer of the application.
+// Package entities represents the domain layer of the application.
 package entities

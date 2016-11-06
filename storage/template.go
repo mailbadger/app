@@ -25,7 +25,7 @@ func (db *store) GetTemplate(id int64, userID int64) (*entities.Template, error)
 	return template, err
 }
 
-// CreateTemplate
+// CreateTemplate creates a new template in the database.
 func (db *store) CreateTemplate(t *entities.Template) error {
 	return db.Create(t).Error
 }

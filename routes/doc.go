@@ -20,6 +20,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// The routes package loads the routes with the middleware to be used when
+// Package routes loads the routes with the middleware to be used when
 // starting the http server.
 package routes

@@ -40,6 +40,16 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 
 	DeleteCampaign(int64, int64) error
+
+	GetLists(int64, *pagination.Pagination)
+
+	GetList(int64, int64) (*entities.List, error)
+
+	CreateList(*entities.List) error
+
+	UpdateList(*entities.List) error
+
+	DeleteList(int64, int64) error
 }
 
 // SetToContext sets the storage to the context
@@ -110,16 +120,42 @@ func GetCampaign(c context.Context, id int64, userID int64) (*entities.Campaign,
 }
 
 // CreateCampaign persists a new Campaign entity in the datastore.
-func CreateCampaign(c context.Context, t *entities.Campaign) error {
-	return c.Value(key).(Storage).CreateCampaign(t)
+func CreateCampaign(c context.Context, campaign *entities.Campaign) error {
+	return c.Value(key).(Storage).CreateCampaign(campaign)
 }
 
 // UpdateCampaign updates a Campaign entity.
-func UpdateCampaign(c context.Context, t *entities.Campaign) error {
-	return c.Value(key).(Storage).UpdateCampaign(t)
+func UpdateCampaign(c context.Context, campaign *entities.Campaign) error {
+	return c.Value(key).(Storage).UpdateCampaign(campaign)
 }
 
 // DeleteCampaign deletes a Campaign entity by the given id.
 func DeleteCampaign(c context.Context, id int64, userID int64) error {
 	return c.Value(key).(Storage).DeleteCampaign(id, userID)
+}
+
+// GetLists populates a pagination object with a collection of
+// lists by the specified user id.
+func GetLists(c context.Context, userID int64, p *pagination.Pagination) {
+	c.Value(key).(Storage).GetLists(userID, p)
+}
+
+// GetList returns a List entity by the given id and user id.
+func GetList(c context.Context, id int64, userID int64) (*entities.List, error) {
+	return c.Value(key).(Storage).GetList(id, userID)
+}
+
+// CreateList persists a new List entity in the datastore.
+func CreateList(c context.Context, l *entities.List) error {
+	return c.Value(key).(Storage).CreateList(l)
+}
+
+// UpdateList updates a List entity.
+func UpdateList(c context.Context, l *entities.List) error {
+	return c.Value(key).(Storage).UpdateList(l)
+}
+
+// DeleteList deletes a List entity by the given id.
+func DeleteList(c context.Context, id int64, userID int64) error {
+	return c.Value(key).(Storage).DeleteList(id, userID)
 }

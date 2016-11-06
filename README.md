@@ -12,7 +12,7 @@ Self hosted newsletter mail system written in go.
 - [x] Add template actions - get template(s), add template, delete template.
 - [x] Add campaign storage functions - add, get, delete etc.
 - [x] Add campaign actions.
-- [ ] Add lists storage functions.
+- [x] Add lists storage functions.
 - [ ] Add lists actions.
 - [ ] Import subscribers from csv/excel feature.
 - [ ] Create and edit list fields.

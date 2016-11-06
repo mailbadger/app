@@ -16,7 +16,7 @@ const (
 
 //Campaign represents the campaign entity
 type Campaign struct {
-	Id          int64             `json:"id"`
+	Id          int64             `json:"id" gorm:"column:id; primary_key:yes"`
 	UserId      int64             `json:"-" gorm:"column:user_id; index"`
 	Name        string            `json:"name" gorm:"not null"`
 	Subject     string            `json:"subject"`
@@ -39,7 +39,7 @@ func (c *Campaign) Validate() bool {
 	c.Errors = make(map[string]string)
 
 	if valid.Trim(c.Name, "") == "" {
-		c.Errors["name"] = ErrTemplateNameEmpty.Error()
+		c.Errors["name"] = ErrCampaignNameEmpty.Error()
 	}
 	if valid.Trim(c.Subject, "") == "" {
 		c.Errors["subject"] = ErrSubjectEmpty.Error()
