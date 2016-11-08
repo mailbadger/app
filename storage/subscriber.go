@@ -25,6 +25,13 @@ func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	return s, err
 }
 
+// GetSubscriberByEmail returns the subscriber by the given email and user id
+func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Subscriber, error) {
+	var s = new(entities.Subscriber)
+	err := db.Where("user_id = ? and email = ?", userID, email).Preload("Metadata").Find(s).Error
+	return s, err
+}
+
 // CreateSubscriber creates a new subscriber in the database.
 func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 	return db.Create(s).Error

@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS "templates" (
   "name"       varchar(255),
   "content"    text,
   "created_at" datetime,
-  "updated_at" datetime
+  "updated_at" datetime,
+  UNIQUE("user_id", "name")
  );
 
 CREATE INDEX IF NOT EXISTS i_user ON "templates" (user_id);
@@ -39,9 +40,10 @@ CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
   "name"       varchar(255) NOT NULL,
-  "email"      varchar(255) NOT NULL UNIQUE,
+  "email"      varchar(255) NOT NULL,
   "created_at" datetime,
-  "updated_at" datetime
+  "updated_at" datetime,
+  UNIQUE("user_id", "email")
 );
 
 CREATE TABLE IF NOT EXISTS "lists" (

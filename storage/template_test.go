@@ -31,7 +31,7 @@ func TestTemplate(t *testing.T) {
 	assert.Equal(t, template.Name, "foo")
 	assert.Equal(t, template.Content, "Foo bar")
 
-	//Test get template
+	//Test get template by name
 	template, err = store.GetTemplateByName("foo", 1)
 	assert.Nil(t, err)
 	assert.Equal(t, template.Name, "foo")

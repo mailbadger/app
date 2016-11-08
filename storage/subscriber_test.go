@@ -35,6 +35,11 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, s.Metadata[0].Key, "key")
 	assert.Equal(t, s.Metadata[0].Value, "val")
 
+	//Test get subscriber by email
+	s, err = store.GetSubscriberByEmail("john@example.com", 1)
+	assert.Nil(t, err)
+	assert.Equal(t, s.Name, "foo")
+
 	//Test update subscriber
 	s.Name = "bar"
 	err = store.UpdateSubscriber(s)
