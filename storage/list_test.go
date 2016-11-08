@@ -18,9 +18,6 @@ func TestList(t *testing.T) {
 	l := &entities.List{
 		Name:   "foo",
 		UserId: 1,
-		Metadata: []entities.ListMetadata{
-			{Key: "key1", Value: "val1"},
-		},
 	}
 
 	err := store.CreateList(l)
@@ -30,9 +27,6 @@ func TestList(t *testing.T) {
 	l, err = store.GetList(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "foo")
-	assert.NotEmpty(t, l.Metadata)
-	assert.Equal(t, l.Metadata[0].Key, "key1")
-	assert.Equal(t, l.Metadata[0].Value, "val1")
 
 	//Test update list
 	l.Name = "bar"
@@ -40,7 +34,7 @@ func TestList(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "bar")
 
-	//Test list validation when name and subject are invalid
+	//Test list validation when name is invalid
 	l.Name = ""
 	l.Validate()
 	assert.Equal(t, l.Errors["name"], entities.ErrListNameEmpty.Error())

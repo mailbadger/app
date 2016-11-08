@@ -31,6 +31,12 @@ func TestTemplate(t *testing.T) {
 	assert.Equal(t, template.Name, "foo")
 	assert.Equal(t, template.Content, "Foo bar")
 
+	//Test get template
+	template, err = store.GetTemplateByName("foo", 1)
+	assert.Nil(t, err)
+	assert.Equal(t, template.Name, "foo")
+	assert.Equal(t, template.Content, "Foo bar")
+
 	//Test update template
 	template.Name = "bar"
 	err = store.UpdateTemplate(template)
@@ -41,15 +47,6 @@ func TestTemplate(t *testing.T) {
 	template.Name = ""
 	template.Validate()
 	assert.Equal(t, template.Errors["name"], entities.ErrTemplateNameEmpty.Error())
-
-	//Test template validation with invalid template vars
-	template = &entities.Template{
-		UserId:  1,
-		Name:    "foo",
-		Content: "{{.FooBar}}",
-	}
-	template.Validate()
-	assert.Equal(t, template.Errors["content"], entities.ErrInvalidTemplateVars.Error())
 
 	//Test get templates
 	p := &pagination.Pagination{}

@@ -49,6 +49,15 @@ func New() http.Handler {
 			campaigns.PUT("/:id", actions.PutCampaign)
 			campaigns.DELETE("/:id", actions.DeleteCampaign)
 		}
+
+		lists := authorized.Group("/lists")
+		{
+			lists.GET("", middleware.Paginate(), actions.GetLists)
+			lists.GET("/:id", actions.GetList)
+			lists.POST("", actions.PostList)
+			lists.PUT("/:id", actions.PutList)
+			lists.DELETE("/:id", actions.DeleteList)
+		}
 	}
 
 	return handler

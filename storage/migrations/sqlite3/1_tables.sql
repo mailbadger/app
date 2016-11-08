@@ -37,6 +37,7 @@ CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
 
 CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"         integer primary key autoincrement,
+  "user_id"    integer,
   "name"       varchar(255) NOT NULL,
   "email"      varchar(255) NOT NULL UNIQUE,
   "created_at" datetime,
@@ -60,17 +61,6 @@ CREATE TABLE IF NOT EXISTS "subscribers_lists" (
 
 CREATE INDEX IF NOT EXISTS i_list       ON "subscribers_lists" (list_id);
 CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_lists" (subscriber_id);
-
-CREATE TABLE IF NOT EXISTS "list_metadata" (
-  "id"         integer primary key autoincrement,
-  "list_id"    integer,
-  "key"        varchar(255),
-  "value"      varchar(255),
-  "created_at" datetime,
-  "updated_at" datetime
-);
-
-CREATE INDEX IF NOT EXISTS i_list ON "list_metadata" (list_id);
 
 CREATE TABLE IF NOT EXISTS "subscriber_metadata" (
   "id"            integer primary key autoincrement,

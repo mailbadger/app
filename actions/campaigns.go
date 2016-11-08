@@ -31,8 +31,8 @@ func GetCampaigns(c *gin.Context) {
 
 func GetCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		if t, err := storage.GetCampaign(c, id, middleware.GetUser(c).Id); err == nil {
-			c.JSON(http.StatusOK, t)
+		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).Id); err == nil {
+			c.JSON(http.StatusOK, campaign)
 			return
 		}
 
@@ -158,7 +158,17 @@ func PutCampaign(c *gin.Context) {
 
 func DeleteCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		err := storage.DeleteCampaign(c, id, middleware.GetUser(c).Id)
+		user := middleware.GetUser(c)
+
+		_, err := storage.GetCampaign(c, id, user.Id)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "Campaign not found",
+			})
+			return
+		}
+
+		err = storage.DeleteCampaign(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": err.Error(),

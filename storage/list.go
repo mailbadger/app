@@ -19,9 +19,9 @@ func (db *store) GetLists(userID int64, p *pagination.Pagination) {
 }
 
 // GetList returns the list by the given id and user id
-func (db *store) GetList(id int64, userID int64) (*entities.List, error) {
+func (db *store) GetList(id, userID int64) (*entities.List, error) {
 	var list = new(entities.List)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Metadata").Find(list).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Find(list).Error
 	return list, err
 }
 
@@ -35,7 +35,7 @@ func (db *store) UpdateList(l *entities.List) error {
 	return db.Where("id = ? and user_id = ?", l.Id, l.UserId).Save(l).Error
 }
 
-// DeleteList deletes an existing list in the database.
-func (db *store) DeleteList(id int64, userID int64) error {
+// DeleteList deletes an existing list from the database.
+func (db *store) DeleteList(id, userID int64) error {
 	return db.Where("user_id = ?", userID).Delete(entities.List{Id: id}).Error
 }

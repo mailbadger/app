@@ -25,6 +25,8 @@ type Storage interface {
 
 	GetTemplate(int64, int64) (*entities.Template, error)
 
+	GetTemplateByName(string, int64) (*entities.Template, error)
+
 	CreateTemplate(*entities.Template) error
 
 	UpdateTemplate(*entities.Template) error
@@ -34,6 +36,8 @@ type Storage interface {
 	GetCampaigns(int64, *pagination.Pagination)
 
 	GetCampaign(int64, int64) (*entities.Campaign, error)
+
+	GetCampaignsByTemplateId(int64, int64) ([]entities.Campaign, error)
 
 	CreateCampaign(*entities.Campaign) error
 
@@ -50,6 +54,16 @@ type Storage interface {
 	UpdateList(*entities.List) error
 
 	DeleteList(int64, int64) error
+
+	GetSubscribers(int64, *pagination.Pagination)
+
+	GetSubscriber(int64, int64) (*entities.Subscriber, error)
+
+	CreateSubscriber(*entities.Subscriber) error
+
+	UpdateSubscriber(*entities.Subscriber) error
+
+	DeleteSubscriber(int64, int64) error
 }
 
 // SetToContext sets the storage to the context
@@ -93,6 +107,11 @@ func GetTemplate(c context.Context, id int64, userID int64) (*entities.Template,
 	return c.Value(key).(Storage).GetTemplate(id, userID)
 }
 
+// GetTemplateByName returns a Template entity by the given name and the user id.
+func GetTemplateByName(c context.Context, name string, userID int64) (*entities.Template, error) {
+	return c.Value(key).(Storage).GetTemplateByName(name, userID)
+}
+
 // CreateTemplate persists a new Template entity in the datastore.
 func CreateTemplate(c context.Context, t *entities.Template) error {
 	return c.Value(key).(Storage).CreateTemplate(t)
@@ -117,6 +136,11 @@ func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
 // GetCampaign returns a Campaign entity by the given id and user id.
 func GetCampaign(c context.Context, id int64, userID int64) (*entities.Campaign, error) {
 	return c.Value(key).(Storage).GetCampaign(id, userID)
+}
+
+// GetCampaignsByTemplateId returns a Campaign entity by the given id and user id.
+func GetCampaignsByTemplateId(c context.Context, templateID int64, userID int64) ([]entities.Campaign, error) {
+	return c.Value(key).(Storage).GetCampaignsByTemplateId(templateID, userID)
 }
 
 // CreateCampaign persists a new Campaign entity in the datastore.
@@ -158,4 +182,30 @@ func UpdateList(c context.Context, l *entities.List) error {
 // DeleteList deletes a List entity by the given id.
 func DeleteList(c context.Context, id int64, userID int64) error {
 	return c.Value(key).(Storage).DeleteList(id, userID)
+}
+
+// GetSubscribers populates a pagination object with a collection of
+// subscribers by the specified user id.
+func GetSubscribers(c context.Context, userID int64, p *pagination.Pagination) {
+	c.Value(key).(Storage).GetSubscribers(userID, p)
+}
+
+// GetSubscriber returns a Subscriber entity by the given id and user id.
+func GetSubscriber(c context.Context, id int64, userID int64) (*entities.Subscriber, error) {
+	return c.Value(key).(Storage).GetSubscriber(id, userID)
+}
+
+// CreateSubscriber persists a new Subscriber entity in the datastore.
+func CreateSubscriber(c context.Context, s *entities.Subscriber) error {
+	return c.Value(key).(Storage).CreateSubscriber(s)
+}
+
+// UpdateSubscriber updates a Subscriber entity.
+func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
+	return c.Value(key).(Storage).UpdateSubscriber(s)
+}
+
+// DeleteSubscriber deletes a Subscriber entity by the given id.
+func DeleteSubscriber(c context.Context, id int64, userID int64) error {
+	return c.Value(key).(Storage).DeleteSubscriber(id, userID)
 }

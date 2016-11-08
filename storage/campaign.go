@@ -19,10 +19,17 @@ func (db *store) GetCampaigns(userID int64, p *pagination.Pagination) {
 }
 
 // GetCampaign returns the campaign by the given id and user id
-func (db *store) GetCampaign(id int64, userID int64) (*entities.Campaign, error) {
+func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
 	err := db.Where("user_id = ? and id = ?", userID, id).Find(campaign).Error
 	return campaign, err
+}
+
+// GetCampaign returns a collection of campaigns by the given template id and user id
+func (db *store) GetCampaignsByTemplateId(templateID, userID int64) ([]entities.Campaign, error) {
+	var campaigns []entities.Campaign
+	err := db.Where("user_id = ? and template_id = ?", userID, templateID).Find(&campaigns).Error
+	return campaigns, err
 }
 
 // CreateCampaign creates a new campaign in the database.
@@ -35,7 +42,7 @@ func (db *store) UpdateCampaign(c *entities.Campaign) error {
 	return db.Where("id = ? and user_id = ?", c.Id, c.UserId).Save(c).Error
 }
 
-// DeleteCampaign deletes an existing campaign in the database.
-func (db *store) DeleteCampaign(id int64, userID int64) error {
+// DeleteCampaign deletes an existing campaign from the database.
+func (db *store) DeleteCampaign(id, userID int64) error {
 	return db.Where("user_id = ?", userID).Delete(entities.Campaign{Id: id}).Error
 }

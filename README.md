@@ -13,21 +13,17 @@ Self hosted newsletter mail system written in go.
 - [x] Add campaign storage functions - add, get, delete etc.
 - [x] Add campaign actions.
 - [x] Add lists storage functions.
-- [ ] Add lists actions.
-- [ ] Import subscribers from csv/excel feature.
-- [ ] Create and edit list fields.
-- [ ] Subscriber import file proper validation by fields = columns.
-- [ ] Mass delete subscribers via csv/excel file.
+- [x] Add lists actions.
 - [ ] Test send email functionality.
 - [ ] Send campaign (should be done as a background process).
 - [ ] Schedule campaigns.
-- [ ] Export subscribers.
-- [ ] Track emails route.
+- [ ] Track emails.
 - [ ] Account settings.
 - [ ] Bounces/Complaints webhook (for now it would only work with SES).
+- [ ] Export subscribers.
+- [ ] Import subscribers from csv/excel feature.
+- [ ] Mass delete subscribers via csv/excel file.
 - [ ] Environment vars.
 - [ ] Create docker image for easier installation.
 - [ ] Proper README, website and logo.
-- [ ] Campaign http tests
-- [ ] Template http tests
-- [ ] User http tests
+- [ ] Action tests

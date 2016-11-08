@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTemplates(c *gin.Context) {
+func GetLists(c *gin.Context) {
 	val, ok := c.Get("pagination")
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
@@ -25,19 +25,19 @@ func GetTemplates(c *gin.Context) {
 		return
 	}
 
-	storage.GetTemplates(c, middleware.GetUser(c).Id, p)
+	storage.GetLists(c, middleware.GetUser(c).Id, p)
 	c.JSON(http.StatusOK, p)
 }
 
-func GetTemplate(c *gin.Context) {
+func GetList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		if t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id); err == nil {
-			c.JSON(http.StatusOK, t)
+		if l, err := storage.GetList(c, id, middleware.GetUser(c).Id); err == nil {
+			c.JSON(http.StatusOK, l)
 			return
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Template not found",
+			"reason": "List not found",
 		})
 		return
 	}
@@ -48,68 +48,55 @@ func GetTemplate(c *gin.Context) {
 	return
 }
 
-func PostTemplate(c *gin.Context) {
-	name, content := c.PostForm("name"), c.PostForm("content")
+func PostList(c *gin.Context) {
+	name := c.PostForm("name")
 
-	_, err := storage.GetTemplateByName(c, name, middleware.GetUser(c).Id)
-	if err == nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Template with that name already exists",
-		})
-		return
+	l := &entities.List{
+		Name:   name,
+		UserId: middleware.GetUser(c).Id,
 	}
 
-	t := &entities.Template{
-		Name:    name,
-		Content: content,
-		UserId:  middleware.GetUser(c).Id,
-	}
-
-	if !t.Validate() {
+	if !l.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"reason": "Invalid data",
-			"errors": t.Errors,
+			"errors": l.Errors,
 		})
 		return
 	}
 
-	err = storage.CreateTemplate(c, t)
-
-	if err != nil {
+	if err := storage.CreateList(c, l); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"reason": err.Error(),
 		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, t)
+	c.JSON(http.StatusCreated, l)
+	return
+
 }
 
-func PutTemplate(c *gin.Context) {
+func PutList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id)
+		l, err := storage.GetList(c, id, middleware.GetUser(c).Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Template not found",
+				"reason": "List not found",
 			})
 			return
 		}
 
-		name, content := c.PostForm("name"), c.PostForm("content")
+		l.Name = c.PostForm("name")
 
-		t.Name = name
-		t.Content = content
-
-		if !t.Validate() {
+		if !l.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": "Invalid data",
-				"errors": t.Errors,
+				"errors": l.Errors,
 			})
 			return
 		}
 
-		err = storage.UpdateTemplate(c, t)
-		if err != nil {
+		if err = storage.UpdateList(c, l); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": err.Error(),
 			})
@@ -118,6 +105,7 @@ func PutTemplate(c *gin.Context) {
 
 		c.Status(http.StatusNoContent)
 		return
+
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
@@ -126,18 +114,18 @@ func PutTemplate(c *gin.Context) {
 	return
 }
 
-func DeleteTemplate(c *gin.Context) {
+func DeleteList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
 		user := middleware.GetUser(c)
-		campaigns, err := storage.GetCampaignsByTemplateId(c, id, user.Id)
-		if err == nil && len(campaigns) > 0 {
+		_, err := storage.GetList(c, id, user.Id)
+		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Cannot delete template because it is used by campaigns.",
+				"reason": "List not found",
 			})
 			return
 		}
 
-		err = storage.DeleteTemplate(c, id, user.Id)
+		err = storage.DeleteList(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": err.Error(),
