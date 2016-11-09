@@ -14,7 +14,7 @@ type List struct {
 	Id          int64             `json:"id"`
 	Name        string            `json:"name" gorm:"not null"`
 	UserId      int64             `json:"-" gorm:"column:user_id; index"`
-	Subscribers []Subscriber      `gorm:"many2many:subscribers_lists;"`
+	Subscribers []Subscriber      `json:"-" gorm:"many2many:subscribers_lists;"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
 	Errors      map[string]string `json:"-" sql:"-"`

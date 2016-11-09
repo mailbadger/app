@@ -55,7 +55,11 @@ type Storage interface {
 
 	DeleteList(int64, int64) error
 
+	AppendSubscribers(*entities.List) error
+
 	GetSubscribers(int64, *pagination.Pagination)
+
+	GetSubscribersByListId(int64, int64, *pagination.Pagination)
 
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 
@@ -186,10 +190,21 @@ func DeleteList(c context.Context, id int64, userID int64) error {
 	return GetFromContext(c).DeleteList(id, userID)
 }
 
+// AppendSubscribers appends subscribers to the existing association.
+func AppendSubscribers(c context.Context, l *entities.List) error {
+	return GetFromContext(c).AppendSubscribers(l)
+}
+
 // GetSubscribers populates a pagination object with a collection of
 // subscribers by the specified user id.
 func GetSubscribers(c context.Context, userID int64, p *pagination.Pagination) {
 	GetFromContext(c).GetSubscribers(userID, p)
+}
+
+// GetSubscribersByListId populates a pagination object with a collection of
+// subscribers by the specified user id and list id.
+func GetSubscribersByListId(c context.Context, listID, userID int64, p *pagination.Pagination) {
+	GetFromContext(c).GetSubscribersByListId(listID, userID, p)
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.

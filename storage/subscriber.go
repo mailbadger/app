@@ -32,6 +32,18 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 	return s, err
 }
 
+func (db *store) GetSubscribersByListId(listID, userID int64, p *pagination.Pagination) {
+	var l = new(entities.List)
+	var count uint64
+
+	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ? and id = ?", userID, listID).Preload("Subscribers").Count(&count).Find(&l)
+	p.SetTotal(count)
+
+	for _, t := range l.Subscribers {
+		p.Append(t)
+	}
+}
+
 // CreateSubscriber creates a new subscriber in the database.
 func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 	return db.Create(s).Error

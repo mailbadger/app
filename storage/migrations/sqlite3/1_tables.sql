@@ -58,7 +58,8 @@ CREATE INDEX IF NOT EXISTS i_user ON "lists" (user_id);
 
 CREATE TABLE IF NOT EXISTS "subscribers_lists" (
   "list_id"       integer,
-  "subscriber_id" integer
+  "subscriber_id" integer,
+  UNIQUE("list_id", "subscriber_id")
 );
 
 CREATE INDEX IF NOT EXISTS i_list       ON "subscribers_lists" (list_id);

@@ -57,6 +57,8 @@ func New() http.Handler {
 			lists.POST("", actions.PostList)
 			lists.PUT("/:id", actions.PutList)
 			lists.DELETE("/:id", actions.DeleteList)
+			lists.PUT("/:id/subscribers", actions.PutListSubscribers)
+			lists.GET("/:id/subscribers", middleware.Paginate(), actions.GetListSubscribers)
 		}
 	}
 

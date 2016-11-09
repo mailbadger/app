@@ -45,6 +45,30 @@ func TestList(t *testing.T) {
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
+	//Test append subscribers to list
+	s := &entities.Subscriber{
+		Name:   "john",
+		Email:  "john@example.com",
+		UserId: 1,
+	}
+	store.CreateSubscriber(s)
+
+	l.Subscribers = append(l.Subscribers, *s)
+
+	err = store.AppendSubscribers(l)
+	assert.Nil(t, err)
+
+	l, err = store.GetList(l.Id, 1)
+	assert.NotEmpty(t, l.Subscribers)
+	assert.Equal(t, l.Subscribers[0].Name, "john")
+
+	//If we try to append the same subscribers the list should remain the same
+	err = store.AppendSubscribers(l)
+	assert.Nil(t, err)
+
+	l, err = store.GetList(l.Id, 1)
+	assert.Exactly(t, 1, len(l.Subscribers))
+
 	// Test delete list
 	err = store.DeleteList(1, 1)
 	assert.Nil(t, err)
