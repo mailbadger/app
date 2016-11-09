@@ -16,7 +16,7 @@ type Subscriber struct {
 	UserId    int64                `json:"-" gorm:"column:user_id; index"`
 	Name      string               `json:"name" gorm:"not null"`
 	Email     string               `json:"email" gorm:"not null"`
-	Lists     []List               `gorm:"many2many:subscribers_lists;"`
+	Lists     []List               `json:"-" gorm:"many2many:subscribers_lists;"`
 	Metadata  []SubscriberMetadata `json:"metadata" gorm:"ForeignKey:SubscriberId"`
 	CreatedAt time.Time            `json:"created_at"`
 	UpdatedAt time.Time            `json:"updated_at"`

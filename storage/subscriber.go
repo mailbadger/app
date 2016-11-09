@@ -32,14 +32,15 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 	return s, err
 }
 
+// GetSubscribersByListId fetches subscribers by user id and list id, and populates the pagination obj
 func (db *store) GetSubscribersByListId(listID, userID int64, p *pagination.Pagination) {
-	var l = new(entities.List)
-	var count uint64
+	var l = &entities.List{Id: listID}
+	var subs []entities.Subscriber
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ? and id = ?", userID, listID).Preload("Subscribers").Count(&count).Find(&l)
-	p.SetTotal(count)
+	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", 5).Association("Subscribers").Find(&subs)
+	p.SetTotal(uint64(db.Model(&l).Where("user_id = ?", 5).Association("Subscribers").Count()))
 
-	for _, t := range l.Subscribers {
+	for _, t := range subs {
 		p.Append(t)
 	}
 }

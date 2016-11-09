@@ -62,13 +62,6 @@ func TestList(t *testing.T) {
 	assert.NotEmpty(t, l.Subscribers)
 	assert.Equal(t, l.Subscribers[0].Name, "john")
 
-	//If we try to append the same subscribers the list should remain the same
-	err = store.AppendSubscribers(l)
-	assert.Nil(t, err)
-
-	l, err = store.GetList(l.Id, 1)
-	assert.Exactly(t, 1, len(l.Subscribers))
-
 	// Test delete list
 	err = store.DeleteList(1, 1)
 	assert.Nil(t, err)
