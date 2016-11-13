@@ -60,6 +60,11 @@ func TestCampaign(t *testing.T) {
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
+	//Test get campaigns by template Id
+	campaigns, err := store.GetCampaignsByTemplateId(template.Id, 1)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, campaigns)
+
 	// Test delete campaign
 	err = store.DeleteCampaign(1, 1)
 	assert.Nil(t, err)

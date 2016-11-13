@@ -59,6 +59,16 @@ func New() http.Handler {
 			lists.DELETE("/:id", actions.DeleteList)
 			lists.PUT("/:id/subscribers", actions.PutListSubscribers)
 			lists.GET("/:id/subscribers", middleware.Paginate(), actions.GetListSubscribers)
+			lists.DELETE("/:id/subscribers", actions.DetachListSubscribers)
+		}
+
+		subscribers := authorized.Group("/subscribers")
+		{
+			subscribers.GET("", middleware.Paginate(), actions.GetSubscribers)
+			subscribers.GET("/:id", actions.GetSubscriber)
+			subscribers.POST("", actions.PostSubscriber)
+			subscribers.PUT("/:id", actions.PutSubscriber)
+			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 		}
 	}
 

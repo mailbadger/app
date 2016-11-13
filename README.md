@@ -15,7 +15,7 @@ Self hosted newsletter mail system written in go.
 - [x] Add lists storage functions.
 - [x] Add lists actions.
 - [x] Add subscribers to list.
-- [ ] Delete subscribers from list.
+- [x] Delete subscribers from list.
 - [ ] Unsubscribe functionality.
 - [ ] Test send email functionality.
 - [ ] Send campaign (should be done as a background process).

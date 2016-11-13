@@ -38,11 +38,16 @@ func (db *store) UpdateList(l *entities.List) error {
 // DeleteList deletes an existing list from the database and also clears the subscribers association.
 func (db *store) DeleteList(id, userID int64) error {
 	l := &entities.List{Id: id, UserId: userID}
-	if err := db.Model(l).Association("Subscribers").Clear().Error; err != nil {
+	if err := db.DeleteAllSubscribers(l); err != nil {
 		return err
 	}
 
 	return db.Delete(&l).Error
+}
+
+// DeleteAllSubscribers clears the subscribers association.
+func (db *store) DeleteAllSubscribers(l *entities.List) error {
+	return db.Model(l).Association("Subscribers").Clear().Error
 }
 
 // AppendSubscribers appends subscribers to the existing association.
@@ -50,7 +55,7 @@ func (db *store) AppendSubscribers(l *entities.List) error {
 	return db.Model(l).Association("Subscribers").Append(l.Subscribers).Error
 }
 
-// DeleteAllSubscribers clears the subscribers association.
-func (db *store) DeleteAllSubscribers(l *entities.List) error {
-	return db.Model(l).Association("Subscribers").Clear().Error
+// DetachSubscribers deletes the subscribers association by the given subscribers list.
+func (db *store) DetachSubscribers(l *entities.List) error {
+	return db.Model(l).Association("Subscribers").Delete(l.Subscribers).Error
 }

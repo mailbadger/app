@@ -218,3 +218,50 @@ func GetListSubscribers(c *gin.Context) {
 	})
 	return
 }
+
+func DetachListSubscribers(c *gin.Context) {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+		user := middleware.GetUser(c)
+		l, err := storage.GetList(c, id, user.Id)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "List not found",
+			})
+			return
+		}
+
+		subs := &subs{}
+		c.Bind(subs)
+
+		if len(subs.Ids) == 0 {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "Ids list is empty",
+			})
+			return
+		}
+
+		for _, subID := range subs.Ids {
+			if s, err := storage.GetSubscriber(c, subID, user.Id); err == nil {
+				l.Subscribers = append(l.Subscribers, *s)
+			} else {
+				logrus.Infof("Sub %v", subID)
+			}
+		}
+
+		if err = storage.DetachSubscribers(c, l); err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": err.Error(),
+			})
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{
+		"reason": "Id must be an integer",
+	})
+	return
+}

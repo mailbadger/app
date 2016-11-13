@@ -62,6 +62,10 @@ func TestList(t *testing.T) {
 	assert.NotEmpty(t, l.Subscribers)
 	assert.Equal(t, l.Subscribers[0].Name, "john")
 
+	//Test detach subscribers from list
+	err = store.DetachSubscribers(l)
+	assert.Nil(t, err)
+
 	// Test delete list
 	err = store.DeleteList(1, 1)
 	assert.Nil(t, err)
