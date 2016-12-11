@@ -51,9 +51,12 @@ func PostLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &tokenPayload{
-		Access:    tokenStr,
-		ExpiresIn: exp - time.Now().Unix(), //seconds
+	c.JSON(http.StatusOK, gin.H{
+		"token": &tokenPayload{
+			Access:    tokenStr,
+			ExpiresIn: exp - time.Now().Unix(), //seconds
+		},
+		"user": user,
 	})
 }
 
