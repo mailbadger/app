@@ -34,7 +34,7 @@ func PostLogin(c *gin.Context) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		logrus.Errorf("Invalid credentials. %s", err)
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusForbidden, gin.H{
 			"reason": "Invalid credentials.",
 		})
 		return
