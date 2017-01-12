@@ -10,7 +10,7 @@ func (db *store) GetTemplates(userID int64, p *pagination.Pagination) {
 	var templates []entities.Template
 	var count uint64
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Find(&templates).Count(&count)
+	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Select("id, name, created_at, updated_at").Find(&templates).Count(&count)
 	p.SetTotal(count)
 
 	for _, t := range templates {

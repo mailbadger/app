@@ -13,7 +13,7 @@ type Template struct {
 	Id        int64             `json:"id" gorm:"column:id; primary_key:yes"`
 	UserId    int64             `json:"-" gorm:"column:user_id; index"`
 	Name      string            `json:"name"`
-	Content   string            `json:"content" gorm:"column:content"`
+	Content   string            `json:"content,omitempty" gorm:"column:content"`
 	CreatedAt time.Time         `json:"created_at"`
 	UpdatedAt time.Time         `json:"updated_at"`
 	Errors    map[string]string `json:"-" sql:"-"`
