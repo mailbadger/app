@@ -5,6 +5,13 @@ import (
 	"github.com/FilipNikolovski/news-maily/utils/pagination"
 )
 
+// GetAllTemplates fetches all templates by user id.
+func (db *store) GetAllTemplates(userID int64) ([]entities.Template, error) {
+	var templates []entities.Template
+	err := db.Where("user_id = ?", userID).Select("id, name, created_at, updated_at").Find(&templates).Error
+	return templates, err
+}
+
 // GetTemplates fetches templates by user id, and populates the pagination obj
 func (db *store) GetTemplates(userID int64, p *pagination.Pagination) {
 	var templates []entities.Template

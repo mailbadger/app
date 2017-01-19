@@ -13,6 +13,14 @@ import (
 )
 
 func GetTemplates(c *gin.Context) {
+	all := c.Query("all")
+	if all != "" {
+		if t, err := storage.GetAllTemplates(c, middleware.GetUser(c).Id); err == nil {
+			c.JSON(http.StatusOK, t)
+			return
+		}
+	}
+
 	val, ok := c.Get("pagination")
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))

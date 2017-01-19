@@ -21,6 +21,8 @@ type Storage interface {
 
 	UpdateUser(*entities.User) error
 
+	GetAllTemplates(int64) ([]entities.Template, error)
+
 	GetTemplates(int64, *pagination.Pagination)
 
 	GetTemplate(int64, int64) (*entities.Template, error)
@@ -102,6 +104,11 @@ func GetUserByUsername(c context.Context, username string) (*entities.User, erro
 // UpdateUser updates the User entity.
 func UpdateUser(c context.Context, user *entities.User) error {
 	return GetFromContext(c).UpdateUser(user)
+}
+
+// GetAllTemplates returns a collection of templates by the specified user id.
+func GetAllTemplates(c context.Context, userID int64) ([]entities.Template, error) {
+	return GetFromContext(c).GetAllTemplates(userID)
 }
 
 // GetTemplates populates a pagination object with a collection of
