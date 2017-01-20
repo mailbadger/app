@@ -61,6 +61,14 @@ func PostCampaign(c *gin.Context) {
 			return
 		}
 
+		_, err = storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
+		if err == nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "Campaign with that name already exists",
+			})
+			return
+		}
+
 		campaign := &entities.Campaign{
 			Name:     name,
 			Subject:  subject,
@@ -115,6 +123,14 @@ func PutCampaign(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusUnprocessableEntity, gin.H{
 					"reason": "Template not found",
+				})
+				return
+			}
+
+			campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
+			if err == nil && campaign.Id != campaign2.Id {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"reason": "Campaign with that name already exists",
 				})
 				return
 			}

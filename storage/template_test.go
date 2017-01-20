@@ -54,6 +54,11 @@ func TestTemplate(t *testing.T) {
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
+	//Test get all templates
+	templates, err := store.GetAllTemplates(1)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, templates)
+
 	// Test delete template
 	err = store.DeleteTemplate(1, 1)
 	assert.Nil(t, err)

@@ -32,6 +32,13 @@ func (db *store) GetCampaignsByTemplateId(templateID, userID int64) ([]entities.
 	return campaigns, err
 }
 
+// GetCampaignByName returns the campaign by the given name and user id
+func (db *store) GetCampaignByName(name string, userID int64) (*entities.Campaign, error) {
+	var campaign = new(entities.Campaign)
+	err := db.Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
+	return campaign, err
+}
+
 // CreateCampaign creates a new campaign in the database.
 func (db *store) CreateCampaign(c *entities.Campaign) error {
 	return db.Create(c).Error

@@ -2,10 +2,12 @@
 *.o
 *.a
 *.so
+*_gen.go
 
 # Folders
 _obj
 _test
+release
 
 # Architecture specific extensions/prefixes
 *.[568vq]

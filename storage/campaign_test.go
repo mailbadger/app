@@ -65,6 +65,11 @@ func TestCampaign(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, campaigns)
 
+	//Test get campaign by name
+	campaign, err = store.GetCampaignByName("bar", 1)
+	assert.Nil(t, err)
+	assert.Equal(t, campaign.Name, "bar")
+
 	// Test delete campaign
 	err = store.DeleteCampaign(1, 1)
 	assert.Nil(t, err)

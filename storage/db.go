@@ -4,14 +4,15 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/liamstask/goose/lib/goose"
 	"github.com/FilipNikolovski/news-maily/entities"
+	"github.com/FilipNikolovski/news-maily/storage/migrations"
 	"github.com/FilipNikolovski/news-maily/utils"
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rubenv/sql-migrate"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -63,25 +64,15 @@ func openDbConn(driver, config string) *gorm.DB {
 // setupDb runs the necessary migrations and creates a new user if the database
 // hasn't been setup yet
 func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
-	//Goose configuration
-	migrateConfig := &goose.DBConf{
-		MigrationsDir: "./migrations/sqlite3", //TODO Fix The dir path
-		Driver: goose.DBDriver{
-			Name:    driver,
-			OpenStr: config,
-			Dialect: &goose.Sqlite3Dialect{},
-		},
+	var m = &migrate.AssetMigrationSource{
+		Asset:    migrations.Asset,
+		AssetDir: migrations.AssetDir,
+		Dir:      driver,
 	}
-	//Get the most recent migration
-	latest, err := goose.GetMostRecentDBVersion(migrateConfig.MigrationsDir)
-	if err != nil {
-		log.Println(err)
-	}
-
-	//Run migrations
-	err = goose.RunMigrationsOnDb(migrateConfig, migrateConfig.MigrationsDir, latest, db.DB())
+	_, err := migrate.Exec(db.DB(), driver, m, migrate.Up)
 	if err != nil {
 		log.Errorln(err)
+		return err
 	}
 
 	// If the database didn't exist, initialize it with an admin user

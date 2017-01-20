@@ -4,10 +4,6 @@
 	"GodepVersion": "v74",
 	"Deps": [
 		{
-			"ImportPath": "bitbucket.org/liamstask/goose/lib/goose",
-			"Rev": "8488cc47d90c8a502b1c41a462a6d9cc8ee0a895"
-		},
-		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.10.0-38-g3ec0642",
 			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
@@ -60,11 +56,6 @@
 			"Rev": "74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff"
 		},
 		{
-			"ImportPath": "github.com/kylelemons/go-gypsy/yaml",
-			"Comment": "go.weekly.2011-11-02-19-g42fc2c7",
-			"Rev": "42fc2c7ee9b8bd0ff636cd2d7a8c0a49491044c5"
-		},
-		{
 			"ImportPath": "github.com/lib/pq",
 			"Comment": "go1.0-cutoff-117-g50761b0",
 			"Rev": "50761b0867bd1d9d069276790bcd4a3bccf2324a"
@@ -84,19 +75,12 @@
 			"Rev": "b5c99a720374818b629fd1fbf6d2cbb4fb9a5644"
 		},
 		{
-			"ImportPath": "github.com/ziutek/mymysql/godrv",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
+			"ImportPath": "github.com/rubenv/sql-migrate",
+			"Rev": "1ed79968dfca5de79adb13c84523caaa4fc865a9"
 		},
 		{
-			"ImportPath": "github.com/ziutek/mymysql/mysql",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
-		},
-		{
-			"ImportPath": "github.com/ziutek/mymysql/native",
-			"Comment": "v1.5.4-15-g8787d55",
-			"Rev": "8787d5581eb63f3f3b447f40c13f8e69e73f1b58"
+			"ImportPath": "github.com/rubenv/sql-migrate/sqlparse",
+			"Rev": "1ed79968dfca5de79adb13c84523caaa4fc865a9"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/bcrypt",
@@ -118,6 +102,11 @@
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
 			"Comment": "v8.18.1",
 			"Rev": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c"
+		},
+		{
+			"ImportPath": "gopkg.in/gorp.v1",
+			"Comment": "v1.7.1",
+			"Rev": "c87af80f3cc5036b55b83d77171e156791085e2e"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

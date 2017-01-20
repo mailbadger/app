@@ -39,6 +39,8 @@ type Storage interface {
 
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 
+	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
+
 	GetCampaignsByTemplateId(int64, int64) ([]entities.Campaign, error)
 
 	CreateCampaign(*entities.Campaign) error
@@ -151,6 +153,11 @@ func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
 // GetCampaign returns a Campaign entity by the given id and user id.
 func GetCampaign(c context.Context, id int64, userID int64) (*entities.Campaign, error) {
 	return GetFromContext(c).GetCampaign(id, userID)
+}
+
+// GetCampaignByName returns a Campaign entity by the given name and user id.
+func GetCampaignByName(c context.Context, name string, userID int64) (*entities.Campaign, error) {
+	return GetFromContext(c).GetCampaignByName(name, userID)
 }
 
 // GetCampaignsByTemplateId returns a Campaign entity by the given id and user id.

@@ -25,8 +25,8 @@ type Campaign struct {
 	Status      string            `json:"status"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
-	ScheduledAt time.Time         `json:"scheduled_at"`
-	CompletedAt time.Time         `json:"completed_at"`
+	ScheduledAt time.Time         `json:"scheduled_at" sql: "default: null"`
+	CompletedAt time.Time         `json:"completed_at" sql: "default: null"`
 	Errors      map[string]string `json:"-" sql:"-"`
 }
 
