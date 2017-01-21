@@ -25,6 +25,13 @@ func (db *store) GetList(id, userID int64) (*entities.List, error) {
 	return list, err
 }
 
+// GetListByName returns the campaign by the given name and user id
+func (db *store) GetListByName(name string, userID int64) (*entities.List, error) {
+	var list = new(entities.List)
+	err := db.Where("user_id = ? and name = ?", userID, name).Find(list).Error
+	return list, err
+}
+
 // CreateList creates a new list in the database.
 func (db *store) CreateList(l *entities.List) error {
 	return db.Create(l).Error

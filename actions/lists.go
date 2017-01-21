@@ -69,6 +69,14 @@ func PostList(c *gin.Context) {
 		return
 	}
 
+	_, err := storage.GetListByName(c, name, middleware.GetUser(c).Id)
+	if err == nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"reason": "List with that name already exists",
+		})
+		return
+	}
+
 	if err := storage.CreateList(c, l); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"reason": err.Error(),
@@ -96,6 +104,14 @@ func PutList(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"reason": "Invalid data",
 				"errors": l.Errors,
+			})
+			return
+		}
+
+		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).Id)
+		if err == nil && l2.Id != l.Id {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"reason": "List with that name already exists",
 			})
 			return
 		}

@@ -53,6 +53,8 @@ type Storage interface {
 
 	GetList(int64, int64) (*entities.List, error)
 
+	GetListByName(name string, userID int64) (*entities.List, error)
+
 	CreateList(*entities.List) error
 
 	UpdateList(*entities.List) error
@@ -189,6 +191,11 @@ func GetLists(c context.Context, userID int64, p *pagination.Pagination) {
 // GetList returns a List entity by the given id and user id.
 func GetList(c context.Context, id int64, userID int64) (*entities.List, error) {
 	return GetFromContext(c).GetList(id, userID)
+}
+
+// GetListByName returns a Campaign entity by the given name and user id.
+func GetListByName(c context.Context, name string, userID int64) (*entities.List, error) {
+	return GetFromContext(c).GetListByName(name, userID)
 }
 
 // CreateList persists a new List entity in the datastore.

@@ -34,6 +34,11 @@ func TestList(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "bar")
 
+	//Test get list by name
+	l, err = store.GetListByName("bar", 1)
+	assert.Nil(t, err)
+	assert.Equal(t, l.Name, "bar")
+
 	//Test list validation when name is invalid
 	l.Name = ""
 	l.Validate()
