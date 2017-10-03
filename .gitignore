@@ -1,9 +1,30 @@
-/vendor
-/node_modules
-.env
-/.idea
-composer.lock
-public/js/*
-public/css/*
-public/fonts/*
-public/images/*
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+*_gen.go
+
+# Folders
+_obj
+_test
+release
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+*.exe
+*.test
+*.prof
+*.db
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out

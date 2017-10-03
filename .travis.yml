@@ -1,20 +1,10 @@
-language: php
+language: go
+sudo: false
 
-php:
-  - 5.5
-  - 5.6
-  - 7.0
-  - hhvm
+go:
+  - 1.7
+  - tip
 
-before_script:
-  - composer self-update
-  - composer install --prefer-source --no-interaction --dev
-
-script: phpunit
-
-matrix:
-  fast_finish: true
-
-notifications:
-    on_success: never
-    on_failure: always
+script:
+  - make deps gen
+  - make test
