@@ -8,8 +8,8 @@ import (
 	"github.com/FilipNikolovski/news-maily/storage"
 
 	"github.com/FilipNikolovski/news-maily/utils/token"
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 

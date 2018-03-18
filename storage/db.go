@@ -7,12 +7,12 @@ import (
 	"github.com/FilipNikolovski/news-maily/entities"
 	"github.com/FilipNikolovski/news-maily/storage/migrations"
 	"github.com/FilipNikolovski/news-maily/utils"
-	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rubenv/sql-migrate"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 

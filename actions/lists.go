@@ -9,8 +9,8 @@ import (
 	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/FilipNikolovski/news-maily/storage"
 	"github.com/FilipNikolovski/news-maily/utils/pagination"
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type subs struct {

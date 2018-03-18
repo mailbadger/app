@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	"github.com/FilipNikolovski/news-maily/entities"
 	"github.com/FilipNikolovski/news-maily/utils/pagination"

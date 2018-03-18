@@ -6,9 +6,9 @@ import (
 
 	"github.com/FilipNikolovski/news-maily/actions"
 	"github.com/FilipNikolovski/news-maily/routes/middleware"
-	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // New creates a new HTTP handler with the specified middleware.
