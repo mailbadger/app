@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/FilipNikolovski/news-maily/actions"
-	"github.com/FilipNikolovski/news-maily/routes/middleware"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/actions"
+	"github.com/news-maily/api/routes/middleware"
 	"github.com/sirupsen/logrus"
 )
 

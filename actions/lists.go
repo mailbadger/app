@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/routes/middleware"
-	"github.com/FilipNikolovski/news-maily/storage"
-	"github.com/FilipNikolovski/news-maily/utils/pagination"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/routes/middleware"
+	"github.com/news-maily/api/storage"
+	"github.com/news-maily/api/utils/pagination"
 	"github.com/sirupsen/logrus"
 )
 

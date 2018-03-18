@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/FilipNikolovski/news-maily/entities"
+import "github.com/news-maily/api/entities"
 
 //UpdateUser updates the given user
 func (db *store) UpdateUser(user *entities.User) error {

@@ -3,9 +3,9 @@ package storage
 import (
 	"context"
 
-	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/utils/pagination"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/utils/pagination"
 )
 
 const key = "storage"

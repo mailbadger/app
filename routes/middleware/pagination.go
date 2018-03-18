@@ -5,8 +5,8 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/FilipNikolovski/news-maily/utils/pagination"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/utils/pagination"
 )
 
 func Paginate() gin.HandlerFunc {

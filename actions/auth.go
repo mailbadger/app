@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/FilipNikolovski/news-maily/routes/middleware"
-	"github.com/FilipNikolovski/news-maily/storage"
+	"github.com/news-maily/api/routes/middleware"
+	"github.com/news-maily/api/storage"
 
-	"github.com/FilipNikolovski/news-maily/utils/token"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )

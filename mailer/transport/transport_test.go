@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/FilipNikolovski/news-maily/mailer/transport"
+	"github.com/news-maily/api/mailer/transport"
 	"github.com/stretchr/testify/assert"
 )
 

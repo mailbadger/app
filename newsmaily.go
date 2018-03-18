@@ -28,7 +28,7 @@ THE SOFTWARE.
 import (
 	"net/http"
 
-	"github.com/FilipNikolovski/news-maily/routes"
+	"github.com/news-maily/api/routes"
 	"github.com/sirupsen/logrus"
 )
 

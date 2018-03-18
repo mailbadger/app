@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/utils/pagination"
+	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/utils/pagination"
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj

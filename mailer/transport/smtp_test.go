@@ -7,7 +7,7 @@ import (
 
 	gomail "gopkg.in/gomail.v2"
 
-	"github.com/FilipNikolovski/news-maily/mailer/transport"
+	"github.com/news-maily/api/mailer/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

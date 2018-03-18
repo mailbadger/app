@@ -4,13 +4,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/FilipNikolovski/news-maily/entities"
-	"github.com/FilipNikolovski/news-maily/storage/migrations"
-	"github.com/FilipNikolovski/news-maily/utils"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/storage/migrations"
+	"github.com/news-maily/api/utils"
 	"github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -90,7 +90,13 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 // initialized before
 func initDb(config string, db *gorm.DB) error {
 	// Hashing the password with the default cost of 10
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("secret"), bcrypt.DefaultCost)
+	secret, err := utils.GenerateRandomString(12)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -121,6 +127,8 @@ func initDb(config string, db *gorm.DB) error {
 		log.Errorln(err)
 		return err
 	}
+
+	log.Infof("Admin user credentials:\n\tUser: admin\n\tPassword: %s\n", secret)
 
 	return nil
 }

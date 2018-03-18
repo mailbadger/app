@@ -3,8 +3,8 @@ package middleware
 import (
 	"os"
 
-	"github.com/FilipNikolovski/news-maily/storage"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/storage"
 )
 
 // Storage is a middleware that inits the Storage and attaches it to the context.
