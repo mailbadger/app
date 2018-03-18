@@ -71,6 +71,8 @@ type Storage interface {
 
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 
+	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
+
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
 
 	CreateSubscriber(*entities.Subscriber) error
@@ -238,6 +240,11 @@ func GetSubscribersByListId(c context.Context, listID, userID int64, p *paginati
 // GetSubscriber returns a Subscriber entity by the given id and user id.
 func GetSubscriber(c context.Context, id int64, userID int64) (*entities.Subscriber, error) {
 	return GetFromContext(c).GetSubscriber(id, userID)
+}
+
+// GetSubscribersByIDs returns a Subscriber entity by the given ids and user id.
+func GetSubscribersByIDs(c context.Context, ids []int64, userID int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetSubscribersByIDs(ids, userID)
 }
 
 // GetSubscriberByEmail returns a Subscriber entity by the given email and user id.

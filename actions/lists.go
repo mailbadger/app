@@ -184,13 +184,12 @@ func PutListSubscribers(c *gin.Context) {
 			return
 		}
 
-		for _, subID := range subs.Ids {
-			if s, err := storage.GetSubscriber(c, subID, user.Id); err == nil {
-				l.Subscribers = append(l.Subscribers, *s)
-			} else {
-				logrus.Infof("Sub %v", subID)
-			}
+		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.Id)
+		if err != nil {
+			logrus.Warn(err)
 		}
+
+		l.Subscribers = s
 
 		if err = storage.AppendSubscribers(c, l); err != nil {
 			logrus.Error(err)
@@ -256,13 +255,12 @@ func DetachListSubscribers(c *gin.Context) {
 			return
 		}
 
-		for _, subID := range subs.Ids {
-			if s, err := storage.GetSubscriber(c, subID, user.Id); err == nil {
-				l.Subscribers = append(l.Subscribers, *s)
-			} else {
-				logrus.Infof("Sub %v", subID)
-			}
+		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.Id)
+		if err != nil {
+			logrus.Warn(err)
 		}
+
+		l.Subscribers = s
 
 		if err = storage.DetachSubscribers(c, l); err != nil {
 			logrus.Error(err)

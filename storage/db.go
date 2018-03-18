@@ -58,6 +58,8 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.Fatalln("migrations failed")
 	}
 
+	db.LogMode(false)
+
 	return db
 }
 

@@ -45,6 +45,8 @@ CREATE TABLE IF NOT EXISTS "subscribers" (
   UNIQUE("user_id", "email")
 );
 
+CREATE INDEX IF NOT EXISTS i_user ON "subscribers" (user_id);
+
 CREATE TABLE IF NOT EXISTS "lists" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,

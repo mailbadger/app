@@ -25,6 +25,13 @@ func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	return s, err
 }
 
+// GetSubscribersByIDs returns the subscriber by the given id and user id
+func (db *store) GetSubscribersByIDs(ids []int64, userID int64) ([]entities.Subscriber, error) {
+	var s []entities.Subscriber
+	err := db.Where("user_id = ? and id in (?)", userID, ids).Preload("Metadata").Find(&s).Error
+	return s, err
+}
+
 // GetSubscriberByEmail returns the subscriber by the given email and user id
 func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
@@ -55,7 +62,22 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 	return db.Where("id = ? and user_id = ?", s.Id, s.UserId).Save(s).Error
 }
 
-// DeleteSubscriber deletes an existing subscriber from the database.
+// DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
 func (db *store) DeleteSubscriber(id, userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(entities.Subscriber{Id: id}).Error
+	s := entities.Subscriber{Id: id}
+	var meta []entities.SubscriberMetadata
+
+	tx := db.Begin()
+
+	if err := tx.Where("subscriber_id = ?", id).Delete(meta).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }

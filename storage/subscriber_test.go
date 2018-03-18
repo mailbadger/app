@@ -14,6 +14,14 @@ func TestSubscriber(t *testing.T) {
 
 	store := From(db)
 
+	l := &entities.List{
+		Name:   "foo",
+		UserId: 1,
+	}
+
+	err := store.CreateList(l)
+	assert.Nil(t, err)
+
 	//Test create subscriber
 	s := &entities.Subscriber{
 		Name:   "foo",
@@ -23,8 +31,9 @@ func TestSubscriber(t *testing.T) {
 			{Key: "key", Value: "val"},
 		},
 	}
+	s.Lists = append(s.Lists, *l)
 
-	err := store.CreateSubscriber(s)
+	err = store.CreateSubscriber(s)
 	assert.Nil(t, err)
 
 	//Test get subscriber
@@ -59,7 +68,11 @@ func TestSubscriber(t *testing.T) {
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
-	// Test delete subscriber
+	//Test get subs by ids
+	subs, err := store.GetSubscribersByIDs([]int64{1}, 1)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, subs)
+
 	err = store.DeleteSubscriber(1, 1)
 	assert.Nil(t, err)
 }
