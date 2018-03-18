@@ -37,7 +37,7 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 
 	//Test get subscriber
-	s, err = store.GetSubscriber(1, 1)
+	s, err = store.GetSubscriber(s.Id, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, s.Name, "foo")
 	assert.NotEmpty(t, s.Metadata)

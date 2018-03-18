@@ -68,8 +68,18 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 	var meta []entities.SubscriberMetadata
 
 	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	if err := tx.Where("subscriber_id = ?", id).Delete(meta).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Model(s).Association("Lists").Clear().Error; err != nil {
 		tx.Rollback()
 		return err
 	}

@@ -28,11 +28,18 @@ THE SOFTWARE.
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/news-maily/api/routes"
+	"github.com/news-maily/api/utils"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	if !utils.IsDebugMode() {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	handler := routes.New()
 
 	logrus.Info("Starting server...")

@@ -24,7 +24,7 @@ func TestList(t *testing.T) {
 	assert.Nil(t, err)
 
 	//Test get list
-	l, err = store.GetList(1, 1)
+	l, err = store.GetList(l.Id, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "foo")
 

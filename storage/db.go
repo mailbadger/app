@@ -58,7 +58,7 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.Fatalln("migrations failed")
 	}
 
-	db.LogMode(false)
+	// db.LogMode(utils.IsDebugMode())
 
 	return db
 }
@@ -66,6 +66,8 @@ func openDbConn(driver, config string) *gorm.DB {
 // setupDb runs the necessary migrations and creates a new user if the database
 // hasn't been setup yet
 func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
+	log.Info("Running migrations..")
+
 	var m = &migrate.AssetMigrationSource{
 		Asset:    migrations.Asset,
 		AssetDir: migrations.AssetDir,
@@ -91,6 +93,8 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 // initDb seeds the database with the admin user, if the database has not been
 // initialized before
 func initDb(config string, db *gorm.DB) error {
+	log.Info("Generating new credentials...")
+
 	// Hashing the password with the default cost of 10
 	secret, err := utils.GenerateRandomString(12)
 	if err != nil {

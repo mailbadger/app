@@ -35,7 +35,7 @@ func TestCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	//Test get campaign
-	campaign, err = store.GetCampaign(1, 1)
+	campaign, err = store.GetCampaign(campaign.Id, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, campaign.Name, "foo")
 	assert.Equal(t, campaign.Subject, "bar")
