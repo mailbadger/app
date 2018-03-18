@@ -45,7 +45,7 @@ func TestList(t *testing.T) {
 	assert.Equal(t, l.Errors["name"], entities.ErrListNameEmpty.Error())
 
 	//Test get lists
-	p := &pagination.Pagination{}
+	p := &pagination.Pagination{PerPage: 10}
 	store.GetLists(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))

@@ -39,7 +39,7 @@ func TestUnitMakeTransport(t *testing.T) {
 	assert := assert.New(t)
 
 	//Smtp
-	os.Setenv("MAIL_HOST", "inplayer.com")
+	os.Setenv("MAIL_HOST", "newsmaily.com")
 	os.Setenv("MAIL_PORT", "abc")
 	conf, err := transport.NewEnvConfig("smtp")
 	trans, err := transport.MakeTransport("smtp", conf)

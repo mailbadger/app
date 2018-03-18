@@ -49,7 +49,7 @@ func TestTemplate(t *testing.T) {
 	assert.Equal(t, template.Errors["name"], entities.ErrTemplateNameEmpty.Error())
 
 	//Test get templates
-	p := &pagination.Pagination{}
+	p := &pagination.Pagination{PerPage: 10}
 	store.GetTemplates(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))

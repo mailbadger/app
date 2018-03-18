@@ -54,7 +54,7 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, s.Errors["email"], entities.ErrEmailInvalid.Error())
 
 	//Test get subs
-	p := &pagination.Pagination{}
+	p := &pagination.Pagination{PerPage: 10}
 	store.GetSubscribers(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))

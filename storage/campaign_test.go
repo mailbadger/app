@@ -55,7 +55,7 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.Errors["subject"], entities.ErrSubjectEmpty.Error())
 
 	//Test get campaigns
-	p := &pagination.Pagination{}
+	p := &pagination.Pagination{PerPage: 10}
 	store.GetCampaigns(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))

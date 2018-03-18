@@ -2,7 +2,6 @@ package transport_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	gomail "gopkg.in/gomail.v2"
@@ -24,9 +23,9 @@ func (c *SmtpMock) DialAndSend(m ...*gomail.Message) error {
 func TestUnitNewMessageFrom(t *testing.T) {
 	jsonMsg := `
 	{
-		"subject": "Welcome to InPlayer!",
-		"from": "noreply@inplayer.com",
-		"name": "InPlayer",
+		"subject": "Welcome to news-maily!",
+		"from": "noreply@newsmaily.com",
+		"name": "NewsMaily",
 		"template": "consumer-account-registration",
 		"templateData": {
 		"name": "filipn",
@@ -34,7 +33,7 @@ func TestUnitNewMessageFrom(t *testing.T) {
 		"client_activate_url": ""
 		},
 		"to": {
-			"email": "filip.nikolovski+3@inplayer.com",
+			"email": "filip.nikolovski+3@example.com",
 			"name": "filipn"
 		},
 		"cc": [],
@@ -64,9 +63,9 @@ func TestUnitNewMessageFrom(t *testing.T) {
 func TestUnitSend(t *testing.T) {
 	jsonMsg := `
 	{
-		"subject": "Welcome to InPlayer!",
-		"from": "noreply@inplayer.com",
-		"name": "InPlayer",
+		"subject": "Welcome to NewsMaily!",
+		"from": "noreply@foobar.com",
+		"name": "NewsMaily",
 		"merchantId": 21,
 		"template": "consumer-account-registration",
 		"templateData": {
@@ -75,7 +74,7 @@ func TestUnitSend(t *testing.T) {
 		"client_activate_url": ""
 		},
 		"to": {
-			"email": "filip.nikolovski+3@inplayer.com",
+			"email": "filip.nikolovski+3@newsmaily.com",
 			"name": "filipn"
 		},
 		"cc": [],
@@ -96,7 +95,6 @@ func TestUnitSend(t *testing.T) {
 		Client: clientMock,
 	}
 
-	fmt.Println(msg)
 	clientMock.On("DialAndSend", mock.AnythingOfType("[]*gomail.Message")).Return(nil)
 	err = smtp.Send(msg)
 	assert.Nil(err)
