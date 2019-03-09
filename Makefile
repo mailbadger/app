@@ -11,12 +11,8 @@ PACKAGES = $(shell go list ./... | grep -v /vendor/)
 
 gen: gen_migrations
 
-gen_migrations: 
+gen_migrations:
 	go generate github.com/news-maily/api/storage/migrations
-
-deps:
-	go get -u github.com/jteeuwen/go-bindata/...
-	go get -u github.com/stretchr/testify
 
 test: 
 	go test -cover $(PACKAGES)
@@ -27,3 +23,6 @@ build_static:
 	go install github.com/news-maily/api
 	mkdir -p release
 	cp $(GOPATH)/bin/api release/
+
+image:
+	docker build -t news-maily/api:latest .

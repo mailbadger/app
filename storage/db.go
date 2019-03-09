@@ -87,6 +87,8 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 			return err
 		}
 	}
+	log.Info("DB is up to date..")
+
 	return nil
 }
 
