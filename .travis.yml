@@ -6,5 +6,5 @@ go:
   - tip
 
 script:
-  - make deps gen
-  - make test
+  - env GO111MODULE=on make deps gen
+  - env GO111MODULE=on make test
