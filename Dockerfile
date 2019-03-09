@@ -5,7 +5,7 @@ WORKDIR /go/src/app
 COPY . .
 
 RUN go-wrapper download
-RUN make deps gen
+RUN make gen
 RUN go-wrapper install
 
 

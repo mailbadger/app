@@ -11,7 +11,7 @@ PACKAGES = $(shell go list ./... | grep -v /vendor/)
 
 gen: gen_migrations
 
-gen_migrations: 
+gen_migrations:
 	go generate github.com/news-maily/api/storage/migrations
 
 test: 
