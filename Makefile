@@ -15,6 +15,7 @@ gen_migrations:
 	go generate github.com/news-maily/api/storage/migrations
 
 deps:
+	go get -u github.com/kevinburke/go-bindata/...
 	go get -u github.com/stretchr/testify
 
 test: 
