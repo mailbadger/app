@@ -12,6 +12,7 @@ require (
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/contrib v0.0.0-20190302003538-54ff787f7c73
 	github.com/gin-gonic/gin v1.3.0
+	github.com/go-bindata/go-bindata v1.0.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/packr v1.22.0 // indirect
 	github.com/golang/protobuf v1.3.0 // indirect
@@ -19,7 +20,6 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
-	github.com/kevinburke/go-bindata v3.13.0+incompatible // indirect
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-isatty v0.0.6 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0
