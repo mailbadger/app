@@ -14,9 +14,6 @@ gen: gen_migrations
 gen_migrations: 
 	go generate github.com/news-maily/api/storage/migrations
 
-deps:
-	go get -u github.com/stretchr/testify
-
 test: 
 	go test -cover $(PACKAGES)
 
