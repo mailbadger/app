@@ -24,13 +24,18 @@ func (smtp *SmtpTransport) Send(m *Message) error {
 }
 
 func (smtp *SmtpTransport) NewMessageFrom(m *Message) (*gomail.Message, error) {
-	if m.Email.To.Email == "" {
-		return nil, errors.New("email cannot be empty")
+	if len(m.Email.To) == 0 {
+		return nil, errors.New("to value is empty, cannot create message")
+	}
+
+	var toAddresses []string
+	for _, to := range m.Email.To {
+		toAddresses = append(toAddresses, to.Email)
 	}
 
 	message := gomail.NewMessage()
 	message.SetHeader("From", m.Email.From)
-	message.SetHeader("To", m.Email.To.Email)
+	message.SetHeader("To", toAddresses...)
 	message.SetHeader("Subject", m.Email.Subject)
 	message.SetBody("text/html", m.Body)
 

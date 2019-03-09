@@ -39,8 +39,8 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 	return s, err
 }
 
-// GetSubscribersByListId fetches subscribers by user id and list id, and populates the pagination obj
-func (db *store) GetSubscribersByListId(listID, userID int64, p *pagination.Pagination) {
+// GetSubscribersByListID fetches subscribers by user id and list id, and populates the pagination obj
+func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagination) {
 	var l = &entities.List{Id: listID}
 	var subs []entities.Subscriber
 
@@ -64,7 +64,11 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 
 // DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
 func (db *store) DeleteSubscriber(id, userID int64) error {
-	s := entities.Subscriber{Id: id}
+	s, err := db.GetSubscriber(id, userID)
+	if err != nil {
+		return err
+	}
+
 	var meta []entities.SubscriberMetadata
 
 	tx := db.Begin()

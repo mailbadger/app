@@ -21,7 +21,7 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 
 	// Guest routes
-	handler.POST("/api/login", actions.PostLogin)
+	handler.POST("/api/authenticate", actions.PostLogin)
 
 	// Authorized routes
 	authorized := handler.Group("/api")

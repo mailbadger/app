@@ -223,7 +223,7 @@ func GetListSubscribers(c *gin.Context) {
 			return
 		}
 
-		storage.GetSubscribersByListId(c, id, middleware.GetUser(c).Id, p)
+		storage.GetSubscribersByListID(c, id, middleware.GetUser(c).Id, p)
 		c.JSON(http.StatusOK, p)
 		return
 	}

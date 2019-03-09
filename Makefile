@@ -27,3 +27,6 @@ build_static:
 	go install github.com/news-maily/api
 	mkdir -p release
 	cp $(GOPATH)/bin/api release/
+
+image:
+	docker build -t news-maily/api:latest .

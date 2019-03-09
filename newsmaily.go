@@ -26,7 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 import (
+	"context"
+	"crypto/tls"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 
@@ -42,9 +47,62 @@ func main() {
 
 	handler := routes.New()
 
-	logrus.Info("Starting server...")
-	logrus.Fatal(http.ListenAndServe(
-		":8080",
-		handler,
-	))
+	var cfg *tls.Config
+	var addr = ":8080"
+
+	if os.Getenv("ENVIRONMENT") == "prod" && os.Getenv("DISABLE_TLS") == "" {
+		// TLS config
+		addr = ":443"
+		cer, err := tls.LoadX509KeyPair(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE"))
+		if err != nil {
+			logrus.Println(err)
+			return
+		}
+		cfg = &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			},
+			Certificates: []tls.Certificate{cer},
+		}
+	}
+
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      handler,
+		TLSConfig:    cfg,
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+	}
+
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sigint := make(chan os.Signal, 1)
+
+		// interrupt signal sent from terminal
+		signal.Notify(sigint, os.Interrupt)
+		// sigterm signal sent from kubernetes
+		signal.Notify(sigint, syscall.SIGTERM)
+
+		<-sigint
+
+		// We received an interrupt signal, shut down.
+		if err := srv.Shutdown(context.Background()); err != nil {
+			// Error from closing listeners, or context timeout:
+			logrus.Printf("HTTP server Shutdown: %v", err)
+		}
+		close(idleConnsClosed)
+	}()
+
+	logrus.Infoln("Starting HTTP server on port", srv.Addr)
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		logrus.Printf("HTTP server ListenAndServe: %v", err)
+	}
+
+	<-idleConnsClosed
 }

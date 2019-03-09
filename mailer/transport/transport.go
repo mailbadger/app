@@ -5,6 +5,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
 	gomail "gopkg.in/gomail.v2"
 )
 
@@ -25,7 +29,7 @@ type Email struct {
 	TemplateData map[string]interface{} `json:"templateData"`
 	Cc           []string               `json:"cc"`
 	Bcc          []string               `json:"bcc"`
-	To           To                     `json:"to"`
+	To           []To                   `json:"to"`
 }
 
 type To struct {
@@ -54,6 +58,22 @@ func NewSMTPTransport(conf map[string]string) (Transporter, error) {
 	}, nil
 }
 
+// NewSesTransport returns new SesTransport object.
+func NewSesTransport(conf map[string]string) (Transporter, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(conf["region"]),
+		Credentials: credentials.NewStaticCredentials(conf["key"], conf["secret"], ""),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &SesTransport{
+		Client: ses.New(sess),
+	}, nil
+}
+
 // MakeTransport returns new Transporter object based on the specified driver.
 // Available drivers are: "mailgun", "smtp".
 // Returns ErrInvalidDriver if the driver specified is invalid.
@@ -61,6 +81,8 @@ func MakeTransport(driver string, conf map[string]string) (Transporter, error) {
 	switch driver {
 	case "smtp":
 		return NewSMTPTransport(conf)
+	case "ses":
+		return NewSesTransport(conf)
 	default:
 		return nil, ErrInvalidDriver
 	}
