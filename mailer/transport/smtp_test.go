@@ -32,10 +32,10 @@ func TestUnitNewMessageFrom(t *testing.T) {
 		"confirmation_token": "",
 		"client_activate_url": ""
 		},
-		"to": {
+		"to": [{
 			"email": "filip.nikolovski+3@example.com",
 			"name": "filipn"
-		},
+		}],
 		"cc": [],
 		"bcc": []
 	}
@@ -56,7 +56,7 @@ func TestUnitNewMessageFrom(t *testing.T) {
 	assert.Equal(message.GetHeader("From")[0], msg.Email.From)
 	assert.Equal(message.GetHeader("Subject")[0], msg.Email.Subject)
 
-	assert.Equal(message.GetHeader("To")[0], msg.Email.To.Email)
+	assert.Equal(message.GetHeader("To")[0], msg.Email.To[0].Email)
 
 }
 
@@ -73,10 +73,10 @@ func TestUnitSend(t *testing.T) {
 		"confirmation_token": "",
 		"client_activate_url": ""
 		},
-		"to": {
+		"to": [{
 			"email": "filip.nikolovski+3@newsmaily.com",
 			"name": "filipn"
-		},
+		}],
 		"cc": [],
 		"bcc": []
 	}
@@ -99,7 +99,7 @@ func TestUnitSend(t *testing.T) {
 	err = smtp.Send(msg)
 	assert.Nil(err)
 
-	msg.Email.To = transport.To{}
+	msg.Email.To = []transport.To{}
 
 	err = smtp.Send(msg)
 	assert.Error(err)
