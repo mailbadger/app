@@ -14,13 +14,13 @@ type SmtpTransport struct {
 	Client Dialer
 }
 
-func (smtp *SmtpTransport) Send(m *Message) error {
+func (smtp *SmtpTransport) Send(m *Message) (string, error) {
 	message, err := smtp.NewMessageFrom(m)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return smtp.Client.DialAndSend(message)
+	return makeMsgID(), smtp.Client.DialAndSend(message)
 }
 
 func (smtp *SmtpTransport) NewMessageFrom(m *Message) (*gomail.Message, error) {

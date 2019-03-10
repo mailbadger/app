@@ -75,6 +75,8 @@ type Storage interface {
 
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
 
+	GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error)
+
 	CreateSubscriber(*entities.Subscriber) error
 
 	UpdateSubscriber(*entities.Subscriber) error
@@ -250,6 +252,11 @@ func GetSubscribersByIDs(c context.Context, ids []int64, userID int64) ([]entiti
 // GetSubscriberByEmail returns a Subscriber entity by the given email and user id.
 func GetSubscriberByEmail(c context.Context, email string, userID int64) (*entities.Subscriber, error) {
 	return GetFromContext(c).GetSubscriberByEmail(email, userID)
+}
+
+// GetAllSubscribersByListID fetches all subscribers by user id and list id
+func GetAllSubscribersByListID(c context.Context, listID, userID int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetAllSubscribersByListID(listID, userID)
 }
 
 // CreateSubscriber persists a new Subscriber entity in the datastore.

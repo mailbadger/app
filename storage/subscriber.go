@@ -44,12 +44,20 @@ func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagi
 	var l = &entities.List{Id: listID}
 	var subs []entities.Subscriber
 
-	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", 5).Association("Subscribers").Find(&subs)
-	p.SetTotal(uint64(db.Model(&l).Where("user_id = ?", 5).Association("Subscribers").Count()))
+	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Association("Subscribers").Find(&subs)
+	p.SetTotal(uint64(db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Count()))
 
 	for _, t := range subs {
 		p.Append(t)
 	}
+}
+
+// GetAllSubscribersByListID fetches all subscribers by user id and list id
+func (db *store) GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error) {
+	var l = &entities.List{Id: listID}
+	var subs []entities.Subscriber
+	err := db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Find(&subs).Error
+	return subs, err
 }
 
 // CreateSubscriber creates a new subscriber in the database.

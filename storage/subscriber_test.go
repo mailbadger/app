@@ -73,6 +73,15 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, subs)
 
+	//Test get subs by list id
+	p = &pagination.Pagination{PerPage: 10}
+	store.GetSubscribersByListID(l.Id, 1, p)
+	assert.NotEmpty(t, p.Collection)
+	assert.Equal(t, len(p.Collection), int(p.Total))
+
+	subs, err = store.GetAllSubscribersByListID(l.Id, 1)
+	assert.Equal(t, 1, len(subs))
+
 	err = store.DeleteSubscriber(1, 1)
 	assert.Nil(t, err)
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type Transporter interface {
-	Send(m *Message) error
+	Send(m *Message) (string, error)
 }
 
 type Message struct {
