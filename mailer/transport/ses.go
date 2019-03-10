@@ -15,15 +15,15 @@ type SesTransport struct {
 	Client SesClient
 }
 
-func (t *SesTransport) Send(m *Message) error {
+func (t *SesTransport) Send(m *Message) (string, error) {
 	message, err := t.NewMessageFrom(m)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	_, err = t.Client.SendEmail(message)
+	out, err := t.Client.SendEmail(message)
 
-	return err
+	return *out.MessageId, err
 }
 
 func (t *SesTransport) NewMessageFrom(m *Message) (*ses.SendEmailInput, error) {

@@ -96,11 +96,12 @@ func TestUnitSend(t *testing.T) {
 	}
 
 	clientMock.On("DialAndSend", mock.AnythingOfType("[]*gomail.Message")).Return(nil)
-	err = smtp.Send(msg)
+	msgid, err := smtp.Send(msg)
 	assert.Nil(err)
+	assert.NotEmpty(msgid)
 
 	msg.Email.To = []transport.To{}
 
-	err = smtp.Send(msg)
+	msgid, err = smtp.Send(msg)
 	assert.Error(err)
 }
