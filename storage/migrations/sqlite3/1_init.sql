@@ -5,32 +5,34 @@ CREATE TABLE IF NOT EXISTS "users" (
   "username" varchar(255) NOT NULL UNIQUE,
   "password" varchar(255),
   "api_key"  varchar(255) NOT NULL UNIQUE,
-  "auth_key" varchar(255) NOT NULL UNIQUE
+  "auth_key" varchar(255) NOT NULL,
+  "created_at" datetime,
+  "updated_at" datetime
 );
 
-CREATE TABLE IF NOT EXISTS "templates" (
+CREATE TABLE IF NOT EXISTS "ses_keys" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
-  "name"       varchar(255),
-  "content"    text,
+  "access_key" varchar(255) NOT NULL,
+  "secret_key" varchar(255) NOT NULL,
   "created_at" datetime,
   "updated_at" datetime,
-  UNIQUE("user_id", "name")
- );
+  UNIQUE("user_id")
+);
 
-CREATE INDEX IF NOT EXISTS i_user ON "templates" (user_id);
+CREATE INDEX IF NOT EXISTS i_user ON "ses_keys" (user_id);
 
 CREATE TABLE IF NOT EXISTS "campaigns" (
-  "id"           integer primary key autoincrement,
-  "user_id"      integer,
-  "name"         varchar(255) NOT NULL,
-  "subject"      varchar(255) NOT NULL,
-  "template_id"  integer,
-  "status"       varchar(255),
-  "created_at"   datetime,
-  "updated_at"   datetime,
-  "scheduled_at" datetime DEFAULT NULL,
-  "completed_at" datetime DEFAULT NULL
+  "id"            integer primary key autoincrement,
+  "user_id"       integer,
+  "name"          varchar(255) NOT NULL,
+  "subject"       varchar(255) NOT NULL,
+  "template_name" varchar(255) NOT NULL,
+  "status"        varchar(255),
+  "created_at"    datetime,
+  "updated_at"    datetime,
+  "scheduled_at"  datetime DEFAULT NULL,
+  "completed_at"  datetime DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);

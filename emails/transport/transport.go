@@ -5,10 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/news-maily/api/emails/sesclient"
 	gomail "gopkg.in/gomail.v2"
 )
 
@@ -60,17 +57,14 @@ func NewSMTPTransport(conf map[string]string) (Transporter, error) {
 
 // NewSesTransport returns new SesTransport object.
 func NewSesTransport(conf map[string]string) (Transporter, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(conf["region"]),
-		Credentials: credentials.NewStaticCredentials(conf["key"], conf["secret"], ""),
-	})
+	c, err := sesclient.NewSESClient(conf["key"], conf["secret"], conf["region"])
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &SesTransport{
-		Client: ses.New(sess),
+		Client: c,
 	}, nil
 }
 

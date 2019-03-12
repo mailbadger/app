@@ -35,10 +35,10 @@ func New() http.Handler {
 		templates := authorized.Group("/templates")
 		{
 			templates.GET("", middleware.Paginate(), actions.GetTemplates)
-			templates.GET("/:id", actions.GetTemplate)
+			templates.GET("/:name", actions.GetTemplate)
 			templates.POST("", actions.PostTemplate)
-			templates.PUT("/:id", actions.PutTemplate)
-			templates.DELETE("/:id", actions.DeleteTemplate)
+			templates.PUT("/:name", actions.PutTemplate)
+			templates.DELETE("/:name", actions.DeleteTemplate)
 		}
 
 		campaigns := authorized.Group("/campaigns")

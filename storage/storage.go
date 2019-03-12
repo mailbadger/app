@@ -14,74 +14,40 @@ const key = "storage"
 // writing data in the datastore.
 type Storage interface {
 	GetUser(int64) (*entities.User, error)
-
 	GetUserByAPIKey(string) (*entities.User, error)
-
 	GetUserByUsername(string) (*entities.User, error)
-
 	UpdateUser(*entities.User) error
 
-	GetAllTemplates(int64) ([]entities.Template, error)
-
-	GetTemplates(int64, *pagination.Pagination)
-
-	GetTemplate(int64, int64) (*entities.Template, error)
-
-	GetTemplateByName(string, int64) (*entities.Template, error)
-
-	CreateTemplate(*entities.Template) error
-
-	UpdateTemplate(*entities.Template) error
-
-	DeleteTemplate(int64, int64) error
-
 	GetCampaigns(int64, *pagination.Pagination)
-
 	GetCampaign(int64, int64) (*entities.Campaign, error)
-
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
-
-	GetCampaignsByTemplateId(int64, int64) ([]entities.Campaign, error)
-
+	GetCampaignsByTemplateName(string, int64) ([]entities.Campaign, error)
 	CreateCampaign(*entities.Campaign) error
-
 	UpdateCampaign(*entities.Campaign) error
-
 	DeleteCampaign(int64, int64) error
 
 	GetLists(int64, *pagination.Pagination)
-
 	GetList(int64, int64) (*entities.List, error)
-
 	GetListByName(name string, userID int64) (*entities.List, error)
-
 	CreateList(*entities.List) error
-
 	UpdateList(*entities.List) error
-
 	DeleteList(int64, int64) error
-
 	AppendSubscribers(*entities.List) error
-
 	DetachSubscribers(*entities.List) error
 
 	GetSubscribers(int64, *pagination.Pagination)
-
 	GetSubscribersByListID(int64, int64, *pagination.Pagination)
-
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
-
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
-
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
-
 	GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error)
-
+	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
-
 	UpdateSubscriber(*entities.Subscriber) error
-
 	DeleteSubscriber(int64, int64) error
+
+	GetSesKeys(userID int64) (*entities.SesKeys, error)
+	CreateSesKeys(s *entities.SesKeys) error
 }
 
 // SetToContext sets the storage to the context
@@ -114,42 +80,6 @@ func UpdateUser(c context.Context, user *entities.User) error {
 	return GetFromContext(c).UpdateUser(user)
 }
 
-// GetAllTemplates returns a collection of templates by the specified user id.
-func GetAllTemplates(c context.Context, userID int64) ([]entities.Template, error) {
-	return GetFromContext(c).GetAllTemplates(userID)
-}
-
-// GetTemplates populates a pagination object with a collection of
-// templates by the specified user id.
-func GetTemplates(c context.Context, userID int64, p *pagination.Pagination) {
-	GetFromContext(c).GetTemplates(userID, p)
-}
-
-// GetTemplate returns a Template entity by the given id and the user id.
-func GetTemplate(c context.Context, id int64, userID int64) (*entities.Template, error) {
-	return GetFromContext(c).GetTemplate(id, userID)
-}
-
-// GetTemplateByName returns a Template entity by the given name and the user id.
-func GetTemplateByName(c context.Context, name string, userID int64) (*entities.Template, error) {
-	return GetFromContext(c).GetTemplateByName(name, userID)
-}
-
-// CreateTemplate persists a new Template entity in the datastore.
-func CreateTemplate(c context.Context, t *entities.Template) error {
-	return GetFromContext(c).CreateTemplate(t)
-}
-
-// UpdateTemplate updates the Template entity.
-func UpdateTemplate(c context.Context, t *entities.Template) error {
-	return GetFromContext(c).UpdateTemplate(t)
-}
-
-// DeleteTemplate deletes a Template entity by the given id.
-func DeleteTemplate(c context.Context, id int64, userID int64) error {
-	return GetFromContext(c).DeleteTemplate(id, userID)
-}
-
 // GetCampaigns populates a pagination object with a collection of
 // campaigns by the specified user id.
 func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
@@ -166,9 +96,9 @@ func GetCampaignByName(c context.Context, name string, userID int64) (*entities.
 	return GetFromContext(c).GetCampaignByName(name, userID)
 }
 
-// GetCampaignsByTemplateId returns a Campaign entity by the given id and user id.
-func GetCampaignsByTemplateId(c context.Context, templateID int64, userID int64) ([]entities.Campaign, error) {
-	return GetFromContext(c).GetCampaignsByTemplateId(templateID, userID)
+// GetCampaignsByTemplateName returns a collection of campaigns by the given template name and user id.
+func GetCampaignsByTemplateName(c context.Context, templateName string, userID int64) ([]entities.Campaign, error) {
+	return GetFromContext(c).GetCampaignsByTemplateName(templateName, userID)
 }
 
 // CreateCampaign persists a new Campaign entity in the datastore.
@@ -259,6 +189,11 @@ func GetAllSubscribersByListID(c context.Context, listID, userID int64) ([]entit
 	return GetFromContext(c).GetAllSubscribersByListID(listID, userID)
 }
 
+// GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
+func GetDistinctSubscribersByListIDs(c context.Context, listIDs []int64, userID int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID)
+}
+
 // CreateSubscriber persists a new Subscriber entity in the datastore.
 func CreateSubscriber(c context.Context, s *entities.Subscriber) error {
 	return GetFromContext(c).CreateSubscriber(s)
@@ -270,6 +205,16 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 }
 
 // DeleteSubscriber deletes a Subscriber entity by the given id.
-func DeleteSubscriber(c context.Context, id int64, userID int64) error {
+func DeleteSubscriber(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteSubscriber(id, userID)
+}
+
+// GetSesKeys returns the SES keys by the given user id
+func GetSesKeys(c context.Context, userID int64) (*entities.SesKeys, error) {
+	return GetFromContext(c).GetSesKeys(userID)
+}
+
+// CreateSesKeys adds new SES keys in the database.
+func CreateSesKeys(c context.Context, s *entities.SesKeys) error {
+	return GetFromContext(c).CreateSesKeys(s)
 }

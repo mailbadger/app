@@ -40,6 +40,7 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.Name, "foo")
 	assert.Equal(t, campaign.Subject, "bar")
 	assert.Equal(t, campaign.TemplateId, template.Id)
+	assert.Equal(t, campaign.Template.Name, "foo")
 
 	//Test update campaign
 	campaign.Name = "bar"

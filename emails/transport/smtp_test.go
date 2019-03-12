@@ -6,7 +6,7 @@ import (
 
 	gomail "gopkg.in/gomail.v2"
 
-	"github.com/news-maily/api/mailer/transport"
+	"github.com/news-maily/api/emails/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

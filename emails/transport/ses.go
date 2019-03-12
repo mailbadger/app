@@ -7,12 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 )
 
-type SesClient interface {
-	SendEmail(m *ses.SendEmailInput) (*ses.SendEmailOutput, error)
-}
-
 type SesTransport struct {
-	Client SesClient
+	Client *ses.SES
 }
 
 func (t *SesTransport) Send(m *Message) (string, error) {
