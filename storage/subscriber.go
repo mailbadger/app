@@ -61,13 +61,21 @@ func (db *store) GetAllSubscribersByListID(listID, userID int64) ([]entities.Sub
 }
 
 // GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
-func (db *store) GetDistinctSubscribersByListIDs(listIDs []int64, userID int64) ([]entities.Subscriber, error) {
+func (db *store) GetDistinctSubscribersByListIDs(
+	listIDs []int64,
+	userID int64,
+	blacklisted, active bool,
+) ([]entities.Subscriber, error) {
 	var subs []entities.Subscriber
 
 	err := db.Table("subscribers").
 		Select("DISTINCT(id), user_id, name, email, created_at, updated_at").
 		Joins("INNER JOIN subscribers_lists ON subscribers_lists.subscriber_id = subscribers.id").
-		Where("subscribers_lists.list_id IN (?) AND subscribers.user_id = ?", listIDs, userID).
+		Where(`
+			subscribers_lists.list_id IN (?)
+			AND subscribers.user_id = ? 
+			AND subscribers.blacklisted = ? 
+			AND subscribers.active = ?`, listIDs, userID, blacklisted, active).
 		Preload("Metadata").
 		Find(&subs).Error
 

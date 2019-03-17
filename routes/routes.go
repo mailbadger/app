@@ -48,6 +48,7 @@ func New() http.Handler {
 			campaigns.POST("", actions.PostCampaign)
 			campaigns.PUT("/:id", actions.PutCampaign)
 			campaigns.DELETE("/:id", actions.DeleteCampaign)
+			campaigns.POST("/:id/start", actions.StartCampaign)
 		}
 
 		lists := authorized.Group("/lists")

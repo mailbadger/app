@@ -15,18 +15,16 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
   "user_id"    integer,
   "access_key" varchar(255) NOT NULL,
   "secret_key" varchar(255) NOT NULL,
+  "region"     varchar(30) NOT NULL,
   "created_at" datetime,
   "updated_at" datetime,
   UNIQUE("user_id")
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "ses_keys" (user_id);
-
 CREATE TABLE IF NOT EXISTS "campaigns" (
   "id"            integer primary key autoincrement,
   "user_id"       integer,
   "name"          varchar(255) NOT NULL,
-  "subject"       varchar(255) NOT NULL,
   "template_name" varchar(255) NOT NULL,
   "status"        varchar(255),
   "created_at"    datetime,
@@ -42,19 +40,22 @@ CREATE TABLE IF NOT EXISTS "subscribers" (
   "user_id"    integer,
   "name"       varchar(255) NOT NULL,
   "email"      varchar(255) NOT NULL,
+  "blacklisted" integer,
+  "active"      integer,
   "created_at" datetime,
   "updated_at" datetime,
   UNIQUE("user_id", "email")
 );
 
 CREATE INDEX IF NOT EXISTS i_user ON "subscribers" (user_id);
+CREATE INDEX IF NOT EXISTS i_user_blacklist_active ON "subscribers" (user_id, blacklisted, active);
 
 CREATE TABLE IF NOT EXISTS "lists" (
-  "id"         integer primary key autoincrement,
-  "user_id"    integer,
-  "name"       varchar(255),
-  "created_at" datetime,
-  "updated_at" datetime
+  "id"          integer primary key autoincrement,
+  "user_id"     integer,
+  "name"        varchar(255),
+  "created_at"  datetime,
+  "updated_at"  datetime
 );
 
 CREATE INDEX IF NOT EXISTS i_user ON "lists" (user_id);

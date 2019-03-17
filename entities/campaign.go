@@ -19,9 +19,7 @@ type Campaign struct {
 	Id           int64             `json:"id" gorm:"column:id; primary_key:yes"`
 	UserId       int64             `json:"-" gorm:"column:user_id; index"`
 	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required"`
-	Subject      string            `json:"subject" valid:"alphanum,required"`
 	TemplateName string            `json:"template_name" valid:"alphanum,required"`
-	Template     Template          `json:"-"`
 	Status       string            `json:"status"`
 	CreatedAt    time.Time         `json:"created_at"`
 	UpdatedAt    time.Time         `json:"updated_at"`
@@ -31,8 +29,6 @@ type Campaign struct {
 }
 
 var ErrCampaignNameEmpty = errors.New("The name cannot be empty.")
-var ErrSubjectEmpty = errors.New("The subject cannot be empty.")
-var ErrTemplateNotSpecified = errors.New("The template id must be specified.")
 
 // Validate campaign properties,
 func (c *Campaign) Validate() bool {
@@ -40,9 +36,6 @@ func (c *Campaign) Validate() bool {
 
 	if valid.Trim(c.Name, "") == "" {
 		c.Errors["name"] = ErrCampaignNameEmpty.Error()
-	}
-	if valid.Trim(c.Subject, "") == "" {
-		c.Errors["subject"] = ErrSubjectEmpty.Error()
 	}
 
 	res, err := valid.ValidateStruct(c)

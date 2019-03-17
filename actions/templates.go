@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/news-maily/api/storage/templates"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/emails/sesclient"
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
@@ -28,9 +30,16 @@ func GetTemplate(c *gin.Context) {
 
 	name := c.Param("name")
 
-	client, err := sesclient.NewSESClient(keys.AccessKey, keys.SecretKey, "eu-west-1")
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
 
-	res, err := client.GetTemplate(&ses.GetTemplateInput{
+	res, err := store.GetTemplate(&ses.GetTemplateInput{
 		TemplateName: aws.String(name),
 	})
 
@@ -62,20 +71,27 @@ func GetTemplates(c *gin.Context) {
 
 	nextToken := c.Query("next_token")
 
-	client, err := sesclient.NewSESClient(keys.AccessKey, keys.SecretKey, "eu-west-1")
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
 
-	res, err := client.ListTemplates(&ses.ListTemplatesInput{
+	res, err := store.ListTemplates(&ses.ListTemplatesInput{
 		NextToken: aws.String(nextToken),
 	})
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Templates not found.",
+			"reason": "Templates not found, invalid page token.",
 		})
 		return
 	}
 
-	var list []entities.TemplateMeta
+	list := []entities.TemplateMeta{}
 
 	for _, t := range res.TemplatesMetadata {
 		list = append(list, entities.TemplateMeta{
@@ -84,8 +100,13 @@ func GetTemplates(c *gin.Context) {
 		})
 	}
 
+	var nt string
+	if res.NextToken != nil {
+		nt = *res.NextToken
+	}
+
 	c.JSON(http.StatusOK, entities.TemplateCollection{
-		NextToken: *res.NextToken,
+		NextToken: nt,
 		List:      list,
 	})
 }
@@ -101,13 +122,20 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	client, err := sesclient.NewSESClient(keys.AccessKey, keys.SecretKey, "eu-west-1")
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
 
 	name := c.PostForm("name")
 	html := c.PostForm("content")
 	subject := c.PostForm("subject")
 
-	_, err = client.CreateTemplate(&ses.CreateTemplateInput{
+	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
 		Template: &ses.Template{
 			TemplateName: aws.String(name),
 			HtmlPart:     aws.String(html),
@@ -148,13 +176,20 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	client, err := sesclient.NewSESClient(keys.AccessKey, keys.SecretKey, "eu-west-1")
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
 
-	name := c.PostForm("name")
+	name := c.Param("name")
 	html := c.PostForm("content")
 	subject := c.PostForm("subject")
 
-	_, err = client.UpdateTemplate(&ses.UpdateTemplateInput{
+	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
 		Template: &ses.Template{
 			TemplateName: aws.String(name),
 			HtmlPart:     aws.String(html),
@@ -195,11 +230,18 @@ func DeleteTemplate(c *gin.Context) {
 		return
 	}
 
-	client, err := sesclient.NewSESClient(keys.AccessKey, keys.SecretKey, "eu-west-1")
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
 
-	name := c.PostForm("name")
+	name := c.Param("name")
 
-	_, err = client.DeleteTemplate(&ses.DeleteTemplateInput{
+	_, err = store.DeleteTemplate(&ses.DeleteTemplateInput{
 		TemplateName: aws.String(name),
 	})
 

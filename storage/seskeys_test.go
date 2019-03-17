@@ -20,6 +20,7 @@ func TestSesKeys(t *testing.T) {
 		UserId:    1,
 		AccessKey: "abcd",
 		SecretKey: "efgh",
+		Region:    "eu-west-1",
 	}
 
 	err = store.CreateSesKeys(keys)
@@ -29,4 +30,5 @@ func TestSesKeys(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "abcd", keys.AccessKey)
 	assert.Equal(t, "efgh", keys.SecretKey)
+	assert.Equal(t, "eu-west-1", keys.Region)
 }

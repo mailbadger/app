@@ -1,19 +1,26 @@
 package actions
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
+
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 	"github.com/news-maily/api/utils/pagination"
+	"github.com/sirupsen/logrus"
 )
 
 type listIds struct {
-	Ids []int64 `form:"ids[]"`
+	Ids []int64 `form:"list_id[]"`
 }
 
 func StartCampaign(c *gin.Context) {
@@ -30,7 +37,7 @@ func StartCampaign(c *gin.Context) {
 
 	if len(l.Ids) == 0 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Ids list is empty",
+			"reason": "The list of ids is empty, cannot start the campaign.",
 		})
 		return
 	}
@@ -45,6 +52,13 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	if campaign.Status != entities.STATUS_DRAFT {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": fmt.Sprintf(`Campaign has a status of "%s", cannot start the campaign.`, campaign.Status),
+		})
+		return
+	}
+
 	sesKeys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -53,7 +67,17 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	subs, err := storage.GetDistinctSubscribersByListIDs(c, l.Ids, u.Id)
+	client, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	// fetching subs that are active and that have not been blacklisted
+	subs, err := storage.GetDistinctSubscribersByListIDs(c, l.Ids, u.Id, false, true)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"reason": "Subscribers list is empty",
@@ -61,6 +85,77 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	campaign.Status = entities.STATUS_SENDING
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Cannot update the campaign status, campaign sending is aborted.",
+		})
+		return
+	}
+
+	// SES allows to send 50 emails in a bulk sending operation
+	chunkSize := 50
+	for i := 0; i < len(subs); i += 50 {
+		end := i + chunkSize
+
+		if end > len(subs) {
+			end = len(subs)
+		}
+
+		var dest []*ses.BulkEmailDestination
+		for _, s := range subs[i:end] {
+			s.Normalize()
+
+			td, err := json.Marshal(s.TemplateData)
+			if err != nil {
+				logrus.Errorf("unable to marshal template data for subscriber %d - %s", s.Id, err.Error())
+				continue
+			}
+
+			d := &ses.BulkEmailDestination{
+				Destination: &ses.Destination{
+					ToAddresses: []*string{aws.String(s.Email)},
+				},
+				ReplacementTemplateData: aws.String(string(td)),
+			}
+
+			dest = append(dest, d)
+		}
+
+		res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
+			Source:       aws.String("me@filipnikolovski.com"),
+			Template:     aws.String(campaign.TemplateName),
+			Destinations: dest,
+		})
+
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id":   campaign.Id,
+				"template_name": campaign.TemplateName,
+			}).Errorln(err.Error())
+			continue
+		}
+
+		for _, s := range res.Status {
+			logrus.Info(s.GoString())
+		}
+	}
+
+	campaign.Status = entities.STATUS_COMPLETED
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "Cannot update the campaign status.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"reason": "Campaign has started.",
+	})
 	return
 }
 
@@ -101,7 +196,7 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-	name, subject, templateName := c.PostForm("name"), c.PostForm("subject"), c.PostForm("template_name")
+	name, templateName := c.PostForm("name"), c.PostForm("template_name")
 	user := middleware.GetUser(c)
 
 	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
@@ -114,7 +209,6 @@ func PostCampaign(c *gin.Context) {
 
 	campaign := &entities.Campaign{
 		Name:         name,
-		Subject:      subject,
 		UserId:       user.Id,
 		TemplateName: templateName,
 		Status:       entities.STATUS_DRAFT,
@@ -153,7 +247,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		name, subject, templateName := c.PostForm("name"), c.PostForm("subject"), c.PostForm("template_name")
+		name, templateName := c.PostForm("name"), c.PostForm("template_name")
 
 		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
 		if err == nil && campaign.Id != campaign2.Id {
@@ -164,7 +258,6 @@ func PutCampaign(c *gin.Context) {
 		}
 
 		campaign.Name = name
-		campaign.Subject = subject
 		campaign.TemplateName = templateName
 
 		if !campaign.Validate() {

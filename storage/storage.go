@@ -41,7 +41,7 @@ type Storage interface {
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
 	GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error)
-	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64) ([]entities.Subscriber, error)
+	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64, blacklisted, active bool) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
 	DeleteSubscriber(int64, int64) error
@@ -190,8 +190,8 @@ func GetAllSubscribersByListID(c context.Context, listID, userID int64) ([]entit
 }
 
 // GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
-func GetDistinctSubscribersByListIDs(c context.Context, listIDs []int64, userID int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID)
+func GetDistinctSubscribersByListIDs(c context.Context, listIDs []int64, userID int64, blacklisted, active bool) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID, blacklisted, active)
 }
 
 // CreateSubscriber persists a new Subscriber entity in the datastore.
