@@ -22,6 +22,7 @@ func New() http.Handler {
 
 	// Guest routes
 	handler.POST("/api/authenticate", actions.PostLogin)
+	handler.POST("/api/hooks", actions.HandleHook)
 
 	// Authorized routes
 	authorized := handler.Group("/api")

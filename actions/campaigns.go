@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -125,9 +126,10 @@ func StartCampaign(c *gin.Context) {
 		}
 
 		res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
-			Source:       aws.String("me@filipnikolovski.com"),
-			Template:     aws.String(campaign.TemplateName),
-			Destinations: dest,
+			Source:               aws.String("me@filipnikolovski.com"),
+			Template:             aws.String(campaign.TemplateName),
+			Destinations:         dest,
+			ConfigurationSetName: aws.String("test"),
 		})
 
 		if err != nil {
@@ -144,6 +146,8 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	campaign.Status = entities.STATUS_COMPLETED
+	campaign.CompletedAt = entities.TimeFrom(time.Now().UTC())
+
 	err = storage.UpdateCampaign(c, campaign)
 	if err != nil {
 		logrus.Errorln(err.Error())
@@ -154,7 +158,7 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"reason": "Campaign has started.",
+		"reason": "Campaign has finished sending and is completed.",
 	})
 	return
 }
