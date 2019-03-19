@@ -37,6 +37,10 @@ type SubscriberMetadata struct {
 }
 
 func (s *Subscriber) Normalize() {
+	s.TemplateData = make(map[string]string)
+
+	s.TemplateData["name"] = s.Name
+
 	for _, m := range s.Metadata {
 		s.TemplateData[m.Key] = m.Value
 	}

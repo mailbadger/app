@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -55,7 +54,7 @@ func StartCampaign(c *gin.Context) {
 
 	if campaign.Status != entities.STATUS_DRAFT {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": fmt.Sprintf(`Campaign has a status of "%s", cannot start the campaign.`, campaign.Status),
+			"reason": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
 		})
 		return
 	}
@@ -86,15 +85,15 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	campaign.Status = entities.STATUS_SENDING
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logrus.Errorln(err.Error())
-		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Cannot update the campaign status, campaign sending is aborted.",
-		})
-		return
-	}
+	// campaign.Status = entities.STATUS_SENDING
+	// err = storage.UpdateCampaign(c, campaign)
+	// if err != nil {
+	// 	logrus.Errorln(err.Error())
+	// 	c.JSON(http.StatusNotFound, gin.H{
+	// 		"reason": "Cannot update the campaign status, campaign sending is aborted.",
+	// 	})
+	// 	return
+	// }
 
 	// SES allows to send 50 emails in a bulk sending operation
 	chunkSize := 50
@@ -125,11 +124,17 @@ func StartCampaign(c *gin.Context) {
 			dest = append(dest, d)
 		}
 
+		dt, _ := json.Marshal(map[string]string{
+			"name": "foo",
+			"bar":  "blah",
+		})
+
 		res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
 			Source:               aws.String("me@filipnikolovski.com"),
 			Template:             aws.String(campaign.TemplateName),
 			Destinations:         dest,
 			ConfigurationSetName: aws.String("test"),
+			DefaultTemplateData:  aws.String(string(dt)),
 		})
 
 		if err != nil {
@@ -145,17 +150,17 @@ func StartCampaign(c *gin.Context) {
 		}
 	}
 
-	campaign.Status = entities.STATUS_COMPLETED
-	campaign.CompletedAt = entities.TimeFrom(time.Now().UTC())
+	// campaign.Status = entities.STATUS_COMPLETED
+	// campaign.CompletedAt = entities.TimeFrom(time.Now().UTC())
 
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logrus.Errorln(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "Cannot update the campaign status.",
-		})
-		return
-	}
+	// err = storage.UpdateCampaign(c, campaign)
+	// if err != nil {
+	// 	logrus.Errorln(err.Error())
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"reason": "Cannot update the campaign status.",
+	// 	})
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, gin.H{
 		"reason": "Campaign has finished sending and is completed.",

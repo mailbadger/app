@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-contents.html
+// https://docs.aws.amazon.com/ses/latest/DeveloperGuide/notification-contents.html
 
 type Header struct {
 	Name  string `json:"name"`
@@ -13,13 +13,14 @@ type Header struct {
 }
 
 type CommonHeader struct {
-	From      []string  `json:"from"`
-	To        []string  `json:"to"`
-	Date      time.Time `json:"date"`
-	Subject   string    `json:"subject"`
-	MessageID string    `json:"messageId"`
+	From      []string `json:"from"`
+	To        []string `json:"to"`
+	Date      string   `json:"date"`
+	Subject   string   `json:"subject"`
+	MessageID string   `json:"messageId"`
 }
 
+// Mail field from the AWS incoming JSON notification.
 type Mail struct {
 	Timestamp        time.Time     `json:"timestamp"`
 	MessageID        string        `json:"messageId"`
@@ -53,12 +54,14 @@ type Bounce struct {
 	FeedbackID        string              `json:"feedbackId"`
 }
 
+// Complaint field from the AWS incoming JSON notification.
 type Complaint struct {
 	ComplainedRecipients []*ComplainedRecipient `json:"complainedRecipients"`
 	Timestamp            time.Time              `json:"timestamp"`
 	FeedbackID           string                 `json:"feedbackId"`
 }
 
+// Delivery field from the AWS incoming JSON notification.
 type Delivery struct {
 	Timestamp            time.Time `json:"timestamp"`
 	ProcessingTimeMillis int64     `json:"processingTimeMillis"`
@@ -66,6 +69,21 @@ type Delivery struct {
 	SMTPResponse         string    `json:"smtpResponse"`
 	ReportingMTA         string    `json:"reportingMTA"`
 	RemoteMtaIP          string    `json:"remoteMtaIp"`
+}
+
+// RenderingFailure field from the AWS incoming JSON notification.
+type RenderingFailure struct {
+	ErrorMessage string `json:"errorMessage"`
+	TemplateName string `json:"templateName"`
+}
+
+// Click field from the AWS incoming JSON notification.
+type Click struct {
+	Timestamp time.Time           `json:"timestamp"`
+	IPAddress string              `json:"ipAddress"`
+	UserAgent string              `json:"userAgent"`
+	Link      string              `json:"link"`
+	LinkTags  map[string][]string `json:"linkTags"`
 }
 
 // SNSMessage is used in the hooks action
@@ -78,10 +96,13 @@ type SNSMessage struct {
 	RawMessage   json.RawMessage `json:"Message"`
 }
 
+// SesMessage represents the message that is sent by the SNS topic.
 type SesMessage struct {
-	NotificationType string     `json:"eventType"`
-	Mail             Mail       `json:"mail"`
-	Bounce           *Bounce    `json:"bounce"`
-	Complaint        *Complaint `json:"complaint"`
-	Delivery         *Delivery  `json:"delivery"`
+	NotificationType string            `json:"eventType"`
+	Mail             Mail              `json:"mail"`
+	Bounce           *Bounce           `json:"bounce"`
+	Complaint        *Complaint        `json:"complaint"`
+	Delivery         *Delivery         `json:"delivery"`
+	RenderingFailure *RenderingFailure `json:"failure"`
+	Click            *Click            `json:"click"`
 }

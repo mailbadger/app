@@ -13,10 +13,13 @@ import (
 
 // SES Notification Types
 const (
-	BounceType          = "Bounce"
-	ComplaintType       = "Complaint"
-	DeliveryType        = "Delivery"
-	SubConfirmationType = "SubscriptionConfirmation"
+	SendType             = "Send"
+	ClickType            = "Click"
+	BounceType           = "Bounce"
+	DeliveryType         = "Delivery"
+	ComplaintType        = "Complaint"
+	RenderingFailureType = "Rendering Failure"
+	SubConfirmationType  = "SubscriptionConfirmation"
 )
 
 func HandleHook(c *gin.Context) {
@@ -58,6 +61,8 @@ func HandleHook(c *gin.Context) {
 		return
 	}
 
+	logrus.Info(s)
+
 	switch notification.NotificationType {
 	case BounceType:
 		logrus.Infof("Received SES bounce: %+v %+v", notification.Mail, notification.Bounce)
@@ -65,6 +70,12 @@ func HandleHook(c *gin.Context) {
 		logrus.Infof("Received SES complaint: %+v", notification.Complaint)
 	case DeliveryType:
 		logrus.Infof("Received SES delivery: %+v", notification.Delivery)
+	case SendType:
+		logrus.Infof("Received SES send: %+v", notification.Mail)
+	case RenderingFailureType:
+		logrus.Infof("Received SES rendering failure: %+v", notification.RenderingFailure)
+	case ClickType:
+		logrus.Infof("Received SES click: %+v", notification.Click)
 	default:
 		logrus.Errorf("Received unknown AWS SES message: %s", notification.NotificationType)
 	}
