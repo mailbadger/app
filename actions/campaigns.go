@@ -11,8 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/queue"
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 	"github.com/news-maily/api/utils/pagination"
@@ -59,22 +59,22 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	sesKeys, err := storage.GetSesKeys(c, u.Id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Amazon Ses keys are not set.",
-		})
-		return
-	}
+	// sesKeys, err := storage.GetSesKeys(c, u.Id)
+	// if err != nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{
+	// 		"reason": "Amazon Ses keys are not set.",
+	// 	})
+	// 	return
+	// }
 
-	client, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
-	if err != nil {
-		logrus.Errorln(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
-		})
-		return
-	}
+	// client, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+	// if err != nil {
+	// 	logrus.Errorln(err.Error())
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"reason": "SES keys are incorrect.",
+	// 	})
+	// 	return
+	// }
 
 	// fetching subs that are active and that have not been blacklisted
 	subs, err := storage.GetDistinctSubscribersByListIDs(c, l.Ids, u.Id, false, true)
@@ -85,15 +85,15 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	// campaign.Status = entities.STATUS_SENDING
-	// err = storage.UpdateCampaign(c, campaign)
-	// if err != nil {
-	// 	logrus.Errorln(err.Error())
-	// 	c.JSON(http.StatusNotFound, gin.H{
-	// 		"reason": "Cannot update the campaign status, campaign sending is aborted.",
-	// 	})
-	// 	return
-	// }
+	campaign.Status = entities.STATUS_SENDING
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Cannot update the campaign status, campaign sending is aborted.",
+		})
+		return
+	}
 
 	// SES allows to send 50 emails in a bulk sending operation
 	chunkSize := 50
@@ -124,46 +124,42 @@ func StartCampaign(c *gin.Context) {
 			dest = append(dest, d)
 		}
 
-		dt, _ := json.Marshal(map[string]string{
-			"name": "foo",
-			"bar":  "blah",
-		})
-
-		res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
+		msg, _ := json.Marshal(&ses.SendBulkTemplatedEmailInput{
 			Source:               aws.String("me@filipnikolovski.com"),
 			Template:             aws.String(campaign.TemplateName),
 			Destinations:         dest,
 			ConfigurationSetName: aws.String("test"),
-			DefaultTemplateData:  aws.String(string(dt)),
+			DefaultTemplateData:  aws.String(`{"replace":"this"}`),
 		})
 
+		err := queue.Publish(c, "send_bulk", msg)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id":   campaign.Id,
-				"template_name": campaign.TemplateName,
-			}).Errorln(err.Error())
-			continue
+			logrus.Errorln(err)
 		}
 
-		for _, s := range res.Status {
-			logrus.Info(s.GoString())
-		}
+		// res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
+		// 	Source:               aws.String("me@filipnikolovski.com"),
+		// 	Template:             aws.String(campaign.TemplateName),
+		// 	Destinations:         dest,
+		// 	ConfigurationSetName: aws.String("test"),
+		// 	DefaultTemplateData:  aws.String(string(dt)),
+		// })
+
+		// if err != nil {
+		// 	logrus.WithFields(logrus.Fields{
+		// 		"campaign_id":   campaign.Id,
+		// 		"template_name": campaign.TemplateName,
+		// 	}).Errorln(err.Error())
+		// 	continue
+		// }
+
+		// for _, s := range res.Status {
+		// 	logrus.Info(s.GoString())
+		// }
 	}
 
-	// campaign.Status = entities.STATUS_COMPLETED
-	// campaign.CompletedAt = entities.TimeFrom(time.Now().UTC())
-
-	// err = storage.UpdateCampaign(c, campaign)
-	// if err != nil {
-	// 	logrus.Errorln(err.Error())
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"reason": "Cannot update the campaign status.",
-	// 	})
-	// 	return
-	// }
-
 	c.JSON(http.StatusOK, gin.H{
-		"reason": "Campaign has finished sending and is completed.",
+		"reason": "The campaign has started. You can track the progress in the campaign details page.",
 	})
 	return
 }

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/contrib/ginrus"
@@ -13,11 +14,22 @@ import (
 
 // New creates a new HTTP handler with the specified middleware.
 func New() http.Handler {
+	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		logrus.Panic(err)
+	}
+
+	log := logrus.New()
+	log.SetLevel(lvl)
+	log.SetFormatter(&logrus.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
-	handler.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
+	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(middleware.Storage())
+	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 
 	// Guest routes

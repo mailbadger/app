@@ -1,6 +1,6 @@
 module github.com/news-maily/api
 
-go 1.11
+go 1.12
 
 require (
 	cloud.google.com/go v0.36.0 // indirect
@@ -16,6 +16,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/packr v1.22.0 // indirect
 	github.com/golang/protobuf v1.3.0 // indirect
+	github.com/golang/snappy v0.0.1 // indirect
 	github.com/jinzhu/gorm v1.9.2
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.0.0 // indirect
@@ -25,6 +26,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/nsqio/go-nsq v1.0.7
 	github.com/rubenv/sql-migrate v0.0.0-20190212093014-1007f53448d7
 	github.com/sirupsen/logrus v1.3.0
 	github.com/stretchr/testify v1.3.0

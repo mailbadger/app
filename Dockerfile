@@ -1,15 +1,21 @@
-# Start by building the application.
+# Builder image
 FROM golang:1.12 as build
 
+ENV GO111MODULE=on
+
 WORKDIR /go/src/app
+
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
 COPY . .
 
-RUN go-wrapper download
 RUN make gen
-RUN go-wrapper install
+RUN go build -o /go/bin/app .
 
-
-# Now copy it into our base image.
+# Copy into base image
 FROM gcr.io/distroless/base
 COPY --from=build /go/bin/app /
 CMD ["/app"]
