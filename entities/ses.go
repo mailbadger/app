@@ -11,7 +11,7 @@ type SesKeys struct {
 	Id        int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserId    int64     `json:"-" gorm:"column:user_id; index"`
 	AccessKey string    `json:"access_key" gorm:"not null"  valid:"alphanum,required"`
-	SecretKey string    `json:"-" gorm:"not null" valid:"alphanum,required"`
+	SecretKey string    `json:"secret_key" gorm:"not null" valid:"alphanum,required"`
 	Region    string    `json:"region" gorm:"not null" valid:"required"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

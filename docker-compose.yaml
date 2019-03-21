@@ -23,6 +23,7 @@ services:
       - "4171:4171"
   app:
     image: news-maily/app
+    command: /app
     ports:
       - "8080:8080"
     volumes:
@@ -37,4 +38,16 @@ services:
       - NSQD_PORT=4150
       - SKIP_TLS=true
       - LOG_LEVEL=info
-  
+  bulksender:
+    image: news-maily/app
+    command: /workers/bulksender
+    volumes:
+      - ./maily.db:/maily.db
+    depends_on:
+      - app
+    environment:
+      - DATABASE_DRIVER=sqlite3
+      - DATABASE_CONFIG=maily.db
+      - NSQLOOKUPD_HOST=nsqlookupd
+      - NSQLOOKUPD_PORT=4161
+      - LOG_LEVEL=info

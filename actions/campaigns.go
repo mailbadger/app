@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/entities"
@@ -52,29 +53,20 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	if campaign.Status != entities.STATUS_DRAFT {
+	if campaign.Status != entities.StatusDraft {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"reason": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
 		})
 		return
 	}
 
-	// sesKeys, err := storage.GetSesKeys(c, u.Id)
-	// if err != nil {
-	// 	c.JSON(http.StatusNotFound, gin.H{
-	// 		"reason": "Amazon Ses keys are not set.",
-	// 	})
-	// 	return
-	// }
-
-	// client, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
-	// if err != nil {
-	// 	logrus.Errorln(err.Error())
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"reason": "SES keys are incorrect.",
-	// 	})
-	// 	return
-	// }
+	sesKeys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Amazon Ses keys are not set.",
+		})
+		return
+	}
 
 	// fetching subs that are active and that have not been blacklisted
 	subs, err := storage.GetDistinctSubscribersByListIDs(c, l.Ids, u.Id, false, true)
@@ -85,7 +77,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	campaign.Status = entities.STATUS_SENDING
+	campaign.Status = entities.StatusSending
 	err = storage.UpdateCampaign(c, campaign)
 	if err != nil {
 		logrus.Errorln(err.Error())
@@ -124,38 +116,36 @@ func StartCampaign(c *gin.Context) {
 			dest = append(dest, d)
 		}
 
-		msg, _ := json.Marshal(&ses.SendBulkTemplatedEmailInput{
-			Source:               aws.String("me@filipnikolovski.com"),
-			Template:             aws.String(campaign.TemplateName),
-			Destinations:         dest,
-			ConfigurationSetName: aws.String("test"),
-			DefaultTemplateData:  aws.String(`{"replace":"this"}`),
+		uuid, err := uuid.NewRandom()
+		if err != nil {
+			logrus.Errorf("unable to generate random uuid: %s", err.Error())
+			continue
+		}
+
+		msg, err := json.Marshal(entities.BulkSendMessage{
+			UUID: uuid.String(),
+			Input: &ses.SendBulkTemplatedEmailInput{
+				Source:               aws.String("me@filipnikolovski.com"),
+				Template:             aws.String(campaign.TemplateName),
+				Destinations:         dest,
+				ConfigurationSetName: aws.String("test"),
+				DefaultTemplateData:  aws.String(`{"replace":"this"}`),
+			},
+			NextBatch:  len(dest),
+			CampaignID: campaign.Id,
+			UserID:     u.Id,
+			SesKeys:    sesKeys,
 		})
 
-		err := queue.Publish(c, "send_bulk", msg)
+		if err != nil {
+			logrus.Errorln(err)
+			continue
+		}
+
+		err = queue.Publish(c, entities.CampaignsTopic, msg)
 		if err != nil {
 			logrus.Errorln(err)
 		}
-
-		// res, err := client.SendBulkTemplatedEmail(&ses.SendBulkTemplatedEmailInput{
-		// 	Source:               aws.String("me@filipnikolovski.com"),
-		// 	Template:             aws.String(campaign.TemplateName),
-		// 	Destinations:         dest,
-		// 	ConfigurationSetName: aws.String("test"),
-		// 	DefaultTemplateData:  aws.String(string(dt)),
-		// })
-
-		// if err != nil {
-		// 	logrus.WithFields(logrus.Fields{
-		// 		"campaign_id":   campaign.Id,
-		// 		"template_name": campaign.TemplateName,
-		// 	}).Errorln(err.Error())
-		// 	continue
-		// }
-
-		// for _, s := range res.Status {
-		// 	logrus.Info(s.GoString())
-		// }
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -216,7 +206,7 @@ func PostCampaign(c *gin.Context) {
 		Name:         name,
 		UserId:       user.Id,
 		TemplateName: templateName,
-		Status:       entities.STATUS_DRAFT,
+		Status:       entities.StatusDraft,
 	}
 
 	if !campaign.Validate() {

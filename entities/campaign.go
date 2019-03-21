@@ -5,13 +5,17 @@ import (
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
 const (
-	STATUS_DRAFT     = "draft"
-	STATUS_COMPLETED = "completed"
-	STATUS_SENDING   = "sending"
-	STATUS_SCHEDULED = "scheduled"
+	StatusDraft     = "draft"
+	StatusCompleted = "completed"
+	StatusSending   = "sending"
+	StatusScheduled = "scheduled"
+
+	CampaignsTopic  = "campaigns"
+	SendBulkChannel = "send_bulk"
 )
 
 //Campaign represents the campaign entity
@@ -26,6 +30,16 @@ type Campaign struct {
 	ScheduledAt  Time              `json:"scheduled_at"`
 	CompletedAt  Time              `json:"completed_at"`
 	Errors       map[string]string `json:"-" sql:"-"`
+}
+
+type BulkSendMessage struct {
+	UUID       string                           `json:"msg_uuid"`
+	Total      int                              `json:"total"`
+	NextBatch  int                              `json:"next_batch"`
+	UserID     int64                            `json:"user_id"`
+	CampaignID int64                            `json:"campaign_id"`
+	SesKeys    *SesKeys                         `json:"ses_keys"`
+	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
 var ErrCampaignNameEmpty = errors.New("The name cannot be empty.")
