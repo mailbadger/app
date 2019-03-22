@@ -1,172 +1,262 @@
 package actions
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
-	"strconv"
+
+	"github.com/news-maily/api/storage/templates"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
-	"github.com/news-maily/api/utils/pagination"
 )
 
-func GetTemplates(c *gin.Context) {
-	all := c.Query("all")
-	if all != "" {
-		if t, err := storage.GetAllTemplates(c, middleware.GetUser(c).Id); err == nil {
-			c.JSON(http.StatusOK, t)
-			return
-		}
-	}
-
-	val, ok := c.Get("pagination")
-	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
-		return
-	}
-
-	p, ok := val.(*pagination.Pagination)
-	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
-		return
-	}
-
-	storage.GetTemplates(c, middleware.GetUser(c).Id, p)
-	c.JSON(http.StatusOK, p)
-}
-
 func GetTemplate(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		if t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id); err == nil {
-			c.JSON(http.StatusOK, t)
-			return
-		}
+	u := middleware.GetUser(c)
 
+	keys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Template not found",
+			"reason": "AWS Ses keys not set.",
 		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+	name := c.Param("name")
+
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	res, err := store.GetTemplate(&ses.GetTemplateInput{
+		TemplateName: aws.String(name),
 	})
-	return
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Template not found.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entities.Template{
+		Name:        name,
+		HTMLPart:    *res.Template.HtmlPart,
+		TextPart:    *res.Template.TextPart,
+		SubjectPart: *res.Template.SubjectPart,
+	})
+}
+
+func GetTemplates(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	keys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "AWS Ses keys not set.",
+		})
+		return
+	}
+
+	nextToken := c.Query("next_token")
+
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	res, err := store.ListTemplates(&ses.ListTemplatesInput{
+		NextToken: aws.String(nextToken),
+	})
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Templates not found, invalid page token.",
+		})
+		return
+	}
+
+	list := []entities.TemplateMeta{}
+
+	for _, t := range res.TemplatesMetadata {
+		list = append(list, entities.TemplateMeta{
+			Name:      *t.Name,
+			Timestamp: *t.CreatedTimestamp,
+		})
+	}
+
+	var nt string
+	if res.NextToken != nil {
+		nt = *res.NextToken
+	}
+
+	c.JSON(http.StatusOK, entities.TemplateCollection{
+		NextToken: nt,
+		List:      list,
+	})
 }
 
 func PostTemplate(c *gin.Context) {
-	name, content := c.PostForm("name"), c.PostForm("content")
+	u := middleware.GetUser(c)
 
-	_, err := storage.GetTemplateByName(c, name, middleware.GetUser(c).Id)
-	if err == nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Template with that name already exists",
+	keys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "AWS Ses keys not set.",
 		})
 		return
 	}
 
-	t := &entities.Template{
-		Name:    name,
-		Content: content,
-		UserId:  middleware.GetUser(c).Id,
-	}
-
-	if !t.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Invalid data",
-			"errors": t.Errors,
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
 		})
 		return
 	}
 
-	err = storage.CreateTemplate(c, t)
+	name := c.PostForm("name")
+	html := c.PostForm("content")
+	subject := c.PostForm("subject")
+
+	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
+		Template: &ses.Template{
+			TemplateName: aws.String(name),
+			HtmlPart:     aws.String(html),
+			TextPart:     aws.String(html),
+			SubjectPart:  aws.String(subject),
+		},
+	})
 
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+		reason := "Unable to create template."
+
+		if awsErr, ok := err.(awserr.Error); ok {
+			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": reason,
 		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, t)
+	c.JSON(http.StatusCreated, entities.Template{
+		Name:        name,
+		HTMLPart:    html,
+		TextPart:    html,
+		SubjectPart: subject,
+	})
 }
 
 func PutTemplate(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		t, err := storage.GetTemplate(c, id, middleware.GetUser(c).Id)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Template not found",
-			})
-			return
-		}
+	u := middleware.GetUser(c)
 
-		name, content := c.PostForm("name"), c.PostForm("content")
-
-		t.Name = name
-		t.Content = content
-
-		if !t.Validate() {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Invalid data",
-				"errors": t.Errors,
-			})
-			return
-		}
-
-		t2, err := storage.GetTemplateByName(c, name, middleware.GetUser(c).Id)
-		if err == nil && t2.Id != t.Id {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Template with that name already exists",
-			})
-			return
-		}
-
-		err = storage.UpdateTemplate(c, t)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
-			})
-			return
-		}
-
-		c.Status(http.StatusNoContent)
+	keys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "AWS Ses keys not set.",
+		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	name := c.Param("name")
+	html := c.PostForm("content")
+	subject := c.PostForm("subject")
+
+	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
+		Template: &ses.Template{
+			TemplateName: aws.String(name),
+			HtmlPart:     aws.String(html),
+			TextPart:     aws.String(html),
+			SubjectPart:  aws.String(subject),
+		},
 	})
-	return
+
+	if err != nil {
+		reason := "Unable to update template."
+
+		if awsErr, ok := err.(awserr.Error); ok {
+			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": reason,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entities.Template{
+		Name:        name,
+		HTMLPart:    html,
+		TextPart:    html,
+		SubjectPart: subject,
+	})
 }
 
 func DeleteTemplate(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
-		user := middleware.GetUser(c)
-		campaigns, err := storage.GetCampaignsByTemplateId(c, id, user.Id)
-		if err == nil && len(campaigns) > 0 {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Cannot delete template because it is used by campaigns.",
-			})
-			return
-		}
+	u := middleware.GetUser(c)
 
-		err = storage.DeleteTemplate(c, id, user.Id)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
-			})
-			return
-		}
-
-		c.Status(http.StatusNoContent)
+	keys, err := storage.GetSesKeys(c, u.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "AWS Ses keys not set.",
+		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logrus.Errorln(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	name := c.Param("name")
+
+	_, err = store.DeleteTemplate(&ses.DeleteTemplateInput{
+		TemplateName: aws.String(name),
 	})
-	return
+
+	if err != nil {
+		reason := "Unable to delete template."
+
+		if awsErr, ok := err.(awserr.Error); ok {
+			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"reason": reason,
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

@@ -15,11 +15,11 @@ func Paginate() gin.HandlerFunc {
 
 		p.Page = 0
 		p.PerPage = pagination.DefaultPerPage
-		p.Total = math.MaxUint32
+		p.Total = math.MaxUint64
 		p.Collection = make([]interface{}, 0)
 
 		if len(c.Query("per_page")) > 0 {
-			perpage, err := strconv.ParseUint(c.Query("per_page"), 10, 32)
+			perpage, err := strconv.ParseUint(c.Query("per_page"), 10, 64)
 			if err != nil {
 				panic(fmt.Sprintf("Error parsing 'per_page': %s", err))
 			}
@@ -32,7 +32,7 @@ func Paginate() gin.HandlerFunc {
 			}
 		}
 		if len(c.Query("page")) > 0 {
-			page, err := strconv.ParseUint(c.Query("page"), 10, 32)
+			page, err := strconv.ParseUint(c.Query("page"), 10, 64)
 			if err != nil {
 				panic(fmt.Sprintf("Error parsing 'page': %s", err))
 			}

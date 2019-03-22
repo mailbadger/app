@@ -30,7 +30,7 @@ func GetSubscribers(c *gin.Context) {
 }
 
 func GetSubscriber(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		if s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).Id); err == nil {
 			c.JSON(http.StatusOK, s)
 			return
@@ -86,7 +86,7 @@ func PostSubscriber(c *gin.Context) {
 }
 
 func PutSubscriber(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -125,7 +125,7 @@ func PutSubscriber(c *gin.Context) {
 }
 
 func DeleteSubscriber(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 		_, err := storage.GetSubscriber(c, id, user.Id)
 		if err != nil {

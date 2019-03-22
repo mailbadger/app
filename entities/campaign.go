@@ -5,34 +5,41 @@ import (
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
 const (
-	STATUS_DRAFT     = "draft"
-	STATUS_COMPLETED = "completed"
-	STATUS_SENDING   = "sending"
-	STATUS_SCHEDULED = "scheduled"
+	StatusDraft     = "draft"
+	StatusSent      = "sent"
+	StatusScheduled = "scheduled"
+
+	CampaignsTopic  = "campaigns"
+	SendBulkChannel = "send_bulk"
 )
 
 //Campaign represents the campaign entity
 type Campaign struct {
-	Id          int64             `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId      int64             `json:"-" gorm:"column:user_id; index"`
-	Name        string            `json:"name" gorm:"not null"`
-	Subject     string            `json:"subject"`
-	TemplateId  int64             `json:"template_id" gorm:"column:template_id; index"`
-	Template    Template          `json:"-"`
-	Status      string            `json:"status"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
-	ScheduledAt Time              `json:"scheduled_at"`
-	CompletedAt Time              `json:"completed_at"`
-	Errors      map[string]string `json:"-" sql:"-"`
+	Id           int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	UserId       int64             `json:"-" gorm:"column:user_id; index"`
+	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required"`
+	TemplateName string            `json:"template_name" valid:"alphanum,required"`
+	Status       string            `json:"status"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
+	ScheduledAt  Time              `json:"scheduled_at"`
+	CompletedAt  Time              `json:"completed_at"`
+	Errors       map[string]string `json:"-" sql:"-"`
+}
+
+type BulkSendMessage struct {
+	UUID       string                           `json:"msg_uuid"`
+	UserID     int64                            `json:"user_id"`
+	CampaignID int64                            `json:"campaign_id"`
+	SesKeys    *SesKeys                         `json:"ses_keys"`
+	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
 var ErrCampaignNameEmpty = errors.New("The name cannot be empty.")
-var ErrSubjectEmpty = errors.New("The subject cannot be empty.")
-var ErrTemplateNotSpecified = errors.New("The template id must be specified.")
 
 // Validate campaign properties,
 func (c *Campaign) Validate() bool {
@@ -41,8 +48,10 @@ func (c *Campaign) Validate() bool {
 	if valid.Trim(c.Name, "") == "" {
 		c.Errors["name"] = ErrCampaignNameEmpty.Error()
 	}
-	if valid.Trim(c.Subject, "") == "" {
-		c.Errors["subject"] = ErrSubjectEmpty.Error()
+
+	res, err := valid.ValidateStruct(c)
+	if err != nil || !res {
+		c.Errors["reason"] = err.Error()
 	}
 
 	return len(c.Errors) == 0

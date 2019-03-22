@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/contrib/ginrus"
@@ -13,15 +14,27 @@ import (
 
 // New creates a new HTTP handler with the specified middleware.
 func New() http.Handler {
+	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		lvl = logrus.InfoLevel
+	}
+
+	log := logrus.New()
+	log.SetLevel(lvl)
+	log.SetFormatter(&logrus.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
-	handler.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
+	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(middleware.Storage())
+	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 
 	// Guest routes
 	handler.POST("/api/authenticate", actions.PostLogin)
+	handler.POST("/api/hooks", actions.HandleHook)
 
 	// Authorized routes
 	authorized := handler.Group("/api")
@@ -35,10 +48,10 @@ func New() http.Handler {
 		templates := authorized.Group("/templates")
 		{
 			templates.GET("", middleware.Paginate(), actions.GetTemplates)
-			templates.GET("/:id", actions.GetTemplate)
+			templates.GET("/:name", actions.GetTemplate)
 			templates.POST("", actions.PostTemplate)
-			templates.PUT("/:id", actions.PutTemplate)
-			templates.DELETE("/:id", actions.DeleteTemplate)
+			templates.PUT("/:name", actions.PutTemplate)
+			templates.DELETE("/:name", actions.DeleteTemplate)
 		}
 
 		campaigns := authorized.Group("/campaigns")
@@ -48,6 +61,7 @@ func New() http.Handler {
 			campaigns.POST("", actions.PostCampaign)
 			campaigns.PUT("/:id", actions.PutCampaign)
 			campaigns.DELETE("/:id", actions.DeleteCampaign)
+			campaigns.POST("/:id/start", actions.StartCampaign)
 		}
 
 		lists := authorized.Group("/lists")

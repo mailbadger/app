@@ -34,7 +34,6 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-
 	"github.com/news-maily/api/routes"
 	"github.com/news-maily/api/utils"
 	"github.com/sirupsen/logrus"
@@ -47,12 +46,23 @@ func main() {
 
 	handler := routes.New()
 
-	var cfg *tls.Config
-	var addr = ":8080"
+	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		lvl = logrus.InfoLevel
+	}
 
-	if os.Getenv("ENVIRONMENT") == "prod" && os.Getenv("DISABLE_TLS") == "" {
+	logrus.SetLevel(lvl)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
+	var cfg *tls.Config
+	var addr = os.Getenv("PORT")
+	if addr == "" {
+		addr = "8080"
+	}
+
+	if os.Getenv("ENVIRONMENT") == "prod" && os.Getenv("SKIP_TLS") == "" {
 		// TLS config
-		addr = ":443"
 		cer, err := tls.LoadX509KeyPair(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE"))
 		if err != nil {
 			logrus.Println(err)
@@ -73,7 +83,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         addr,
+		Addr:         ":" + addr,
 		Handler:      handler,
 		TLSConfig:    cfg,
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),

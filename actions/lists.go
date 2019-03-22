@@ -35,7 +35,7 @@ func GetLists(c *gin.Context) {
 }
 
 func GetList(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		if l, err := storage.GetList(c, id, middleware.GetUser(c).Id); err == nil {
 			c.JSON(http.StatusOK, l)
 			return
@@ -89,7 +89,7 @@ func PostList(c *gin.Context) {
 }
 
 func PutList(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		l, err := storage.GetList(c, id, middleware.GetUser(c).Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -135,7 +135,7 @@ func PutList(c *gin.Context) {
 }
 
 func DeleteList(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 		_, err := storage.GetList(c, id, user.Id)
 		if err != nil {
@@ -164,7 +164,7 @@ func DeleteList(c *gin.Context) {
 }
 
 func PutListSubscribers(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 		l, err := storage.GetList(c, id, user.Id)
 		if err != nil {
@@ -210,7 +210,7 @@ func PutListSubscribers(c *gin.Context) {
 }
 
 func GetListSubscribers(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		val, ok := c.Get("pagination")
 		if !ok {
 			c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
@@ -235,7 +235,7 @@ func GetListSubscribers(c *gin.Context) {
 }
 
 func DetachListSubscribers(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 32); err == nil {
+	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 		l, err := storage.GetList(c, id, user.Id)
 		if err != nil {

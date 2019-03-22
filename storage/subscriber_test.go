@@ -30,6 +30,8 @@ func TestSubscriber(t *testing.T) {
 		Metadata: []entities.SubscriberMetadata{
 			{Key: "key", Value: "val"},
 		},
+		Blacklisted: false,
+		Active:      true,
 	}
 	s.Lists = append(s.Lists, *l)
 
@@ -80,6 +82,9 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
 	subs, err = store.GetAllSubscribersByListID(l.Id, 1)
+	assert.Equal(t, 1, len(subs))
+
+	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.Id}, 1, false, true)
 	assert.Equal(t, 1, len(subs))
 
 	err = store.DeleteSubscriber(1, 1)
