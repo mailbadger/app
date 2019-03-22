@@ -51,32 +51,62 @@ func HandleHook(c *gin.Context) {
 		return
 	}
 
-	var notification entities.SesMessage
+	var msg entities.SesMessage
 
 	s, _ := strconv.Unquote(string(sns.RawMessage))
 
-	err = json.Unmarshal([]byte(s), &notification)
+	err = json.Unmarshal([]byte(s), &msg)
 	if err != nil {
 		logrus.Errorf("Cannot unmarshal SNS raw message: %s", err.Error())
 		return
 	}
 
-	logrus.Info(s)
+	// fetch the campaign id from tags
+	cidTag, ok := msg.Mail.Tags["campaign_id"]
+	if !ok || len(cidTag) == 0 {
+		logrus.WithFields(logrus.Fields{
+			"message_id": msg.Mail.MessageID,
+			"source":     msg.Mail.Source,
+			"tags":       msg.Mail.Tags,
+		}).Error("campaign id not found in mail tags")
+	}
 
-	switch notification.NotificationType {
+	cid, err := strconv.ParseInt(cidTag[0], 10, 64)
+	if err != nil {
+		logrus.Errorf("unable to parse campaign id str to int: %s", err.Error())
+	}
+
+	// fetch the user id from tags
+	uidTag, ok := msg.Mail.Tags["user_id"]
+	if !ok || len(uidTag) == 0 {
+		logrus.WithFields(logrus.Fields{
+			"message_id": msg.Mail.MessageID,
+			"source":     msg.Mail.Source,
+			"tags":       msg.Mail.Tags,
+		}).Error("user id not found in mail tags")
+	}
+
+	uid, err := strconv.ParseInt(uidTag[0], 10, 64)
+	if err != nil {
+		logrus.Errorf("unable to parse user id str to int: %s", err.Error())
+	}
+
+	logrus.WithFields(logrus.Fields{
+		"type":        msg.NotificationType,
+		"mail":        msg.Mail,
+		"campaign_id": cid,
+		"user_id":     uid,
+	}).Infof("sns message")
+
+	// todo: insert data into proper tables
+	switch msg.NotificationType {
 	case BounceType:
-		logrus.Infof("Received SES bounce: %+v %+v", notification.Mail, notification.Bounce)
 	case ComplaintType:
-		logrus.Infof("Received SES complaint: %+v", notification.Complaint)
 	case DeliveryType:
-		logrus.Infof("Received SES delivery: %+v", notification.Delivery)
 	case SendType:
-		logrus.Infof("Received SES send: %+v", notification.Mail)
 	case RenderingFailureType:
-		logrus.Infof("Received SES rendering failure: %+v", notification.RenderingFailure)
 	case ClickType:
-		logrus.Infof("Received SES click: %+v", notification.Click)
 	default:
-		logrus.Errorf("Received unknown AWS SES message: %s", notification.NotificationType)
+		logrus.Errorf("Received unknown AWS SES message: %s", msg.NotificationType)
 	}
 }

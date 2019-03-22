@@ -10,8 +10,7 @@ import (
 
 const (
 	StatusDraft     = "draft"
-	StatusCompleted = "completed"
-	StatusSending   = "sending"
+	StatusSent      = "sent"
 	StatusScheduled = "scheduled"
 
 	CampaignsTopic  = "campaigns"
@@ -34,8 +33,6 @@ type Campaign struct {
 
 type BulkSendMessage struct {
 	UUID       string                           `json:"msg_uuid"`
-	Total      int                              `json:"total"`
-	NextBatch  int                              `json:"next_batch"`
 	UserID     int64                            `json:"user_id"`
 	CampaignID int64                            `json:"campaign_id"`
 	SesKeys    *SesKeys                         `json:"ses_keys"`

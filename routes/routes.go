@@ -16,7 +16,7 @@ import (
 func New() http.Handler {
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
-		logrus.Panic(err)
+		lvl = logrus.InfoLevel
 	}
 
 	log := logrus.New()

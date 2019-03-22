@@ -46,6 +46,15 @@ func main() {
 
 	handler := routes.New()
 
+	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		lvl = logrus.InfoLevel
+	}
+
+	logrus.SetLevel(lvl)
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
 	var cfg *tls.Config
 	var addr = os.Getenv("PORT")
 	if addr == "" {

@@ -22,16 +22,17 @@ type CommonHeader struct {
 
 // Mail field from the AWS incoming JSON notification.
 type Mail struct {
-	Timestamp        time.Time     `json:"timestamp"`
-	MessageID        string        `json:"messageId"`
-	Source           string        `json:"source"`
-	SourceArn        string        `json:"sourceArn"`
-	SourceIP         string        `json:"sourceIp"`
-	SendingAccountID string        `json:"sendingAccountId"`
-	Destination      []string      `json:"destination"`
-	HeadersTruncated bool          `json:"headersTruncated"`
-	Headers          []Header      `json:"headers"`
-	CommonHeaders    *CommonHeader `json:"commonHeaders"`
+	Timestamp        time.Time           `json:"timestamp"`
+	MessageID        string              `json:"messageId"`
+	Source           string              `json:"source"`
+	SourceArn        string              `json:"sourceArn"`
+	SourceIP         string              `json:"sourceIp"`
+	SendingAccountID string              `json:"sendingAccountId"`
+	Destination      []string            `json:"destination"`
+	HeadersTruncated bool                `json:"headersTruncated"`
+	Headers          []Header            `json:"headers"`
+	CommonHeaders    *CommonHeader       `json:"commonHeaders"`
+	Tags             map[string][]string `json:"tags"`
 }
 
 // BouncedRecipient holds the bounced
