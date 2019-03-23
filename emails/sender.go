@@ -55,3 +55,16 @@ func NewSesSender(key, secret, region string) (Sender, error) {
 
 	return &senderImpl{client}, nil
 }
+
+func NewSESClient(key, secret, region string) (*ses.SES, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(region),
+		Credentials: credentials.NewStaticCredentials(key, secret, ""),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ses.New(sess), nil
+}
