@@ -7,19 +7,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
 	"github.com/sirupsen/logrus"
-)
-
-// SES Notification Types
-const (
-	SendType             = "Send"
-	ClickType            = "Click"
-	BounceType           = "Bounce"
-	DeliveryType         = "Delivery"
-	ComplaintType        = "Complaint"
-	RenderingFailureType = "Rendering Failure"
-	SubConfirmationType  = "SubscriptionConfirmation"
 )
 
 func HandleHook(c *gin.Context) {
@@ -32,7 +22,7 @@ func HandleHook(c *gin.Context) {
 		return
 	}
 
-	if sns.Type == SubConfirmationType {
+	if sns.Type == emails.SubConfirmationType {
 		response, err := http.Get(sns.SubscribeURL)
 		if err != nil {
 			logrus.Errorf("AWS error while confirming the subscribe URL: %s", err.Error())
@@ -54,6 +44,10 @@ func HandleHook(c *gin.Context) {
 	var msg entities.SesMessage
 
 	s, _ := strconv.Unquote(string(sns.RawMessage))
+
+	logrus.WithFields(logrus.Fields{
+		"type": sns.Type,
+	}).Infof("SNS Raw Message")
 
 	err = json.Unmarshal([]byte(s), &msg)
 	if err != nil {
@@ -100,12 +94,12 @@ func HandleHook(c *gin.Context) {
 
 	// todo: insert data into proper tables
 	switch msg.NotificationType {
-	case BounceType:
-	case ComplaintType:
-	case DeliveryType:
-	case SendType:
-	case RenderingFailureType:
-	case ClickType:
+	case emails.BounceType:
+	case emails.ComplaintType:
+	case emails.DeliveryType:
+	case emails.SendType:
+	case emails.RenderingFailureType:
+	case emails.ClickType:
 	default:
 		logrus.Errorf("Received unknown AWS SES message: %s", msg.NotificationType)
 	}

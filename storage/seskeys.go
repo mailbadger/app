@@ -15,3 +15,9 @@ func (db *store) GetSesKeys(userID int64) (*entities.SesKeys, error) {
 func (db *store) CreateSesKeys(s *entities.SesKeys) error {
 	return db.Create(s).Error
 }
+
+// DeleteSesKeys adds new SES keys in the database.
+func (db *store) DeleteSesKeys(userID int64) error {
+	k := &entities.SesKeys{UserId: userID}
+	return db.Delete(k).Error
+}

@@ -146,7 +146,7 @@ func PostSESKeys(c *gin.Context) {
 
 			_, err = snsClient.Subscribe(&sns.SubscribeInput{
 				Protocol: aws.String("https"),
-				Endpoint: aws.String("https://4aa71fbb.ngrok.io/api/hooks"),
+				Endpoint: aws.String("https://example.com/api/hooks"),
 				TopicArn: aws.String(topicArn),
 			})
 			if err != nil {

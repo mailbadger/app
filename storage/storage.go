@@ -48,6 +48,7 @@ type Storage interface {
 
 	GetSesKeys(userID int64) (*entities.SesKeys, error)
 	CreateSesKeys(s *entities.SesKeys) error
+	DeleteSesKeys(userID int64) error
 }
 
 // SetToContext sets the storage to the context
@@ -87,7 +88,7 @@ func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
 }
 
 // GetCampaign returns a Campaign entity by the given id and user id.
-func GetCampaign(c context.Context, id int64, userID int64) (*entities.Campaign, error) {
+func GetCampaign(c context.Context, id, userID int64) (*entities.Campaign, error) {
 	return GetFromContext(c).GetCampaign(id, userID)
 }
 
@@ -112,7 +113,7 @@ func UpdateCampaign(c context.Context, campaign *entities.Campaign) error {
 }
 
 // DeleteCampaign deletes a Campaign entity by the given id.
-func DeleteCampaign(c context.Context, id int64, userID int64) error {
+func DeleteCampaign(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteCampaign(id, userID)
 }
 
@@ -123,7 +124,7 @@ func GetLists(c context.Context, userID int64, p *pagination.Pagination) {
 }
 
 // GetList returns a List entity by the given id and user id.
-func GetList(c context.Context, id int64, userID int64) (*entities.List, error) {
+func GetList(c context.Context, id, userID int64) (*entities.List, error) {
 	return GetFromContext(c).GetList(id, userID)
 }
 
@@ -143,7 +144,7 @@ func UpdateList(c context.Context, l *entities.List) error {
 }
 
 // DeleteList deletes a List entity by the given id.
-func DeleteList(c context.Context, id int64, userID int64) error {
+func DeleteList(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteList(id, userID)
 }
 
@@ -170,7 +171,7 @@ func GetSubscribersByListID(c context.Context, listID, userID int64, p *paginati
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.
-func GetSubscriber(c context.Context, id int64, userID int64) (*entities.Subscriber, error) {
+func GetSubscriber(c context.Context, id, userID int64) (*entities.Subscriber, error) {
 	return GetFromContext(c).GetSubscriber(id, userID)
 }
 
@@ -217,4 +218,9 @@ func GetSesKeys(c context.Context, userID int64) (*entities.SesKeys, error) {
 // CreateSesKeys adds new SES keys in the database.
 func CreateSesKeys(c context.Context, s *entities.SesKeys) error {
 	return GetFromContext(c).CreateSesKeys(s)
+}
+
+// DeleteSesKeys deletes SES keys configuration by the given user ID.
+func DeleteSesKeys(c context.Context, userID int64) error {
+	return GetFromContext(c).DeleteSesKeys(userID)
 }

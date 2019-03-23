@@ -84,6 +84,13 @@ func New() http.Handler {
 			subscribers.PUT("/:id", actions.PutSubscriber)
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 		}
+
+		sesKeys := authorized.Group(("/ses-keys"))
+		{
+			sesKeys.GET("", actions.GetSESKeys)
+			sesKeys.POST("", actions.PostSESKeys)
+			sesKeys.DELETE("", actions.DeleteSESKeys)
+		}
 	}
 
 	return handler
