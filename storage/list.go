@@ -45,15 +45,15 @@ func (db *store) UpdateList(l *entities.List) error {
 // DeleteList deletes an existing list from the database and also clears the subscribers association.
 func (db *store) DeleteList(id, userID int64) error {
 	l := &entities.List{Id: id, UserId: userID}
-	if err := db.DeleteAllSubscribers(l); err != nil {
+	if err := db.RemoveSubscribersFromList(l); err != nil {
 		return err
 	}
 
 	return db.Delete(&l).Error
 }
 
-// DeleteAllSubscribers clears the subscribers association.
-func (db *store) DeleteAllSubscribers(l *entities.List) error {
+// RemoveSubscribersFromList clears the subscribers association.
+func (db *store) RemoveSubscribersFromList(l *entities.List) error {
 	return db.Model(l).Association("Subscribers").Clear().Error
 }
 
