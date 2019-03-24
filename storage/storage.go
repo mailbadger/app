@@ -27,6 +27,7 @@ type Storage interface {
 	DeleteCampaign(int64, int64) error
 
 	GetLists(int64, *pagination.Pagination)
+	GetListsByIDs(userID int64, ids []int64) ([]entities.List, error)
 	GetList(int64, int64) (*entities.List, error)
 	GetListByName(name string, userID int64) (*entities.List, error)
 	CreateList(*entities.List) error
@@ -41,7 +42,7 @@ type Storage interface {
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
 	GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error)
-	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64, blacklisted, active bool) ([]entities.Subscriber, error)
+	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64, blacklisted, active bool, nextID, limit int64) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
 	DeleteSubscriber(int64, int64) error
@@ -123,6 +124,11 @@ func GetLists(c context.Context, userID int64, p *pagination.Pagination) {
 	GetFromContext(c).GetLists(userID, p)
 }
 
+// GetListsByIDs fetches lists by user id and the given ids
+func GetListsByIDs(c context.Context, userID int64, ids []int64) ([]entities.List, error) {
+	return GetFromContext(c).GetListsByIDs(userID, ids)
+}
+
 // GetList returns a List entity by the given id and user id.
 func GetList(c context.Context, id, userID int64) (*entities.List, error) {
 	return GetFromContext(c).GetList(id, userID)
@@ -191,8 +197,14 @@ func GetAllSubscribersByListID(c context.Context, listID, userID int64) ([]entit
 }
 
 // GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
-func GetDistinctSubscribersByListIDs(c context.Context, listIDs []int64, userID int64, blacklisted, active bool) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID, blacklisted, active)
+func GetDistinctSubscribersByListIDs(
+	c context.Context,
+	listIDs []int64,
+	userID int64,
+	blacklisted, active bool,
+	nextID, limit int64,
+) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID, blacklisted, active, nextID, limit)
 }
 
 // CreateSubscriber persists a new Subscriber entity in the datastore.

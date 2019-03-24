@@ -83,91 +83,103 @@ func StartCampaign(c *gin.Context) {
 		templateData map[string]string,
 	) {
 		// fetching subs that are active and that have not been blacklisted
-		subs, err := storage.GetDistinctSubscribersByListIDs(c, params.Ids, userID, false, true)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"user_id":  userID,
-				"list_ids": params.Ids,
-			}).Errorf("unable to fetch subscribers: %s", err.Error())
-			return
-		}
-
-		// SES allows to send 50 emails in a bulk sending operation
-		chunkSize := 50
-		for i := 0; i < len(subs); i += chunkSize {
-			end := i + chunkSize
-			if end > len(subs) {
-				end = len(subs)
+		var nextID int64
+		var limit int64 = 1000
+		for {
+			subs, err := storage.GetDistinctSubscribersByListIDs(c, params.Ids, userID, false, true, nextID, limit)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"user_id":  userID,
+					"list_ids": params.Ids,
+				}).Errorf("unable to fetch subscribers: %s", err.Error())
+				return
 			}
 
-			// create
-			var dest []*ses.BulkEmailDestination
-			for _, s := range subs[i:end] {
-				// marshal sub template data
-				s.Normalize()
-				td, err := json.Marshal(s.TemplateData)
+			logrus.Infof("subs count %d", len(subs))
+
+			if len(subs) == 0 {
+				break
+			}
+
+			// SES allows to send 50 emails in a bulk sending operation
+			chunkSize := 50
+			for i := 0; i < len(subs); i += chunkSize {
+				end := i + chunkSize
+				if end > len(subs) {
+					end = len(subs)
+				}
+
+				// create
+				var dest []*ses.BulkEmailDestination
+				for _, s := range subs[i:end] {
+					// marshal sub template data
+					s.Normalize()
+					td, err := json.Marshal(s.TemplateData)
+					if err != nil {
+						logrus.Errorf("unable to marshal template data for subscriber %d - %s", s.Id, err.Error())
+						continue
+					}
+
+					d := &ses.BulkEmailDestination{
+						Destination: &ses.Destination{
+							ToAddresses: []*string{aws.String(s.Email)},
+						},
+						ReplacementTemplateData: aws.String(string(td)),
+					}
+
+					dest = append(dest, d)
+				}
+
+				uuid, err := uuid.NewRandom()
 				if err != nil {
-					logrus.Errorf("unable to marshal template data for subscriber %d - %s", s.Id, err.Error())
+					logrus.Errorf("unable to generate random uuid: %s", err.Error())
 					continue
 				}
 
-				d := &ses.BulkEmailDestination{
-					Destination: &ses.Destination{
-						ToAddresses: []*string{aws.String(s.Email)},
-					},
-					ReplacementTemplateData: aws.String(string(td)),
+				defaultData, err := json.Marshal(templateData)
+				if err != nil {
+					logrus.Errorln(err)
+					continue
 				}
 
-				dest = append(dest, d)
-			}
-
-			uuid, err := uuid.NewRandom()
-			if err != nil {
-				logrus.Errorf("unable to generate random uuid: %s", err.Error())
-				continue
-			}
-
-			defaultData, err := json.Marshal(templateData)
-			if err != nil {
-				logrus.Errorln(err)
-				continue
-			}
-
-			// prepare message for publishing to the queue
-			msg, err := json.Marshal(entities.BulkSendMessage{
-				UUID: uuid.String(),
-				Input: &ses.SendBulkTemplatedEmailInput{
-					Source:               aws.String(params.Source),
-					Template:             aws.String(campaign.TemplateName),
-					Destinations:         dest,
-					ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-					DefaultTemplateData:  aws.String(string(defaultData)),
-					DefaultTags: []*ses.MessageTag{
-						&ses.MessageTag{
-							Name:  aws.String("campaign_id"),
-							Value: aws.String(strconv.Itoa(int(campaign.Id))),
-						},
-						&ses.MessageTag{
-							Name:  aws.String("user_id"),
-							Value: aws.String(strconv.Itoa(int(userID))),
+				// prepare message for publishing to the queue
+				msg, err := json.Marshal(entities.BulkSendMessage{
+					UUID: uuid.String(),
+					Input: &ses.SendBulkTemplatedEmailInput{
+						Source:               aws.String(params.Source),
+						Template:             aws.String(campaign.TemplateName),
+						Destinations:         dest,
+						ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+						DefaultTemplateData:  aws.String(string(defaultData)),
+						DefaultTags: []*ses.MessageTag{
+							&ses.MessageTag{
+								Name:  aws.String("campaign_id"),
+								Value: aws.String(strconv.Itoa(int(campaign.Id))),
+							},
+							&ses.MessageTag{
+								Name:  aws.String("user_id"),
+								Value: aws.String(strconv.Itoa(int(userID))),
+							},
 						},
 					},
-				},
-				CampaignID: campaign.Id,
-				UserID:     u.Id,
-				SesKeys:    sesKeys,
-			})
+					CampaignID: campaign.Id,
+					UserID:     u.Id,
+					SesKeys:    sesKeys,
+				})
 
-			if err != nil {
-				logrus.Errorln(err)
-				continue
+				if err != nil {
+					logrus.Errorln(err)
+					continue
+				}
+
+				// publish the message to the queue
+				err = queue.Publish(c, entities.CampaignsTopic, msg)
+				if err != nil {
+					logrus.Errorln(err)
+				}
 			}
 
-			// publish the message to the queue
-			err = queue.Publish(c, entities.CampaignsTopic, msg)
-			if err != nil {
-				logrus.Errorln(err)
-			}
+			nextID = subs[len(subs)-1].Id
 		}
 
 		campaign.Status = entities.StatusSent

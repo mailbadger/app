@@ -84,7 +84,7 @@ func TestSubscriber(t *testing.T) {
 	subs, err = store.GetAllSubscribersByListID(l.Id, 1)
 	assert.Equal(t, 1, len(subs))
 
-	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.Id}, 1, false, true)
+	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.Id}, 1, false, true, 0, 10)
 	assert.Equal(t, 1, len(subs))
 
 	err = store.DeleteSubscriber(1, 1)

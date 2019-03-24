@@ -65,17 +65,26 @@ func (db *store) GetDistinctSubscribersByListIDs(
 	listIDs []int64,
 	userID int64,
 	blacklisted, active bool,
+	nextID int64,
+	limit int64,
 ) ([]entities.Subscriber, error) {
+	if limit == 0 {
+		limit = 1000
+	}
+
 	var subs []entities.Subscriber
 
 	err := db.Table("subscribers").
-		Select("DISTINCT(id), user_id, name, email, created_at, updated_at").
+		Select("DISTINCT(id), name, email").
 		Joins("INNER JOIN subscribers_lists ON subscribers_lists.subscriber_id = subscribers.id").
 		Where(`
 			subscribers_lists.list_id IN (?)
 			AND subscribers.user_id = ? 
 			AND subscribers.blacklisted = ? 
-			AND subscribers.active = ?`, listIDs, userID, blacklisted, active).
+			AND subscribers.active = ?
+			AND subscribers.id > ?`, listIDs, userID, blacklisted, active, nextID).
+		Order("id").
+		Limit(limit).
 		Preload("Metadata").
 		Find(&subs).Error
 

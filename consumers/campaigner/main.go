@@ -11,7 +11,6 @@ import (
 
 	"github.com/news-maily/api/consumers"
 
-	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
 	"github.com/sirupsen/logrus"
 
@@ -35,31 +34,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
 		return err
-	}
-
-	if msg.SesKeys == nil {
-		return errors.New("SES Keys are nil")
-	}
-
-	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.SendBulkTemplatedEmail(msg.Input)
-
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"campaign_id":   msg.CampaignID,
-			"template_name": msg.Input.Template,
-			"user_id":       msg.UserID,
-		}).Errorln(err.Error())
-
-		return nil //we won't re-throw the message here.
-	}
-
-	for _, s := range res.Status {
-		logrus.Info(s.GoString())
 	}
 
 	return nil

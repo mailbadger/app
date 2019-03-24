@@ -18,6 +18,15 @@ func (db *store) GetLists(userID int64, p *pagination.Pagination) {
 	}
 }
 
+// GetListsByIDs fetches lists by user id and the given ids
+func (db *store) GetListsByIDs(userID int64, ids []int64) ([]entities.List, error) {
+	var lists []entities.List
+
+	err := db.Where("user_id = ? AND id IN (?)", userID, ids).Find(&lists).Error
+
+	return lists, err
+}
+
 // GetList returns the list by the given id and user id
 func (db *store) GetList(id, userID int64) (*entities.List, error) {
 	var list = new(entities.List)
