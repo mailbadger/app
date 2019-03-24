@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/news-maily/api.svg?branch=master)](https://travis-ci.org/news-maily/api)
+[![Build Status](https://travis-ci.org/news-maily/app.svg?branch=master)](https://travis-ci.org/news-maily/app)
 [![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/FilipNikolovski/news-maily/master/LICENSE.md)
 
 # news-maily
