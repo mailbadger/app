@@ -9,21 +9,28 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
+	sns "github.com/robbiet480/go.sns"
 	"github.com/sirupsen/logrus"
 )
 
 func HandleHook(c *gin.Context) {
-	var sns entities.SNSMessage
+	var payload sns.Payload
 
 	body, err := c.GetRawData()
-	err = json.Unmarshal(body, &sns)
+	err = json.Unmarshal(body, &payload)
 	if err != nil {
 		logrus.Errorf("Cannot decode request: %s", err.Error())
 		return
 	}
 
-	if sns.Type == emails.SubConfirmationType {
-		response, err := http.Get(sns.SubscribeURL)
+	err = payload.VerifyPayload()
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	if payload.Type == emails.SubConfirmationType {
+		response, err := http.Get(payload.SubscribeURL)
 		if err != nil {
 			logrus.Errorf("AWS error while confirming the subscribe URL: %s", err.Error())
 			return
@@ -35,7 +42,7 @@ func HandleHook(c *gin.Context) {
 			xml, _ := ioutil.ReadAll(response.Body)
 			logrus.Errorf("AWS error while confirming the subscribe URL: %s", string(xml))
 		} else {
-			logrus.Infof("AWS SNS topic successfully subscribed: %s", sns.SubscribeURL)
+			logrus.Infof("AWS SNS topic successfully subscribed: %s", payload.SubscribeURL)
 		}
 
 		return
@@ -43,13 +50,7 @@ func HandleHook(c *gin.Context) {
 
 	var msg entities.SesMessage
 
-	s, _ := strconv.Unquote(string(sns.RawMessage))
-
-	logrus.WithFields(logrus.Fields{
-		"type": sns.Type,
-	}).Infof("SNS Raw Message")
-
-	err = json.Unmarshal([]byte(s), &msg)
+	err = json.Unmarshal([]byte(payload.Message), &msg)
 	if err != nil {
 		logrus.Errorf("Cannot unmarshal SNS raw message: %s", err.Error())
 		return
@@ -100,6 +101,7 @@ func HandleHook(c *gin.Context) {
 	case emails.SendType:
 	case emails.RenderingFailureType:
 	case emails.ClickType:
+	case emails.OpenType:
 	default:
 		logrus.Errorf("Received unknown AWS SES message: %s", msg.NotificationType)
 	}

@@ -32,7 +32,7 @@ func TestSesKeys(t *testing.T) {
 	assert.Equal(t, "efgh", keys.SecretKey)
 	assert.Equal(t, "eu-west-1", keys.Region)
 
-	err = store.DeleteSesKeys(keys.Id, 1)
+	err = store.DeleteSesKeys(1)
 	assert.Nil(t, err)
 
 	keys, err = store.GetSesKeys(1)

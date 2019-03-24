@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/news-maily/api/emails"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/google/uuid"
@@ -138,7 +140,7 @@ func StartCampaign(c *gin.Context) {
 					Source:               aws.String(params.Source),
 					Template:             aws.String(campaign.TemplateName),
 					Destinations:         dest,
-					ConfigurationSetName: aws.String("test"),
+					ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 					DefaultTemplateData:  aws.String(string(defaultData)),
 					DefaultTags: []*ses.MessageTag{
 						&ses.MessageTag{

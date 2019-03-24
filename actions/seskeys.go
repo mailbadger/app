@@ -2,6 +2,7 @@ package actions
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -110,7 +111,7 @@ func PostSESKeys(c *gin.Context) {
 
 		_, err = snsClient.Subscribe(&sns.SubscribeInput{
 			Protocol: aws.String("https"),
-			Endpoint: aws.String("https://example.com/api/hooks"),
+			Endpoint: aws.String(os.Getenv("DOMAIN_URL") + "/api/hooks"),
 			TopicArn: aws.String(topicArn),
 		})
 		if err != nil {
@@ -146,7 +147,7 @@ func PostSESKeys(c *gin.Context) {
 
 			_, err = snsClient.Subscribe(&sns.SubscribeInput{
 				Protocol: aws.String("https"),
-				Endpoint: aws.String("https://example.com/api/hooks"),
+				Endpoint: aws.String("https://88950e6a.ngrok.io/api/hooks"),
 				TopicArn: aws.String(topicArn),
 			})
 			if err != nil {

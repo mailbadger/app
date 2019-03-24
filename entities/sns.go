@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -85,16 +84,6 @@ type Click struct {
 	UserAgent string              `json:"userAgent"`
 	Link      string              `json:"link"`
 	LinkTags  map[string][]string `json:"linkTags"`
-}
-
-// SNSMessage is used in the hooks action
-// for processing the incoming notification messages
-// with "Bounce" or "Complaint" notification type.
-type SNSMessage struct {
-	Type         string          `json:"Type"`
-	TopicArn     string          `json:"TopicArn"`
-	SubscribeURL string          `json:"SubscribeURL"`
-	RawMessage   json.RawMessage `json:"Message"`
 }
 
 // SesMessage represents the message that is sent by the SNS topic.
