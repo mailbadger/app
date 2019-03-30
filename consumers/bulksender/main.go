@@ -59,7 +59,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	for _, s := range res.Status {
-		logrus.Info(s.GoString())
+		err := h.s.CreateSendBulkLog(&entities.SendBulkLog{
+			UserID:     msg.UserID,
+			CampaignID: msg.CampaignID,
+			MessageID:  *s.MessageId,
+			Status:     *s.Status,
+			Error:      s.Error,
+		})
+		logrus.WithFields(logrus.Fields{
+			"campaign_id":      msg.CampaignID,
+			"user_id":          msg.UserID,
+			"send_bulk_status": s.GoString(),
+		}).Errorln(err.Error())
 	}
 
 	return nil
@@ -79,7 +90,7 @@ func main() {
 
 	config := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(entities.CampaignsTopic, entities.SendBulkChannel, config)
+	consumer, err := nsq.NewConsumer(entities.SendBulkTopic, entities.SendBulkTopic, config)
 	if err != nil {
 		log.Fatal(err)
 	}

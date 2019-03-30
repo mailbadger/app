@@ -2,10 +2,10 @@
 
 CREATE TABLE IF NOT EXISTS "users" (
   "id"       integer primary key autoincrement,
-  "username" varchar(255) NOT NULL UNIQUE,
-  "password" varchar(255),
-  "api_key"  varchar(255) NOT NULL UNIQUE,
-  "auth_key" varchar(255) NOT NULL,
+  "username" varchar(191) NOT NULL UNIQUE,
+  "password" varchar(191),
+  "api_key"  varchar(191) NOT NULL UNIQUE,
+  "auth_key" varchar(191) NOT NULL,
   "created_at" datetime,
   "updated_at" datetime
 );
@@ -13,8 +13,8 @@ CREATE TABLE IF NOT EXISTS "users" (
 CREATE TABLE IF NOT EXISTS "ses_keys" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
-  "access_key" varchar(255) NOT NULL,
-  "secret_key" varchar(255) NOT NULL,
+  "access_key" varchar(191) NOT NULL,
+  "secret_key" varchar(191) NOT NULL,
   "region"     varchar(30) NOT NULL,
   "created_at" datetime,
   "updated_at" datetime,
@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
 CREATE TABLE IF NOT EXISTS "campaigns" (
   "id"            integer primary key autoincrement,
   "user_id"       integer,
-  "name"          varchar(255) NOT NULL,
-  "template_name" varchar(255) NOT NULL,
-  "status"        varchar(255),
+  "name"          varchar(191) NOT NULL,
+  "template_name" varchar(191) NOT NULL,
+  "status"        varchar(191),
   "created_at"    datetime,
   "updated_at"    datetime,
   "scheduled_at"  datetime DEFAULT NULL,
@@ -38,8 +38,8 @@ CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
 CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
-  "name"       varchar(255) NOT NULL,
-  "email"      varchar(255) NOT NULL,
+  "name"       varchar(191) NOT NULL,
+  "email"      varchar(191) NOT NULL,
   "blacklisted" integer,
   "active"      integer,
   "created_at" datetime,
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS i_user_blacklist_active ON "subscribers" (user_id, bl
 CREATE TABLE IF NOT EXISTS "lists" (
   "id"          integer primary key autoincrement,
   "user_id"     integer,
-  "name"        varchar(255),
+  "name"        varchar(191),
   "created_at"  datetime,
   "updated_at"  datetime
 );
@@ -72,8 +72,8 @@ CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_lists" (subscriber_id);
 CREATE TABLE IF NOT EXISTS "subscriber_metadata" (
   "id"            integer primary key autoincrement,
   "subscriber_id" integer,
-  "key"           varchar(255),
-  "value"         varchar(255),
+  "key"           varchar(191),
+  "value"         varchar(191),
   "created_at"    datetime,
   "updated_at"    datetime
 );
@@ -84,9 +84,9 @@ CREATE TABLE IF NOT EXISTS "sent_emails" (
   "id"          integer primary key autoincrement,
   "campaign_id" integer,
   "user_id"     integer,
-  "token"       varchar(255),
-  "status"      varchar(255) NOT NULL,
-  "ip"          varchar(255),
+  "token"       varchar(191),
+  "status"      varchar(191) NOT NULL,
+  "ip"          varchar(191),
   "latitude"    real,
   "longitude"   real,
   "opens"       integer,
@@ -99,26 +99,26 @@ CREATE INDEX IF NOT EXISTS i_campaign ON "sent_emails" (campaign_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
   "id"         integer primary key autoincrement,
-  "recipient"  varchar(255),
-  "sender"     varchar(255),
-  "type"       varchar(255),
-  "sub_type"   varchar(255),
-  "action"     varchar(255),
+  "recipient"  varchar(191),
+  "sender"     varchar(191),
+  "type"       varchar(191),
+  "sub_type"   varchar(191),
+  "action"     varchar(191),
   "created_at" datetime,
   "updated_at" datetime
 );
 
-CREATE TABLE IF NOT EXISTS "events" (
+CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "id"            integer primary key autoincrement,
+  "user_id"       integer,
   "campaign_id"   integer,
-  "subscriber_id" integer,
-  "message"       varchar(255),
-  "created_at"    datetime,
-  "updated_at"    datetime
+  "message_id"    varchar(191) NOT NULL,
+  "status"        varchar(191) NOT NULL,
+  "error"         varchar(191),
+  "created_at"    datetime
 );
 
-CREATE INDEX IF NOT EXISTS i_campaign   ON "events" (campaign_id);
-CREATE INDEX IF NOT EXISTS i_subscriber ON "events" (subscriber_id);
+CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_bulk_logs" (user_id, campaign_id);
 
 -- +migrate Down
 

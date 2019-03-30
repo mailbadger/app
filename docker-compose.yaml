@@ -40,7 +40,7 @@ services:
       - LOG_LEVEL=info
   bulksender:
     image: news-maily/app
-    command: /workers/bulksender
+    command: /consumers/bulksender
     volumes:
       - ./maily.db:/maily.db
     depends_on:
@@ -50,4 +50,19 @@ services:
       - DATABASE_CONFIG=maily.db
       - NSQLOOKUPD_HOST=nsqlookupd
       - NSQLOOKUPD_PORT=4161
+      - LOG_LEVEL=info
+  campaigner:
+    image: news-maily/app
+    command: /consumers/campaigner
+    volumes:
+      - ./maily.db:/maily.db
+    depends_on:
+      - app
+    environment:
+      - DATABASE_DRIVER=sqlite3
+      - DATABASE_CONFIG=maily.db
+      - NSQLOOKUPD_HOST=nsqlookupd
+      - NSQLOOKUPD_PORT=4161
+      - NSQD_HOST=nsqd
+      - NSQD_PORT=4150
       - LOG_LEVEL=info

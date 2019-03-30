@@ -13,8 +13,8 @@ const (
 	StatusSent      = "sent"
 	StatusScheduled = "scheduled"
 
-	CampaignsTopic  = "campaigns"
-	SendBulkChannel = "send_bulk"
+	CampaignsTopic = "campaigns"
+	SendBulkTopic  = "send_bulk"
 )
 
 //Campaign represents the campaign entity
@@ -37,6 +37,16 @@ type BulkSendMessage struct {
 	CampaignID int64                            `json:"campaign_id"`
 	SesKeys    *SesKeys                         `json:"ses_keys"`
 	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
+}
+
+type SendCampaignParams struct {
+	ListIDs      []int64           `json:"list_ids"`
+	TemplateData map[string]string `json:"template_data"`
+	Source       string            `json:"source"`
+	CampaignID   int64             `json:"campaign_id"`
+	UserID       int64             `json:"user_id"`
+	TemplateName string            `json:"template_name"`
+	SesKeys      `json:"ses_keys"`
 }
 
 var ErrCampaignNameEmpty = errors.New("The name cannot be empty.")

@@ -50,6 +50,8 @@ type Storage interface {
 	GetSesKeys(userID int64) (*entities.SesKeys, error)
 	CreateSesKeys(s *entities.SesKeys) error
 	DeleteSesKeys(userID int64) error
+
+	CreateSendBulkLog(l *entities.SendBulkLog) error
 }
 
 // SetToContext sets the storage to the context

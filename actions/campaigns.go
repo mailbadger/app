@@ -7,12 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/news-maily/api/emails"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/google/uuid"
-
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/entities"
@@ -20,7 +14,6 @@ import (
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 	"github.com/news-maily/api/utils/pagination"
-	"github.com/sirupsen/logrus"
 )
 
 type sendCampaignParams struct {
@@ -75,120 +68,37 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	go func(
-		userID int64,
-		campaign *entities.Campaign,
-		sesKeys *entities.SesKeys,
-		params *sendCampaignParams,
-		templateData map[string]string,
-	) {
-		// fetching subs that are active and that have not been blacklisted
-		var nextID int64
-		var limit int64 = 1000
-		for {
-			subs, err := storage.GetDistinctSubscribersByListIDs(c, params.Ids, userID, false, true, nextID, limit)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"user_id":  userID,
-					"list_ids": params.Ids,
-				}).Errorf("unable to fetch subscribers: %s", err.Error())
-				return
-			}
+	lists, err := storage.GetListsByIDs(c, u.Id, params.Ids)
+	if err != nil || len(lists) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"reason": "Subscriber lists are not found.",
+		})
+		return
+	}
 
-			logrus.Infof("subs count %d", len(subs))
+	msg, err := json.Marshal(entities.SendCampaignParams{
+		ListIDs:      params.Ids,
+		Source:       params.Source,
+		CampaignID:   campaign.Id,
+		UserID:       campaign.UserId,
+		TemplateName: campaign.TemplateName,
+		TemplateData: templateData,
+		SesKeys:      *sesKeys,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"reason": "Unable to publish campaign.",
+		})
+		return
+	}
 
-			if len(subs) == 0 {
-				break
-			}
-
-			// SES allows to send 50 emails in a bulk sending operation
-			chunkSize := 50
-			for i := 0; i < len(subs); i += chunkSize {
-				end := i + chunkSize
-				if end > len(subs) {
-					end = len(subs)
-				}
-
-				// create
-				var dest []*ses.BulkEmailDestination
-				for _, s := range subs[i:end] {
-					// marshal sub template data
-					s.Normalize()
-					td, err := json.Marshal(s.TemplateData)
-					if err != nil {
-						logrus.Errorf("unable to marshal template data for subscriber %d - %s", s.Id, err.Error())
-						continue
-					}
-
-					d := &ses.BulkEmailDestination{
-						Destination: &ses.Destination{
-							ToAddresses: []*string{aws.String(s.Email)},
-						},
-						ReplacementTemplateData: aws.String(string(td)),
-					}
-
-					dest = append(dest, d)
-				}
-
-				uuid, err := uuid.NewRandom()
-				if err != nil {
-					logrus.Errorf("unable to generate random uuid: %s", err.Error())
-					continue
-				}
-
-				defaultData, err := json.Marshal(templateData)
-				if err != nil {
-					logrus.Errorln(err)
-					continue
-				}
-
-				// prepare message for publishing to the queue
-				msg, err := json.Marshal(entities.BulkSendMessage{
-					UUID: uuid.String(),
-					Input: &ses.SendBulkTemplatedEmailInput{
-						Source:               aws.String(params.Source),
-						Template:             aws.String(campaign.TemplateName),
-						Destinations:         dest,
-						ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-						DefaultTemplateData:  aws.String(string(defaultData)),
-						DefaultTags: []*ses.MessageTag{
-							&ses.MessageTag{
-								Name:  aws.String("campaign_id"),
-								Value: aws.String(strconv.Itoa(int(campaign.Id))),
-							},
-							&ses.MessageTag{
-								Name:  aws.String("user_id"),
-								Value: aws.String(strconv.Itoa(int(userID))),
-							},
-						},
-					},
-					CampaignID: campaign.Id,
-					UserID:     u.Id,
-					SesKeys:    sesKeys,
-				})
-
-				if err != nil {
-					logrus.Errorln(err)
-					continue
-				}
-
-				// publish the message to the queue
-				err = queue.Publish(c, entities.CampaignsTopic, msg)
-				if err != nil {
-					logrus.Errorln(err)
-				}
-			}
-
-			nextID = subs[len(subs)-1].Id
-		}
-
-		campaign.Status = entities.StatusSent
-		err = storage.UpdateCampaign(c, campaign)
-		if err != nil {
-			logrus.WithField("campaign", campaign).Errorln(err)
-			return
-		}
-	}(u.Id, campaign, sesKeys, params, templateData)
+	err = queue.Publish(c, entities.CampaignsTopic, msg)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"reason": "Unable to publish campaign.",
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"reason": "The campaign has started. You can track the progress in the campaign details page.",
