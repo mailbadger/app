@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/entities"
+	"github.com/news-maily/api/storage"
 	sns "github.com/robbiet480/go.sns"
 	"github.com/sirupsen/logrus"
 )
@@ -96,6 +97,21 @@ func HandleHook(c *gin.Context) {
 	// todo: insert data into proper tables
 	switch msg.NotificationType {
 	case emails.BounceType:
+		for _, recipient := range msg.Bounce.BouncedRecipients {
+			storage.CreateBounce(c, &entities.Bounce{
+				UserID:         uid,
+				CampaignID:     cid,
+				Recipient:      recipient.EmailAddress,
+				Action:         recipient.Action,
+				Status:         recipient.Status,
+				DiagnosticCode: recipient.DiagnosticCode,
+				Type:           msg.Bounce.BounceType,
+				SubType:        msg.Bounce.BounceSubType,
+				FeedbackID:     msg.Bounce.FeedbackID,
+				CreatedAt:      msg.Bounce.Timestamp,
+			})
+		}
+
 	case emails.ComplaintType:
 	case emails.DeliveryType:
 	case emails.SendType:

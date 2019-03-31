@@ -37,32 +37,38 @@ type Mail struct {
 // BouncedRecipient holds the bounced
 // email address from Amazon notification.
 type BouncedRecipient struct {
-	EmailAddress string `json:"emailAddress"`
-	Reason       string `json:"action"`
+	EmailAddress   string `json:"emailAddress"`
+	Action         string `json:"action"`
+	Status         string `json:"status"`
+	DiagnosticCode string `json:"diagnosticCode"`
+}
+
+// BounceMsg field from the AWS incoming JSON notification.
+type BounceMsg struct {
+	BouncedRecipients []*BouncedRecipient `json:"bouncedRecipients"`
+	BounceType        string              `json:"bounceType"`
+	BounceSubType     string              `json:"bounceSubType"`
+	Timestamp         time.Time           `json:"timestamp"`
+	FeedbackID        string              `json:"feedbackId"`
+	ReportingMTA      string              `json:"reportingMTA"`
+	RemoteMTAIp       string              `json:"remoteMtaIp"`
 }
 
 type ComplainedRecipient struct {
 	EmailAddress string `json:"emailAddress"`
 }
 
-// Bounce field from the AWS incoming JSON notification.
-type Bounce struct {
-	BouncedRecipients []*BouncedRecipient `json:"bouncedRecipients"`
-	BounceType        string              `json:"bounceType"`
-	BounceSubType     string              `json:"bounceSubType"`
-	Timestamp         time.Time           `json:"timestamp"`
-	FeedbackID        string              `json:"feedbackId"`
+// ComplaintMsg field from the AWS incoming JSON notification.
+type ComplaintMsg struct {
+	ComplainedRecipients  []*ComplainedRecipient `json:"complainedRecipients"`
+	Timestamp             time.Time              `json:"timestamp"`
+	FeedbackID            string                 `json:"feedbackId"`
+	UserAgent             string                 `json:"userAgent"`
+	ComplaintFeedbackType string                 `json:"complaintFeedbackType"`
 }
 
-// Complaint field from the AWS incoming JSON notification.
-type Complaint struct {
-	ComplainedRecipients []*ComplainedRecipient `json:"complainedRecipients"`
-	Timestamp            time.Time              `json:"timestamp"`
-	FeedbackID           string                 `json:"feedbackId"`
-}
-
-// Delivery field from the AWS incoming JSON notification.
-type Delivery struct {
+// DeliveryMsg field from the AWS incoming JSON notification.
+type DeliveryMsg struct {
 	Timestamp            time.Time `json:"timestamp"`
 	ProcessingTimeMillis int64     `json:"processingTimeMillis"`
 	Recipients           []string  `json:"recipients"`
@@ -71,14 +77,14 @@ type Delivery struct {
 	RemoteMtaIP          string    `json:"remoteMtaIp"`
 }
 
-// RenderingFailure field from the AWS incoming JSON notification.
-type RenderingFailure struct {
+// RenderingFailureMsg field from the AWS incoming JSON notification.
+type RenderingFailureMsg struct {
 	ErrorMessage string `json:"errorMessage"`
 	TemplateName string `json:"templateName"`
 }
 
-// Click field from the AWS incoming JSON notification.
-type Click struct {
+// ClickMsg field from the AWS incoming JSON notification.
+type ClickMsg struct {
 	Timestamp time.Time           `json:"timestamp"`
 	IPAddress string              `json:"ipAddress"`
 	UserAgent string              `json:"userAgent"`
@@ -88,11 +94,11 @@ type Click struct {
 
 // SesMessage represents the message that is sent by the SNS topic.
 type SesMessage struct {
-	NotificationType string            `json:"eventType"`
-	Mail             Mail              `json:"mail"`
-	Bounce           *Bounce           `json:"bounce"`
-	Complaint        *Complaint        `json:"complaint"`
-	Delivery         *Delivery         `json:"delivery"`
-	RenderingFailure *RenderingFailure `json:"failure"`
-	Click            *Click            `json:"click"`
+	NotificationType string               `json:"eventType"`
+	Mail             Mail                 `json:"mail"`
+	Bounce           *BounceMsg           `json:"bounce"`
+	Complaint        *ComplaintMsg        `json:"complaint"`
+	Delivery         *DeliveryMsg         `json:"delivery"`
+	RenderingFailure *RenderingFailureMsg `json:"failure"`
+	Click            *ClickMsg            `json:"click"`
 }

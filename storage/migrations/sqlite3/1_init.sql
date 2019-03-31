@@ -98,14 +98,17 @@ CREATE INDEX IF NOT EXISTS i_user     ON "sent_emails" (user_id);
 CREATE INDEX IF NOT EXISTS i_campaign ON "sent_emails" (campaign_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
-  "id"         integer primary key autoincrement,
-  "recipient"  varchar(191),
-  "sender"     varchar(191),
-  "type"       varchar(191),
-  "sub_type"   varchar(191),
-  "action"     varchar(191),
-  "created_at" datetime,
-  "updated_at" datetime
+  "id"              integer primary key autoincrement,
+  "campaign_id"     integer,
+  "user_id"         integer,
+  "recipient"       varchar(191),
+  "type"            varchar(30),
+  "sub_type"        varchar(30),
+  "action"          varchar(191),
+  "status"          varchar(191),
+  "diagnostic_code" varchar(191),
+  "feedback_id"     varchar(191),
+  "created_at"      datetime
 );
 
 CREATE TABLE IF NOT EXISTS "send_bulk_logs" (

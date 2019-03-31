@@ -53,6 +53,8 @@ type Storage interface {
 
 	CreateSendBulkLog(l *entities.SendBulkLog) error
 	CountLogsByUUID(uuid string) (int, error)
+
+	CreateBounce(b *entities.Bounce) error
 }
 
 // SetToContext sets the storage to the context
@@ -238,4 +240,9 @@ func CreateSesKeys(c context.Context, s *entities.SesKeys) error {
 // DeleteSesKeys deletes SES keys configuration by the given user ID.
 func DeleteSesKeys(c context.Context, userID int64) error {
 	return GetFromContext(c).DeleteSesKeys(userID)
+}
+
+// CreateBounce adds new bounce in the database.
+func CreateBounce(c context.Context, b *entities.Bounce) error {
+	return GetFromContext(c).CreateBounce(b)
 }
