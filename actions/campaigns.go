@@ -14,6 +14,7 @@ import (
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 	"github.com/news-maily/api/utils/pagination"
+	"github.com/sirupsen/logrus"
 )
 
 type sendCampaignParams struct {
@@ -79,10 +80,9 @@ func StartCampaign(c *gin.Context) {
 	msg, err := json.Marshal(entities.SendCampaignParams{
 		ListIDs:      params.Ids,
 		Source:       params.Source,
-		CampaignID:   campaign.Id,
-		UserID:       campaign.UserId,
-		TemplateName: campaign.TemplateName,
 		TemplateData: templateData,
+		UserID:       u.Id,
+		Campaign:     *campaign,
 		SesKeys:      *sesKeys,
 	})
 	if err != nil {
@@ -98,6 +98,12 @@ func StartCampaign(c *gin.Context) {
 			"reason": "Unable to publish campaign.",
 		})
 		return
+	}
+
+	campaign.Status = entities.StatusSending
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logrus.WithField("campaign", campaign).Errorln(err)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

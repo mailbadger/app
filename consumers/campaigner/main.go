@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -56,8 +57,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}).Errorf("unable to fetch subscribers: %s", err.Error())
 			break
 		}
-
-		logrus.Infof("subs count %d", len(subs))
 
 		if len(subs) == 0 {
 			break
@@ -109,14 +108,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				UUID: uuid.String(),
 				Input: &ses.SendBulkTemplatedEmailInput{
 					Source:               aws.String(msg.Source),
-					Template:             aws.String(msg.TemplateName),
+					Template:             aws.String(msg.Campaign.TemplateName),
 					Destinations:         dest,
 					ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 					DefaultTemplateData:  aws.String(string(defaultData)),
 					DefaultTags: []*ses.MessageTag{
 						&ses.MessageTag{
 							Name:  aws.String("campaign_id"),
-							Value: aws.String(strconv.Itoa(int(msg.CampaignID))),
+							Value: aws.String(strconv.Itoa(int(msg.Campaign.Id))),
 						},
 						&ses.MessageTag{
 							Name:  aws.String("user_id"),
@@ -124,7 +123,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 						},
 					},
 				},
-				CampaignID: msg.CampaignID,
+				CampaignID: msg.Campaign.Id,
 				UserID:     msg.UserID,
 				SesKeys:    &msg.SesKeys,
 			})
@@ -144,13 +143,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		nextID = subs[len(subs)-1].Id
 	}
 
-	err = h.s.UpdateCampaign(&entities.Campaign{
-		Id:     msg.CampaignID,
-		UserId: msg.UserID,
-		Status: entities.StatusSent,
-	})
+	c := msg.Campaign
+	c.UserId = msg.UserID
+	c.Status = entities.StatusSent
+	c.CompletedAt.SetValid(time.Now().UTC())
+
+	err = h.s.UpdateCampaign(&c)
 	if err != nil {
-		logrus.WithField("campaign_id", msg.CampaignID).Errorln(err)
+		logrus.WithField("campaign", c).Errorln(err)
 	}
 
 	return nil

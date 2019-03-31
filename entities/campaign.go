@@ -10,6 +10,7 @@ import (
 
 const (
 	StatusDraft     = "draft"
+	StatusSending   = "sending"
 	StatusSent      = "sent"
 	StatusScheduled = "scheduled"
 
@@ -26,8 +27,8 @@ type Campaign struct {
 	Status       string            `json:"status"`
 	CreatedAt    time.Time         `json:"created_at"`
 	UpdatedAt    time.Time         `json:"updated_at"`
-	ScheduledAt  Time              `json:"scheduled_at"`
-	CompletedAt  Time              `json:"completed_at"`
+	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
+	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	Errors       map[string]string `json:"-" sql:"-"`
 }
 
@@ -43,9 +44,8 @@ type SendCampaignParams struct {
 	ListIDs      []int64           `json:"list_ids"`
 	TemplateData map[string]string `json:"template_data"`
 	Source       string            `json:"source"`
-	CampaignID   int64             `json:"campaign_id"`
 	UserID       int64             `json:"user_id"`
-	TemplateName string            `json:"template_name"`
+	Campaign     `json:"campaign"`
 	SesKeys      `json:"ses_keys"`
 }
 

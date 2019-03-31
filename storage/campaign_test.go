@@ -2,6 +2,7 @@ package storage
 
 import (
 	"testing"
+	"time"
 
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/utils/pagination"
@@ -32,10 +33,14 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.TemplateName, "Template1")
 
 	//Test update campaign
+	now := time.Now().UTC()
 	campaign.Name = "bar"
+	campaign.CompletedAt.SetValid(now)
 	err = store.UpdateCampaign(campaign)
 	assert.Nil(t, err)
 	assert.Equal(t, campaign.Name, "bar")
+	assert.True(t, campaign.CompletedAt.Valid)
+	assert.Equal(t, campaign.CompletedAt.Time, now)
 
 	//Test campaign validation when name and subject are invalid
 	campaign.Name = ""

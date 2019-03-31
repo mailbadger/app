@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS "bounces" (
 
 CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "id"            integer primary key autoincrement,
+  "uuid"          varchar(36) NOT NULL,
   "user_id"       integer,
   "campaign_id"   integer,
   "message_id"    varchar(191) NOT NULL,
@@ -119,6 +120,7 @@ CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
 );
 
 CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_bulk_logs" (user_id, campaign_id);
+CREATE INDEX IF NOT EXISTS i_uuid ON "send_bulk_logs" (uuid);
 
 -- +migrate Down
 
@@ -132,4 +134,4 @@ DROP TABLE "list_metadata";
 DROP TABLE "subscriber_metadata";
 DROP TABLE "sent_emails";
 DROP TABLE "bounces";
-DROP TABLE "events";
+DROP TABLE "send_bulk_logs";

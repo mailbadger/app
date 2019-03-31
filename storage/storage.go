@@ -52,6 +52,7 @@ type Storage interface {
 	DeleteSesKeys(userID int64) error
 
 	CreateSendBulkLog(l *entities.SendBulkLog) error
+	CountLogsByUUID(uuid string) (int, error)
 }
 
 // SetToContext sets the storage to the context

@@ -43,34 +43,59 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"user_id":     msg.UserID,
+			"campaign_id": msg.CampaignID,
+		}).Errorln(err.Error())
 		return err
+	}
+
+	count, err := h.s.CountLogsByUUID(msg.UUID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"user_id":     msg.UserID,
+			"campaign_id": msg.CampaignID,
+			"uuid":        msg.UUID,
+		}).Errorln(err.Error())
+		return err
+	}
+
+	if count > 0 {
+		logrus.WithFields(logrus.Fields{
+			"user_id":     msg.UserID,
+			"campaign_id": msg.CampaignID,
+			"uuid":        msg.UUID,
+		}).Warn("bulk already sent")
+		return nil
 	}
 
 	res, err := client.SendBulkTemplatedEmail(msg.Input)
 
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"campaign_id":   msg.CampaignID,
-			"template_name": msg.Input.Template,
-			"user_id":       msg.UserID,
+			"user_id":     msg.UserID,
+			"campaign_id": msg.CampaignID,
+			"uuid":        msg.UUID,
 		}).Errorln(err.Error())
-
-		return nil //we won't re-throw the message here.
+		return nil
 	}
 
 	for _, s := range res.Status {
 		err := h.s.CreateSendBulkLog(&entities.SendBulkLog{
+			UUID:       msg.UUID,
 			UserID:     msg.UserID,
 			CampaignID: msg.CampaignID,
 			MessageID:  *s.MessageId,
 			Status:     *s.Status,
 			Error:      s.Error,
 		})
-		logrus.WithFields(logrus.Fields{
-			"campaign_id":      msg.CampaignID,
-			"user_id":          msg.UserID,
-			"send_bulk_status": s.GoString(),
-		}).Errorln(err.Error())
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id":      msg.CampaignID,
+				"user_id":          msg.UserID,
+				"send_bulk_status": s.GoString(),
+			}).Errorln(err.Error())
+		}
 	}
 
 	return nil
