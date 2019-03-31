@@ -38,6 +38,7 @@ services:
       - NSQD_PORT=4150
       - SKIP_TLS=true
       - LOG_LEVEL=info
+      - DOMAIN_URL=https://53ccde35.ngrok.io
   bulksender:
     image: news-maily/app
     command: /consumers/bulksender

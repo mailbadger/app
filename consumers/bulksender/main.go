@@ -87,7 +87,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			CampaignID: msg.CampaignID,
 			MessageID:  *s.MessageId,
 			Status:     *s.Status,
-			Error:      s.Error,
 		})
 		if err != nil {
 			logrus.WithFields(logrus.Fields{

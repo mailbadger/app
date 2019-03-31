@@ -45,6 +45,7 @@ type Storage interface {
 	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64, blacklisted, active bool, nextID, limit int64) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
+	BlacklistSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
 
 	GetSesKeys(userID int64) (*entities.SesKeys, error)
@@ -55,6 +56,9 @@ type Storage interface {
 	CountLogsByUUID(uuid string) (int, error)
 
 	CreateBounce(b *entities.Bounce) error
+	CreateComplaint(c *entities.Complaint) error
+	CreateClick(c *entities.Click) error
+	CreateOpen(o *entities.Open) error
 }
 
 // SetToContext sets the storage to the context
@@ -222,6 +226,11 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 	return GetFromContext(c).UpdateSubscriber(s)
 }
 
+// BlacklistSubscriber blacklists a Subscriber entity by the given email.
+func BlacklistSubscriber(c context.Context, userID int64, email string) error {
+	return GetFromContext(c).BlacklistSubscriber(userID, email)
+}
+
 // DeleteSubscriber deletes a Subscriber entity by the given id.
 func DeleteSubscriber(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteSubscriber(id, userID)
@@ -245,4 +254,19 @@ func DeleteSesKeys(c context.Context, userID int64) error {
 // CreateBounce adds new bounce in the database.
 func CreateBounce(c context.Context, b *entities.Bounce) error {
 	return GetFromContext(c).CreateBounce(b)
+}
+
+// CreateComplaint adds new complaint in the database.
+func CreateComplaint(c context.Context, compl *entities.Complaint) error {
+	return GetFromContext(c).CreateComplaint(compl)
+}
+
+// CreateClick adds new click in the database.
+func CreateClick(c context.Context, click *entities.Click) error {
+	return GetFromContext(c).CreateClick(click)
+}
+
+// CreateOpen adds new open in the database.
+func CreateOpen(c context.Context, open *entities.Open) error {
+	return GetFromContext(c).CreateOpen(open)
 }

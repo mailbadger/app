@@ -101,6 +101,10 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 	return db.Where("id = ? and user_id = ?", s.Id, s.UserId).Save(s).Error
 }
 
+func (db *store) BlacklistSubscriber(userID int64, email string) error {
+	return db.Model(&entities.Subscriber{}).Where("user_id = ? AND email = ?", userID, email).Update("blacklisted", true).Error
+}
+
 // DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
 func (db *store) DeleteSubscriber(id, userID int64) error {
 	s, err := db.GetSubscriber(id, userID)

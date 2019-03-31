@@ -92,6 +92,13 @@ type ClickMsg struct {
 	LinkTags  map[string][]string `json:"linkTags"`
 }
 
+// ClickMsg field from the AWS incoming JSON notification.
+type OpenMsg struct {
+	Timestamp time.Time `json:"timestamp"`
+	IPAddress string    `json:"ipAddress"`
+	UserAgent string    `json:"userAgent"`
+}
+
 // SesMessage represents the message that is sent by the SNS topic.
 type SesMessage struct {
 	NotificationType string               `json:"eventType"`
@@ -101,4 +108,5 @@ type SesMessage struct {
 	Delivery         *DeliveryMsg         `json:"delivery"`
 	RenderingFailure *RenderingFailureMsg `json:"failure"`
 	Click            *ClickMsg            `json:"click"`
+	Open             *OpenMsg             `json:"open"`
 }

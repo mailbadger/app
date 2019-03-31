@@ -9,6 +9,5 @@ type SendBulkLog struct {
 	CampaignID int64     `json:"campaign_id" gorm:"column:campaign_id; index"`
 	MessageID  string    `json:"message_id"`
 	Status     string    `json:"status"`
-	Error      *string   `json:"error"`
 	CreatedAt  time.Time `json:"created_at"`
 }

@@ -80,23 +80,6 @@ CREATE TABLE IF NOT EXISTS "subscriber_metadata" (
 
 CREATE INDEX IF NOT EXISTS i_subscriber ON "subscriber_metadata" (subscriber_id);
 
-CREATE TABLE IF NOT EXISTS "sent_emails" (
-  "id"          integer primary key autoincrement,
-  "campaign_id" integer,
-  "user_id"     integer,
-  "token"       varchar(191),
-  "status"      varchar(191) NOT NULL,
-  "ip"          varchar(191),
-  "latitude"    real,
-  "longitude"   real,
-  "opens"       integer,
-  "created_at"  datetime,
-  "updated_at"  datetime
-);
-
-CREATE INDEX IF NOT EXISTS i_user     ON "sent_emails" (user_id);
-CREATE INDEX IF NOT EXISTS i_campaign ON "sent_emails" (campaign_id);
-
 CREATE TABLE IF NOT EXISTS "bounces" (
   "id"              integer primary key autoincrement,
   "campaign_id"     integer,
@@ -111,6 +94,36 @@ CREATE TABLE IF NOT EXISTS "bounces" (
   "created_at"      datetime
 );
 
+CREATE TABLE IF NOT EXISTS "complaints" (
+  "id"              integer primary key autoincrement,
+  "campaign_id"     integer,
+  "user_id"         integer,
+  "recipient"       varchar(191),
+  "type"            varchar(30),
+  "user_agent"      varchar(191),
+  "feedback_id"     varchar(191),
+  "created_at"      datetime
+);
+
+CREATE TABLE IF NOT EXISTS "clicks" (
+  "id"              integer primary key autoincrement,
+  "campaign_id"     integer,
+  "user_id"         integer,
+  "ip_address"      varchar(50),
+  "user_agent"      varchar(191),
+  "link"            varchar(191),
+  "created_at"      datetime
+);
+
+CREATE TABLE IF NOT EXISTS "opens" (
+  "id"              integer primary key autoincrement,
+  "campaign_id"     integer,
+  "user_id"         integer,
+  "ip_address"      varchar(50),
+  "user_agent"      varchar(191),
+  "created_at"      datetime
+);
+
 CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "id"            integer primary key autoincrement,
   "uuid"          varchar(36) NOT NULL,
@@ -118,7 +131,6 @@ CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "campaign_id"   integer,
   "message_id"    varchar(191) NOT NULL,
   "status"        varchar(191) NOT NULL,
-  "error"         varchar(191),
   "created_at"    datetime
 );
 
