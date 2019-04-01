@@ -59,6 +59,7 @@ type Storage interface {
 	CreateComplaint(c *entities.Complaint) error
 	CreateClick(c *entities.Click) error
 	CreateOpen(o *entities.Open) error
+	CreateDelivery(d *entities.Delivery) error
 }
 
 // SetToContext sets the storage to the context
@@ -269,4 +270,9 @@ func CreateClick(c context.Context, click *entities.Click) error {
 // CreateOpen adds new open in the database.
 func CreateOpen(c context.Context, open *entities.Open) error {
 	return GetFromContext(c).CreateOpen(open)
+}
+
+// CreateDelivery adds new delivery in the database.
+func CreateDelivery(c context.Context, d *entities.Delivery) error {
+	return GetFromContext(c).CreateDelivery(d)
 }

@@ -142,6 +142,26 @@ func HandleHook(c *gin.Context) {
 			}
 		}
 	case emails.DeliveryType:
+		if msg.Delivery == nil {
+			logrus.WithField("notif", msg).Errorln("delivery is empty")
+			return
+		}
+
+		for _, r := range msg.Delivery.Recipients {
+			err := storage.CreateDelivery(c, &entities.Delivery{
+				UserID:               uid,
+				CampaignID:           cid,
+				Recipient:            r,
+				ProcessingTimeMillis: msg.Delivery.ProcessingTimeMillis,
+				ReportingMTA:         msg.Delivery.ReportingMTA,
+				RemoteMtaIP:          msg.Delivery.RemoteMtaIP,
+				SMTPResponse:         msg.Delivery.SMTPResponse,
+				CreatedAt:            msg.Delivery.Timestamp,
+			})
+			if err != nil {
+				logrus.WithField("notif", msg).Errorln(err.Error())
+			}
+		}
 	case emails.SendType:
 	case emails.ClickType:
 		if msg.Click == nil {

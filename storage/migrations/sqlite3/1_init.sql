@@ -124,6 +124,18 @@ CREATE TABLE IF NOT EXISTS "opens" (
   "created_at"      datetime
 );
 
+CREATE TABLE IF NOT EXISTS "deliveries" (
+  "id"                     integer primary key autoincrement,
+  "campaign_id"            integer,
+  "user_id"                integer,
+  "recipient"              varchar(191),
+  "processing_time_millis" integer,
+  "smtp_response"          varchar(191),
+  "reporting_mta"          varchar(191),
+  "remote_mta_ip"          varchar(50),
+  "created_at"             datetime
+);
+
 CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "id"            integer primary key autoincrement,
   "uuid"          varchar(36) NOT NULL,
