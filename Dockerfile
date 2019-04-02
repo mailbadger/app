@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.12 as build
+FROM golang:1.12 as go-build
 
 ENV GO111MODULE=on
 
@@ -17,7 +17,21 @@ RUN go build -o /go/bin/app .
 RUN go build -o /go/bin/consumers/bulksender ./consumers/bulksender
 RUN go build -o /go/bin/consumers/campaigner ./consumers/campaigner
 
+FROM node:8-alpine as node-build
+
+WORKDIR /www/app
+
+COPY web .
+
+RUN yarn build
+
 # Copy into base image
 FROM gcr.io/distroless/base
-COPY --from=build /go/bin/app /
-COPY --from=build /go/bin/consumers /consumers
+
+# USER nobody:nobody
+
+ENV APP_DIR=/www/app
+
+COPY --from=go-build /go/bin/app /
+COPY --from=go-build /go/bin/consumers /consumers
+COPY --from=node-build /www/app/build /www/app/

@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/contrib/ginrus"
@@ -31,6 +32,26 @@ func New() http.Handler {
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
+
+	// Web app
+	appDir := os.Getenv("APP_DIR")
+	if appDir == "" {
+		logrus.Panic("app directory not set")
+	}
+
+	handler.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{
+				"reason": "Not found",
+			})
+			return
+		}
+
+		c.File(appDir + "/index.html")
+	})
+
+	// Assets
+	handler.Static("/static", appDir+"/static")
 
 	// Guest routes
 	handler.POST("/api/authenticate", actions.PostLogin)
