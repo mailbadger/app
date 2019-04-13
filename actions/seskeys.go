@@ -24,7 +24,7 @@ func GetSESKeys(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -40,7 +40,7 @@ func PostSESKeys(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys are already set.",
+			"message": "AWS Ses keys are already set.",
 		})
 		return
 	}
@@ -61,7 +61,7 @@ func PostSESKeys(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -70,7 +70,7 @@ func PostSESKeys(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -189,7 +189,7 @@ func PostSESKeys(c *gin.Context) {
 			"input": *keys,
 		}).Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "Unable to add ses keys.",
+			"message": "Unable to add ses keys.",
 		})
 		return
 	}
@@ -205,7 +205,7 @@ func DeleteSESKeys(c *gin.Context) {
 	err := storage.DeleteSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}

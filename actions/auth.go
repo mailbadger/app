@@ -26,7 +26,7 @@ func PostLogin(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("Invalid credentials. %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
-			"reason": "Invalid credentials.",
+			"message": "Invalid credentials.",
 		})
 		return
 	}
@@ -35,7 +35,7 @@ func PostLogin(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("Invalid credentials. %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
-			"reason": "Invalid credentials.",
+			"message": "Invalid credentials.",
 		})
 		return
 	}
@@ -46,7 +46,7 @@ func PostLogin(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("cannot create token for %s. %s", user.Username, err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "Unable to create token.",
+			"message": "Unable to create token.",
 		})
 		return
 	}

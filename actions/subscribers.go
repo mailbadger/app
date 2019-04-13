@@ -37,13 +37,13 @@ func GetSubscriber(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Subscriber not found",
+			"message": "Subscriber not found",
 		})
 		return
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -59,7 +59,7 @@ func PostSubscriber(c *gin.Context) {
 
 	if !s.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Invalid data",
+			"message": "Invalid data",
 			"errors": s.Errors,
 		})
 		return
@@ -68,14 +68,14 @@ func PostSubscriber(c *gin.Context) {
 	_, err := storage.GetSubscriberByEmail(c, s.Email, s.UserId)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Subscriber with that email already exists",
+			"message": "Subscriber with that email already exists",
 		})
 		return
 	}
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+			"message": err.Error(),
 		})
 		return
 	}
@@ -90,7 +90,7 @@ func PutSubscriber(c *gin.Context) {
 		s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Subscriber not found",
+				"message": "Subscriber not found",
 			})
 			return
 		}
@@ -100,7 +100,7 @@ func PutSubscriber(c *gin.Context) {
 
 		if !s.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Invalid data",
+				"message": "Invalid data",
 				"errors": s.Errors,
 			})
 			return
@@ -108,7 +108,7 @@ func PutSubscriber(c *gin.Context) {
 
 		if err = storage.UpdateSubscriber(c, s); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -119,7 +119,7 @@ func PutSubscriber(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -130,7 +130,7 @@ func DeleteSubscriber(c *gin.Context) {
 		_, err := storage.GetSubscriber(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Subscriber not found",
+				"message": "Subscriber not found",
 			})
 			return
 		}
@@ -138,7 +138,7 @@ func DeleteSubscriber(c *gin.Context) {
 		err = storage.DeleteSubscriber(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -148,7 +148,7 @@ func DeleteSubscriber(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }

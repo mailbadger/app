@@ -1,15 +1,8 @@
 import React, { Component } from "react";
-import {
-  Box,
-  Button,
-  Collapsible,
-  Heading,
-  Grommet,
-  Layer,
-  ResponsiveContext
-} from "grommet";
-import { FormClose } from "grommet-icons";
-import Login from "./Login";
+import { Box, Heading, Grommet, ResponsiveContext } from "grommet";
+import Auth from "./Auth";
+import { AuthProvider, AuthConsumer } from "./Auth/AuthContext";
+import Sidebar from "./Sidebar";
 
 const theme = {
   global: {
@@ -43,65 +36,47 @@ class App extends Component {
     const { showSidebar } = this.state;
     return (
       <Grommet theme={theme} full>
-        <ResponsiveContext.Consumer>
-          {size => (
-            <Box fill>
-              <AppBar>
-                <Heading
-                  level="3"
-                  onClick={() =>
-                    this.setState({ showSidebar: !this.state.showSidebar })
-                  }
-                  margin="none"
-                >
-                  Mail Badger
-                </Heading>
-              </AppBar>
-              <Box direction="row" flex overflow={{ horizontal: "hidden" }}>
-                {!showSidebar || size !== "small" ? (
-                  <Collapsible direction="horizontal" open={showSidebar}>
+        <AuthProvider>
+          <ResponsiveContext.Consumer>
+            {size => (
+              <Box fill>
+                <AppBar>
+                  <Heading
+                    level="3"
+                    onClick={() =>
+                      this.setState({ showSidebar: !this.state.showSidebar })
+                    }
+                    margin="none"
+                  >
+                    Mail Badger
+                  </Heading>
+                </AppBar>
+                <AuthConsumer>
+                  {({ isAuth }) => (
                     <Box
-                      flex
-                      width="18em"
-                      background="dark-2"
-                      elevation="small"
-                      align="center"
-                      justify="center"
-                    >
-                      sidebar
-                    </Box>
-                  </Collapsible>
-                ) : (
-                  <Layer>
-                    <Box
-                      background="light-2"
-                      tag="header"
-                      justify="end"
-                      align="center"
                       direction="row"
+                      flex
+                      overflow={{ horizontal: "hidden" }}
                     >
-                      <Button
-                        icon={<FormClose />}
-                        onClick={() => this.setState({ showSidebar: false })}
-                      />
+                      {isAuth && (
+                        <Sidebar
+                          showSidebar={showSidebar}
+                          closeSidebar={() =>
+                            this.setState({ showSidebar: false })
+                          }
+                          size={size}
+                        />
+                      )}
+                      <Box flex align="center" justify="center">
+                        <Auth />
+                      </Box>
                     </Box>
-                    <Box
-                      fill
-                      background="light-2"
-                      align="center"
-                      justify="center"
-                    >
-                      sidebar
-                    </Box>
-                  </Layer>
-                )}
-                <Box flex align="center" justify="center">
-                  <Login />
-                </Box>
+                  )}
+                </AuthConsumer>
               </Box>
-            </Box>
-          )}
-        </ResponsiveContext.Consumer>
+            )}
+          </ResponsiveContext.Consumer>
+        </AuthProvider>
       </Grommet>
     );
   }

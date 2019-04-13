@@ -42,13 +42,13 @@ func GetList(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "List not found",
+			"message": "List not found",
 		})
 		return
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -63,7 +63,7 @@ func PostList(c *gin.Context) {
 
 	if !l.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Invalid data",
+			"message": "Invalid data",
 			"errors": l.Errors,
 		})
 		return
@@ -72,14 +72,14 @@ func PostList(c *gin.Context) {
 	_, err := storage.GetListByName(c, name, middleware.GetUser(c).Id)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "List with that name already exists",
+			"message": "List with that name already exists",
 		})
 		return
 	}
 
 	if err := storage.CreateList(c, l); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+			"message": err.Error(),
 		})
 		return
 	}
@@ -93,7 +93,7 @@ func PutList(c *gin.Context) {
 		l, err := storage.GetList(c, id, middleware.GetUser(c).Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "List not found",
+				"message": "List not found",
 			})
 			return
 		}
@@ -102,7 +102,7 @@ func PutList(c *gin.Context) {
 
 		if !l.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Invalid data",
+				"message": "Invalid data",
 				"errors": l.Errors,
 			})
 			return
@@ -111,14 +111,14 @@ func PutList(c *gin.Context) {
 		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).Id)
 		if err == nil && l2.Id != l.Id {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "List with that name already exists",
+				"message": "List with that name already exists",
 			})
 			return
 		}
 
 		if err = storage.UpdateList(c, l); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -129,7 +129,7 @@ func PutList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -140,7 +140,7 @@ func DeleteList(c *gin.Context) {
 		_, err := storage.GetList(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "List not found",
+				"message": "List not found",
 			})
 			return
 		}
@@ -148,7 +148,7 @@ func DeleteList(c *gin.Context) {
 		err = storage.DeleteList(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -158,7 +158,7 @@ func DeleteList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -169,7 +169,7 @@ func PutListSubscribers(c *gin.Context) {
 		l, err := storage.GetList(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "List not found",
+				"message": "List not found",
 			})
 			return
 		}
@@ -179,7 +179,7 @@ func PutListSubscribers(c *gin.Context) {
 
 		if len(subs.Ids) == 0 {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Ids list is empty",
+				"message": "Ids list is empty",
 			})
 			return
 		}
@@ -194,7 +194,7 @@ func PutListSubscribers(c *gin.Context) {
 		if err = storage.AppendSubscribers(c, l); err != nil {
 			logrus.Error(err)
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -204,7 +204,7 @@ func PutListSubscribers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -229,7 +229,7 @@ func GetListSubscribers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -240,7 +240,7 @@ func DetachListSubscribers(c *gin.Context) {
 		l, err := storage.GetList(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "List not found",
+				"message": "List not found",
 			})
 			return
 		}
@@ -250,7 +250,7 @@ func DetachListSubscribers(c *gin.Context) {
 
 		if len(subs.Ids) == 0 {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Ids list is empty",
+				"message": "Ids list is empty",
 			})
 			return
 		}
@@ -265,7 +265,7 @@ func DetachListSubscribers(c *gin.Context) {
 		if err = storage.DetachSubscribers(c, l); err != nil {
 			logrus.Error(err)
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -275,7 +275,7 @@ func DetachListSubscribers(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }

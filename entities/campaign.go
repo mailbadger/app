@@ -61,7 +61,7 @@ func (c *Campaign) Validate() bool {
 
 	res, err := valid.ValidateStruct(c)
 	if err != nil || !res {
-		c.Errors["reason"] = err.Error()
+		c.Errors["message"] = err.Error()
 	}
 
 	return len(c.Errors) == 0

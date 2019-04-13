@@ -7,6 +7,7 @@
     "formik": "^1.5.2",
     "grommet": "^2.6.5",
     "grommet-icons": "^4.2.0",
+    "qs": "^6.7.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.0",

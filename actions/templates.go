@@ -23,7 +23,7 @@ func GetTemplate(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -34,7 +34,7 @@ func GetTemplate(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -45,7 +45,7 @@ func GetTemplate(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Template not found.",
+			"message": "Template not found.",
 		})
 		return
 	}
@@ -64,7 +64,7 @@ func GetTemplates(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -75,7 +75,7 @@ func GetTemplates(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -86,7 +86,7 @@ func GetTemplates(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Templates not found, invalid page token.",
+			"message": "Templates not found, invalid page token.",
 		})
 		return
 	}
@@ -117,7 +117,7 @@ func PostTemplate(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -126,7 +126,7 @@ func PostTemplate(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -152,7 +152,7 @@ func PostTemplate(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": reason,
+			"message": reason,
 		})
 		return
 	}
@@ -171,7 +171,7 @@ func PutTemplate(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -180,7 +180,7 @@ func PutTemplate(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -206,7 +206,7 @@ func PutTemplate(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": reason,
+			"message": reason,
 		})
 		return
 	}
@@ -225,7 +225,7 @@ func DeleteTemplate(c *gin.Context) {
 	keys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "AWS Ses keys not set.",
+			"message": "AWS Ses keys not set.",
 		})
 		return
 	}
@@ -234,7 +234,7 @@ func DeleteTemplate(c *gin.Context) {
 	if err != nil {
 		logrus.Errorln(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "SES keys are incorrect.",
+			"message": "SES keys are incorrect.",
 		})
 		return
 	}
@@ -253,7 +253,7 @@ func DeleteTemplate(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": reason,
+			"message": reason,
 		})
 		return
 	}

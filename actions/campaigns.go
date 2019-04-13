@@ -26,7 +26,7 @@ func StartCampaign(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": "Id must be an integer",
+			"message": "Id must be an integer",
 		})
 		return
 	}
@@ -37,7 +37,7 @@ func StartCampaign(c *gin.Context) {
 	v, err := valid.ValidateStruct(params)
 	if err != nil || !v {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+			"message": err.Error(),
 		})
 		return
 	}
@@ -49,14 +49,14 @@ func StartCampaign(c *gin.Context) {
 	campaign, err := storage.GetCampaign(c, id, u.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Campaign not found",
+			"message": "Campaign not found",
 		})
 		return
 	}
 
 	if campaign.Status != entities.StatusDraft {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"reason": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
+			"message": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
 		})
 		return
 	}
@@ -64,7 +64,7 @@ func StartCampaign(c *gin.Context) {
 	sesKeys, err := storage.GetSesKeys(c, u.Id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Amazon Ses keys are not set.",
+			"message": "Amazon Ses keys are not set.",
 		})
 		return
 	}
@@ -72,7 +72,7 @@ func StartCampaign(c *gin.Context) {
 	lists, err := storage.GetListsByIDs(c, u.Id, params.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Subscriber lists are not found.",
+			"message": "Subscriber lists are not found.",
 		})
 		return
 	}
@@ -87,7 +87,7 @@ func StartCampaign(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"reason": "Unable to publish campaign.",
+			"message": "Unable to publish campaign.",
 		})
 		return
 	}
@@ -95,7 +95,7 @@ func StartCampaign(c *gin.Context) {
 	err = queue.Publish(c, entities.CampaignsTopic, msg)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"reason": "Unable to publish campaign.",
+			"message": "Unable to publish campaign.",
 		})
 		return
 	}
@@ -107,7 +107,7 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"reason": "The campaign has started. You can track the progress in the campaign details page.",
+		"message": "The campaign has started. You can track the progress in the campaign details page.",
 	})
 	return
 }
@@ -137,13 +137,13 @@ func GetCampaign(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"reason": "Campaign not found",
+			"message": "Campaign not found",
 		})
 		return
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -155,7 +155,7 @@ func PostCampaign(c *gin.Context) {
 	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Campaign with that name already exists",
+			"message": "Campaign with that name already exists",
 		})
 		return
 	}
@@ -169,7 +169,7 @@ func PostCampaign(c *gin.Context) {
 
 	if !campaign.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": "Invalid data",
+			"message": "Invalid data",
 			"errors": campaign.Errors,
 		})
 		return
@@ -179,7 +179,7 @@ func PostCampaign(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"reason": err.Error(),
+			"message": err.Error(),
 		})
 		return
 	}
@@ -195,7 +195,7 @@ func PutCampaign(c *gin.Context) {
 		campaign, err := storage.GetCampaign(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Campaign not found",
+				"message": "Campaign not found",
 			})
 			return
 		}
@@ -205,7 +205,7 @@ func PutCampaign(c *gin.Context) {
 		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
 		if err == nil && campaign.Id != campaign2.Id {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Campaign with that name already exists",
+				"message": "Campaign with that name already exists",
 			})
 			return
 		}
@@ -215,7 +215,7 @@ func PutCampaign(c *gin.Context) {
 
 		if !campaign.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Invalid data",
+				"message": "Invalid data",
 				"errors": campaign.Errors,
 			})
 			return
@@ -225,7 +225,7 @@ func PutCampaign(c *gin.Context) {
 
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -235,7 +235,7 @@ func PutCampaign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
@@ -247,7 +247,7 @@ func DeleteCampaign(c *gin.Context) {
 		_, err := storage.GetCampaign(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": "Campaign not found",
+				"message": "Campaign not found",
 			})
 			return
 		}
@@ -255,7 +255,7 @@ func DeleteCampaign(c *gin.Context) {
 		err = storage.DeleteCampaign(c, id, user.Id)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"reason": err.Error(),
+				"message": err.Error(),
 			})
 			return
 		}
@@ -265,7 +265,7 @@ func DeleteCampaign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"reason": "Id must be an integer",
+		"message": "Id must be an integer",
 	})
 	return
 }
