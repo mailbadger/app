@@ -1,8 +1,9 @@
-import React, { Component } from "react";
-import Auth from "./Auth";
+import React, { Component, Fragment } from "react";
 import { Box } from "grommet";
 import { Redirect } from "react-router-dom";
+
 import { AuthContext } from "./Auth/AuthContext";
+import Auth from "./Auth";
 
 class Landing extends Component {
   state = {
@@ -20,12 +21,14 @@ class Landing extends Component {
     }
 
     return (
-      <Box flex align="center" justify="center">
-        <Auth
-          setSession={auth.setSession}
-          redirect={() => this.setState({ redirectToReferrer: true })}
-        />
-      </Box>
+      <Fragment>
+        <Box flex align="center" justify="center">
+          <Auth
+            setSession={auth.setSession}
+            redirect={() => this.setState({ redirectToReferrer: true })}
+          />
+        </Box>
+      </Fragment>
     );
   }
 }

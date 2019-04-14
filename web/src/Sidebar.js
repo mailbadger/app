@@ -1,6 +1,46 @@
 import React, { Fragment } from "react";
 import { FormClose } from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
+import { Link } from "react-router-dom";
+
+const NavLinks = () => (
+  <Fragment>
+    <Box margin={{ top: "small" }}>
+      <Box pad="xsmall" border="bottom">
+        <Link style={{ textDecoration: "none" }} to="/dashboard/subscribers">
+          Subscribers
+        </Link>
+      </Box>
+      <Box pad="xsmall" border="bottom">
+        <Link style={{ textDecoration: "none" }} to="/dashboard/lists">
+          Lists
+        </Link>
+      </Box>
+      <Box pad="xsmall" border="bottom">
+        <Link style={{ textDecoration: "none" }} to="/dashboard/campaigns">
+          Campaigns
+        </Link>
+      </Box>
+      <Box pad="xsmall" border="bottom">
+        <Link style={{ textDecoration: "none" }} to="/dashboard/templates">
+          Templates
+        </Link>
+      </Box>
+    </Box>
+    <Box>
+      <Box pad="xsmall" border="bottom">
+        <Link style={{ textDecoration: "none" }} to="/dashboard/settings">
+          Settings
+        </Link>
+      </Box>
+      <Box pad="xsmall">
+        <Link style={{ textDecoration: "none" }} to="/logout">
+          Logout
+        </Link>
+      </Box>
+    </Box>
+  </Fragment>
+);
 
 const Sidebar = props => {
   const { showSidebar, size, closeSidebar } = props;
@@ -14,10 +54,10 @@ const Sidebar = props => {
             width="18em"
             background="dark-2"
             elevation="small"
-            align="center"
-            justify="center"
+            direction="column"
+            justify="between"
           >
-            sidebar
+            <NavLinks />
           </Box>
         </Collapsible>
       ) : (
@@ -31,8 +71,8 @@ const Sidebar = props => {
           >
             <Button icon={<FormClose />} onClick={closeSidebar} />
           </Box>
-          <Box fill background="light-2" align="center" justify="center">
-            wut
+          <Box fill background="light-2" direction="column" justify="between">
+            <NavLinks />
           </Box>
         </Layer>
       )}
