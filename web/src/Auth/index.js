@@ -12,7 +12,7 @@ const loginValidation = object().shape({
   password: string().required("Please enter your password")
 });
 
-const Auth = () => {
+const Auth = props => {
   const handleSubmit = (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
@@ -29,7 +29,13 @@ const Auth = () => {
           }
         );
 
-        console.log(result.data);
+        result.data.token.expires_in =
+          result.data.token.expires_in * 1000 + new Date().getTime();
+        localStorage.setItem("token", JSON.stringify(result.data.token));
+        localStorage.setItem("user", JSON.stringify(result.data.user));
+        props.setSession({ isAuthenticated: true, ...result.data });
+
+        props.redirect();
       } catch (error) {
         setErrors(error.response.data);
       }

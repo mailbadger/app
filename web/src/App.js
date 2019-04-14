@@ -1,8 +1,10 @@
 import React, { Component } from "react";
-import { Box, Heading, Grommet, ResponsiveContext } from "grommet";
-import Auth from "./Auth";
-import { AuthProvider, AuthConsumer } from "./Auth/AuthContext";
-import Sidebar from "./Sidebar";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Box, Heading, Grommet } from "grommet";
+import Landing from "./Landing";
+import { AuthProvider } from "./Auth/AuthContext";
+import Dashboard from "./Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 const theme = {
   global: {
@@ -32,51 +34,45 @@ class App extends Component {
   state = {
     showSidebar: true
   };
+
   render() {
     const { showSidebar } = this.state;
     return (
       <Grommet theme={theme} full>
-        <AuthProvider>
-          <ResponsiveContext.Consumer>
-            {size => (
-              <Box fill>
-                <AppBar>
-                  <Heading
-                    level="3"
-                    onClick={() =>
-                      this.setState({ showSidebar: !this.state.showSidebar })
-                    }
-                    margin="none"
-                  >
-                    Mail Badger
-                  </Heading>
-                </AppBar>
-                <AuthConsumer>
-                  {({ isAuth }) => (
-                    <Box
-                      direction="row"
-                      flex
-                      overflow={{ horizontal: "hidden" }}
-                    >
-                      {isAuth && (
-                        <Sidebar
-                          showSidebar={showSidebar}
-                          closeSidebar={() =>
-                            this.setState({ showSidebar: false })
-                          }
-                          size={size}
-                        />
-                      )}
-                      <Box flex align="center" justify="center">
-                        <Auth />
-                      </Box>
-                    </Box>
-                  )}
-                </AuthConsumer>
+        <Router>
+          <AuthProvider>
+            <Box fill>
+              <AppBar>
+                <Heading
+                  level="3"
+                  onClick={() =>
+                    this.setState({ showSidebar: !this.state.showSidebar })
+                  }
+                  margin="none"
+                >
+                  Mail Badger
+                </Heading>
+              </AppBar>
+              <Box direction="row" flex overflow={{ horizontal: "hidden" }}>
+                <Switch>
+                  <ProtectedRoute
+                    exact
+                    path="/dashboard"
+                    component={() => (
+                      <Dashboard
+                        showSidebar={showSidebar}
+                        closeSidebar={() =>
+                          this.setState({ showSidebar: false })
+                        }
+                      />
+                    )}
+                  />
+                  <Route path="/" component={Landing} />
+                </Switch>
               </Box>
-            )}
-          </ResponsiveContext.Consumer>
-        </AuthProvider>
+            </Box>
+          </AuthProvider>
+        </Router>
       </Grommet>
     );
   }
