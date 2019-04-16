@@ -1,11 +1,12 @@
 import React, { Component } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Router, Route, Switch } from "react-router-dom";
 import { Box, Grommet } from "grommet";
 import Landing from "./Landing";
 import { AuthProvider } from "./Auth/AuthContext";
 import Dashboard from "./Dashboard";
 import Logout from "./Auth/Logout";
 import ProtectedRoute from "./ProtectedRoute";
+import history from "./history";
 
 const theme = {
   global: {
@@ -21,7 +22,7 @@ class App extends Component {
   render() {
     return (
       <Grommet theme={theme} full>
-        <Router>
+        <Router history={history}>
           <AuthProvider>
             <Box fill>
               <Switch>

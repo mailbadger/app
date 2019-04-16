@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import axios from "axios";
+import history from "./history";
 
 axios.interceptors.request.use(
   config => {
@@ -24,6 +25,18 @@ axios.interceptors.request.use(
   },
   err => {
     return Promise.reject(err);
+  }
+);
+
+axios.interceptors.response.use(
+  res => res,
+  error => {
+    if (error.response && 401 === error.response.status) {
+      localStorage.clear();
+      history.push("/login");
+    }
+
+    return Promise.reject(error);
   }
 );
 
