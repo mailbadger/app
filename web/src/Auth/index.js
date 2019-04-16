@@ -21,19 +21,13 @@ const Auth = props => {
           qs.stringify({
             username: values.email,
             password: values.password
-          }),
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            }
-          }
+          })
         );
 
         result.data.token.expires_in =
           result.data.token.expires_in * 1000 + new Date().getTime();
         localStorage.setItem("token", JSON.stringify(result.data.token));
         localStorage.setItem("user", JSON.stringify(result.data.user));
-        props.setSession({ isAuthenticated: true, ...result.data });
 
         props.redirect();
       } catch (error) {

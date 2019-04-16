@@ -10,13 +10,16 @@ class Landing extends Component {
     redirectToReferrer: false
   };
 
+  static contextType = AuthContext;
+
   render() {
     const { from } = this.props.location.state || {
       from: { pathname: "/dashboard" }
     };
+
     let auth = this.context;
 
-    if (auth.isAuthenticated || this.state.redirectToReferrer) {
+    if (auth.isAuthenticated() || this.state.redirectToReferrer) {
       return <Redirect to={from} />;
     }
 
@@ -32,7 +35,5 @@ class Landing extends Component {
     );
   }
 }
-
-Landing.contextType = AuthContext;
 
 export default Landing;

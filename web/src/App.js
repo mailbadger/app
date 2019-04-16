@@ -4,6 +4,7 @@ import { Box, Grommet } from "grommet";
 import Landing from "./Landing";
 import { AuthProvider } from "./Auth/AuthContext";
 import Dashboard from "./Dashboard";
+import Logout from "./Auth/Logout";
 import ProtectedRoute from "./ProtectedRoute";
 
 const theme = {
@@ -25,6 +26,7 @@ class App extends Component {
             <Box fill>
               <Switch>
                 <ProtectedRoute path="/dashboard" component={Dashboard} />
+                <Route path="/logout" component={Logout} />
                 <Route path="/" component={Landing} />
               </Switch>
             </Box>

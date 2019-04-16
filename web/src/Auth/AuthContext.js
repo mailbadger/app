@@ -14,27 +14,21 @@ class AuthProvider extends Component {
   constructor(props) {
     super(props);
 
+    this.logout = this.logout.bind(this);
     this.setSession = this.setSession.bind(this);
-  }
-
-  componentDidUpdate() {
-    this.checkAuth();
-  }
-
-  componentDidMount() {
-    this.checkAuth();
+    this.isAuthenticated = this.isAuthenticated.bind(this);
   }
 
   checkAuth() {
     let user = null;
-    const token = JSON.parse(localStorage.getItem("token"));
-    const isAuthenticated = this.isAuthenticated(token);
+    const isAuthenticated = this.isAuthenticated();
 
     if (isAuthenticated !== this.state.isAuthenticated) {
       if (isAuthenticated) {
         user = JSON.parse(localStorage.getItem("user"));
       }
 
+      const token = JSON.parse(localStorage.getItem("token"));
       this.setState({ isAuthenticated, user, token });
     }
   }
@@ -43,14 +37,44 @@ class AuthProvider extends Component {
     this.setState(data);
   }
 
-  isAuthenticated(token) {
+  logout() {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    this.setState(defaultState);
+  }
+
+  isAuthenticated() {
+    const token = JSON.parse(localStorage.getItem("token"));
     return token && new Date().getTime() < token.expires_in;
+  }
+
+  getUser() {
+    if (this.state.user) {
+      return this.state.user;
+    }
+
+    this.checkAuth();
+  }
+
+  getToken() {
+    if (this.state.token) {
+      return this.state.token;
+    }
+
+    this.checkAuth();
   }
 
   render() {
     return (
       <AuthContext.Provider
-        value={{ ...this.state, setSession: this.setSession }}
+        value={{
+          ...this.state,
+          setSession: this.setSession,
+          isAuthenticated: this.isAuthenticated,
+          getToken: this.getToken,
+          getUser: this.getUser,
+          logout: this.logout
+        }}
       >
         {this.props.children}
       </AuthContext.Provider>
