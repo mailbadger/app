@@ -3,6 +3,7 @@ import { Box, Heading, ResponsiveContext } from "grommet";
 
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
+import Templates from "./Templates";
 
 const AppBar = props => (
   <Box
@@ -40,7 +41,7 @@ const Dashboard = () => {
               size={size}
               closeSidebar={() => setSidebar(false)}
             />
-            <Box flex align="center" justify="center">
+            <Box flex align="stretch" justify="start">
               <ProtectedRoute
                 path="/dashboard/subscribers"
                 component={() => <div>subs</div>}
@@ -51,7 +52,7 @@ const Dashboard = () => {
               />
               <ProtectedRoute
                 path="/dashboard/templates"
-                component={() => <div>templates</div>}
+                component={() => <Templates />}
               />
               <ProtectedRoute
                 path="/dashboard/campaigns"
