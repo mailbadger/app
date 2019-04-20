@@ -5,6 +5,7 @@ import { Add } from "grommet-icons";
 
 import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
+import CreateTemplateForm from "./Create";
 import history from "../history";
 
 const Templates = () => {
@@ -36,7 +37,7 @@ const Templates = () => {
         <Switch>
           <ProtectedRoute
             path="/dashboard/templates/new"
-            component={() => <div>New template</div>}
+            component={CreateTemplateForm}
           />
           <ProtectedRoute exact path="/dashboard/templates" component={List} />
         </Switch>
