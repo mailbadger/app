@@ -19,6 +19,31 @@ const AppBar = props => (
   />
 );
 
+const Routes = React.memo(() => (
+  <Box flex align="stretch" justify="start">
+    <ProtectedRoute
+      path="/dashboard/subscribers"
+      component={() => <div>subs</div>}
+    />
+    <ProtectedRoute
+      path="/dashboard/lists"
+      component={() => <div>lists</div>}
+    />
+    <ProtectedRoute
+      path="/dashboard/templates"
+      component={() => <Templates />}
+    />
+    <ProtectedRoute
+      path="/dashboard/campaigns"
+      component={() => <div>campaigns</div>}
+    />
+    <ProtectedRoute
+      path="/dashboard/settings"
+      component={() => <div>settings</div>}
+    />
+  </Box>
+));
+
 const Dashboard = () => {
   const [showSidebar, setSidebar] = useState(true);
 
@@ -41,28 +66,7 @@ const Dashboard = () => {
               size={size}
               closeSidebar={() => setSidebar(false)}
             />
-            <Box flex align="stretch" justify="start">
-              <ProtectedRoute
-                path="/dashboard/subscribers"
-                component={() => <div>subs</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/lists"
-                component={() => <div>lists</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/templates"
-                component={() => <Templates />}
-              />
-              <ProtectedRoute
-                path="/dashboard/campaigns"
-                component={() => <div>campaigns</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/settings"
-                component={() => <div>settings</div>}
-              />
-            </Box>
+            <Routes />
           </Box>
         </Fragment>
       )}

@@ -1,23 +1,45 @@
 import React from "react";
-import { Grid, Box, Heading, Button } from "grommet";
+import { Grid, Box, Button } from "grommet";
+import { Switch } from "react-router-dom";
+import { Add } from "grommet-icons";
 
+import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
+import history from "../history";
 
 const Templates = () => {
   return (
     <Grid
-      rows={["small", "medium"]}
-      columns={["fit"]}
+      rows={["small", "fill"]}
+      columns={["15%", "4fr", "1fr"]}
+      gap="medium"
       areas={[
-        { name: "header", start: [0, 0], end: [0, 0] },
-        { name: "main", start: [0, 1], end: [0, 1] }
+        { name: "nav", start: [0, 0], end: [0, 0] },
+        { name: "main", start: [1, 1], end: [1, 1] }
       ]}
     >
-      <Box gridArea="header" margin="medium" background="light-4">
-        <Heading>Templates</Heading>
+      <Box
+        gridArea="nav"
+        direction="row"
+        margin={{ top: "medium", left: "medium" }}
+      >
+        <Box>
+          <Button
+            label="Create new"
+            icon={<Add />}
+            reverse
+            onClick={() => history.push("/dashboard/templates/new")}
+          />
+        </Box>
       </Box>
-      <Box gridArea="main" margin="medium" background="light-2">
-        <List />
+      <Box gridArea="main">
+        <Switch>
+          <ProtectedRoute
+            path="/dashboard/templates/new"
+            component={() => <div>New template</div>}
+          />
+          <ProtectedRoute exact path="/dashboard/templates" component={List} />
+        </Switch>
       </Box>
     </Grid>
   );

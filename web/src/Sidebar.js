@@ -1,42 +1,63 @@
 import React, { Fragment } from "react";
-import { FormClose } from "grommet-icons";
+import { FormClose, Logout, UserSettings, Template } from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const NavLinks = () => (
   <Fragment>
     <Box margin={{ top: "small" }}>
-      <Box pad="xsmall" border="bottom">
-        <Link style={{ textDecoration: "none" }} to="/dashboard/subscribers">
+      <Box pad="xsmall" direction="row" border="bottom">
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/dashboard/subscribers"
+        >
           Subscribers
-        </Link>
+        </NavLink>
       </Box>
-      <Box pad="xsmall" border="bottom">
-        <Link style={{ textDecoration: "none" }} to="/dashboard/lists">
+      <Box pad="xsmall" direction="row" border="bottom">
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/dashboard/lists"
+        >
           Lists
-        </Link>
+        </NavLink>
       </Box>
-      <Box pad="xsmall" border="bottom">
-        <Link style={{ textDecoration: "none" }} to="/dashboard/campaigns">
+      <Box pad="xsmall" direction="row" border="bottom">
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/dashboard/campaigns"
+        >
           Campaigns
-        </Link>
+        </NavLink>
       </Box>
-      <Box pad="xsmall" border="bottom">
-        <Link style={{ textDecoration: "none" }} to="/dashboard/templates">
+      <Box pad="xsmall" direction="row" border="bottom">
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/dashboard/templates"
+        >
+          <Template size="medium" />
           Templates
-        </Link>
+        </NavLink>
       </Box>
     </Box>
     <Box>
-      <Box pad="xsmall" border="bottom">
-        <Link style={{ textDecoration: "none" }} to="/dashboard/settings">
+      <Box pad="xsmall" direction="row" border="bottom">
+        <UserSettings size="medium" />
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/dashboard/settings"
+        >
           Settings
-        </Link>
+        </NavLink>
       </Box>
-      <Box pad="xsmall">
-        <Link style={{ textDecoration: "none" }} to="/logout">
+      <Box pad="xsmall" direction="row">
+        <Logout size="medium" />
+        <NavLink
+          style={{ textDecoration: "none", marginLeft: "10px" }}
+          to="/logout"
+        >
           Logout
-        </Link>
+        </NavLink>
       </Box>
     </Box>
   </Fragment>

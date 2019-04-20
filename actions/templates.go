@@ -85,6 +85,7 @@ func GetTemplates(c *gin.Context) {
 	})
 
 	if err != nil {
+		logrus.WithField("token", nextToken).Error(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Templates not found, invalid page token.",
 		})
