@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { FormClose, Logout, UserSettings, Template } from "grommet-icons";
+import { FormClose, Logout, UserSettings } from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
 import { NavLink } from "react-router-dom";
 
@@ -35,7 +35,6 @@ const NavLinks = () => (
           style={{ textDecoration: "none", marginLeft: "10px" }}
           to="/dashboard/templates"
         >
-          <Template size="medium" />
           Templates
         </NavLink>
       </Box>

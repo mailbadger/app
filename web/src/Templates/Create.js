@@ -1,13 +1,17 @@
 import React, { Fragment } from "react";
+import { UnControlled as CodeMirror } from "react-codemirror2";
 import { FormField, Button, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
+import axios from "axios";
+import qs from "qs";
+
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
-
 import "codemirror/mode/xml/xml";
 import "codemirror/mode/javascript/javascript";
-import { UnControlled as CodeMirror } from "react-codemirror2";
+
+import history from "../history";
 
 const initialHtml = `<!DOCTYPE html>
 <html>
@@ -79,9 +83,35 @@ const Form = ({
 };
 
 const CreateTemplateForm = () => {
+  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+    const callApi = async () => {
+      try {
+        await axios.post(
+          "/api/templates",
+          qs.stringify({
+            name: values.name,
+            content: values.htmlPart,
+            subject: values.subject
+          })
+        );
+
+        history.push(`/dashboard/templates/${values.name}`);
+      } catch (error) {
+        setErrors(error.response.data);
+      }
+    };
+
+    callApi();
+
+    //done submitting, set submitting to false
+    setSubmitting(false);
+
+    return;
+  };
+
   return (
     <Formik
-      onSubmit={values => console.log(values)}
+      onSubmit={handleSubmit}
       validationSchema={templateValidation}
       initialValues={{
         htmlPart: initialHtml

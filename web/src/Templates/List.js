@@ -1,4 +1,7 @@
 import React, { Fragment, useState } from "react";
+import { parse } from "date-fns";
+import { Edit, Trash } from "grommet-icons";
+import axios from "axios";
 import useApi from "../hooks/useApi";
 import {
   Table,
@@ -7,39 +10,109 @@ import {
   TableRow,
   TableCell,
   Box,
-  Button
+  Button,
+  Layer,
+  Heading
 } from "grommet";
+import history from "../history";
 
-const Row = ({ template }) => (
-  <TableRow>
-    <TableCell scope="row" size="xlarge">
-      <strong>{template.name}</strong>
-    </TableCell>
-    <TableCell scope="row">{template.timestamp}</TableCell>
-  </TableRow>
-);
+const deleteTemplate = async name => {
+  try {
+    await axios.delete(`/api/templates/${name}`);
+  } catch (error) {
+    console.log(error.response.data);
+  }
+};
 
-const TemplateTable = React.memo(({ list }) => (
+const Row = ({ template, setShowDelete }) => {
+  const res = parse(template.timestamp);
+  return (
+    <TableRow>
+      <TableCell scope="row" size="large">
+        <strong>{template.name}</strong>
+      </TableCell>
+      <TableCell scope="row" size="medium">
+        {res.toUTCString()}
+      </TableCell>
+      <TableCell scope="row">
+        <Button
+          plain
+          icon={<Edit />}
+          onClick={() =>
+            history.push(`/dashboard/templates/${template.name}/edit`)
+          }
+        />
+      </TableCell>
+      <TableCell scope="row">
+        <Button
+          plain
+          icon={<Trash />}
+          onClick={() => setShowDelete({ show: true, name: template.name })}
+        />
+      </TableCell>
+    </TableRow>
+  );
+};
+
+const TemplateTable = React.memo(({ list, setShowDelete }) => (
   <Table caption="Templates">
     <TableHeader>
       <TableRow>
-        <TableCell scope="col" border="bottom">
+        <TableCell scope="col" border="bottom" size="xlarge">
           Name
         </TableCell>
         <TableCell scope="col" border="bottom">
           Created At
         </TableCell>
+        <TableCell scope="col" border="bottom">
+          Edit
+        </TableCell>
+        <TableCell scope="col" border="bottom">
+          Delete
+        </TableCell>
       </TableRow>
     </TableHeader>
     <TableBody>
       {list.map(t => (
-        <Row template={t} key={t.name} />
+        <Row template={t} key={t.name} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
   </Table>
 ));
 
+const DeleteLayer = ({ setShowDelete, name, callApi }) => {
+  return (
+    <Layer
+      onEsc={() => setShowDelete({ show: false, name: "" })}
+      onClickOutside={() => setShowDelete({ show: false, name: "" })}
+    >
+      <Heading margin="small" level="4">
+        Delete template {name} ?
+      </Heading>
+      <Box direction="row" alignSelf="end" pad="small">
+        <Box margin={{ right: "small" }}>
+          <Button
+            label="Cancel"
+            onClick={() => setShowDelete({ show: false, name: "" })}
+          />
+        </Box>
+        <Box>
+          <Button
+            label="Delete"
+            onClick={() => {
+              deleteTemplate(name);
+              callApi({ url: "/api/templates" });
+              setShowDelete({ show: false, name: "" });
+            }}
+          />
+        </Box>
+      </Box>
+    </Layer>
+  );
+};
+
 const List = () => {
+  const [showDelete, setShowDelete] = useState({ show: false, name: "" });
   const [currentPage, setPage] = useState({ current: -1, tokens: [""] });
 
   const [state, callApi] = useApi(
@@ -58,7 +131,14 @@ const List = () => {
 
   return (
     <Fragment>
-      <TemplateTable list={state.data.list} />
+      {showDelete.show && (
+        <DeleteLayer
+          name={showDelete.name}
+          setShowDelete={setShowDelete}
+          callApi={callApi}
+        />
+      )}
+      <TemplateTable list={state.data.list} setShowDelete={setShowDelete} />
       <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
         <Box margin={{ right: "small" }}>
           <Button
