@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { UnControlled as CodeMirror } from "react-codemirror2";
+import React, { Fragment, useState } from "react";
+import { Controlled as CodeMirror } from "react-codemirror2";
 import { FormField, Button, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
@@ -33,10 +33,11 @@ const templateValidation = object().shape({
 });
 
 const Form = ({
+  setHtml,
+  html,
   handleSubmit,
   handleChange,
   setFieldValue,
-  values,
   errors
 }) => {
   return (
@@ -63,14 +64,16 @@ const Form = ({
 
         <FormField label="HTML Template" htmlFor="htmlPart">
           <CodeMirror
-            value={values.htmlPart}
+            value={html}
             options={{
               mode: "xml",
               theme: "material",
               lineNumbers: true
             }}
+            onBeforeChange={(editor, data, value) => {
+              setHtml(value);
+            }}
             onChange={editor => {
-              console.log(editor.getValue());
               setFieldValue("htmlPart", editor.getValue(), true);
             }}
           />
@@ -83,6 +86,8 @@ const Form = ({
 };
 
 const CreateTemplateForm = () => {
+  const [html, setHtml] = useState(initialHtml);
+
   const handleSubmit = (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
@@ -114,9 +119,9 @@ const CreateTemplateForm = () => {
       onSubmit={handleSubmit}
       validationSchema={templateValidation}
       initialValues={{
-        htmlPart: initialHtml
+        htmlPart: html
       }}
-      render={Form}
+      render={props => <Form setHtml={setHtml} html={html} {...props} />}
     />
   );
 };

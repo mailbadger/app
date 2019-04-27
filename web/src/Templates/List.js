@@ -17,11 +17,7 @@ import {
 import history from "../history";
 
 const deleteTemplate = async name => {
-  try {
-    await axios.delete(`/api/templates/${name}`);
-  } catch (error) {
-    console.log(error.response.data);
-  }
+  await axios.delete(`/api/templates/${name}`);
 };
 
 const Row = ({ template, setShowDelete }) => {
@@ -81,20 +77,15 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
 ));
 
 const DeleteLayer = ({ setShowDelete, name, callApi }) => {
+  const hideModal = () => setShowDelete({ show: false, name: "" });
   return (
-    <Layer
-      onEsc={() => setShowDelete({ show: false, name: "" })}
-      onClickOutside={() => setShowDelete({ show: false, name: "" })}
-    >
+    <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
       <Heading margin="small" level="4">
         Delete template {name} ?
       </Heading>
       <Box direction="row" alignSelf="end" pad="small">
         <Box margin={{ right: "small" }}>
-          <Button
-            label="Cancel"
-            onClick={() => setShowDelete({ show: false, name: "" })}
-          />
+          <Button label="Cancel" onClick={() => hideModal()} />
         </Box>
         <Box>
           <Button
@@ -102,7 +93,7 @@ const DeleteLayer = ({ setShowDelete, name, callApi }) => {
             onClick={() => {
               deleteTemplate(name);
               callApi({ url: "/api/templates" });
-              setShowDelete({ show: false, name: "" });
+              hideModal();
             }}
           />
         </Box>

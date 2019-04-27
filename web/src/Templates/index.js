@@ -7,6 +7,7 @@ import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
 import CreateTemplateForm from "./Create";
 import history from "../history";
+import EditTemplateForm from "./Edit";
 
 const Templates = () => {
   return (
@@ -38,6 +39,10 @@ const Templates = () => {
           <ProtectedRoute
             path="/dashboard/templates/new"
             component={CreateTemplateForm}
+          />
+          <ProtectedRoute
+            path="/dashboard/templates/:id/edit"
+            component={EditTemplateForm}
           />
           <ProtectedRoute exact path="/dashboard/templates" component={List} />
         </Switch>
