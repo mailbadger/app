@@ -4,6 +4,7 @@ import { Box, Heading, ResponsiveContext } from "grommet";
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
 import Templates from "./Templates";
+import Settings from "./Settings";
 
 const AppBar = props => (
   <Box
@@ -29,18 +30,12 @@ const Routes = React.memo(() => (
       path="/dashboard/lists"
       component={() => <div>lists</div>}
     />
-    <ProtectedRoute
-      path="/dashboard/templates"
-      component={() => <Templates />}
-    />
+    <ProtectedRoute path="/dashboard/templates" component={Templates} />
     <ProtectedRoute
       path="/dashboard/campaigns"
       component={() => <div>campaigns</div>}
     />
-    <ProtectedRoute
-      path="/dashboard/settings"
-      component={() => <div>settings</div>}
-    />
+    <ProtectedRoute path="/dashboard/settings" component={Settings} />
   </Box>
 ));
 

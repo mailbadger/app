@@ -64,6 +64,7 @@ func New() http.Handler {
 		users := authorized.Group("/users")
 		{
 			users.GET("", actions.GetMe)
+			users.POST("/password", actions.ChangePassword)
 		}
 
 		templates := authorized.Group("/templates")

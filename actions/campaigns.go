@@ -35,9 +35,14 @@ func StartCampaign(c *gin.Context) {
 	c.Bind(params)
 
 	v, err := valid.ValidateStruct(params)
-	if err != nil || !v {
+	if !v {
+		msg := "Unable to start campaign, invalid request parameters."
+		if err != nil {
+			msg = err.Error()
+		}
+
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
+			"message": msg,
 		})
 		return
 	}
@@ -170,7 +175,7 @@ func PostCampaign(c *gin.Context) {
 	if !campaign.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
-			"errors": campaign.Errors,
+			"errors":  campaign.Errors,
 		})
 		return
 	}
@@ -216,7 +221,7 @@ func PutCampaign(c *gin.Context) {
 		if !campaign.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
-				"errors": campaign.Errors,
+				"errors":  campaign.Errors,
 			})
 			return
 		}

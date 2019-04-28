@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 
 	"github.com/gin-gonic/gin"
@@ -58,8 +57,4 @@ func PostLogin(c *gin.Context) {
 		},
 		"user": user,
 	})
-}
-
-func GetMe(c *gin.Context) {
-	c.JSON(http.StatusOK, middleware.GetUser(c))
 }
