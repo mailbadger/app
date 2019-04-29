@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { FormField, Button, TextInput } from "grommet";
+import { FormField, Button, TextInput, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod, mixed } from "yup";
 import axios from "axios";
@@ -9,6 +9,7 @@ function equalTo(ref, msg) {
   return mixed().test({
     name: "equalTo",
     exclusive: false,
+    // eslint-disable-next-line
     message: msg || "${path} must be the same as ${reference}",
     params: {
       reference: ref.path
@@ -33,6 +34,7 @@ const changePassValidation = object().shape({
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
   <Fragment>
+    <Heading level="3">Change password</Heading>
     {errors && errors.message && <div>{errors.message}</div>}
     <form onSubmit={handleSubmit}>
       <FormField label="Old password" htmlFor="password">
@@ -56,7 +58,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         <ErrorMessage name="new_password_confirm" />
       </FormField>
 
-      <Button type="submit" primary disabled={isSubmitting} label="Submit" />
+      <Button type="submit" disabled={isSubmitting} label="Update password" />
     </form>
   </Fragment>
 );
@@ -76,14 +78,11 @@ const ChangePasswordForm = () => {
         setErrors(error.response.data);
       }
     };
-    setTimeout(() => {
-      callApi();
-      setSubmitting(false);
-    }, 3000);
-    // callApi();
 
-    // //done submitting, set submitting to false
-    // setSubmitting(false);
+    callApi();
+
+    //done submitting, set submitting to false
+    setSubmitting(false);
 
     return;
   };
