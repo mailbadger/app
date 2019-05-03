@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"database/sql"
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/routes/middleware"
@@ -51,7 +52,7 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(params.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(params.Password))
 	if err != nil {
 		logrus.Errorf("Invalid credentials. %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
@@ -63,7 +64,7 @@ func ChangePassword(c *gin.Context) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"user": u.Id,
+			"user": u.ID,
 		}).Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
@@ -71,12 +72,15 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	u.Password = string(hashedPassword)
+	u.Password = sql.NullString{
+		String: string(hashedPassword),
+		Valid:  true,
+	}
 
 	err = storage.UpdateUser(c, u)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"user": u.Id,
+			"user": u.ID,
 		}).Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",

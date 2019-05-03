@@ -54,7 +54,8 @@ func New() http.Handler {
 	handler.Static("/static", appDir+"/static")
 
 	// Guest routes
-	handler.POST("/api/authenticate", actions.PostLogin)
+	handler.POST("/api/authenticate", actions.PostAuthenticate)
+	handler.POST("/api/signup", actions.PostSignup)
 	handler.POST("/api/hooks", actions.HandleHook)
 
 	// Authorized routes

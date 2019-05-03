@@ -20,7 +20,7 @@ import (
 func GetTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.Id)
+	keys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "AWS Ses keys not set.",
@@ -61,7 +61,7 @@ func GetTemplate(c *gin.Context) {
 func GetTemplates(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.Id)
+	keys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys not set.",
@@ -115,7 +115,7 @@ func GetTemplates(c *gin.Context) {
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.Id)
+	keys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys not set.",
@@ -169,7 +169,7 @@ func PostTemplate(c *gin.Context) {
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.Id)
+	keys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys not set.",
@@ -223,7 +223,7 @@ func PutTemplate(c *gin.Context) {
 func DeleteTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.Id)
+	keys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys not set.",
