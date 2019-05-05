@@ -2,9 +2,10 @@ package storage
 
 import (
 	"database/sql"
-	"github.com/google/uuid"
 	"os"
 	"time"
+
+	"github.com/google/uuid"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -13,7 +14,7 @@ import (
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/storage/migrations"
 	"github.com/news-maily/api/utils"
-	"github.com/rubenv/sql-migrate"
+	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -137,7 +138,7 @@ func initDb(config string, db *gorm.DB) error {
 		return err
 	}
 
-	log.Infof("Admin user credentials:\n\tUser: admin\n\tPassword: %s\n", secret)
+	log.WithFields(log.Fields{"user": "admin", "password": secret}).Info("Admin user credentials")
 
 	return nil
 }

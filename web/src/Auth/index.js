@@ -8,7 +8,7 @@ import qs from "qs";
 import { Route, Switch } from "react-router-dom";
 
 const loginValidation = object().shape({
-  email: string().email("Please enter an email"),
+  email: string().required("Please enter an email"),
   password: string().required("Please enter your password")
 });
 

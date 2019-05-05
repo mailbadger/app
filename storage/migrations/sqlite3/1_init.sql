@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
   "created_at"             datetime
 );
 
-CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
+CREATE TABLE IF NOT EXISTS "sends" (
   "id"            integer primary key autoincrement,
   "uuid"          varchar(36) NOT NULL,
   "user_id"       integer,
@@ -148,8 +148,8 @@ CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "created_at"    datetime
 );
 
-CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_bulk_logs" (user_id, campaign_id);
-CREATE INDEX IF NOT EXISTS i_uuid ON "send_bulk_logs" (uuid);
+CREATE INDEX IF NOT EXISTS i_user_campaign ON "sends" (user_id, campaign_id);
+CREATE INDEX IF NOT EXISTS i_uuid ON "sends" (uuid);
 
 -- +migrate Down
 
@@ -163,4 +163,4 @@ DROP TABLE "list_metadata";
 DROP TABLE "subscriber_metadata";
 DROP TABLE "sent_emails";
 DROP TABLE "bounces";
-DROP TABLE "send_bulk_logs";
+DROP TABLE "sends";

@@ -1,5 +1,19 @@
 version: '3'
+
 services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeme
+      - MYSQL_USER=mailbadger
+      - MYSQL_PASSWORD=changeme
+      - MYSQL_DATABASE=mailbadger
+    volumes:
+      - dbdata:/var/lib/mysql
+
   nsqlookupd:
     image: nsqio/nsq
     command: /nsqlookupd
@@ -29,10 +43,11 @@ services:
     volumes:
       - ./maily.db:/maily.db
     depends_on:
+      - mysql
       - nsqd
     environment:
-      - DATABASE_DRIVER=sqlite3
-      - DATABASE_CONFIG=maily.db
+      - DATABASE_DRIVER=mysql
+      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
       - PORT=8080
       - NSQD_HOST=nsqd
       - NSQD_PORT=4150
@@ -51,8 +66,8 @@ services:
     depends_on:
       - app
     environment:
-      - DATABASE_DRIVER=sqlite3
-      - DATABASE_CONFIG=maily.db
+      - DATABASE_DRIVER=mysql
+      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
       - NSQLOOKUPD_HOST=nsqlookupd
       - NSQLOOKUPD_PORT=4161
       - LOG_LEVEL=info
@@ -64,10 +79,13 @@ services:
     depends_on:
       - app
     environment:
-      - DATABASE_DRIVER=sqlite3
-      - DATABASE_CONFIG=maily.db
+      - DATABASE_DRIVER=mysql
+      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
       - NSQLOOKUPD_HOST=nsqlookupd
       - NSQLOOKUPD_PORT=4161
       - NSQD_HOST=nsqd
       - NSQD_PORT=4150
       - LOG_LEVEL=info
+
+volumes:
+  dbdata:

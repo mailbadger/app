@@ -2,13 +2,14 @@ package actions
 
 import (
 	"database/sql"
+	"net/http"
+
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/routes/middleware"
 	"github.com/news-maily/api/storage"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 func GetMe(c *gin.Context) {
@@ -91,4 +92,8 @@ func ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your password was updated successfully.",
 	})
+}
+
+func PostForgotPassword(c *gin.Context) {
+
 }
