@@ -1,11 +1,20 @@
 import React from "react";
 import { Formik } from "formik";
-import Form from "./Form";
+import Login from "./Login";
+import Register from "./Register";
 import { string, object } from "yup";
 import axios from "axios";
 import qs from "qs";
+import { Route, Switch } from "react-router-dom";
 
 const loginValidation = object().shape({
+  email: string()
+    //.email('Please enter a valid email')
+    .required("Please enter an email"),
+  password: string().required("Please enter your password")
+});
+
+const registerValidation = object().shape({
   email: string()
     //.email('Please enter a valid email')
     .required("Please enter an email"),
@@ -44,11 +53,38 @@ const Auth = props => {
   };
 
   return (
-    <Formik
-      onSubmit={handleSubmit}
-      validationSchema={loginValidation}
-      render={props => <Form {...props} />}
-    />
+    <Switch>
+      <Route
+        path="/login"
+        component={() => (
+          <Formik
+            onSubmit={handleSubmit}
+            validationSchema={loginValidation}
+            render={props => <Login {...props} />}
+          />
+        )}
+      />
+      <Route
+        path="/register"
+        component={() => (
+          <Formik
+            onSubmit={handleSubmit}
+            validationSchema={registerValidation}
+            render={props => <Register {...props} />}
+          />
+        )}
+      />
+      <Route
+        path="/"
+        component={() => (
+          <Formik
+            onSubmit={handleSubmit}
+            validationSchema={loginValidation}
+            render={props => <Login {...props} />}
+          />
+        )}
+      />
+    </Switch>
   );
 };
 
