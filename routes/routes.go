@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/unrolled/secure"
 	"net/http"
 	"os"
 	"strings"
@@ -32,6 +33,40 @@ func New() http.Handler {
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
+
+	// Security headers
+	isDev := os.Getenv("ENVIRONMENT") != "prod"
+	secureMiddleware := secure.New(secure.Options{
+		FrameDeny:             true,
+		ContentTypeNosniff:    true,
+		BrowserXssFilter:      true,
+		SSLRedirect:           true,
+		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
+		STSSeconds:            31536000,
+		STSIncludeSubdomains:  true,
+		STSPreload:            true,
+		ContentSecurityPolicy: "default-src 'self'",
+
+		IsDevelopment: isDev,
+	})
+	secureFunc := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			err := secureMiddleware.Process(c.Writer, c.Request)
+
+			// If there was an error, do not continue.
+			if err != nil {
+				c.Abort()
+				return
+			}
+
+			// Avoid header rewrite if response is a redirection.
+			if status := c.Writer.Status(); status > 300 && status < 399 {
+				c.Abort()
+			}
+		}
+	}()
+
+	handler.Use(secureFunc)
 
 	// Web app
 	appDir := os.Getenv("APP_DIR")
