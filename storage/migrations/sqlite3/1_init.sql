@@ -1,11 +1,13 @@
 -- +migrate Up
 
 CREATE TABLE IF NOT EXISTS "users" (
-  "id"       integer primary key autoincrement,
-  "username" varchar(191) NOT NULL UNIQUE,
-  "password" varchar(191),
-  "api_key"  varchar(191) NOT NULL UNIQUE,
-  "auth_key" varchar(191) NOT NULL,
+  "id"         integer primary key autoincrement,
+  "uuid"       varchar(36) NOT NULL UNIQUE,
+  "username"   varchar(191) NOT NULL UNIQUE,
+  "password"   varchar(191),
+  "source"     varchar(191) NOT NULL,
+  "active"     integer,
+  "verified"   integer,
   "created_at" datetime,
   "updated_at" datetime
 );

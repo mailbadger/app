@@ -14,8 +14,9 @@ const key = "storage"
 // writing data in the datastore.
 type Storage interface {
 	GetUser(int64) (*entities.User, error)
-	GetUserByAPIKey(string) (*entities.User, error)
 	GetUserByUsername(string) (*entities.User, error)
+	GetActiveUserByUsername(string) (*entities.User, error)
+	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
 
 	GetCampaigns(int64, *pagination.Pagination)
@@ -77,14 +78,19 @@ func GetUser(c context.Context, id int64) (*entities.User, error) {
 	return GetFromContext(c).GetUser(id)
 }
 
-// GetUserByAPIKey returns a User entity from the specified api key.
-func GetUserByAPIKey(c context.Context, apiKey string) (*entities.User, error) {
-	return GetFromContext(c).GetUserByAPIKey(apiKey)
-}
-
 // GetUserByUsername returns a User entity from the specified username.
 func GetUserByUsername(c context.Context, username string) (*entities.User, error) {
 	return GetFromContext(c).GetUserByUsername(username)
+}
+
+// GetActiveUserByUsername returns an active User entity from the specified username.
+func GetActiveUserByUsername(c context.Context, username string) (*entities.User, error) {
+	return GetFromContext(c).GetActiveUserByUsername(username)
+}
+
+// CreateUser persists a new User entity in the datastore.
+func CreateUser(c context.Context, user *entities.User) error {
+	return GetFromContext(c).CreateUser(user)
 }
 
 // UpdateUser updates the User entity.

@@ -38,8 +38,6 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
     data: initialData
   });
 
-  const { readBody = body => body.json(), ...input } = opts;
-
   useEffect(() => {
     let didCancel = false;
 
@@ -47,15 +45,14 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
       dispatch({ type: "REQUEST_INIT" });
 
       try {
-        const result = await axios(input);
-        const payload = await readBody(result);
+        const result = await axios(opts);
 
         if (!didCancel) {
-          dispatch({ type: "REQUEST_SUCCESS", payload: payload });
+          dispatch({ type: "REQUEST_SUCCESS", payload: result.data });
         }
       } catch (error) {
         if (!didCancel) {
-          dispatch({ type: "REQUEST_FAILURE" });
+          dispatch({ type: "REQUEST_FAILURE", error });
         }
       }
     };
@@ -71,7 +68,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
     setOpts(opts);
   };
 
-  return { ...state, callApi };
+  return [state, callApi];
 };
 
 export default useDataApi;

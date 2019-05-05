@@ -54,7 +54,8 @@ func New() http.Handler {
 	handler.Static("/static", appDir+"/static")
 
 	// Guest routes
-	handler.POST("/api/authenticate", actions.PostLogin)
+	handler.POST("/api/authenticate", actions.PostAuthenticate)
+	handler.POST("/api/signup", actions.PostSignup)
 	handler.POST("/api/hooks", actions.HandleHook)
 
 	// Authorized routes
@@ -64,6 +65,7 @@ func New() http.Handler {
 		users := authorized.Group("/users")
 		{
 			users.GET("", actions.GetMe)
+			users.POST("/password", actions.ChangePassword)
 		}
 
 		templates := authorized.Group("/templates")

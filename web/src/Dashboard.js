@@ -3,6 +3,8 @@ import { Box, Heading, ResponsiveContext } from "grommet";
 
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
+import Templates from "./Templates";
+import Settings from "./Settings";
 
 const AppBar = props => (
   <Box
@@ -17,6 +19,25 @@ const AppBar = props => (
     {...props}
   />
 );
+
+const Routes = React.memo(() => (
+  <Box flex align="stretch" justify="start">
+    <ProtectedRoute
+      path="/dashboard/subscribers"
+      component={() => <div>subs</div>}
+    />
+    <ProtectedRoute
+      path="/dashboard/lists"
+      component={() => <div>lists</div>}
+    />
+    <ProtectedRoute path="/dashboard/templates" component={Templates} />
+    <ProtectedRoute
+      path="/dashboard/campaigns"
+      component={() => <div>campaigns</div>}
+    />
+    <ProtectedRoute path="/dashboard/settings" component={Settings} />
+  </Box>
+));
 
 const Dashboard = () => {
   const [showSidebar, setSidebar] = useState(true);
@@ -40,28 +61,7 @@ const Dashboard = () => {
               size={size}
               closeSidebar={() => setSidebar(false)}
             />
-            <Box flex align="center" justify="center">
-              <ProtectedRoute
-                path="/dashboard/subscribers"
-                component={() => <div>subs</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/lists"
-                component={() => <div>lists</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/templates"
-                component={() => <div>templates</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/campaigns"
-                component={() => <div>campaigns</div>}
-              />
-              <ProtectedRoute
-                path="/dashboard/settings"
-                component={() => <div>settings</div>}
-              />
-            </Box>
+            <Routes />
           </Box>
         </Fragment>
       )}

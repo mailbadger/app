@@ -39,6 +39,9 @@ services:
       - SKIP_TLS=true
       - LOG_LEVEL=info
       - DOMAIN_URL=https://example.com
+      - AUTH_SECRET=changeme #secret for signing JWTs
+      # - ENABLE_SIGNUP=true
+      # - RECAPTCHA_SECRET=abcdef
   bulksender:
     image: news-maily/app
     command: /consumers/bulksender

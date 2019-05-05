@@ -30,13 +30,13 @@ func GetLists(c *gin.Context) {
 		return
 	}
 
-	storage.GetLists(c, middleware.GetUser(c).Id, p)
+	storage.GetLists(c, middleware.GetUser(c).ID, p)
 	c.JSON(http.StatusOK, p)
 }
 
 func GetList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if l, err := storage.GetList(c, id, middleware.GetUser(c).Id); err == nil {
+		if l, err := storage.GetList(c, id, middleware.GetUser(c).ID); err == nil {
 			c.JSON(http.StatusOK, l)
 			return
 		}
@@ -58,18 +58,18 @@ func PostList(c *gin.Context) {
 
 	l := &entities.List{
 		Name:   name,
-		UserId: middleware.GetUser(c).Id,
+		UserId: middleware.GetUser(c).ID,
 	}
 
 	if !l.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
-			"errors": l.Errors,
+			"errors":  l.Errors,
 		})
 		return
 	}
 
-	_, err := storage.GetListByName(c, name, middleware.GetUser(c).Id)
+	_, err := storage.GetListByName(c, name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "List with that name already exists",
@@ -90,7 +90,7 @@ func PostList(c *gin.Context) {
 
 func PutList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		l, err := storage.GetList(c, id, middleware.GetUser(c).Id)
+		l, err := storage.GetList(c, id, middleware.GetUser(c).ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List not found",
@@ -103,12 +103,12 @@ func PutList(c *gin.Context) {
 		if !l.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
-				"errors": l.Errors,
+				"errors":  l.Errors,
 			})
 			return
 		}
 
-		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).Id)
+		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).ID)
 		if err == nil && l2.Id != l.Id {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List with that name already exists",
@@ -137,7 +137,7 @@ func PutList(c *gin.Context) {
 func DeleteList(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		_, err := storage.GetList(c, id, user.Id)
+		_, err := storage.GetList(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List not found",
@@ -145,7 +145,7 @@ func DeleteList(c *gin.Context) {
 			return
 		}
 
-		err = storage.DeleteList(c, id, user.Id)
+		err = storage.DeleteList(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err.Error(),
@@ -166,7 +166,7 @@ func DeleteList(c *gin.Context) {
 func PutListSubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		l, err := storage.GetList(c, id, user.Id)
+		l, err := storage.GetList(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List not found",
@@ -184,7 +184,7 @@ func PutListSubscribers(c *gin.Context) {
 			return
 		}
 
-		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.Id)
+		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
 			logrus.Warn(err)
 		}
@@ -223,7 +223,7 @@ func GetListSubscribers(c *gin.Context) {
 			return
 		}
 
-		storage.GetSubscribersByListID(c, id, middleware.GetUser(c).Id, p)
+		storage.GetSubscribersByListID(c, id, middleware.GetUser(c).ID, p)
 		c.JSON(http.StatusOK, p)
 		return
 	}
@@ -237,7 +237,7 @@ func GetListSubscribers(c *gin.Context) {
 func DetachListSubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		l, err := storage.GetList(c, id, user.Id)
+		l, err := storage.GetList(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List not found",
@@ -255,7 +255,7 @@ func DetachListSubscribers(c *gin.Context) {
 			return
 		}
 
-		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.Id)
+		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
 			logrus.Warn(err)
 		}

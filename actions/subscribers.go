@@ -25,13 +25,13 @@ func GetSubscribers(c *gin.Context) {
 		return
 	}
 
-	storage.GetSubscribers(c, middleware.GetUser(c).Id, p)
+	storage.GetSubscribers(c, middleware.GetUser(c).ID, p)
 	c.JSON(http.StatusOK, p)
 }
 
 func GetSubscriber(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).Id); err == nil {
+		if s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).ID); err == nil {
 			c.JSON(http.StatusOK, s)
 			return
 		}
@@ -54,13 +54,13 @@ func PostSubscriber(c *gin.Context) {
 	s := &entities.Subscriber{
 		Name:   name,
 		Email:  email,
-		UserId: middleware.GetUser(c).Id,
+		UserId: middleware.GetUser(c).ID,
 	}
 
 	if !s.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
-			"errors": s.Errors,
+			"errors":  s.Errors,
 		})
 		return
 	}
@@ -87,7 +87,7 @@ func PostSubscriber(c *gin.Context) {
 
 func PutSubscriber(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).Id)
+		s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Subscriber not found",
@@ -101,7 +101,7 @@ func PutSubscriber(c *gin.Context) {
 		if !s.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
-				"errors": s.Errors,
+				"errors":  s.Errors,
 			})
 			return
 		}
@@ -127,7 +127,7 @@ func PutSubscriber(c *gin.Context) {
 func DeleteSubscriber(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		_, err := storage.GetSubscriber(c, id, user.Id)
+		_, err := storage.GetSubscriber(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Subscriber not found",
@@ -135,7 +135,7 @@ func DeleteSubscriber(c *gin.Context) {
 			return
 		}
 
-		err = storage.DeleteSubscriber(c, id, user.Id)
+		err = storage.DeleteSubscriber(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err.Error(),

@@ -35,9 +35,14 @@ func StartCampaign(c *gin.Context) {
 	c.Bind(params)
 
 	v, err := valid.ValidateStruct(params)
-	if err != nil || !v {
+	if !v {
+		msg := "Unable to start campaign, invalid request parameters."
+		if err != nil {
+			msg = err.Error()
+		}
+
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
+			"message": msg,
 		})
 		return
 	}
@@ -46,7 +51,7 @@ func StartCampaign(c *gin.Context) {
 
 	u := middleware.GetUser(c)
 
-	campaign, err := storage.GetCampaign(c, id, u.Id)
+	campaign, err := storage.GetCampaign(c, id, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
@@ -61,7 +66,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	sesKeys, err := storage.GetSesKeys(c, u.Id)
+	sesKeys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Amazon Ses keys are not set.",
@@ -69,7 +74,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	lists, err := storage.GetListsByIDs(c, u.Id, params.Ids)
+	lists, err := storage.GetListsByIDs(c, u.ID, params.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Subscriber lists are not found.",
@@ -81,7 +86,7 @@ func StartCampaign(c *gin.Context) {
 		ListIDs:      params.Ids,
 		Source:       params.Source,
 		TemplateData: templateData,
-		UserID:       u.Id,
+		UserID:       u.ID,
 		Campaign:     *campaign,
 		SesKeys:      *sesKeys,
 	})
@@ -125,13 +130,13 @@ func GetCampaigns(c *gin.Context) {
 		return
 	}
 
-	storage.GetCampaigns(c, middleware.GetUser(c).Id, p)
+	storage.GetCampaigns(c, middleware.GetUser(c).ID, p)
 	c.JSON(http.StatusOK, p)
 }
 
 func GetCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).Id); err == nil {
+		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID); err == nil {
 			c.JSON(http.StatusOK, campaign)
 			return
 		}
@@ -152,7 +157,7 @@ func PostCampaign(c *gin.Context) {
 	name, templateName := c.PostForm("name"), c.PostForm("template_name")
 	user := middleware.GetUser(c)
 
-	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
+	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Campaign with that name already exists",
@@ -162,7 +167,7 @@ func PostCampaign(c *gin.Context) {
 
 	campaign := &entities.Campaign{
 		Name:         name,
-		UserId:       user.Id,
+		UserId:       user.ID,
 		TemplateName: templateName,
 		Status:       entities.StatusDraft,
 	}
@@ -170,7 +175,7 @@ func PostCampaign(c *gin.Context) {
 	if !campaign.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
-			"errors": campaign.Errors,
+			"errors":  campaign.Errors,
 		})
 		return
 	}
@@ -192,7 +197,7 @@ func PutCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 
-		campaign, err := storage.GetCampaign(c, id, user.Id)
+		campaign, err := storage.GetCampaign(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign not found",
@@ -202,7 +207,7 @@ func PutCampaign(c *gin.Context) {
 
 		name, templateName := c.PostForm("name"), c.PostForm("template_name")
 
-		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).Id)
+		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
 		if err == nil && campaign.Id != campaign2.Id {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign with that name already exists",
@@ -216,7 +221,7 @@ func PutCampaign(c *gin.Context) {
 		if !campaign.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
-				"errors": campaign.Errors,
+				"errors":  campaign.Errors,
 			})
 			return
 		}
@@ -244,7 +249,7 @@ func DeleteCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
 
-		_, err := storage.GetCampaign(c, id, user.Id)
+		_, err := storage.GetCampaign(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign not found",
@@ -252,7 +257,7 @@ func DeleteCampaign(c *gin.Context) {
 			return
 		}
 
-		err = storage.DeleteCampaign(c, id, user.Id)
+		err = storage.DeleteCampaign(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err.Error(),

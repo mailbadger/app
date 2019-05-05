@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"database/sql"
+	"github.com/google/uuid"
 	"os"
 	"time"
 
@@ -110,24 +112,23 @@ func initDb(config string, db *gorm.DB) error {
 		return err
 	}
 
-	apiKey, err := utils.GenerateRandomString(32)
+	uuid, err := uuid.NewRandom()
 	if err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	authKey, err := utils.GenerateRandomString(32)
-	if err != nil {
-		log.Errorln(err)
+		log.Errorf("unable to generate random uuid: %s", err.Error())
 		return err
 	}
 
 	//Create the default user
 	admin := entities.User{
 		Username: "admin",
-		Password: string(hashedPassword),
-		ApiKey:   string(apiKey),
-		AuthKey:  string(authKey),
+		UUID:     uuid.String(),
+		Password: sql.NullString{
+			String: string(hashedPassword),
+			Valid:  true,
+		},
+		Active:   true,
+		Verified: true,
+		Source:   "mailbadger.io",
 	}
 
 	err = db.Save(&admin).Error
