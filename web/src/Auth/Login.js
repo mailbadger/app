@@ -4,7 +4,7 @@ import { ErrorMessage } from "formik";
 import { Facebook, Google, Github, Mail } from "grommet-icons";
 
 const LoginForm = props => {
-  const { handleSubmit, handleChange, errors } = props;
+  const { handleSubmit, handleChange, isSubmitting, errors } = props;
 
   return (
     <Fragment>
@@ -37,6 +37,7 @@ const LoginForm = props => {
             marginBottom: "4px",
             background: "#654FAA"
           }}
+          disabled={isSubmitting}
           type="submit"
           primary
           label="Login with email"
