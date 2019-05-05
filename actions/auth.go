@@ -78,6 +78,14 @@ type signupParams struct {
 }
 
 func PostSignup(c *gin.Context) {
+	enableSignup := os.Getenv("ENABLE_SIGNUP")
+	if enableSignup == "" || enableSignup == "false" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Sign up is disabled.",
+		})
+		return
+	}
+
 	params := &signupParams{}
 	c.Bind(params)
 
