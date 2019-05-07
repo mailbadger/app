@@ -36,11 +36,6 @@ func From(db *gorm.DB) Storage {
 
 // openDbConn creates a database connection using the driver and config string
 func openDbConn(driver, config string) *gorm.DB {
-	fresh := false
-	if _, err := os.Stat(config); err != nil || config == ":memory:" {
-		fresh = true
-	}
-
 	db, err := gorm.Open(driver, config)
 	if err != nil {
 		log.Errorln(err)
@@ -54,6 +49,19 @@ func openDbConn(driver, config string) *gorm.DB {
 	if err := pingDb(db); err != nil {
 		log.Errorln(err)
 		log.Fatalln("database ping attempts failed")
+	}
+
+	fresh := false
+	switch driver {
+	case "sqlite3":
+		if _, err := os.Stat(config); err != nil || config == ":memory:" {
+			fresh = true
+		}
+	case "mysql":
+		err := db.First(&entities.User{}).Error
+		if err != nil {
+			fresh = true
+		}
 	}
 
 	if err := setupDb(driver, config, fresh, db); err != nil {
