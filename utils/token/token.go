@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	SignerAlgorithm = "HS256"
-	SessionToken    = "session_token"
+	SignerAlgorithm  = "HS256"
+	SessionToken     = "session_token"
+	ForgotPassToken  = "forgot_pass_token"
+	UnsubscribeToken = "unsubscribe_token"
 )
 
 type SecretFunc func(*Token) (string, error)

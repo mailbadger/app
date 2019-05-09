@@ -2,7 +2,15 @@ package actions
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
+	"os"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/news-maily/api/emails"
+	"github.com/news-maily/api/utils/token"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
@@ -94,6 +102,65 @@ func ChangePassword(c *gin.Context) {
 	})
 }
 
-func PostForgotPassword(c *gin.Context) {
+type forgotPassParams struct {
+	Email string `form:"email" valid:"email"`
+}
 
+func PostForgotPassword(c *gin.Context) {
+	params := &forgotPassParams{}
+	c.Bind(params)
+
+	v, err := valid.ValidateStruct(params)
+	if !v {
+		emailError := valid.ErrorByField(err, "Email")
+		if emailError == "" {
+			emailError = "Email must be in valid format."
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": emailError,
+		})
+		return
+	}
+
+	u, err := storage.GetUserByUsername(c, params.Email)
+	if err == nil {
+		sender, err := emails.NewSesSender(
+			os.Getenv("AWS_SES_ACCESS_KEY"),
+			os.Getenv("AWS_SES_SECRET_KEY"),
+			os.Getenv("AWS_SES_REGION"),
+		)
+		if err == nil {
+			exp := time.Now().Add(time.Hour * 1).Unix()
+			t := token.New(token.ForgotPassToken, u.UUID)
+			tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+			if err != nil {
+				logrus.Errorf("cannot create token %s", err)
+			} else {
+				go sendForgotPasswordEmail(tokenStr, params.Email, sender)
+			}
+		} else {
+			logrus.Error(err.Error())
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Email will be sent to you with the information on how to update your password.",
+	})
+}
+
+func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
+	url := os.Getenv("DOMAIN_URL") + "/forgot-password/" + token
+
+	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
+		Template:     aws.String("ForgotPassword"),
+		Source:       aws.String(os.Getenv("SYSTEM_EMAIL_SOURCE")),
+		TemplateData: aws.String(fmt.Sprintf(`{"url": "%s"}`, url)),
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(email)},
+		},
+	})
+
+	if err != nil {
+		logrus.Errorf("forgot password email failure %s", err.Error())
+	}
 }

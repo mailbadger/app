@@ -72,7 +72,7 @@ func PostAuthenticate(c *gin.Context) {
 }
 
 type signupParams struct {
-	Username      string `form:"username" valid:"email,required~Email is blank or in invalid format"`
+	Email         string `form:"email" valid:"email,required~Email is blank or in invalid format"`
 	Password      string `form:"password" valid:"required"`
 	TokenResponse string `form:"token_response" valid:"optional"`
 }
@@ -109,9 +109,9 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	_, err = storage.GetUserByUsername(c, params.Username)
+	_, err = storage.GetUserByUsername(c, params.Email)
 	if err == nil {
-		logrus.WithField("username", params.Username).Errorf("duplicate account %s", err)
+		logrus.WithField("username", params.Email).Errorf("duplicate account %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -131,7 +131,7 @@ func PostSignup(c *gin.Context) {
 
 		err = captcha.Verify(params.TokenResponse)
 		if err != nil {
-			logrus.WithField("username", params.Username).Errorf("recaptcha invalid response. %s", err)
+			logrus.WithField("username", params.Email).Errorf("recaptcha invalid response. %s", err)
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "Unable to create an account.",
 			})
@@ -158,7 +158,7 @@ func PostSignup(c *gin.Context) {
 	}
 
 	user := &entities.User{
-		Username: params.Username,
+		Username: params.Email,
 		UUID:     uuid.String(),
 		Password: sql.NullString{
 			String: string(hashedPassword),
@@ -171,7 +171,7 @@ func PostSignup(c *gin.Context) {
 
 	err = storage.CreateUser(c, user)
 	if err != nil {
-		logrus.WithField("username", params.Username).Errorf("unable to persist user in db %s", err.Error())
+		logrus.WithField("username", params.Email).Errorf("unable to persist user in db %s", err.Error())
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})

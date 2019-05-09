@@ -55,6 +55,8 @@ services:
       - LOG_LEVEL=info
       - DOMAIN_URL=https://example.com
       - AUTH_SECRET=changeme #secret for signing JWTs
+      - EMAILS_TOKEN_SECRET=changeme #secret for signing JWTs for forgot pass and unsubscribe url usage.
+      - SYSTEM_EMAIL_SOURCE=noreply@mailbadger.io
       # - ENVIRONMENT=prod
       # - ENABLE_SIGNUP=true
       # - RECAPTCHA_SECRET=abcdef

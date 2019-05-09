@@ -35,10 +35,15 @@ const (
 )
 
 func NewSESClient(key, secret, region string) (*ses.SES, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(key, secret, ""),
-	})
+	conf := &aws.Config{
+		Region: aws.String(region),
+	}
+
+	if key != "" && secret != "" {
+		conf.Credentials = credentials.NewStaticCredentials(key, secret, "")
+	}
+
+	sess, err := session.NewSession(conf)
 
 	if err != nil {
 		return nil, err
