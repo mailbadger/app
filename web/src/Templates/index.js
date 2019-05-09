@@ -14,9 +14,10 @@ const Templates = () => (
     rows={["small", "fill"]}
     columns={["15%", "4fr", "1fr"]}
     gap="medium"
+    margin="medium"
     areas={[
       { name: "nav", start: [0, 0], end: [0, 0] },
-      { name: "main", start: [1, 1], end: [1, 1] }
+      { name: "main", start: [0, 1], end: [1, 1] }
     ]}
   >
     <Box
@@ -26,8 +27,13 @@ const Templates = () => (
     >
       <Box>
         <Button
+          style={{
+            color: "#ffffff",
+            background: "#654FAA",
+            width: "150px"
+          }}
           label="Create new"
-          icon={<Add />}
+          icon={<Add color="#ffffff" />}
           reverse
           onClick={() => history.push("/dashboard/templates/new")}
         />

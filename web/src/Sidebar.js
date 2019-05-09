@@ -1,58 +1,157 @@
 import React, { Fragment } from "react";
-import { FormClose, Logout, UserSettings } from "grommet-icons";
+import {
+  FormClose,
+  Logout,
+  UserSettings,
+  Group,
+  List,
+  Send,
+  Template
+} from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
 import { NavLink } from "react-router-dom";
 
 const NavLinks = () => (
   <Fragment>
     <Box margin={{ top: "small" }}>
-      <Box pad="xsmall" direction="row" border="bottom">
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{ borderBottom: "1px solid #53418B" }}
+      >
+        <Group size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/dashboard/subscribers"
         >
           Subscribers
         </NavLink>
       </Box>
-      <Box pad="xsmall" direction="row" border="bottom">
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{
+          borderBottom: "1px solid #53418B",
+          borderTop: "1px solid #7058BA"
+        }}
+      >
+        <List size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/dashboard/lists"
         >
           Lists
         </NavLink>
       </Box>
-      <Box pad="xsmall" direction="row" border="bottom">
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{
+          borderBottom: "1px solid #53418B",
+          borderTop: "1px solid #7058BA"
+        }}
+      >
+        <Send size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/dashboard/campaigns"
         >
           Campaigns
         </NavLink>
       </Box>
-      <Box pad="xsmall" direction="row" border="bottom">
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{
+          borderBottom: "1px solid #53418B",
+          borderTop: "1px solid #7058BA"
+        }}
+      >
+        <Template
+          size="medium"
+          color="#AA9AD4"
+          style={{ marginLeft: "10px" }}
+        />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/dashboard/templates"
         >
           Templates
         </NavLink>
       </Box>
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{ borderTop: "1px solid #7058BA" }}
+      />
     </Box>
     <Box>
-      <Box pad="xsmall" direction="row" border="bottom">
-        <UserSettings size="medium" />
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{ borderBottom: "1px solid #53418B" }}
+      />
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{
+          borderBottom: "1px solid #53418B",
+          borderTop: "1px solid #7058BA"
+        }}
+      >
+        <UserSettings
+          size="medium"
+          color="#AA9AD4"
+          style={{ marginLeft: "10px" }}
+        />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/dashboard/settings"
         >
           Settings
         </NavLink>
       </Box>
-      <Box pad="xsmall" direction="row">
-        <Logout size="medium" />
+      <Box
+        pad="xsmall"
+        direction="row"
+        style={{
+          borderBottom: "1px solid #53418B",
+          borderTop: "1px solid #7058BA"
+        }}
+      >
+        <Logout size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
         <NavLink
-          style={{ textDecoration: "none", marginLeft: "10px" }}
+          style={{
+            textDecoration: "none",
+            marginLeft: "10px",
+            color: "#AA9AD4",
+            textTransform: "uppercase"
+          }}
           to="/logout"
         >
           Logout
@@ -72,10 +171,11 @@ const Sidebar = props => {
           <Box
             flex
             width="18em"
-            background="dark-2"
             elevation="small"
             direction="column"
             justify="between"
+            background="brand"
+            style={{ position: "", minHeight: "100vh" }}
           >
             <NavLinks />
           </Box>

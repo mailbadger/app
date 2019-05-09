@@ -32,7 +32,6 @@ const theme = {
     borderColor: "#CACACA",
     margin: 0
   },
-
   button: {
     border: {
       radius: "5px",

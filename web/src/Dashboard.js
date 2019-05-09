@@ -46,7 +46,7 @@ const Dashboard = () => {
     <ResponsiveContext.Consumer>
       {size => (
         <Fragment>
-          <AppBar>
+          {/*<AppBar>
             <Heading
               level="3"
               onClick={() => setSidebar(!showSidebar)}
@@ -54,7 +54,7 @@ const Dashboard = () => {
             >
               Mail Badger
             </Heading>
-          </AppBar>
+          </AppBar>*/}
           <Box direction="row" flex overflow={{ horizontal: "hidden" }}>
             <Sidebar
               showSidebar={showSidebar}
