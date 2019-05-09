@@ -14,6 +14,7 @@ const key = "storage"
 // writing data in the datastore.
 type Storage interface {
 	GetUser(int64) (*entities.User, error)
+	GetUserByUUID(string) (*entities.User, error)
 	GetUserByUsername(string) (*entities.User, error)
 	GetActiveUserByUsername(string) (*entities.User, error)
 	CreateUser(*entities.User) error
@@ -76,6 +77,11 @@ func GetFromContext(c context.Context) Storage {
 // GetUser returns a User entity from the specified id.
 func GetUser(c context.Context, id int64) (*entities.User, error) {
 	return GetFromContext(c).GetUser(id)
+}
+
+// GetUserByUUID returns a User entity from the specified uuid.
+func GetUserByUUID(c context.Context, uuid string) (*entities.User, error) {
+	return GetFromContext(c).GetUserByUUID(uuid)
 }
 
 // GetUserByUsername returns a User entity from the specified username.

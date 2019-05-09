@@ -2,6 +2,7 @@ package actions
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -116,7 +117,7 @@ func PostForgotPassword(c *gin.Context) {
 		if emailError == "" {
 			emailError = "Email must be in valid format."
 		}
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": emailError,
 		})
 		return
@@ -163,4 +164,89 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
 	if err != nil {
 		logrus.Errorf("forgot password email failure %s", err.Error())
 	}
+}
+
+type putForgotPassParams struct {
+	Password string `form:"password" valid:"required"`
+}
+
+func PutForgotPassword(c *gin.Context) {
+	tokenStr := c.Param("token")
+
+	t, err := token.ParseToken(tokenStr, func(t *token.Token) (string, error) {
+		secret := os.Getenv("EMAILS_TOKEN_SECRET")
+		if secret == "" {
+			logrus.Error("token secret is empty, unable to validate jwt.")
+			return "", errors.New("token secret is empty, unable to validate jwt")
+		}
+		return secret, nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to update your password. The token is invalid.",
+		})
+		return
+	}
+
+	params := &putForgotPassParams{}
+	c.Bind(params)
+
+	v, err := valid.ValidateStruct(params)
+	if !v {
+		passError := valid.ErrorByField(err, "Password")
+		if passError == "" {
+			passError = "The password must not be empty."
+		}
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": passError,
+		})
+		return
+	}
+
+	if len(params.Password) < 8 {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"new_password": "The new password must be atleast 8 characters.",
+		})
+		return
+	}
+
+	user, err := storage.GetUserByUUID(c, t.Value)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Unable to update your password. The user associated with the token is not found.",
+		})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"user": user.ID,
+		}).Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to update your password. Please try again.",
+		})
+		return
+	}
+
+	user.Password = sql.NullString{
+		String: string(hashedPassword),
+		Valid:  true,
+	}
+
+	err = storage.UpdateUser(c, user)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"user": user.ID,
+		}).Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to update your password. Please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Your password has been updated successfully.",
+	})
 }

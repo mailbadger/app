@@ -46,20 +46,20 @@ services:
       - mysql
       - nsqd
     environment:
+      # - ENVIRONMENT=prod
       - DATABASE_DRIVER=mysql
       - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
       - PORT=8080
-      - NSQD_HOST=nsqd
-      - NSQD_PORT=4150
       - SKIP_TLS=true
       - LOG_LEVEL=info
       - DOMAIN_URL=https://example.com
       - AUTH_SECRET=changeme #secret for signing JWTs
       - EMAILS_TOKEN_SECRET=changeme #secret for signing JWTs for forgot pass and unsubscribe url usage.
       - SYSTEM_EMAIL_SOURCE=noreply@mailbadger.io
-      # - ENVIRONMENT=prod
       # - ENABLE_SIGNUP=true
       # - RECAPTCHA_SECRET=abcdef
+      - NSQD_HOST=nsqd
+      - NSQD_PORT=4150
   bulksender:
     image: news-maily/app
     command: /consumers/bulksender

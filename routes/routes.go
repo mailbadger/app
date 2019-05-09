@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"github.com/unrolled/secure"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/unrolled/secure"
 
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
@@ -90,6 +91,8 @@ func New() http.Handler {
 
 	// Guest routes
 	handler.POST("/api/authenticate", actions.PostAuthenticate)
+	handler.POST("/api/forgot-password", actions.PostForgotPassword)
+	handler.PUT("/api/forgot-password/:token", actions.PutForgotPassword)
 	handler.POST("/api/signup", actions.PostSignup)
 	handler.POST("/api/hooks", actions.HandleHook)
 

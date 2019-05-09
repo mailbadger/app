@@ -19,6 +19,13 @@ func (db *store) GetUser(id int64) (*entities.User, error) {
 	return user, err
 }
 
+//GetUserByUUID returns an user by uuid. If no user is found, an error is returned
+func (db *store) GetUserByUUID(uuid string) (*entities.User, error) {
+	var user = new(entities.User)
+	err := db.Where("uuid = ?", uuid).First(user).Error
+	return user, err
+}
+
 //GetUserByUsername returns a user by username. If no user is found,
 //an error is returned
 func (db *store) GetUserByUsername(username string) (*entities.User, error) {
