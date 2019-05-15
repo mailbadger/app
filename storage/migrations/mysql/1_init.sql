@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   `created_at`             datetime
 );
 
-CREATE TABLE IF NOT EXISTS `sends` (
+CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
   `id`          integer primary key AUTO_INCREMENT NOT NULL,
   `uuid`        varchar(36) NOT NULL,
   `user_id`     integer,
@@ -145,4 +145,4 @@ DROP TABLE `list_metadata`;
 DROP TABLE `subscriber_metadata`;
 DROP TABLE `sent_emails`;
 DROP TABLE `bounces`;
-DROP TABLE `sends`;
+DROP TABLE `send_bulk_logs`;

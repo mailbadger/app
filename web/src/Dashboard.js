@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { Box, Heading, ResponsiveContext } from "grommet";
+import { Box, ResponsiveContext } from "grommet";
 
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";

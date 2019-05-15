@@ -1,24 +1,10 @@
 import React, { Fragment } from "react";
 import { FormField, Button, TextInput, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
-import { string, object, ref, addMethod, mixed } from "yup";
+import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
-
-function equalTo(ref, msg) {
-  return mixed().test({
-    name: "equalTo",
-    exclusive: false,
-    // eslint-disable-next-line
-    message: msg || "${path} must be the same as ${reference}",
-    params: {
-      reference: ref.path
-    },
-    test: function(value) {
-      return value === this.resolve(ref);
-    }
-  });
-}
+import equalTo from "../utils/equalTo";
 
 addMethod(string, "equalTo", equalTo);
 

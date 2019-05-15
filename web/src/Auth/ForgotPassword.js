@@ -1,0 +1,82 @@
+import React, { Fragment } from "react";
+import { FormField, Button, TextInput } from "grommet";
+import { Formik, ErrorMessage } from "formik";
+import { string, object, ref, addMethod } from "yup";
+import axios from "axios";
+import qs from "qs";
+import equalTo from "../utils/equalTo";
+
+addMethod(string, "equalTo", equalTo);
+
+const forgotPassValidation = object().shape({
+  email: string().email("Please enter your email")
+});
+
+const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
+  <Fragment>
+    {errors && errors.message && <div>{errors.message}</div>}
+    <form
+      onSubmit={handleSubmit}
+      style={{ color: "black", width: "90%", height: "100%" }}
+    >
+      <FormField label="Email" htmlFor="email">
+        <TextInput
+          placeholder="you@email.com"
+          name="email"
+          onChange={handleChange}
+        />
+        <ErrorMessage name="email" />
+      </FormField>
+      <Button
+        plain
+        style={{
+          marginTop: "10px",
+          marginBottom: "10px",
+          borderRadius: "5px",
+          padding: "8px",
+          background: "#654FAA",
+          width: "100%",
+          textAlign: "center"
+        }}
+        disabled={isSubmitting}
+        type="submit"
+        alignSelf="stretch"
+        textAlign="center"
+        primary
+        label="Submit"
+      />
+    </form>
+  </Fragment>
+);
+
+const ForgotPasswordForm = () => {
+  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+    const callApi = async () => {
+      try {
+        const result = await axios.post(
+          `/api/forgot-password`,
+          qs.stringify({
+            email: values.email
+          })
+        );
+      } catch (error) {
+        setErrors(error.response.data);
+      }
+    };
+
+    callApi();
+
+    //done submitting, set submitting to false
+    setSubmitting(false);
+  };
+
+  return (
+    <Formik
+      onSubmit={handleSubmit}
+      validationSchema={forgotPassValidation}
+      render={props => <Form {...props} />}
+    />
+  );
+};
+
+export default ForgotPasswordForm;

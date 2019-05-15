@@ -162,7 +162,7 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
 	})
 
 	if err != nil {
-		logrus.Errorf("forgot password email failure %s", err.Error())
+		logrus.WithError(err).Error("forgot password email failure")
 	}
 }
 
@@ -206,7 +206,7 @@ func PutForgotPassword(c *gin.Context) {
 
 	if len(params.Password) < 8 {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"new_password": "The new password must be atleast 8 characters.",
+			"password": "The new password must be atleast 8 characters.",
 		})
 		return
 	}

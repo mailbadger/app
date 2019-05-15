@@ -11,6 +11,20 @@ import {
 import { Box, Button, Collapsible, Layer } from "grommet";
 import { NavLink } from "react-router-dom";
 
+const StyledNavLink = props => (
+  <NavLink
+    style={{
+      textDecoration: "none",
+      marginLeft: "10px",
+      color: "#AA9AD4",
+      textTransform: "uppercase"
+    }}
+    {...props}
+  >
+    {props.children}
+  </NavLink>
+);
+
 const NavLinks = () => (
   <Fragment>
     <Box margin={{ top: "small" }}>
@@ -20,17 +34,7 @@ const NavLinks = () => (
         style={{ borderBottom: "1px solid #53418B" }}
       >
         <Group size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/dashboard/subscribers"
-        >
-          Subscribers
-        </NavLink>
+        <StyledNavLink to="/dashboard/subscribers">Subscribers</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
@@ -41,17 +45,7 @@ const NavLinks = () => (
         }}
       >
         <List size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/dashboard/lists"
-        >
-          Lists
-        </NavLink>
+        <StyledNavLink to="/dashboard/lists">Lists</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
@@ -62,17 +56,7 @@ const NavLinks = () => (
         }}
       >
         <Send size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/dashboard/campaigns"
-        >
-          Campaigns
-        </NavLink>
+        <StyledNavLink to="/dashboard/campaigns">Campaigns</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
@@ -87,17 +71,7 @@ const NavLinks = () => (
           color="#AA9AD4"
           style={{ marginLeft: "10px" }}
         />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/dashboard/templates"
-        >
-          Templates
-        </NavLink>
+        <StyledNavLink to="/dashboard/templates">Templates</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
@@ -124,17 +98,7 @@ const NavLinks = () => (
           color="#AA9AD4"
           style={{ marginLeft: "10px" }}
         />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/dashboard/settings"
-        >
-          Settings
-        </NavLink>
+        <StyledNavLink to="/dashboard/settings">Settings</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
@@ -145,17 +109,7 @@ const NavLinks = () => (
         }}
       >
         <Logout size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <NavLink
-          style={{
-            textDecoration: "none",
-            marginLeft: "10px",
-            color: "#AA9AD4",
-            textTransform: "uppercase"
-          }}
-          to="/logout"
-        >
-          Logout
-        </NavLink>
+        <StyledNavLink to="/logout">Logout</StyledNavLink>
       </Box>
     </Box>
   </Fragment>

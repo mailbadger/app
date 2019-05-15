@@ -55,7 +55,7 @@ services:
       - DOMAIN_URL=https://example.com
       - AUTH_SECRET=changeme #secret for signing JWTs
       - EMAILS_TOKEN_SECRET=changeme #secret for signing JWTs for forgot pass and unsubscribe url usage.
-      - SYSTEM_EMAIL_SOURCE=noreply@mailbadger.io
+      - SYSTEM_EMAIL_SOURCE=noreply@example.com
       # - ENABLE_SIGNUP=true
       # - RECAPTCHA_SECRET=abcdef
       - NSQD_HOST=nsqd

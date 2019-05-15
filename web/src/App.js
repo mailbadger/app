@@ -5,7 +5,6 @@ import Landing from "./Landing";
 import { AuthProvider } from "./Auth/AuthContext";
 import Dashboard from "./Dashboard";
 import Logout from "./Auth/Logout";
-import Register from "./Auth/Register";
 import ProtectedRoute from "./ProtectedRoute";
 import history from "./history";
 
@@ -81,7 +80,6 @@ class App extends Component {
                 <ProtectedRoute path="/dashboard" component={Dashboard} />
                 <Route path="/logout" component={Logout} />
                 <Route path="/" component={Landing} />
-                <Route path="/register" component={Register} />
               </Switch>
             </Box>
           </AuthProvider>
