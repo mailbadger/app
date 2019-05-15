@@ -69,7 +69,7 @@ const NewPasswordForm = props => {
     match: { params }
   } = props;
 
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         await axios.put(
@@ -85,7 +85,7 @@ const NewPasswordForm = props => {
       }
     };
 
-    callApi();
+    await callApi();
 
     //done submitting, set submitting to false
     setSubmitting(false);

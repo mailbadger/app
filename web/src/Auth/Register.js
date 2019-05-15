@@ -158,7 +158,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
 );
 
 const RegisterForm = props => {
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         const result = await axios.post(
@@ -180,7 +180,7 @@ const RegisterForm = props => {
       }
     };
 
-    callApi();
+    await callApi();
 
     //done submitting, set submitting to false
     setSubmitting(false);

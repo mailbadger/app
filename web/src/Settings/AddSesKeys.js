@@ -117,7 +117,7 @@ const AddSesKeysForm = () => {
     url: `/api/ses-keys`
   });
 
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const addKeys = async () => {
       try {
         await axios.post(

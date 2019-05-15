@@ -1,8 +1,9 @@
 import React, { Fragment } from "react";
-import { Anchor, FormField, Button, TextInput, Paragraph } from "grommet";
+import { FormField, Button, TextInput, Paragraph } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { Facebook, Google, Github, Mail } from "grommet-icons";
 import { string, object } from "yup";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
 
@@ -28,7 +29,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         <ErrorMessage name="password" />
       </FormField>
 
-      <Anchor href="#" primary label="Forgot my password?" />
+      <NavLink to="/forgot-password">Forgot my password?</NavLink>
 
       <Button
         icon={<Mail />}
@@ -100,7 +101,7 @@ const loginValidation = object().shape({
 });
 
 const LoginForm = props => {
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         const result = await axios.post(
@@ -122,7 +123,7 @@ const LoginForm = props => {
       }
     };
 
-    callApi();
+    await callApi();
 
     //done submitting, set submitting to false
     setSubmitting(false);

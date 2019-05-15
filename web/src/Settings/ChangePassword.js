@@ -50,7 +50,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
 );
 
 const ChangePasswordForm = () => {
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         await axios.post(
@@ -65,7 +65,7 @@ const ChangePasswordForm = () => {
       }
     };
 
-    callApi();
+    await callApi();
 
     //done submitting, set submitting to false
     setSubmitting(false);

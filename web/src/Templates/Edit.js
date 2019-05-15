@@ -20,6 +20,7 @@ const Form = ({
   handleSubmit,
   handleChange,
   setFieldValue,
+  isSubmitting,
   values,
   errors
 }) => {
@@ -55,13 +56,13 @@ const Form = ({
           />
           <ErrorMessage name="htmlPart" />
         </FormField>
-        <Button type="submit" primary label="Submit" />
+        <Button type="submit" primary disabled={isSubmitting} label="Submit" />
       </form>
     </Fragment>
   );
 };
 
-const handleSubmit = id => (values, { setSubmitting, setErrors }) => {
+const handleSubmit = id => async (values, { setSubmitting, setErrors }) => {
   const callApi = async () => {
     try {
       await axios.put(
@@ -78,12 +79,10 @@ const handleSubmit = id => (values, { setSubmitting, setErrors }) => {
     }
   };
 
-  callApi();
+  await callApi();
 
   //done submitting, set submitting to false
   setSubmitting(false);
-
-  return;
 };
 
 const EditTemplateForm = ({ match }) => {

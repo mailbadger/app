@@ -38,6 +38,7 @@ const Form = ({
   handleSubmit,
   handleChange,
   setFieldValue,
+  isSubmitting,
   errors
 }) => {
   return (
@@ -79,7 +80,7 @@ const Form = ({
           />
           <ErrorMessage name="htmlPart" />
         </FormField>
-        <Button type="submit" primary label="Submit" />
+        <Button type="submit" primary disabled={isSubmitting} label="Submit" />
       </form>
     </Fragment>
   );
@@ -88,7 +89,7 @@ const Form = ({
 const CreateTemplateForm = () => {
   const [html, setHtml] = useState(initialHtml);
 
-  const handleSubmit = (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         await axios.post(
@@ -106,7 +107,7 @@ const CreateTemplateForm = () => {
       }
     };
 
-    callApi();
+    await callApi();
 
     //done submitting, set submitting to false
     setSubmitting(false);
