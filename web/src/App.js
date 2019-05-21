@@ -11,7 +11,7 @@ import history from "./history";
 const theme = {
   global: {
     font: {
-      family: "Segoe UI",
+      family: "Roboto",
       size: "14px",
       height: "20px"
     },

@@ -29,7 +29,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         <ErrorMessage name="password" />
       </FormField>
 
-      <NavLink to="/forgot-password">Forgot my password?</NavLink>
+      <NavLink to="/forgot-password">Forgot your password?</NavLink>
 
       <Button
         icon={<Mail />}
@@ -87,10 +87,24 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           background: "#333333"
         }}
         type="button"
+        href="http://localhost:8080/api/auth/github"
         icon={<Github />}
         primary
         label=" Login with github"
       />
+      <Paragraph
+        style={{
+          borderTop: "1px solid #CACACA",
+          marginTop: "14px",
+          paddingTop: "0px"
+        }}
+        size="small"
+        textAlign="center"
+        alignSelf="center"
+        alignContent="center"
+      >
+        Don't have an account? <NavLink to="/signup">Sign up</NavLink>
+      </Paragraph>
     </form>
   </Fragment>
 );

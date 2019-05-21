@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { Paragraph, FormField, Button, TextInput, Anchor } from "grommet";
 import { Formik, ErrorMessage } from "formik";
+import { NavLink } from "react-router-dom";
 import { Facebook, Google, Github, Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
@@ -11,7 +12,9 @@ addMethod(string, "equalTo", equalTo);
 
 const registerValidation = object().shape({
   email: string().email("Please enter your email"),
-  password: string().required("Please enter your password"),
+  password: string()
+    .required("Please enter your password")
+    .min(8),
   password_confirm: string()
     .equalTo(ref("password"), "Passwords don't match")
     .required("Confirm Password is required")
@@ -51,7 +54,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         />
         <ErrorMessage name="password_confirm" />
       </FormField>
-
+      Already have an account? <NavLink to="/login">Sign in</NavLink>
       <Paragraph
         style={{ marginTop: "14px", paddingTop: "0px" }}
         size="small"
@@ -62,7 +65,6 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         By clicking any of the Sign Up buttons, I agree to the{" "}
         <Anchor href="">terms of service</Anchor>
       </Paragraph>
-
       <Button
         plain
         style={{
@@ -82,7 +84,6 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         primary
         label="Sign UP with email"
       />
-
       <Paragraph
         style={{
           borderTop: "1px solid #CACACA",
@@ -96,7 +97,6 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
       >
         or
       </Paragraph>
-
       <Button
         plain
         style={{

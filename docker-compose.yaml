@@ -52,10 +52,14 @@ services:
       - PORT=8080
       - SKIP_TLS=true
       - LOG_LEVEL=info
-      - DOMAIN_URL=https://example.com
-      - AUTH_SECRET=changeme #secret for signing JWTs
-      - EMAILS_TOKEN_SECRET=changeme #secret for signing JWTs for forgot pass and unsubscribe url usage.
+      - DOMAIN_URL=http://localhost:3000
+      - AUTH_SECRET=changeme
+      - EMAILS_TOKEN_SECRET=changeme
+      - SESSION_AUTH_KEY=secret
+      - SESSION_ENCRYPT_KEY=LkcjY97j2yY3jQFUTf1viABjY1Ict3gJ
       - SYSTEM_EMAIL_SOURCE=noreply@example.com
+      - GITHUB_CLIENT_ID=
+      - GITHUB_CLIENT_SECRET=
       # - ENABLE_SIGNUP=true
       # - RECAPTCHA_SECRET=abcdef
       - NSQD_HOST=nsqd

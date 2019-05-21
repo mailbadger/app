@@ -10,7 +10,9 @@ import history from "../history";
 addMethod(string, "equalTo", equalTo);
 
 const passwordValidation = object().shape({
-  password: string().required("Please enter a password"),
+  password: string()
+    .required("Please enter a password")
+    .min(8),
   password_confirm: string()
     .equalTo(ref("password"), "Passwords don't match")
     .required("Confirm Password is required")

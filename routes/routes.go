@@ -8,6 +8,8 @@ import (
 
 	"github.com/unrolled/secure"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/api/actions"
@@ -27,10 +29,16 @@ func New() http.Handler {
 	log.SetFormatter(&logrus.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 
+	store := cookie.NewStore(
+		[]byte(os.Getenv("SESSION_AUTH_KEY")),
+		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
+	)
+
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
 	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
+	handler.Use(sessions.Sessions("mbsess", store))
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
@@ -90,14 +98,20 @@ func New() http.Handler {
 	handler.Static("/static", appDir+"/static")
 
 	// Guest routes
-	handler.POST("/api/authenticate", actions.PostAuthenticate)
-	handler.POST("/api/forgot-password", actions.PostForgotPassword)
-	handler.PUT("/api/forgot-password/:token", actions.PutForgotPassword)
-	handler.POST("/api/signup", actions.PostSignup)
-	handler.POST("/api/hooks", actions.HandleHook)
+	guest := handler.Group("/api")
+	guest.Use(middleware.NoCache())
+
+	guest.GET("/auth/github/callback", actions.GithubCallback)
+	guest.GET("/auth/github", actions.GetGithubAuth)
+	guest.POST("/authenticate", actions.PostAuthenticate)
+	guest.POST("/forgot-password", actions.PostForgotPassword)
+	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
+	guest.POST("/signup", actions.PostSignup)
+	guest.POST("/hooks", actions.HandleHook)
 
 	// Authorized routes
 	authorized := handler.Group("/api")
+	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
 	{
 		users := authorized.Group("/users")

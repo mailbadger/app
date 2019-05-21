@@ -1,19 +1,27 @@
 package actions
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/news-maily/api/utils"
+
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
 	"github.com/news-maily/api/entities"
 	"github.com/news-maily/api/storage"
 	"github.com/news-maily/api/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
+	oauthgithub "golang.org/x/oauth2/github"
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
 
@@ -196,4 +204,123 @@ func PostSignup(c *gin.Context) {
 		},
 		"user": user,
 	})
+}
+
+func GetGithubAuth(c *gin.Context) {
+	state, err := utils.GenerateRandomString(12)
+	if err != nil {
+		logrus.WithError(err).Error("unable to generate random string")
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"message": "Service unavailable.",
+		})
+		return
+	}
+
+	session := sessions.Default(c)
+
+	session.Set("state", state)
+	session.Save()
+
+	url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&scope=user:email&state=%s",
+		os.Getenv("GITHUB_CLIENT_ID"),
+		state,
+	)
+
+	c.Redirect(http.StatusPermanentRedirect, url)
+}
+
+func GithubCallback(c *gin.Context) {
+	host := os.Getenv("DOMAIN_URL")
+
+	ctx := context.Background()
+	conf := &oauth2.Config{
+		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+		Scopes:       []string{"user:email"},
+		Endpoint:     oauthgithub.Endpoint,
+	}
+
+	code := c.Query("code")
+	state := c.Query("state")
+
+	session := sessions.Default(c)
+
+	sessState := session.Get("state")
+	s, ok := sessState.(string)
+	if !ok {
+		logrus.Error("unable to fetch state from session")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	session.Clear()
+
+	if s != state {
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	ghToken, err := conf.Exchange(ctx, code)
+	if err != nil {
+		logrus.WithError(err).Error("exchange token error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	tc := conf.Client(ctx, ghToken)
+	client := github.NewClient(tc)
+
+	ghUser, _, err := client.Users.Get(ctx, "")
+	if err != nil {
+		logrus.WithError(err).Error("fetch user error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	u, err := storage.GetUserByUsername(c, ghUser.GetEmail())
+	if err != nil {
+		if err == sql.ErrNoRows {
+			uuid, err := uuid.NewRandom()
+			if err != nil {
+				logrus.WithError(err).Error("unable to generate random uuid")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+
+			u := &entities.User{
+				UUID:     uuid.String(),
+				Username: ghUser.GetEmail(),
+				Active:   true,
+				Source:   "github",
+			}
+
+			err = storage.CreateUser(c, u)
+			if err != nil {
+				logrus.WithError(err).Error("github register failed")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+		} else {
+			logrus.WithError(err).Error("github social auth")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+	}
+
+	if !u.Active {
+		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via github")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	exp := time.Now().Add(time.Hour * 72).Unix()
+	t := token.New(token.SessionToken, u.Username)
+	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr)
 }
