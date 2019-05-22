@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -322,5 +323,5 @@ func GithubCallback(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr)
+	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
 }

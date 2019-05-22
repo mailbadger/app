@@ -4,10 +4,12 @@ import Register from "./Register";
 import NewPassword from "./NewPassword";
 import { Route, Switch } from "react-router-dom";
 import ForgotPassword from "./ForgotPassword";
+import Callback from "./Callback";
 
 const Auth = props => {
   return (
     <Switch>
+      <Route path="/login/callback" component={Callback} />
       <Route
         path="/login"
         component={() => <Login redirect={props.redirect} />}
