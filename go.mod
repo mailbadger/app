@@ -28,7 +28,7 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.0.4
 	github.com/google/uuid v1.1.1
-	github.com/jinzhu/gorm v1.9.2
+	github.com/jinzhu/gorm v1.9.8
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.0.0 // indirect
 	github.com/karrick/godirwalk v1.7.8 // indirect
