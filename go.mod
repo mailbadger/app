@@ -40,7 +40,7 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rogpeppe/go-internal v1.1.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20190212093014-1007f53448d7
-	github.com/sirupsen/logrus v1.3.0
+	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/unrolled/secure v1.0.0
