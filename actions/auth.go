@@ -9,7 +9,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-contrib/sessions"
+	"github.com/jinzhu/gorm"
+	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/utils"
 
 	valid "github.com/asaskevich/govalidator"
@@ -23,6 +27,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	oauthgithub "golang.org/x/oauth2/github"
+	"golang.org/x/oauth2/google"
+	googleoauth2 "google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
 
@@ -187,6 +194,24 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
+	sender, err := emails.NewSesSender(
+		os.Getenv("AWS_SES_ACCESS_KEY"),
+		os.Getenv("AWS_SES_SECRET_KEY"),
+		os.Getenv("AWS_SES_REGION"),
+	)
+	if err == nil {
+		exp := time.Now().Add(time.Hour * 24).Unix()
+		t := token.New(token.VerifyEmailToken, user.UUID)
+		tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+		if err != nil {
+			logrus.WithError(err).Error("cannot create token")
+		} else {
+			go sendVerifyEmail(tokenStr, user.Username, sender)
+		}
+	} else {
+		logrus.WithError(err).Error("unable to instantiate ses sender")
+	}
+
 	exp := time.Now().Add(time.Hour * 72).Unix()
 	t := token.New(token.SessionToken, user.Username)
 	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
@@ -280,7 +305,7 @@ func GithubCallback(c *gin.Context) {
 
 	u, err := storage.GetUserByUsername(c, ghUser.GetEmail())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if gorm.IsRecordNotFoundError(err) {
 			uuid, err := uuid.NewRandom()
 			if err != nil {
 				logrus.WithError(err).Error("unable to generate random uuid")
@@ -288,10 +313,11 @@ func GithubCallback(c *gin.Context) {
 				return
 			}
 
-			u := &entities.User{
+			u = &entities.User{
 				UUID:     uuid.String(),
 				Username: ghUser.GetEmail(),
 				Active:   true,
+				Verified: true,
 				Source:   "github",
 			}
 
@@ -324,4 +350,157 @@ func GithubCallback(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+}
+
+func GetGoogleAuth(c *gin.Context) {
+	host := os.Getenv("DOMAIN_URL")
+
+	state, err := utils.GenerateRandomString(12)
+	if err != nil {
+		logrus.WithError(err).Error("unable to generate random string")
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"message": "Service unavailable.",
+		})
+		return
+	}
+
+	session := sessions.Default(c)
+
+	session.Set("state", state)
+	session.Save()
+
+	conf := &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		RedirectURL:  host + "/api/auth/google/callback",
+		Scopes: []string{
+			googleoauth2.UserinfoEmailScope,
+		},
+		Endpoint: google.Endpoint,
+	}
+
+	url := conf.AuthCodeURL(state)
+
+	c.Redirect(http.StatusPermanentRedirect, url)
+}
+
+func GoogleCallback(c *gin.Context) {
+	host := os.Getenv("DOMAIN_URL")
+	conf := &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		RedirectURL:  host + "/api/auth/google/callback",
+		Scopes: []string{
+			googleoauth2.UserinfoEmailScope,
+		},
+		Endpoint: google.Endpoint,
+	}
+
+	code := c.Query("code")
+	state := c.Query("state")
+
+	session := sessions.Default(c)
+
+	sessState := session.Get("state")
+	s, ok := sessState.(string)
+	if !ok {
+		logrus.Error("unable to fetch state from session")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	session.Clear()
+
+	if s != state {
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	ctx := context.Background()
+	tok, err := conf.Exchange(ctx, code)
+	if err != nil {
+		logrus.WithError(err).Error("exchange token error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	oauth2Service, err := googleoauth2.NewService(ctx, option.WithTokenSource(conf.TokenSource(ctx, tok)))
+	if err != nil {
+		logrus.WithError(err).Error("unable to instantiate oauth2 service")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	userInfoSvc := googleoauth2.NewUserinfoV2MeService(oauth2Service)
+	gUser, err := userInfoSvc.Get().Do()
+	if err != nil {
+		logrus.WithError(err).Error("fetch user error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	u, err := storage.GetUserByUsername(c, gUser.Email)
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			uuid, err := uuid.NewRandom()
+			if err != nil {
+				logrus.WithError(err).Error("unable to generate random uuid")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+
+			u = &entities.User{
+				UUID:     uuid.String(),
+				Username: gUser.Email,
+				Active:   true,
+				Verified: true,
+				Source:   "google",
+			}
+
+			err = storage.CreateUser(c, u)
+			if err != nil {
+				logrus.WithError(err).Error("google register failed")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+		} else {
+			logrus.WithError(err).Error("google social auth")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+	}
+
+	if !u.Active {
+		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via google")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	exp := time.Now().Add(time.Hour * 72).Unix()
+	t := token.New(token.SessionToken, u.Username)
+	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+}
+
+func sendVerifyEmail(token, email string, sender emails.Sender) {
+	url := os.Getenv("DOMAIN_URL") + "/verify-email/" + token
+
+	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
+		Template:     aws.String("VerifyEmail"),
+		Source:       aws.String(os.Getenv("SYSTEM_EMAIL_SOURCE")),
+		TemplateData: aws.String(fmt.Sprintf(`{"url": "%s"}`, url)),
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(email)},
+		},
+	})
+
+	if err != nil {
+		logrus.WithError(err).Error("email verification - send email failure")
+	}
 }
