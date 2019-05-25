@@ -76,6 +76,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           background: "#4285F4"
         }}
         type="button"
+        href="http://localhost:8080/api/auth/google"
         icon={<Google />}
         primary
         label=" Login with google"
