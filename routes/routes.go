@@ -54,7 +54,7 @@ func New() http.Handler {
 		STSSeconds:            31536000,
 		STSIncludeSubdomains:  true,
 		STSPreload:            true,
-		ContentSecurityPolicy: "default-src 'self'",
+		ContentSecurityPolicy: "default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'",
 
 		IsDevelopment: isDev,
 	})
@@ -106,6 +106,7 @@ func New() http.Handler {
 	guest.POST("/authenticate", actions.PostAuthenticate)
 	guest.POST("/forgot-password", actions.PostForgotPassword)
 	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
+	guest.PUT("/verify-email/:token", actions.PutVerifyEmail)
 	guest.POST("/signup", actions.PostSignup)
 	guest.POST("/hooks", actions.HandleHook)
 

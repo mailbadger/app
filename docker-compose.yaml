@@ -48,7 +48,10 @@ services:
     environment:
       # - ENVIRONMENT=prod
       - DATABASE_DRIVER=mysql
-      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=mailbadger
+      - MYSQL_PASS=changeme
+      - MYSQL_DATABASE=mailbadger
       - PORT=8080
       - SKIP_TLS=true
       - LOG_LEVEL=info
@@ -73,7 +76,10 @@ services:
       - app
     environment:
       - DATABASE_DRIVER=mysql
-      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=mailbadger
+      - MYSQL_PASS=changeme
+      - MYSQL_DATABASE=mailbadger
       - NSQLOOKUPD_HOST=nsqlookupd
       - NSQLOOKUPD_PORT=4161
       - LOG_LEVEL=info
@@ -86,7 +92,10 @@ services:
       - app
     environment:
       - DATABASE_DRIVER=mysql
-      - DATABASE_CONFIG=mailbadger:changeme@tcp(mysql)/mailbadger?charset=utf8mb4&parseTime=true
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=mailbadger
+      - MYSQL_PASS=changeme
+      - MYSQL_DATABASE=mailbadger
       - NSQLOOKUPD_HOST=nsqlookupd
       - NSQLOOKUPD_PORT=4161
       - NSQD_HOST=nsqd

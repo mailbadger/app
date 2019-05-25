@@ -9,7 +9,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-contrib/sessions"
+	"github.com/jinzhu/gorm"
+	"github.com/news-maily/api/emails"
 	"github.com/news-maily/api/utils"
 
 	valid "github.com/asaskevich/govalidator"
@@ -187,6 +191,24 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
+	sender, err := emails.NewSesSender(
+		os.Getenv("AWS_SES_ACCESS_KEY"),
+		os.Getenv("AWS_SES_SECRET_KEY"),
+		os.Getenv("AWS_SES_REGION"),
+	)
+	if err == nil {
+		exp := time.Now().Add(time.Hour * 24).Unix()
+		t := token.New(token.VerifyEmailToken, user.UUID)
+		tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+		if err != nil {
+			logrus.WithError(err).Error("cannot create token")
+		} else {
+			go sendVerifyEmail(tokenStr, user.Username, sender)
+		}
+	} else {
+		logrus.WithError(err).Error("unable to instantiate ses sender")
+	}
+
 	exp := time.Now().Add(time.Hour * 72).Unix()
 	t := token.New(token.SessionToken, user.Username)
 	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
@@ -280,7 +302,7 @@ func GithubCallback(c *gin.Context) {
 
 	u, err := storage.GetUserByUsername(c, ghUser.GetEmail())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if gorm.IsRecordNotFoundError(err) {
 			uuid, err := uuid.NewRandom()
 			if err != nil {
 				logrus.WithError(err).Error("unable to generate random uuid")
@@ -288,7 +310,7 @@ func GithubCallback(c *gin.Context) {
 				return
 			}
 
-			u := &entities.User{
+			u = &entities.User{
 				UUID:     uuid.String(),
 				Username: ghUser.GetEmail(),
 				Active:   true,
@@ -300,6 +322,24 @@ func GithubCallback(c *gin.Context) {
 				logrus.WithError(err).Error("github register failed")
 				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 				return
+			}
+
+			sender, err := emails.NewSesSender(
+				os.Getenv("AWS_SES_ACCESS_KEY"),
+				os.Getenv("AWS_SES_SECRET_KEY"),
+				os.Getenv("AWS_SES_REGION"),
+			)
+			if err == nil {
+				exp := time.Now().Add(time.Hour * 24).Unix()
+				t := token.New(token.VerifyEmailToken, u.UUID)
+				tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+				if err != nil {
+					logrus.WithError(err).Error("cannot create token")
+				} else {
+					go sendVerifyEmail(tokenStr, u.Username, sender)
+				}
+			} else {
+				logrus.WithError(err).Error("unable to instantiate ses sender")
 			}
 		} else {
 			logrus.WithError(err).Error("github social auth")
@@ -324,4 +364,21 @@ func GithubCallback(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+}
+
+func sendVerifyEmail(token, email string, sender emails.Sender) {
+	url := os.Getenv("DOMAIN_URL") + "/verify-email/" + token
+
+	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
+		Template:     aws.String("VerifyEmail"),
+		Source:       aws.String(os.Getenv("SYSTEM_EMAIL_SOURCE")),
+		TemplateData: aws.String(fmt.Sprintf(`{"url": "%s"}`, url)),
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(email)},
+		},
+	})
+
+	if err != nil {
+		logrus.WithError(err).Error("email verification - send email failure")
+	}
 }

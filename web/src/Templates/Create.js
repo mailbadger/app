@@ -101,7 +101,7 @@ const CreateTemplateForm = () => {
           })
         );
 
-        history.push(`/dashboard/templates/${values.name}`);
+        history.push(`/dashboard/templates`);
       } catch (error) {
         setErrors(error.response.data);
       }

@@ -13,6 +13,7 @@ const (
 	SessionToken     = "session_token"
 	ForgotPassToken  = "forgot_pass_token"
 	UnsubscribeToken = "unsubscribe_token"
+	VerifyEmailToken = "verify_token"
 )
 
 type SecretFunc func(*Token) (string, error)

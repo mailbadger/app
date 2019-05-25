@@ -182,7 +182,7 @@ func PutForgotPassword(c *gin.Context) {
 		return secret, nil
 	})
 
-	if err != nil {
+	if err != nil || t.Type != token.ForgotPassToken {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. The token is invalid.",
 		})
@@ -223,7 +223,7 @@ func PutForgotPassword(c *gin.Context) {
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"user": user.ID,
-		}).Println(err)
+		}).Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -239,7 +239,7 @@ func PutForgotPassword(c *gin.Context) {
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"user": user.ID,
-		}).Println(err)
+		}).Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -248,5 +248,51 @@ func PutForgotPassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your password has been updated successfully.",
+	})
+}
+
+func PutVerifyEmail(c *gin.Context) {
+	tokenStr := c.Param("token")
+
+	t, err := token.ParseToken(tokenStr, func(t *token.Token) (string, error) {
+		secret := os.Getenv("EMAILS_TOKEN_SECRET")
+		if secret == "" {
+			logrus.Error("token secret is empty, unable to validate jwt.")
+			return "", errors.New("token secret is empty, unable to validate jwt")
+		}
+		return secret, nil
+	})
+
+	if err != nil || t.Type != token.VerifyEmailToken {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to verify your email. The token is invalid.",
+		})
+		return
+	}
+
+	user, err := storage.GetUserByUUID(c, t.Value)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Unable to verify your email. The user associated with the token is not found.",
+		})
+		return
+	}
+
+	if !user.Verified {
+		user.Verified = true
+		err = storage.UpdateUser(c, user)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"user": user.ID,
+			}).Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to verify your email. Please try again.",
+			})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Your email has been verified.",
 	})
 }
