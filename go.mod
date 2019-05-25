@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.36.0 // indirect
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.19.1
+	github.com/aws/aws-sdk-go v1.19.36
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
@@ -28,11 +28,11 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.0.4
 	github.com/google/uuid v1.1.1
-	github.com/jinzhu/gorm v1.9.2
+	github.com/jinzhu/gorm v1.9.8
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.0.0 // indirect
 	github.com/karrick/godirwalk v1.7.8 // indirect
-	github.com/lib/pq v1.0.0
+	github.com/lib/pq v1.1.1
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/nsqio/go-nsq v1.0.7
@@ -40,7 +40,7 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rogpeppe/go-internal v1.1.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20190212093014-1007f53448d7
-	github.com/sirupsen/logrus v1.3.0
+	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/unrolled/secure v1.0.0
@@ -49,7 +49,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
 	golang.org/x/tools v0.0.0-20190118193359-16909d206f00 // indirect
-	google.golang.org/appengine v1.4.0
+	google.golang.org/appengine v1.6.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 )
