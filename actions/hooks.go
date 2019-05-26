@@ -7,9 +7,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/storage"
 	sns "github.com/robbiet480/go.sns"
 	"github.com/sirupsen/logrus"
 )

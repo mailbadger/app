@@ -14,15 +14,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/google/uuid"
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/queue"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/queue"
 
-	"github.com/news-maily/api/consumers"
+	"github.com/news-maily/app/consumers"
 
-	"github.com/news-maily/api/entities"
+	"github.com/news-maily/app/entities"
 	"github.com/sirupsen/logrus"
 
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/storage"
 	"github.com/nsqio/go-nsq"
 )
 

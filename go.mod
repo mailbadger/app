@@ -1,4 +1,4 @@
-module github.com/news-maily/api
+module github.com/news-maily/app
 
 go 1.12
 

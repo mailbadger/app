@@ -10,13 +10,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/utils/token"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/utils/token"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/routes/middleware"
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/routes/middleware"
+	"github.com/news-maily/app/storage"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
