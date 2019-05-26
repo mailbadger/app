@@ -24,5 +24,10 @@ build_static:
 	mkdir -p release
 	cp $(GOPATH)/bin/api release/
 
+build_web:
+	cd dashboard; yarn && yarn build
+	mkdir -p release
+	cp -r dashboard/build release/dashboard
+
 image:
-	docker build -t news-maily/api:latest .
+	docker build -t news-maily/app:latest .
