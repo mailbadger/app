@@ -11,11 +11,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/events"
-	"github.com/news-maily/api/routes/middleware"
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/events"
+	"github.com/news-maily/app/routes/middleware"
+	"github.com/news-maily/app/storage"
 )
 
 func GetSESKeys(c *gin.Context) {

@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/news-maily/api/entities"
+	"github.com/news-maily/app/entities"
 )
 
 // GetSesKeys returns the SES keys by the given user id

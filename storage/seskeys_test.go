@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/news-maily/api/entities"
+	"github.com/news-maily/app/entities"
 	"github.com/stretchr/testify/assert"
 )
 

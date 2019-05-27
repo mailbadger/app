@@ -13,19 +13,21 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-contrib/sessions"
 	"github.com/jinzhu/gorm"
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/utils"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/utils"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/storage"
-	"github.com/news-maily/api/utils/token"
+	fb "github.com/huandu/facebook"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
+	oauthfb "golang.org/x/oauth2/facebook"
 	oauthgithub "golang.org/x/oauth2/github"
 	"golang.org/x/oauth2/google"
 	googleoauth2 "google.golang.org/api/oauth2/v2"
@@ -127,7 +129,7 @@ func PostSignup(c *gin.Context) {
 
 	_, err = storage.GetUserByUsername(c, params.Email)
 	if err == nil {
-		logrus.WithField("username", params.Email).Errorf("duplicate account %s", err)
+		logrus.WithField("username", params.Email).Error("duplicate account")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -138,9 +140,9 @@ func PostSignup(c *gin.Context) {
 	if secret != "" {
 		captcha, err := recaptcha.NewReCAPTCHA(secret, recaptcha.V2, 10*time.Second)
 		if err != nil {
-			logrus.Errorf("recaptcha initialize error %s", err.Error())
+			logrus.WithError(err).Error("recaptcha initialize error")
 			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unable to create an account.",
+				"message": "Unable to create an account. Captcha is invalid.",
 			})
 			return
 		}
@@ -157,7 +159,7 @@ func PostSignup(c *gin.Context) {
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		logrus.Errorf("unable to generate random uuid: %s", err.Error())
+		logrus.WithError(err).Error("unable to generate random uuid")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -166,7 +168,7 @@ func PostSignup(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logrus.Errorf("unable to generate hash from password %s", err.Error())
+		logrus.WithError(err).Error("unable to generate hash from password")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -187,7 +189,7 @@ func PostSignup(c *gin.Context) {
 
 	err = storage.CreateUser(c, user)
 	if err != nil {
-		logrus.WithField("username", params.Email).Errorf("unable to persist user in db %s", err.Error())
+		logrus.WithField("username", params.Email).WithError(err).Error("unable to persist user in db")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -472,6 +474,145 @@ func GoogleCallback(c *gin.Context) {
 
 	if !u.Active {
 		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via google")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	exp := time.Now().Add(time.Hour * 72).Unix()
+	t := token.New(token.SessionToken, u.Username)
+	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+}
+
+func GetFacebookAuth(c *gin.Context) {
+	host := os.Getenv("DOMAIN_URL")
+	state, err := utils.GenerateRandomString(12)
+	if err != nil {
+		logrus.WithError(err).Error("unable to generate random string")
+		c.JSON(http.StatusServiceUnavailable, gin.H{
+			"message": "Service unavailable.",
+		})
+		return
+	}
+
+	session := sessions.Default(c)
+
+	session.Set("state", state)
+	session.Save()
+
+	url := fmt.Sprintf("https://www.facebook.com/v3.3/dialog/oauth?client_id=%s&scope=email&redirect_uri=%s&state=%s",
+		os.Getenv("FACEBOOK_CLIENT_ID"),
+		host+"/api/auth/facebook/callback",
+		state,
+	)
+
+	c.Redirect(http.StatusPermanentRedirect, url)
+}
+
+func FacebookCallback(c *gin.Context) {
+	host := os.Getenv("DOMAIN_URL")
+
+	ctx := context.Background()
+	conf := &oauth2.Config{
+		ClientID:     os.Getenv("FACEBOOK_CLIENT_ID"),
+		ClientSecret: os.Getenv("FACEBOOK_CLIENT_SECRET"),
+		Scopes:       []string{"email"},
+		Endpoint:     oauthfb.Endpoint,
+	}
+
+	code := c.Query("code")
+	state := c.Query("state")
+
+	session := sessions.Default(c)
+
+	sessState := session.Get("state")
+	s, ok := sessState.(string)
+	if !ok {
+		logrus.Error("unable to fetch state from session")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	session.Clear()
+
+	if s != state {
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	fbToken, err := conf.Exchange(ctx, code)
+	if err != nil {
+		logrus.WithError(err).Error("exchange token error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	tc := conf.Client(ctx, fbToken)
+	sess := &fb.Session{
+		HttpClient: tc,
+		Version:    "v3.3",
+	}
+
+	res, err := sess.Get("/me", nil)
+	if err != nil {
+		logrus.WithError(err).Error("fb client error")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	email, ok := res["email"]
+	if !ok {
+		logrus.WithField("resp", res).Error("fb response does not include email")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	emailStr, ok := email.(string)
+	if !ok {
+		logrus.WithField("email", email).Error("cannot convert email to string")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
+		return
+	}
+
+	u, err := storage.GetUserByUsername(c, emailStr)
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			uuid, err := uuid.NewRandom()
+			if err != nil {
+				logrus.WithError(err).Error("unable to generate random uuid")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+
+			u = &entities.User{
+				UUID:     uuid.String(),
+				Username: emailStr,
+				Active:   true,
+				Verified: true,
+				Source:   "facebook",
+			}
+
+			err = storage.CreateUser(c, u)
+			if err != nil {
+				logrus.WithError(err).Error("facebook register failed")
+				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+				return
+			}
+		} else {
+			logrus.WithError(err).Error("facebook social auth")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+	}
+
+	if !u.Active {
+		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via facebook")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
