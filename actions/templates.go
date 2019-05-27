@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/news-maily/api/storage/templates"
+	"github.com/news-maily/app/storage/templates"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -12,9 +12,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/routes/middleware"
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/routes/middleware"
+	"github.com/news-maily/app/storage"
 )
 
 func GetTemplate(c *gin.Context) {

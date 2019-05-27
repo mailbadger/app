@@ -9,13 +9,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/news-maily/api/consumers"
+	"github.com/news-maily/app/consumers"
 
-	"github.com/news-maily/api/emails"
-	"github.com/news-maily/api/entities"
+	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/entities"
 	"github.com/sirupsen/logrus"
 
-	"github.com/news-maily/api/storage"
+	"github.com/news-maily/app/storage"
 	"github.com/nsqio/go-nsq"
 )
 
