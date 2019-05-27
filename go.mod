@@ -1,11 +1,11 @@
-module github.com/news-maily/api
+module github.com/news-maily/app
 
 go 1.12
 
 require (
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.19.37
+	github.com/aws/aws-sdk-go v1.19.38
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
@@ -25,6 +25,7 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.0.4
 	github.com/google/uuid v1.1.1
+	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.8
 	github.com/karrick/godirwalk v1.7.8 // indirect
 	github.com/lib/pq v1.1.1

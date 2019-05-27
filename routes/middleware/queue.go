@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/queue"
+	"github.com/news-maily/app/queue"
 	"github.com/sirupsen/logrus"
 )
 

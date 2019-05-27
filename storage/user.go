@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/news-maily/api/entities"
+import "github.com/news-maily/app/entities"
 
 //CreateUser creates a new user
 func (db *store) CreateUser(user *entities.User) error {

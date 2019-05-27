@@ -2,7 +2,7 @@ package templates
 
 import (
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/news-maily/api/emails"
+	"github.com/news-maily/app/emails"
 )
 
 type Storage interface {
