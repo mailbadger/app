@@ -105,6 +105,8 @@ func New() http.Handler {
 	guest.GET("/auth/github", actions.GetGithubAuth)
 	guest.GET("/auth/google/callback", actions.GoogleCallback)
 	guest.GET("/auth/google", actions.GetGoogleAuth)
+	guest.GET("/auth/facebook/callback", actions.FacebookCallback)
+	guest.GET("/auth/facebook", actions.GetFacebookAuth)
 	guest.POST("/authenticate", actions.PostAuthenticate)
 	guest.POST("/forgot-password", actions.PostForgotPassword)
 	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
