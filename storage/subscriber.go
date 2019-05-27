@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/utils/pagination"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/utils/pagination"
 )
 
 // GetSubscribers fetches subscribers by user id, and populates the pagination obj

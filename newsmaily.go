@@ -34,8 +34,8 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/routes"
-	"github.com/news-maily/api/utils"
+	"github.com/news-maily/app/routes"
+	"github.com/news-maily/app/utils"
 	"github.com/sirupsen/logrus"
 )
 

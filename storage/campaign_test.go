@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/news-maily/api/entities"
-	"github.com/news-maily/api/utils/pagination"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/utils/pagination"
 	"github.com/stretchr/testify/assert"
 )
 

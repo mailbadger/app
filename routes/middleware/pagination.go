@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/utils/pagination"
+	"github.com/news-maily/app/utils/pagination"
 )
 
 func Paginate() gin.HandlerFunc {

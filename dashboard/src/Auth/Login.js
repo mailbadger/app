@@ -66,6 +66,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         }}
         type="button"
         icon={<Facebook />}
+        href="/api/auth/facebook"
         primary
         label=" Login with facebook"
       />
@@ -76,7 +77,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           background: "#4285F4"
         }}
         type="button"
-        href="http://localhost:8080/api/auth/google"
+        href="/api/auth/google"
         icon={<Google />}
         primary
         label=" Login with google"
@@ -88,7 +89,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           background: "#333333"
         }}
         type="button"
-        href="http://localhost:8080/api/auth/github"
+        href="/api/auth/github"
         icon={<Github />}
         primary
         label=" Login with github"

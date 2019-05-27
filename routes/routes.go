@@ -12,8 +12,8 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/api/actions"
-	"github.com/news-maily/api/routes/middleware"
+	"github.com/news-maily/app/actions"
+	"github.com/news-maily/app/routes/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -105,6 +105,8 @@ func New() http.Handler {
 	guest.GET("/auth/github", actions.GetGithubAuth)
 	guest.GET("/auth/google/callback", actions.GoogleCallback)
 	guest.GET("/auth/google", actions.GetGoogleAuth)
+	guest.GET("/auth/facebook/callback", actions.FacebookCallback)
+	guest.GET("/auth/facebook", actions.GetFacebookAuth)
 	guest.POST("/authenticate", actions.PostAuthenticate)
 	guest.POST("/forgot-password", actions.PostForgotPassword)
 	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
