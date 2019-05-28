@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -79,6 +80,8 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
+	hookUrl := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("DOMAIN_URL"), u.UUID)
+
 	// Check if the configuration set is already created
 	topicArn := ""
 	cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
@@ -125,7 +128,7 @@ func PostSESKeys(c *gin.Context) {
 
 		_, err = snsClient.Subscribe(&sns.SubscribeInput{
 			Protocol: aws.String("https"),
-			Endpoint: aws.String(os.Getenv("DOMAIN_URL") + "/api/hooks"),
+			Endpoint: aws.String(hookUrl),
 			TopicArn: aws.String(topicArn),
 		})
 		if err != nil {
@@ -167,7 +170,7 @@ func PostSESKeys(c *gin.Context) {
 
 			_, err = snsClient.Subscribe(&sns.SubscribeInput{
 				Protocol: aws.String("https"),
-				Endpoint: aws.String(os.Getenv("DOMAIN_URL") + "/api/hooks"),
+				Endpoint: aws.String(hookUrl),
 				TopicArn: aws.String(topicArn),
 			})
 			if err != nil {

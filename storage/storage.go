@@ -59,6 +59,7 @@ type Storage interface {
 
 	CreateBounce(b *entities.Bounce) error
 	CreateComplaint(c *entities.Complaint) error
+	CreateSend(s *entities.Send) error
 	CreateClick(c *entities.Click) error
 	CreateOpen(o *entities.Open) error
 	CreateDelivery(d *entities.Delivery) error
@@ -272,6 +273,11 @@ func CreateBounce(c context.Context, b *entities.Bounce) error {
 // CreateComplaint adds new complaint in the database.
 func CreateComplaint(c context.Context, compl *entities.Complaint) error {
 	return GetFromContext(c).CreateComplaint(compl)
+}
+
+// CreateSend adds new send in the database.
+func CreateSend(c context.Context, send *entities.Send) error {
+	return GetFromContext(c).CreateSend(send)
 }
 
 // CreateClick adds new click in the database.

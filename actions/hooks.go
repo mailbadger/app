@@ -74,20 +74,10 @@ func HandleHook(c *gin.Context) {
 		return
 	}
 
-	// fetch the user id from tags
-	uidTag, ok := msg.Mail.Tags["user_id"]
-	if !ok || len(uidTag) == 0 {
-		logrus.WithFields(logrus.Fields{
-			"message_id": msg.Mail.MessageID,
-			"source":     msg.Mail.Source,
-			"tags":       msg.Mail.Tags,
-		}).Error("user id not found in mail tags")
-		return
-	}
-
-	uid, err := strconv.ParseInt(uidTag[0], 10, 64)
+	uuid := c.Param("uuid")
+	u, err := storage.GetUserByUUID(c, uuid)
 	if err != nil {
-		logrus.Errorf("unable to parse user id str to int: %s", err.Error())
+		logrus.WithField("uuid", uuid).WithError(err).Error("unable to fetch user")
 		return
 	}
 
@@ -100,7 +90,7 @@ func HandleHook(c *gin.Context) {
 
 		for _, recipient := range msg.Bounce.BouncedRecipients {
 			err := storage.CreateBounce(c, &entities.Bounce{
-				UserID:         uid,
+				UserID:         u.ID,
 				CampaignID:     cid,
 				Recipient:      recipient.EmailAddress,
 				Action:         recipient.Action,
@@ -116,7 +106,7 @@ func HandleHook(c *gin.Context) {
 			}
 
 			if msg.Bounce.BounceType == "Permanent" {
-				err = storage.BlacklistSubscriber(c, uid, recipient.EmailAddress)
+				err = storage.BlacklistSubscriber(c, u.ID, recipient.EmailAddress)
 				if err != nil {
 					logrus.WithField("notif", msg).Errorln(err.Error())
 				}
@@ -130,7 +120,7 @@ func HandleHook(c *gin.Context) {
 
 		for _, recipient := range msg.Complaint.ComplainedRecipients {
 			err := storage.CreateComplaint(c, &entities.Complaint{
-				UserID:     uid,
+				UserID:     u.ID,
 				CampaignID: cid,
 				Recipient:  recipient.EmailAddress,
 				Type:       msg.Complaint.ComplaintFeedbackType,
@@ -149,7 +139,7 @@ func HandleHook(c *gin.Context) {
 
 		for _, r := range msg.Delivery.Recipients {
 			err := storage.CreateDelivery(c, &entities.Delivery{
-				UserID:               uid,
+				UserID:               u.ID,
 				CampaignID:           cid,
 				Recipient:            r,
 				ProcessingTimeMillis: msg.Delivery.ProcessingTimeMillis,
@@ -163,6 +153,21 @@ func HandleHook(c *gin.Context) {
 			}
 		}
 	case emails.SendType:
+		for _, d := range msg.Mail.Destination {
+			err := storage.CreateSend(c, &entities.Send{
+				UserId:           u.ID,
+				CampaignId:       cid,
+				MessageID:        msg.Mail.MessageID,
+				Source:           msg.Mail.Source,
+				SourceArn:        msg.Mail.SourceArn,
+				SourceIP:         msg.Mail.SourceIP,
+				SendingAccountID: msg.Mail.SendingAccountID,
+				Destination:      d,
+			})
+			if err != nil {
+				logrus.WithField("notif", msg).Errorln(err.Error())
+			}
+		}
 	case emails.ClickType:
 		if msg.Click == nil {
 			logrus.WithField("notif", msg).Errorln("click is empty")
@@ -170,7 +175,7 @@ func HandleHook(c *gin.Context) {
 		}
 
 		err := storage.CreateClick(c, &entities.Click{
-			UserID:     uid,
+			UserID:     u.ID,
 			CampaignID: cid,
 			Link:       msg.Click.Link,
 			UserAgent:  msg.Click.UserAgent,
@@ -187,7 +192,7 @@ func HandleHook(c *gin.Context) {
 		}
 
 		err := storage.CreateOpen(c, &entities.Open{
-			UserID:     uid,
+			UserID:     u.ID,
 			CampaignID: cid,
 			UserAgent:  msg.Open.UserAgent,
 			IPAddress:  msg.Open.IPAddress,
@@ -197,6 +202,12 @@ func HandleHook(c *gin.Context) {
 			logrus.WithField("notif", msg).Errorln(err.Error())
 		}
 	case emails.RenderingFailureType:
+		logrus.WithFields(logrus.Fields{
+			"campaign_id":   cid,
+			"user_id":       u.ID,
+			"error":         msg.RenderingFailure.ErrorMessage,
+			"template_name": msg.RenderingFailure.TemplateName,
+		}).Warn("rendering failure")
 	default:
 		logrus.WithField("sns", msg).Error("unknown AWS SES message")
 	}

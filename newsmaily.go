@@ -39,13 +39,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func main() {
-	if !utils.IsDebugMode() {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	handler := routes.New()
-
+func init() {
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		lvl = logrus.InfoLevel
@@ -54,6 +48,14 @@ func main() {
 	logrus.SetLevel(lvl)
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
+
+	if !utils.IsDebugMode() {
+		gin.SetMode(gin.ReleaseMode)
+	}
+}
+
+func main() {
+	handler := routes.New()
 
 	var cfg *tls.Config
 	var addr = os.Getenv("PORT")
@@ -65,7 +67,7 @@ func main() {
 		// TLS config
 		cer, err := tls.LoadX509KeyPair(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE"))
 		if err != nil {
-			logrus.Println(err)
+			logrus.WithError(err).Error("unable to load x509 key pair")
 			return
 		}
 		cfg = &tls.Config{

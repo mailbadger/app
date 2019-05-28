@@ -143,24 +143,40 @@ CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
   "uuid"          varchar(36) NOT NULL,
   "user_id"       integer,
   "campaign_id"   integer,
-  "message_id"    varchar(191) NOT NULL,
-  "status"        varchar(191) NOT NULL,
+  "message_id"    varchar(191),
+  "status"        varchar(191),
   "created_at"    datetime
 );
 
 CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_bulk_logs" (user_id, campaign_id);
 CREATE INDEX IF NOT EXISTS i_uuid ON "send_bulk_logs" (uuid);
 
+CREATE TABLE IF NOT EXISTS "sends" (
+  "id"                 integer primary key autoincrement,
+  "user_id"            integer,
+  "campaign_id"        integer,
+  "message_id"         varchar(191) NOT NULL,
+  "source"             varchar(191),
+  "source_arn"         varchar(191),
+  "source_ip"          varchar(191),
+  "sending_account_id" varchar(191),
+  "destination"        varchar(191),
+  "created_at"         datetime
+);
+
 -- +migrate Down
 
 DROP TABLE "users";
-DROP TABLE "templates";
 DROP TABLE "campaigns";
 DROP TABLE "lists";
 DROP TABLE "subscribers";
 DROP TABLE "subscribers_lists";
-DROP TABLE "list_metadata";
 DROP TABLE "subscriber_metadata";
-DROP TABLE "sent_emails";
 DROP TABLE "bounces";
 DROP TABLE "send_bulk_logs";
+DROP TABLE "sends";
+DROP TABLE "clicks";
+DROP TABLE "complaints";
+DROP TABLE "deliveries";
+DROP TABLE "ses_keys";
+DROP TABLE "opens";

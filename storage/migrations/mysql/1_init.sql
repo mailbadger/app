@@ -54,8 +54,9 @@ CREATE TABLE IF NOT EXISTS `lists` (
 );
 
 CREATE TABLE IF NOT EXISTS `subscribers_lists` (
-  `list_id`       integer,
-  `subscriber_id` integer
+  `list_id`       integer NOT NULL,
+  `subscriber_id` integer NOT NULL,
+  PRIMARY KEY (`list_id`, `subscriber_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `subscriber_metadata` (
@@ -128,21 +129,37 @@ CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
   `uuid`        varchar(36) NOT NULL,
   `user_id`     integer,
   `campaign_id` integer,
-  `message_id`  varchar(191) NOT NULL,
+  `message_id`  varchar(191),
   `status`      varchar(191) NOT NULL,
   `created_at`  datetime
+);
+
+CREATE TABLE IF NOT EXISTS `sends` (
+  `id`                 integer primary key AUTO_INCREMENT NOT NULL,
+  `user_id`            integer,
+  `campaign_id`        integer,
+  `message_id`         varchar(191) NOT NULL,
+  `source`             varchar(191),
+  `source_arn`         varchar(191),
+  `source_ip`          varchar(191),
+  `sending_account_id` varchar(191),
+  `destination`        varchar(191),
+  `created_at`         datetime
 );
 
 -- +migrate Down
 
 DROP TABLE `users`;
-DROP TABLE `templates`;
 DROP TABLE `campaigns`;
 DROP TABLE `lists`;
 DROP TABLE `subscribers`;
 DROP TABLE `subscribers_lists`;
-DROP TABLE `list_metadata`;
 DROP TABLE `subscriber_metadata`;
-DROP TABLE `sent_emails`;
 DROP TABLE `bounces`;
 DROP TABLE `send_bulk_logs`;
+DROP TABLE `sends`;
+DROP TABLE `clicks`;
+DROP TABLE `complaints`;
+DROP TABLE `deliveries`;
+DROP TABLE `ses_keys`;
+DROP TABLE `opens`;

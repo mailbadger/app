@@ -21,7 +21,7 @@ FROM node:8-alpine as node-build
 
 WORKDIR /www/app
 
-COPY web .
+COPY dashboard .
 
 RUN yarn build
 

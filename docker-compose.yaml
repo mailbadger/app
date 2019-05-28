@@ -55,7 +55,7 @@ services:
       - PORT=8080
       - SKIP_TLS=true
       - LOG_LEVEL=info
-      - DOMAIN_URL=http://localhost:3000
+      - DOMAIN_URL=http://localhost:8080
       - AUTH_SECRET=changeme
       - EMAILS_TOKEN_SECRET=changeme
       - SESSION_AUTH_KEY=secret

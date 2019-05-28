@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"time"
 
@@ -38,8 +39,7 @@ func From(db *gorm.DB) Storage {
 func openDbConn(driver, config string) *gorm.DB {
 	db, err := gorm.Open(driver, config)
 	if err != nil {
-		log.Errorln(err)
-		log.Fatalln("db connection failed!")
+		log.WithError(err).Fatalln("db connection failed")
 	}
 
 	if driver == "mysql" {
@@ -47,8 +47,7 @@ func openDbConn(driver, config string) *gorm.DB {
 	}
 
 	if err := pingDb(db); err != nil {
-		log.Errorln(err)
-		log.Fatalln("database ping attempts failed")
+		log.WithError(err).Fatalln("database ping attempts failed")
 	}
 
 	fresh := false
@@ -65,8 +64,7 @@ func openDbConn(driver, config string) *gorm.DB {
 	}
 
 	if err := setupDb(driver, config, fresh, db); err != nil {
-		log.Errorln(err)
-		log.Fatalln("migrations failed")
+		log.WithError(err).Fatalln("migrations failed")
 	}
 
 	// db.LogMode(utils.IsDebugMode())
@@ -86,7 +84,6 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	}
 	_, err := migrate.Exec(db.DB(), driver, m, migrate.Up)
 	if err != nil {
-		log.Errorln(err)
 		return err
 	}
 
@@ -94,7 +91,6 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	if fresh {
 		err = initDb(config, db)
 		if err != nil {
-			log.Errorln(err)
 			return err
 		}
 	}
@@ -178,4 +174,20 @@ func openTestDb() *gorm.DB {
 	}
 
 	return openDbConn(driver, config)
+}
+
+func MakeConfigFromEnv(driver string) string {
+	switch driver {
+	case "sqlite3":
+		return os.Getenv("SQLITE3_FILE")
+	case "mysql":
+		return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=true",
+			os.Getenv("MYSQL_USER"),
+			os.Getenv("MYSQL_PASS"),
+			os.Getenv("MYSQL_HOST"),
+			os.Getenv("MYSQL_DATABASE"),
+		)
+	default:
+		return ""
+	}
 }

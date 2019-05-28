@@ -166,7 +166,9 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
 
-	s := storage.New(os.Getenv("DATABASE_DRIVER"), os.Getenv("DATABASE_CONFIG"))
+	driver := os.Getenv("DATABASE_DRIVER")
+	conf := storage.MakeConfigFromEnv(driver)
+	s := storage.New(driver, conf)
 
 	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
 	if err != nil {

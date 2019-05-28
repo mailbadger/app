@@ -99,8 +99,8 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
         <Box>
           <Button
             label="Delete"
-            onClick={() => {
-              deleteKeys();
+            onClick={async () => {
+              await deleteKeys();
               callApi({ url: "/api/ses-keys" });
               hideModal();
             }}
@@ -135,7 +135,7 @@ const AddSesKeysForm = () => {
       }
     };
 
-    addKeys();
+    await addKeys();
 
     //done submitting, set submitting to false
     setSubmitting(false);
