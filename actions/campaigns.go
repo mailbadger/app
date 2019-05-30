@@ -99,6 +99,11 @@ func StartCampaign(c *gin.Context) {
 
 	err = queue.Publish(c, entities.CampaignsTopic, msg)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"campaign_id": campaign.Id,
+			"user_id":     u.ID,
+			"list_ids":    params.Ids,
+		}).WithError(err).Error("unable to queue campaign for sending")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
@@ -108,7 +113,7 @@ func StartCampaign(c *gin.Context) {
 	campaign.Status = entities.StatusSending
 	err = storage.UpdateCampaign(c, campaign)
 	if err != nil {
-		logrus.WithField("campaign", campaign).Errorln(err)
+		logrus.WithField("campaign", campaign).WithError(err).Error("unable to update campaign status")
 	}
 
 	c.JSON(http.StatusOK, gin.H{

@@ -157,8 +157,6 @@ CREATE TABLE IF NOT EXISTS "sends" (
   "campaign_id"        integer,
   "message_id"         varchar(191) NOT NULL,
   "source"             varchar(191),
-  "source_arn"         varchar(191),
-  "source_ip"          varchar(191),
   "sending_account_id" varchar(191),
   "destination"        varchar(191),
   "created_at"         datetime

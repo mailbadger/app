@@ -159,10 +159,9 @@ func HandleHook(c *gin.Context) {
 				CampaignId:       cid,
 				MessageID:        msg.Mail.MessageID,
 				Source:           msg.Mail.Source,
-				SourceArn:        msg.Mail.SourceArn,
-				SourceIP:         msg.Mail.SourceIP,
 				SendingAccountID: msg.Mail.SendingAccountID,
 				Destination:      d,
+				CreatedAt:        msg.Mail.Timestamp,
 			})
 			if err != nil {
 				logrus.WithField("notif", msg).Errorln(err.Error())

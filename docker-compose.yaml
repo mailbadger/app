@@ -45,28 +45,8 @@ services:
     depends_on:
       - mysql
       - nsqd
-    environment:
-      # - ENVIRONMENT=prod
-      - DATABASE_DRIVER=mysql
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=mailbadger
-      - MYSQL_PASS=changeme
-      - MYSQL_DATABASE=mailbadger
-      - PORT=8080
-      - SKIP_TLS=true
-      - LOG_LEVEL=info
-      - DOMAIN_URL=http://localhost:8080
-      - AUTH_SECRET=changeme
-      - EMAILS_TOKEN_SECRET=changeme
-      - SESSION_AUTH_KEY=secret
-      - SESSION_ENCRYPT_KEY=LkcjY97j2yY3jQFUTf1viABjY1Ict3gJ
-      - SYSTEM_EMAIL_SOURCE=noreply@example.com
-      - GITHUB_CLIENT_ID=
-      - GITHUB_CLIENT_SECRET=
-      # - ENABLE_SIGNUP=true
-      # - RECAPTCHA_SECRET=abcdef
-      - NSQD_HOST=nsqd
-      - NSQD_PORT=4150
+    env_file: 
+    - .env
   bulksender:
     image: news-maily/app
     command: /consumers/bulksender
@@ -74,15 +54,8 @@ services:
       - ./maily.db:/maily.db
     depends_on:
       - app
-    environment:
-      - DATABASE_DRIVER=mysql
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=mailbadger
-      - MYSQL_PASS=changeme
-      - MYSQL_DATABASE=mailbadger
-      - NSQLOOKUPD_HOST=nsqlookupd
-      - NSQLOOKUPD_PORT=4161
-      - LOG_LEVEL=info
+    env_file: 
+    - .env
   campaigner:
     image: news-maily/app
     command: /consumers/campaigner
@@ -90,17 +63,8 @@ services:
       - ./maily.db:/maily.db
     depends_on:
       - app
-    environment:
-      - DATABASE_DRIVER=mysql
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=mailbadger
-      - MYSQL_PASS=changeme
-      - MYSQL_DATABASE=mailbadger
-      - NSQLOOKUPD_HOST=nsqlookupd
-      - NSQLOOKUPD_PORT=4161
-      - NSQD_HOST=nsqd
-      - NSQD_PORT=4150
-      - LOG_LEVEL=info
+    env_file: 
+    - .env
 
 volumes:
   dbdata:
