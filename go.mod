@@ -24,7 +24,7 @@ require (
 	github.com/gobuffalo/tags v2.0.15+incompatible // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-github/v25 v25.0.4
+	github.com/google/go-github/v25 v25.1.0
 	github.com/google/uuid v1.1.1
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.8
