@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 import { Paragraph, FormField, Button, TextInput, Anchor } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { NavLink } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 import { Facebook, Google, Github, Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
@@ -20,7 +21,13 @@ const registerValidation = object().shape({
     .required("Confirm Password is required")
 });
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
+const Form = ({
+  handleSubmit,
+  handleChange,
+  isSubmitting,
+  setFieldValue,
+  errors
+}) => (
   <Fragment>
     {errors && errors.message && <div>{errors.message}</div>}
     <form
@@ -54,6 +61,12 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         />
         <ErrorMessage name="password_confirm" />
       </FormField>
+      {process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+          onChange={value => setFieldValue("token_response", value, true)}
+        />
+      )}
       Already have an account? <NavLink to="/login">Sign in</NavLink>
       <Paragraph
         style={{ marginTop: "14px", paddingTop: "0px" }}
@@ -161,13 +174,21 @@ const RegisterForm = props => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
-        const result = await axios.post(
-          "/api/signup",
-          qs.stringify({
-            email: values.email,
-            password: values.password
-          })
-        );
+        let params = {
+          email: values.email,
+          password: values.password
+        };
+
+        if (process.env.REACT_APP_RECAPTCHA_SITE_KEY !== "") {
+          if (!values.token_response) {
+            setErrors({ message: "Invalid re-captcha response." });
+            return;
+          }
+
+          params.token_response = values.token_response;
+        }
+
+        const result = await axios.post("/api/signup", qs.stringify(params));
 
         result.data.token.expires_in =
           result.data.token.expires_in * 1000 + new Date().getTime();
