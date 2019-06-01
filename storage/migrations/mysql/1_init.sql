@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `user_id`     integer NOT NULL,
   `name`        varchar(191) NOT NULL,
   `email`       varchar(191) NOT NULL,
+  `metadata`    JSON,
   `blacklisted` integer,
   `active`      integer,
   `created_at`  datetime NOT NULL,
@@ -61,16 +62,6 @@ CREATE TABLE IF NOT EXISTS `subscribers_lists` (
   `list_id`       integer NOT NULL,
   `subscriber_id` integer NOT NULL,
   PRIMARY KEY (`list_id`, `subscriber_id`)
-);
-
-CREATE TABLE IF NOT EXISTS `subscriber_metadata` (
-  `id`            integer primary key AUTO_INCREMENT NOT NULL,
-  `subscriber_id` integer NOT NULL,
-  `key`           varchar(191),
-  `value`         varchar(191),
-  `created_at`    datetime NOT NULL,
-  `updated_at`    datetime NOT NULL,
-  FOREIGN KEY (`subscriber_id`) REFERENCES subscribers(`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `bounces` (

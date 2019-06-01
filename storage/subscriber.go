@@ -21,21 +21,21 @@ func (db *store) GetSubscribers(userID int64, p *pagination.Pagination) {
 // GetSubscriber returns the subscriber by the given id and user id
 func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Metadata").Find(s).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Find(s).Error
 	return s, err
 }
 
 // GetSubscribersByIDs returns the subscriber by the given id and user id
 func (db *store) GetSubscribersByIDs(ids []int64, userID int64) ([]entities.Subscriber, error) {
 	var s []entities.Subscriber
-	err := db.Where("user_id = ? and id in (?)", userID, ids).Preload("Metadata").Find(&s).Error
+	err := db.Where("user_id = ? and id in (?)", userID, ids).Find(&s).Error
 	return s, err
 }
 
 // GetSubscriberByEmail returns the subscriber by the given email and user id
 func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
-	err := db.Where("user_id = ? and email = ?", userID, email).Preload("Metadata").Find(s).Error
+	err := db.Where("user_id = ? and email = ?", userID, email).Find(s).Error
 	return s, err
 }
 
@@ -112,19 +112,12 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		return err
 	}
 
-	var meta []entities.SubscriberMetadata
-
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
-
-	if err := tx.Where("subscriber_id = ?", id).Delete(meta).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
 
 	if err := tx.Model(s).Association("Lists").Clear().Error; err != nil {
 		tx.Rollback()

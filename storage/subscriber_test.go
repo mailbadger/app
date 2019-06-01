@@ -27,9 +27,7 @@ func TestSubscriber(t *testing.T) {
 		Name:   "foo",
 		Email:  "john@example.com",
 		UserId: 1,
-		Metadata: []entities.SubscriberMetadata{
-			{Key: "key", Value: "val"},
-		},
+		MetaJSON: []byte(`{"foo":"bar"}`),
 		Blacklisted: false,
 		Active:      true,
 	}
@@ -40,11 +38,12 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subscriber
 	s, err = store.GetSubscriber(s.Id, 1)
+	s.Normalize()
+
 	assert.Nil(t, err)
 	assert.Equal(t, s.Name, "foo")
 	assert.NotEmpty(t, s.Metadata)
-	assert.Equal(t, s.Metadata[0].Key, "key")
-	assert.Equal(t, s.Metadata[0].Value, "val")
+	assert.Equal(t, s.Metadata["foo"], "bar")
 
 	//Test get subscriber by email
 	s, err = store.GetSubscriberByEmail("john@example.com", 1)

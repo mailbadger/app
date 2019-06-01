@@ -73,19 +73,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			// create
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
-				// marshal sub template data
-				s.Normalize()
-				td, err := json.Marshal(s.TemplateData)
-				if err != nil {
-					logrus.Errorf("unable to marshal template data for subscriber %d - %s", s.Id, err.Error())
-					continue
-				}
-
 				d := &ses.BulkEmailDestination{
 					Destination: &ses.Destination{
 						ToAddresses: []*string{aws.String(s.Email)},
 					},
-					ReplacementTemplateData: aws.String(string(td)),
+					ReplacementTemplateData: aws.String(string(s.MetaJSON)),
 				}
 
 				dest = append(dest, d)

@@ -38,14 +38,15 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
 CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
 
 CREATE TABLE IF NOT EXISTS "subscribers" (
-  "id"         integer primary key autoincrement,
-  "user_id"    integer,
-  "name"       varchar(191) NOT NULL,
-  "email"      varchar(191) NOT NULL,
+  "id"          integer primary key autoincrement,
+  "user_id"     integer,
+  "name"        varchar(191) NOT NULL,
+  "email"       varchar(191) NOT NULL,
+  "metadata"    json,
   "blacklisted" integer,
   "active"      integer,
-  "created_at" datetime,
-  "updated_at" datetime,
+  "created_at"  datetime,
+  "updated_at"  datetime,
   UNIQUE("user_id", "email")
 );
 
@@ -70,17 +71,6 @@ CREATE TABLE IF NOT EXISTS "subscribers_lists" (
 
 CREATE INDEX IF NOT EXISTS i_list       ON "subscribers_lists" (list_id);
 CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_lists" (subscriber_id);
-
-CREATE TABLE IF NOT EXISTS "subscriber_metadata" (
-  "id"            integer primary key autoincrement,
-  "subscriber_id" integer,
-  "key"           varchar(191),
-  "value"         varchar(191),
-  "created_at"    datetime,
-  "updated_at"    datetime
-);
-
-CREATE INDEX IF NOT EXISTS i_subscriber ON "subscriber_metadata" (subscriber_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
   "id"              integer primary key autoincrement,
@@ -169,7 +159,6 @@ DROP TABLE "campaigns";
 DROP TABLE "lists";
 DROP TABLE "subscribers";
 DROP TABLE "subscribers_lists";
-DROP TABLE "subscriber_metadata";
 DROP TABLE "bounces";
 DROP TABLE "send_bulk_logs";
 DROP TABLE "sends";

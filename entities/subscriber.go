@@ -1,10 +1,12 @@
 package entities
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/sirupsen/logrus"
 )
 
 var ErrSubscriberNameEmpty = errors.New("The subscriber name cannot be empty.")
@@ -12,38 +14,33 @@ var ErrEmailInvalid = errors.New("The specified email is not valid.")
 
 //Subscriber represents the subscriber entity
 type Subscriber struct {
-	Id           int64                `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId       int64                `json:"-" gorm:"column:user_id; index"`
-	Name         string               `json:"name" gorm:"not null"`
-	Email        string               `json:"email" gorm:"not null"`
-	Lists        []List               `json:"-" gorm:"many2many:subscribers_lists;"`
-	Metadata     []SubscriberMetadata `json:"metadata" gorm:"ForeignKey:SubscriberId"`
-	Blacklisted  bool                 `json:"blacklisted"`
-	Active       bool                 `json:"active"`
-	CreatedAt    time.Time            `json:"created_at"`
-	UpdatedAt    time.Time            `json:"updated_at"`
-	Errors       map[string]string    `json:"-" sql:"-"`
-	TemplateData map[string]string    `json:"-" sql:"-"`
-}
-
-//SubscriberMetadata represents the subscriber metadata in a form of a key and value
-type SubscriberMetadata struct {
-	Id           int64  `gorm:"column:id; primary_key:yes"`
-	SubscriberId int64  `gorm:"column:subscriber_id; index"`
-	Key          string `gorm:"not null" valid:"alphanum,required"`
-	Value        string `gorm:"not null" valid:"alphanum,required"`
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	Id          int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	UserId      int64             `json:"-" gorm:"column:user_id; index"`
+	Name        string            `json:"name" gorm:"not null"`
+	Email       string            `json:"email" gorm:"not null"`
+	MetaJSON    JSON              `json:"-" gorm:"column:metadata; type:json"`
+	Lists       []List            `json:"-" gorm:"many2many:subscribers_lists;"`
+	Blacklisted bool              `json:"blacklisted"`
+	Active      bool              `json:"active"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+	Errors      map[string]string `json:"-" sql:"-"`
+	Metadata    map[string]string `json:"metadata" sql:"-"`
 }
 
 func (s *Subscriber) Normalize() {
-	s.TemplateData = make(map[string]string)
+	var m map[string]string
 
-	s.TemplateData["name"] = s.Name
-
-	for _, m := range s.Metadata {
-		s.TemplateData[m.Key] = m.Value
+	if !s.MetaJSON.IsNull() {
+		err := json.Unmarshal(s.MetaJSON, &m)
+		if err != nil {
+			logrus.WithError(err).Error("unable to unmarshal json metadata")
+		}
 	}
+
+	m["name"] = s.Name
+
+	s.Metadata = m
 }
 
 // Validate subscriber properties,
