@@ -3,11 +3,13 @@ import { Paragraph, FormField, Button, TextInput, Anchor } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { NavLink } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Facebook, Google, Github, Mail } from "grommet-icons";
+import { Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
 import equalTo from "../utils/equalTo";
+import { socialAuthEnabled } from "../Auth";
+import SocialButtons from "./SocialButtons";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -97,75 +99,24 @@ const Form = ({
         primary
         label="Sign UP with email"
       />
-      <Paragraph
-        style={{
-          borderTop: "1px solid #CACACA",
-          marginTop: "14px",
-          paddingTop: "0px"
-        }}
-        size="small"
-        textAlign="center"
-        alignSelf="center"
-        alignContent="center"
-      >
-        or
-      </Paragraph>
-      <Button
-        plain
-        style={{
-          marginTop: "7px",
-          marginBottom: "7px",
-          borderRadius: "5px",
-          padding: "8px",
-          background: "#4267B2",
-          width: "100%",
-          textAlign: "center"
-        }}
-        type="button"
-        icon={<Facebook />}
-        alignSelf="center"
-        textAlign="center"
-        primary
-        label=" Sign Up with facebook"
-      />
-      <br />
-      <Button
-        plain
-        style={{
-          marginTop: "7px",
-          marginBottom: "7px",
-          borderRadius: "5px",
-          padding: "8px",
-          background: "#4285F4",
-          width: "100%",
-          textAlign: "center"
-        }}
-        type="button"
-        icon={<Google />}
-        alignSelf="stretch"
-        textAlign="center"
-        primary
-        label=" Sign Up with google"
-      />
-      <br />
-      <Button
-        plain
-        style={{
-          marginTop: "7px",
-          marginBottom: "7px",
-          borderRadius: "5px",
-          padding: "8px",
-          background: "#333333",
-          width: "100%",
-          textAlign: "center"
-        }}
-        type="button"
-        icon={<Github />}
-        alignSelf="stretch"
-        textAlign="center"
-        primary
-        label=" Sign Up with github"
-      />
+      {socialAuthEnabled() && (
+        <Fragment>
+          <Paragraph
+            style={{
+              borderTop: "1px solid #CACACA",
+              marginTop: "14px",
+              paddingTop: "0px"
+            }}
+            size="small"
+            textAlign="center"
+            alignSelf="center"
+            alignContent="center"
+          >
+            or
+          </Paragraph>
+          <SocialButtons />
+        </Fragment>
+      )}
     </form>
   </Fragment>
 );

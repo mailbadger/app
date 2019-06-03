@@ -6,6 +6,9 @@ import { Route, Switch } from "react-router-dom";
 import ForgotPassword from "./ForgotPassword";
 import Callback from "./Callback";
 
+export const socialAuthEnabled = () =>
+  process.env.REACT_APP_ENABLE_SOCIAL_AUTH === "true";
+
 const Auth = props => {
   return (
     <Switch>

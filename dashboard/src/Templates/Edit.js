@@ -95,7 +95,7 @@ const EditTemplateForm = ({ match }) => {
     if (!state.isLoading && state.data) {
       setHtml(state.data.html_part);
     }
-  }, [state.data]);
+  }, [state]);
 
   if (state.isLoading) {
     return <div>Loading...</div>;

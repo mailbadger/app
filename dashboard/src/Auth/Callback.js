@@ -3,19 +3,19 @@ import queryString from "query-string";
 import { withRouter } from "react-router-dom";
 import useApi from "../hooks/useApi";
 
-const Callback = withRouter(props => {
+const Callback = withRouter(({ location, history }) => {
   const [state] = useApi({
     url: "/api/users"
   });
 
-  const params = queryString.parse(props.location.search);
+  const params = queryString.parse(location.search);
 
   useEffect(() => {
     if (state.data) {
       localStorage.setItem("user", JSON.stringify(state.data));
-      props.history.replace("/dashboard");
+      history.replace("/dashboard");
     }
-  }, [state.data, params]);
+  }, [state.data, params, history]);
 
   const exp = parseInt(params.exp, 10) * 1000 + new Date().getTime();
   localStorage.setItem(

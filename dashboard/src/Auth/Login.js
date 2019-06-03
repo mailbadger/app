@@ -1,11 +1,13 @@
 import React, { Fragment } from "react";
 import { FormField, Button, TextInput, Paragraph } from "grommet";
 import { Formik, ErrorMessage } from "formik";
-import { Facebook, Google, Github, Mail } from "grommet-icons";
+import { Mail } from "grommet-icons";
 import { string, object } from "yup";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
+import SocialButtons from "./SocialButtons";
+import { socialAuthEnabled } from "../Auth";
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
   <Fragment>
@@ -44,56 +46,24 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         label="Login with email"
       />
 
-      <Paragraph
-        style={{
-          borderTop: "1px solid #CACACA",
-          marginTop: "14px",
-          paddingTop: "0px"
-        }}
-        size="small"
-        textAlign="center"
-        alignSelf="center"
-        alignContent="center"
-      >
-        or
-      </Paragraph>
-
-      <Button
-        style={{
-          marginTop: "0px",
-          marginBottom: "4px",
-          background: "#4267B2"
-        }}
-        type="button"
-        icon={<Facebook />}
-        href="/api/auth/facebook"
-        primary
-        label=" Login with facebook"
-      />
-      <Button
-        style={{
-          marginTop: "4px",
-          marginBottom: "4px",
-          background: "#4285F4"
-        }}
-        type="button"
-        href="/api/auth/google"
-        icon={<Google />}
-        primary
-        label=" Login with google"
-      />
-      <Button
-        style={{
-          marginTop: "4px",
-          marginBottom: "4px",
-          background: "#333333"
-        }}
-        type="button"
-        href="/api/auth/github"
-        icon={<Github />}
-        primary
-        label=" Login with github"
-      />
+      {socialAuthEnabled() && (
+        <Fragment>
+          <Paragraph
+            style={{
+              borderTop: "1px solid #CACACA",
+              marginTop: "14px",
+              paddingTop: "0px"
+            }}
+            size="small"
+            textAlign="center"
+            alignSelf="center"
+            alignContent="center"
+          >
+            or
+          </Paragraph>
+          <SocialButtons />
+        </Fragment>
+      )}
       <Paragraph
         style={{
           borderTop: "1px solid #CACACA",
