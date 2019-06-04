@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS `ses_keys` (
   `region`     varchar(30) NOT NULL,
   `created_at` datetime,
   `updated_at` datetime,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
@@ -33,7 +34,8 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `updated_at`    datetime NOT NULL,
   `scheduled_at`  datetime DEFAULT NULL,
   `completed_at`  datetime DEFAULT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `subscribers` (
@@ -46,7 +48,8 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `active`      integer,
   `created_at`  datetime NOT NULL,
   `updated_at`  datetime NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `lists` (
@@ -55,7 +58,8 @@ CREATE TABLE IF NOT EXISTS `lists` (
   `name`        varchar(191) NOT NULL,
   `created_at`  datetime NOT NULL,
   `updated_at`  datetime NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `subscribers_lists` (
@@ -77,7 +81,8 @@ CREATE TABLE IF NOT EXISTS `bounces` (
   `feedback_id`     varchar(191),
   `created_at`      datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `complaints` (
@@ -90,7 +95,8 @@ CREATE TABLE IF NOT EXISTS `complaints` (
   `feedback_id` varchar(191),
   `created_at`  datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `clicks` (
@@ -102,7 +108,8 @@ CREATE TABLE IF NOT EXISTS `clicks` (
   `link`        varchar(191),
   `created_at`  datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `opens` (
@@ -113,7 +120,8 @@ CREATE TABLE IF NOT EXISTS `opens` (
   `user_agent`  varchar(191),
   `created_at`  datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `deliveries` (
@@ -127,7 +135,8 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   `remote_mta_ip`          varchar(50),
   `created_at`             datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
@@ -139,7 +148,8 @@ CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
   `status`      varchar(191) NOT NULL,
   `created_at`  datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 CREATE TABLE IF NOT EXISTS `sends` (
@@ -152,7 +162,8 @@ CREATE TABLE IF NOT EXISTS `sends` (
   `destination`        varchar(191),
   `created_at`         datetime NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX (`user_id`)
 );
 
 -- +migrate Down
