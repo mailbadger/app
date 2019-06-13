@@ -27,7 +27,7 @@ require (
 	github.com/google/go-github/v25 v25.1.1
 	github.com/google/uuid v1.1.1
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/gorm v1.9.8
+	github.com/jinzhu/gorm v1.9.9
 	github.com/karrick/godirwalk v1.7.8 // indirect
 	github.com/lib/pq v1.1.1
 	github.com/mattn/go-sqlite3 v1.10.0
