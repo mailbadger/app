@@ -50,7 +50,7 @@
   "proxy": "http://localhost:8080",
   "devDependencies": {
     "husky": "^2.3.0",
-    "lint-staged": "^8.1.7",
+    "lint-staged": "^8.2.1",
     "prettier": "1.17.1"
   }
 }
