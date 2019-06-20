@@ -14,7 +14,7 @@ require (
 	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
 	github.com/gin-gonic/contrib v0.0.0-20190302003538-54ff787f7c73
 	github.com/gin-gonic/gin v1.4.0
-	github.com/go-bindata/go-bindata v3.1.1+incompatible // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/flect v0.0.0-20190117212819-a62e61d96794 // indirect
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
