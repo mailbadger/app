@@ -22,7 +22,7 @@ build: build_static
 build_static:
 	go install github.com/news-maily/app
 	mkdir -p release
-	cp $(GOPATH)/bin/api release/
+	cp $(GOPATH)/bin/app release/
 
 build_web:
 	cd dashboard; yarn && yarn build

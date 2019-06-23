@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.19.41
+	github.com/aws/aws-sdk-go v1.20.5
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
@@ -14,7 +14,7 @@ require (
 	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
 	github.com/gin-gonic/contrib v0.0.0-20190302003538-54ff787f7c73
 	github.com/gin-gonic/gin v1.4.0
-	github.com/go-bindata/go-bindata v3.1.1+incompatible // indirect
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/flect v0.0.0-20190117212819-a62e61d96794 // indirect
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
@@ -27,7 +27,7 @@ require (
 	github.com/google/go-github/v25 v25.1.1
 	github.com/google/uuid v1.1.1
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/gorm v1.9.8
+	github.com/jinzhu/gorm v1.9.9
 	github.com/karrick/godirwalk v1.7.8 // indirect
 	github.com/lib/pq v1.1.1
 	github.com/mattn/go-sqlite3 v1.10.0
@@ -46,7 +46,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
 	google.golang.org/api v0.6.0
-	google.golang.org/appengine v1.6.0
+	google.golang.org/appengine v1.6.1
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 )
