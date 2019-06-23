@@ -12,7 +12,8 @@ import history from "./history";
 const theme = {
   global: {
     font: {
-      family: "Roboto",
+      family:
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'",
       size: "14px",
       height: "20px"
     },
@@ -20,6 +21,18 @@ const theme = {
       background: "#F5F7F9",
       brand: "#6650AA"
     }
+  },
+  tabs: {
+    header: {
+      background: "white"
+    }
+  },
+  tab: {
+    color: "#888888",
+    active: {
+      color: "brand"
+    },
+    border: false
   },
   formField: {
     label: {
@@ -55,7 +68,6 @@ const theme = {
           color: white;
           font-size: 12px;
           font-weight: bold;
-          width: 100%;
           border: 0px;
           border-radius:5px;
           ${extraStyles}

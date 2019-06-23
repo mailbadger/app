@@ -1,10 +1,11 @@
-import React, { Fragment } from "react";
-import { FormField, Button, TextInput, Heading } from "grommet";
+import React from "react";
+import { FormField, Button, TextInput, Heading, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
 import equalTo from "../utils/equalTo";
+import StyledButton from "../ui/StyledButton";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -19,8 +20,17 @@ const changePassValidation = object().shape({
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Fragment>
-    <Heading level="3">Change password</Heading>
+  <Box
+    pad="medium"
+    alignSelf="left"
+    background="#ffffff"
+    elevation="medium"
+    animation="fadeIn"
+    width="large"
+  >
+    <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
+      Change password
+    </Heading>
     {errors && errors.message && <div>{errors.message}</div>}
     <form onSubmit={handleSubmit}>
       <FormField label="Old password" htmlFor="password">
@@ -44,9 +54,13 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         <ErrorMessage name="new_password_confirm" />
       </FormField>
 
-      <Button type="submit" disabled={isSubmitting} label="Update password" />
+      <StyledButton
+        type="submit"
+        disabled={isSubmitting}
+        label="Update password"
+      />
     </form>
-  </Fragment>
+  </Box>
 );
 
 const ChangePasswordForm = () => {

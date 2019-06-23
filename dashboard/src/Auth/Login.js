@@ -38,7 +38,8 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         style={{
           marginTop: "18px",
           marginBottom: "4px",
-          background: "#654FAA"
+          background: "#654FAA",
+          width: "100%"
         }}
         disabled={isSubmitting}
         type="submit"
