@@ -22,7 +22,7 @@ const org = "MB"
 
 func SecretProvider() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sp := secretprovider.NewSecretProvider(storage.GetFromContext(c))
+		sp := secretprovider.NewSecretProvider(storage.GetFromContext(c), c)
 		secretprovider.SetToContext(c, sp)
 		c.Next()
 	}
@@ -42,15 +42,9 @@ func SetUser() gin.HandlerFunc {
 			}
 
 			if parts[0] == org {
-				key, err := extractAccessKey(authHeader)
-				if err != nil {
-					c.Next()
-					return
-				}
-
 				vg := vangoh.New()
 				vg.SetAlgorithm(crypto.SHA256.New)
-				err = vg.AddProvider(org, secretprovider.GetFromContext(c))
+				err := vg.AddProvider(org, secretprovider.GetFromContext(c))
 				if err != nil {
 					log.WithError(err).Error("unable to add secret provider")
 					c.Next()
@@ -63,15 +57,6 @@ func SetUser() gin.HandlerFunc {
 					c.Next()
 					return
 				}
-
-				k, err := storage.GetAccessKey(c, key)
-				if err != nil {
-					log.WithError(err).Error("access key not found")
-					c.Next()
-					return
-				}
-
-				c.Set("user", &k.User)
 			} else if parts[0] == "Bearer" {
 				var user *entities.User
 				_, err := token.ParseToken(parts[1], func(t *token.Token) (string, error) {
