@@ -40,6 +40,7 @@ func New() http.Handler {
 	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(sessions.Sessions("mbsess", store))
 	handler.Use(middleware.Storage())
+	handler.Use(middleware.SecretProvider())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 
