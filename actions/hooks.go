@@ -155,7 +155,7 @@ func HandleHook(c *gin.Context) {
 	case emails.SendType:
 		for _, d := range msg.Mail.Destination {
 			err := storage.CreateSend(c, &entities.Send{
-				UserId:           u.ID,
+				UserID:           u.ID,
 				CampaignId:       cid,
 				MessageID:        msg.Mail.MessageID,
 				Source:           msg.Mail.Source,

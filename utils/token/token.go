@@ -1,10 +1,6 @@
 package token
 
 import (
-	"errors"
-	"net/http"
-	"strings"
-
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -61,23 +57,6 @@ func ParseToken(tokenStr string, secretFn SecretFunc) (*Token, error) {
 	}
 
 	return token, nil
-}
-
-// FromRequest attempts to parse the token from the Authorization header, or
-// if the header is not present, it attempts to fetch the token from the cookie.
-func FromRequest(r *http.Request, secretFn SecretFunc) (*Token, error) {
-	var authHeader = r.Header.Get("Authorization")
-
-	if authHeader != "" {
-		parts := strings.SplitN(authHeader, " ", 2)
-		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			return nil, errors.New("Invalid auth header")
-		}
-
-		return ParseToken(parts[1], secretFn)
-	}
-
-	return nil, errors.New("Unable to parse token from request")
 }
 
 // SignWithExp signs the token using the given secret with an expiration date.

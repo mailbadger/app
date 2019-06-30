@@ -17,7 +17,7 @@ func TestSesKeys(t *testing.T) {
 	assert.NotNil(t, err)
 
 	keys = &entities.SesKeys{
-		UserId:    1,
+		UserID:    1,
 		AccessKey: "abcd",
 		SecretKey: "efgh",
 		Region:    "eu-west-1",

@@ -50,7 +50,7 @@ func PostSESKeys(c *gin.Context) {
 		AccessKey: c.PostForm("access_key"),
 		SecretKey: c.PostForm("secret_key"),
 		Region:    c.PostForm("region"),
-		UserId:    u.ID,
+		UserID:    u.ID,
 	}
 
 	if !keys.Validate() {
@@ -80,7 +80,7 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	hookUrl := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("DOMAIN_URL"), u.UUID)
+	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("DOMAIN_URL"), u.UUID)
 
 	// Check if the configuration set is already created
 	topicArn := ""
@@ -128,7 +128,7 @@ func PostSESKeys(c *gin.Context) {
 
 		_, err = snsClient.Subscribe(&sns.SubscribeInput{
 			Protocol: aws.String("https"),
-			Endpoint: aws.String(hookUrl),
+			Endpoint: aws.String(hookURL),
 			TopicArn: aws.String(topicArn),
 		})
 		if err != nil {
@@ -170,7 +170,7 @@ func PostSESKeys(c *gin.Context) {
 
 			_, err = snsClient.Subscribe(&sns.SubscribeInput{
 				Protocol: aws.String("https"),
-				Endpoint: aws.String(hookUrl),
+				Endpoint: aws.String(hookURL),
 				TopicArn: aws.String(topicArn),
 			})
 			if err != nil {

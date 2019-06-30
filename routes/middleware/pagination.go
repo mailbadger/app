@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +21,9 @@ func Paginate() gin.HandlerFunc {
 		if len(c.Query("per_page")) > 0 {
 			perpage, err := strconv.ParseUint(c.Query("per_page"), 10, 64)
 			if err != nil {
-				panic(fmt.Sprintf("Error parsing 'per_page': %s", err))
+				c.JSON(http.StatusBadRequest, gin.H{"message": "per_page field must be an integer."})
+				c.Abort()
+				return
 			}
 
 			p.PerPage = uint(perpage)
@@ -34,7 +36,9 @@ func Paginate() gin.HandlerFunc {
 		if len(c.Query("page")) > 0 {
 			page, err := strconv.ParseUint(c.Query("page"), 10, 64)
 			if err != nil {
-				panic(fmt.Sprintf("Error parsing 'page': %s", err))
+				c.JSON(http.StatusBadRequest, gin.H{"message": "page field must be an integer."})
+				c.Abort()
+				return
 			}
 			p.Page = uint(page)
 			p.Offset = uint(page * uint64(p.PerPage))

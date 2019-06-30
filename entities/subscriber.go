@@ -14,8 +14,8 @@ var ErrEmailInvalid = errors.New("The specified email is not valid.")
 
 //Subscriber represents the subscriber entity
 type Subscriber struct {
-	Id          int64             `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId      int64             `json:"-" gorm:"column:user_id; index"`
+	ID          int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	UserID      int64             `json:"-" gorm:"column:user_id; index"`
 	Name        string            `json:"name" gorm:"not null"`
 	Email       string            `json:"email" gorm:"not null"`
 	MetaJSON    JSON              `json:"-" gorm:"column:metadata; type:json"`

@@ -54,7 +54,7 @@ func PostSubscriber(c *gin.Context) {
 	s := &entities.Subscriber{
 		Name:   name,
 		Email:  email,
-		UserId: middleware.GetUser(c).ID,
+		UserID: middleware.GetUser(c).ID,
 	}
 
 	if !s.Validate() {
@@ -65,7 +65,7 @@ func PostSubscriber(c *gin.Context) {
 		return
 	}
 
-	_, err := storage.GetSubscriberByEmail(c, s.Email, s.UserId)
+	_, err := storage.GetSubscriberByEmail(c, s.Email, s.UserID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Subscriber with that email already exists",

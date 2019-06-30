@@ -16,7 +16,7 @@ func TestSubscriber(t *testing.T) {
 
 	l := &entities.List{
 		Name:   "foo",
-		UserId: 1,
+		UserID: 1,
 	}
 
 	err := store.CreateList(l)
@@ -26,7 +26,7 @@ func TestSubscriber(t *testing.T) {
 	s := &entities.Subscriber{
 		Name:   "foo",
 		Email:  "john@example.com",
-		UserId: 1,
+		UserID: 1,
 		MetaJSON: []byte(`{"foo":"bar"}`),
 		Blacklisted: false,
 		Active:      true,
@@ -37,7 +37,7 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 
 	//Test get subscriber
-	s, err = store.GetSubscriber(s.Id, 1)
+	s, err = store.GetSubscriber(s.ID, 1)
 	s.Normalize()
 
 	assert.Nil(t, err)
@@ -76,14 +76,14 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subs by list id
 	p = &pagination.Pagination{PerPage: 10}
-	store.GetSubscribersByListID(l.Id, 1, p)
+	store.GetSubscribersByListID(l.ID, 1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
-	subs, err = store.GetAllSubscribersByListID(l.Id, 1)
+	subs, err = store.GetAllSubscribersByListID(l.ID, 1)
 	assert.Equal(t, 1, len(subs))
 
-	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.Id}, 1, false, true, 0, 10)
+	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.ID}, 1, false, true, 0, 10)
 	assert.Equal(t, 1, len(subs))
 
 	err = store.DeleteSubscriber(1, 1)

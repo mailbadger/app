@@ -41,7 +41,7 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 
 // GetSubscribersByListID fetches subscribers by user id and list id, and populates the pagination obj
 func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagination) {
-	var l = &entities.List{Id: listID}
+	var l = &entities.List{ID: listID}
 	var subs []entities.Subscriber
 
 	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Association("Subscribers").Find(&subs)
@@ -54,7 +54,7 @@ func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagi
 
 // GetAllSubscribersByListID fetches all subscribers by user id and list id
 func (db *store) GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error) {
-	var l = &entities.List{Id: listID}
+	var l = &entities.List{ID: listID}
 	var subs []entities.Subscriber
 	err := db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Find(&subs).Error
 	return subs, err
@@ -98,7 +98,7 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 
 // UpdateSubscriber edits an existing subscriber in the database.
 func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
-	return db.Where("id = ? and user_id = ?", s.Id, s.UserId).Save(s).Error
+	return db.Where("id = ? and user_id = ?", s.ID, s.UserID).Save(s).Error
 }
 
 func (db *store) BlacklistSubscriber(userID int64, email string) error {

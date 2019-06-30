@@ -20,8 +20,8 @@ const (
 
 //Campaign represents the campaign entity
 type Campaign struct {
-	Id           int64             `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId       int64             `json:"-" gorm:"column:user_id; index"`
+	ID           int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	UserID       int64             `json:"-" gorm:"column:user_id; index"`
 	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required"`
 	TemplateName string            `json:"template_name" valid:"alphanum,required"`
 	Status       string            `json:"status"`
