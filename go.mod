@@ -6,7 +6,7 @@ require (
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
 	github.com/auroratechnologies/vangoh v0.0.0-20180706001343-560b87421380
-	github.com/aws/aws-sdk-go v1.20.12
+	github.com/aws/aws-sdk-go v1.20.13
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
