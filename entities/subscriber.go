@@ -29,7 +29,7 @@ type Subscriber struct {
 }
 
 func (s *Subscriber) Normalize() {
-	var m map[string]string
+	m := make(map[string]string)
 
 	if !s.MetaJSON.IsNull() {
 		err := json.Unmarshal(s.MetaJSON, &m)
