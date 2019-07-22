@@ -20,9 +20,10 @@ test:
 build: build_static
 
 build_static:
-	go install github.com/news-maily/app
 	mkdir -p release
-	cp $(GOPATH)/bin/app release/
+	go build -o release/app .
+	go build -o release/bulksender ./consumers/bulksender
+	go build -o release/campaigner ./consumers/campaigner
 
 build_web:
 	cd dashboard; yarn && yarn build

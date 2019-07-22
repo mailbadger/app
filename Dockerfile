@@ -24,7 +24,7 @@ WORKDIR /www/app
 
 COPY dashboard .
 
-RUN yarn build
+RUN yarn && yarn build
 
 # Copy into base image
 FROM gcr.io/distroless/base
