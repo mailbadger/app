@@ -1,11 +1,15 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/limiter"
+	"github.com/didip/tollbooth_gin"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/ginrus"
@@ -96,9 +100,13 @@ func New() http.Handler {
 	// Assets
 	handler.Static("/static", appDir+"/static")
 
+	//rate limiter
+	lmt := tollbooth.NewLimiter(1, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt.SetOnLimitReached(onLimitReachedHandler)
 	// Guest routes
 	guest := handler.Group("/api")
 	guest.Use(middleware.NoCache())
+	guest.Use(tollbooth_gin.LimitHandler(lmt))
 
 	guest.GET("/auth/github/callback", actions.GithubCallback)
 	guest.GET("/auth/github", actions.GetGithubAuth)
@@ -117,6 +125,7 @@ func New() http.Handler {
 	authorized := handler.Group("/api")
 	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
+	authorized.Use(tollbooth_gin.LimitHandler(lmt))
 	{
 		users := authorized.Group("/users")
 		{
@@ -173,4 +182,12 @@ func New() http.Handler {
 	}
 
 	return handler
+}
+
+func onLimitReachedHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusTooManyRequests)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "You have reached the maximum limit of requests.",
+	})
 }
