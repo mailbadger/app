@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.21.1
+	github.com/aws/aws-sdk-go v1.21.5
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
