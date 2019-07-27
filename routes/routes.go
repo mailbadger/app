@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
 	"strings"
@@ -102,7 +101,8 @@ func New() http.Handler {
 
 	//rate limiter
 	lmt := tollbooth.NewLimiter(1, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
-	lmt.SetOnLimitReached(onLimitReachedHandler)
+	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
+	lmt.SetMessageContentType("application/json; charset=utf-8")
 	// Guest routes
 	guest := handler.Group("/api")
 	guest.Use(middleware.NoCache())
@@ -182,12 +182,4 @@ func New() http.Handler {
 	}
 
 	return handler
-}
-
-func onLimitReachedHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusTooManyRequests)
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "You have reached the maximum limit of requests.",
-	})
 }
