@@ -2,6 +2,7 @@ package entities
 
 import "time"
 
+// Bounce entity holds information regarding bounced emails.
 type Bounce struct {
 	ID             int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID         int64     `json:"-"`

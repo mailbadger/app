@@ -7,9 +7,10 @@ import (
 	valid "github.com/asaskevich/govalidator"
 )
 
+// ErrListNameEmpty indicates an empty list name error used in validation process.
 var ErrListNameEmpty = errors.New("The list name cannot be empty.")
 
-//List represents the list entity
+// List represents the list entity
 type List struct {
 	ID          int64             `json:"id"`
 	Name        string            `json:"name" gorm:"not null"`
@@ -20,7 +21,8 @@ type List struct {
 	Errors      map[string]string `json:"-" sql:"-"`
 }
 
-// Validate list properties,
+// Validate validates the list properties and populates the Errors map
+// in case of any errors.
 func (l *List) Validate() bool {
 	l.Errors = make(map[string]string)
 

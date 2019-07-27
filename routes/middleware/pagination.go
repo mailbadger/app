@@ -9,6 +9,8 @@ import (
 	"github.com/news-maily/app/utils/pagination"
 )
 
+// Paginate is a middleware that populates the pagination object and sets it to the context.
+// If the pagination params are not valid the request is aborted with a 400 bad request error.
 func Paginate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var p = new(pagination.Pagination)

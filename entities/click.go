@@ -2,6 +2,7 @@ package entities
 
 import "time"
 
+// Click entity holds information regarding link clicks.
 type Click struct {
 	ID         int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID     int64     `json:"-"`
