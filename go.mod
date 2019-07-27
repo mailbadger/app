@@ -19,7 +19,7 @@ require (
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.10
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-sqlite3 v1.10.0
+	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/nsqio/go-nsq v1.0.7
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
