@@ -2,6 +2,7 @@ package entities
 
 import "time"
 
+// Delivery entity represents an email delivery.
 type Delivery struct {
 	ID                   int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID               int64     `json:"-"`

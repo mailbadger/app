@@ -6,6 +6,8 @@ import (
 	valid "github.com/asaskevich/govalidator"
 )
 
+// SesKeys entity holds information about the client's
+// SES access and secret key.
 type SesKeys struct {
 	ID        int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID    int64     `json:"-" gorm:"column:user_id; index"`
