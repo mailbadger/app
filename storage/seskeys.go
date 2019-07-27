@@ -20,5 +20,5 @@ func (db *store) CreateSesKeys(s *entities.SesKeys) error {
 }
 
 func (db *store) DeleteSesKeys(userID int64) error {
-	return db.Delete(&entities.SesKeys{UserId: userID}).Error
+	return db.Delete(&entities.SesKeys{UserID: userID}).Error
 }

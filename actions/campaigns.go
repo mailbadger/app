@@ -100,7 +100,7 @@ func StartCampaign(c *gin.Context) {
 	err = queue.Publish(c, entities.CampaignsTopic, msg)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"campaign_id": campaign.Id,
+			"campaign_id": campaign.ID,
 			"user_id":     u.ID,
 			"list_ids":    params.Ids,
 		}).WithError(err).Error("unable to queue campaign for sending")
@@ -172,7 +172,7 @@ func PostCampaign(c *gin.Context) {
 
 	campaign := &entities.Campaign{
 		Name:         name,
-		UserId:       user.ID,
+		UserID:       user.ID,
 		TemplateName: templateName,
 		Status:       entities.StatusDraft,
 	}
@@ -213,7 +213,7 @@ func PutCampaign(c *gin.Context) {
 		name, templateName := c.PostForm("name"), c.PostForm("template_name")
 
 		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
-		if err == nil && campaign.Id != campaign2.Id {
+		if err == nil && campaign.ID != campaign2.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign with that name already exists",
 			})

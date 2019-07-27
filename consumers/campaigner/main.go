@@ -107,7 +107,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					DefaultTags: []*ses.MessageTag{
 						&ses.MessageTag{
 							Name:  aws.String("campaign_id"),
-							Value: aws.String(strconv.Itoa(int(msg.Campaign.Id))),
+							Value: aws.String(strconv.Itoa(int(msg.Campaign.ID))),
 						},
 						&ses.MessageTag{
 							Name:  aws.String("user_id"),
@@ -115,7 +115,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 						},
 					},
 				},
-				CampaignID: msg.Campaign.Id,
+				CampaignID: msg.Campaign.ID,
 				UserID:     msg.UserID,
 				SesKeys:    &msg.SesKeys,
 			})
@@ -132,11 +132,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 		}
 
-		nextID = subs[len(subs)-1].Id
+		nextID = subs[len(subs)-1].ID
 	}
 
 	c := msg.Campaign
-	c.UserId = msg.UserID
+	c.UserID = msg.UserID
 	c.Status = entities.StatusSent
 	c.CompletedAt.SetValid(time.Now().UTC())
 

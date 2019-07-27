@@ -48,12 +48,12 @@ func (db *store) CreateList(l *entities.List) error {
 
 // UpdateList edits an existing list in the database.
 func (db *store) UpdateList(l *entities.List) error {
-	return db.Where("id = ? and user_id = ?", l.Id, l.UserId).Save(l).Error
+	return db.Where("id = ? and user_id = ?", l.ID, l.UserID).Save(l).Error
 }
 
 // DeleteList deletes an existing list from the database and also clears the subscribers association.
 func (db *store) DeleteList(id, userID int64) error {
-	l := &entities.List{Id: id, UserId: userID}
+	l := &entities.List{ID: id, UserID: userID}
 	if err := db.RemoveSubscribersFromList(l); err != nil {
 		return err
 	}

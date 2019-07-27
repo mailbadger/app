@@ -3,8 +3,8 @@ package entities
 import "time"
 
 type Send struct {
-	Id               int64     `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId           int64     `json:"-" gorm:"column:user_id; index"`
+	ID               int64     `json:"id" gorm:"column:id; primary_key:yes"`
+	UserID           int64     `json:"-" gorm:"column:user_id; index"`
 	CampaignId       int64     `json:"campaign_id"`
 	MessageID        string    `json:"message_id"`
 	Source           string    `json:"source"`

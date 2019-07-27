@@ -5,7 +5,8 @@ go 1.12
 require (
 	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.20.5
+	github.com/auroratechnologies/vangoh v0.0.0-20180706001343-560b87421380
+	github.com/aws/aws-sdk-go v1.21.1
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible // indirect
 	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
@@ -27,9 +28,9 @@ require (
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.1
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/gorm v1.9.9
+	github.com/jinzhu/gorm v1.9.10
 	github.com/karrick/godirwalk v1.7.8 // indirect
-	github.com/lib/pq v1.1.1
+	github.com/lib/pq v1.2.0
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/nsqio/go-nsq v1.0.7
@@ -43,9 +44,10 @@ require (
 	github.com/unrolled/secure v1.0.0
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
-	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
-	google.golang.org/api v0.6.0
+	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
+	golang.org/x/net v0.0.0-20190603091049-60506f45cf65
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	google.golang.org/api v0.7.0
 	google.golang.org/appengine v1.6.1
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect

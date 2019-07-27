@@ -12,7 +12,7 @@ import (
 func Producer() gin.HandlerFunc {
 	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
 	if err != nil {
-		logrus.Errorln(err)
+		logrus.WithError(err).Error("unable to instantiate queue producer")
 	}
 
 	return func(c *gin.Context) {

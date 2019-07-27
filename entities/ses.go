@@ -7,8 +7,8 @@ import (
 )
 
 type SesKeys struct {
-	Id        int64     `json:"id" gorm:"column:id; primary_key:yes"`
-	UserId    int64     `json:"-" gorm:"column:user_id; index"`
+	ID        int64     `json:"id" gorm:"column:id; primary_key:yes"`
+	UserID    int64     `json:"-" gorm:"column:user_id; index"`
 	AccessKey string    `json:"access_key" gorm:"not null"  valid:"alphanum,required"`
 	SecretKey string    `json:"secret_key,omitempty" gorm:"not null" valid:"required"`
 	Region    string    `json:"region" gorm:"not null" valid:"required"`

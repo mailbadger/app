@@ -17,14 +17,14 @@ func TestList(t *testing.T) {
 	//Test create list
 	l := &entities.List{
 		Name:   "foo",
-		UserId: 1,
+		UserID: 1,
 	}
 
 	err := store.CreateList(l)
 	assert.Nil(t, err)
 
 	//Test get list
-	l, err = store.GetList(l.Id, 1)
+	l, err = store.GetList(l.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "foo")
 
@@ -54,7 +54,7 @@ func TestList(t *testing.T) {
 	s := &entities.Subscriber{
 		Name:   "john",
 		Email:  "john@example.com",
-		UserId: 1,
+		UserID: 1,
 	}
 	store.CreateSubscriber(s)
 
@@ -63,7 +63,7 @@ func TestList(t *testing.T) {
 	err = store.AppendSubscribers(l)
 	assert.Nil(t, err)
 
-	l, err = store.GetList(l.Id, 1)
+	l, err = store.GetList(l.ID, 1)
 	assert.NotEmpty(t, l.Subscribers)
 	assert.Equal(t, l.Subscribers[0].Name, "john")
 

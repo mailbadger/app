@@ -58,7 +58,7 @@ func PostList(c *gin.Context) {
 
 	l := &entities.List{
 		Name:   name,
-		UserId: middleware.GetUser(c).ID,
+		UserID: middleware.GetUser(c).ID,
 	}
 
 	if !l.Validate() {
@@ -109,7 +109,7 @@ func PutList(c *gin.Context) {
 		}
 
 		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).ID)
-		if err == nil && l2.Id != l.Id {
+		if err == nil && l2.ID != l.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "List with that name already exists",
 			})

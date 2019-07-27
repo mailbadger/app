@@ -19,7 +19,7 @@ func TestCampaign(t *testing.T) {
 	campaign := &entities.Campaign{
 		Name:         "foo",
 		TemplateName: "Template1",
-		UserId:       1,
+		UserID:       1,
 		Status:       "draft",
 	}
 
@@ -27,7 +27,7 @@ func TestCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	//Test get campaign
-	campaign, err = store.GetCampaign(campaign.Id, 1)
+	campaign, err = store.GetCampaign(campaign.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, campaign.Name, "foo")
 	assert.Equal(t, campaign.TemplateName, "Template1")

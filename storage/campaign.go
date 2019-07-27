@@ -46,10 +46,10 @@ func (db *store) CreateCampaign(c *entities.Campaign) error {
 
 // UpdateCampaign edits an existing campaign in the database.
 func (db *store) UpdateCampaign(c *entities.Campaign) error {
-	return db.Where("id = ? and user_id = ?", c.Id, c.UserId).Save(c).Error
+	return db.Where("id = ? and user_id = ?", c.ID, c.UserID).Save(c).Error
 }
 
 // DeleteCampaign deletes an existing campaign from the database.
 func (db *store) DeleteCampaign(id, userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(entities.Campaign{Id: id}).Error
+	return db.Where("user_id = ?", userID).Delete(entities.Campaign{ID: id}).Error
 }
