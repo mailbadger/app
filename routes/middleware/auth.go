@@ -40,7 +40,7 @@ func SetUser() gin.HandlerFunc {
 					return
 				}
 
-				c.Set("user", key.User)
+				c.Set("user", &key.User)
 			} else if parts[0] == BearerAuth {
 				var user *entities.User
 				_, err := token.ParseToken(parts[1], func(t *token.Token) (string, error) {
