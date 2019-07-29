@@ -50,11 +50,11 @@ type Storage interface {
 	BlacklistSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
 
-	GetAccessKeys(userID int64) []*entities.AccessKey
-	GetAccessKey(identifier string) (*entities.AccessKey, error)
-	CreateAccessKey(ak *entities.AccessKey) error
-	UpdateAccessKey(ak *entities.AccessKey) error
-	DeleteAccessKey(id, userID int64) error
+	GetAPIKeys(userID int64) []*entities.APIKey
+	GetAPIKey(identifier string) (*entities.APIKey, error)
+	CreateAPIKey(ak *entities.APIKey) error
+	UpdateAPIKey(ak *entities.APIKey) error
+	DeleteAPIKey(id, userID int64) error
 
 	GetSesKeys(userID int64) (*entities.SesKeys, error)
 	CreateSesKeys(s *entities.SesKeys) error
@@ -256,29 +256,29 @@ func DeleteSubscriber(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteSubscriber(id, userID)
 }
 
-// GetAccessKeys returns a list of AccessKey entities.
-func GetAccessKeys(c context.Context, userID int64) []*entities.AccessKey {
-	return GetFromContext(c).GetAccessKeys(userID)
+// GetAPIKeys returns a list of APIKey entities.
+func GetAPIKeys(c context.Context, userID int64) []*entities.APIKey {
+	return GetFromContext(c).GetAPIKeys(userID)
 }
 
-// GetAccessKey returns an AccessKey entity by the given identifier.
-func GetAccessKey(c context.Context, identifier string) (*entities.AccessKey, error) {
-	return GetFromContext(c).GetAccessKey(identifier)
+// GetAPIKey returns an APIKey entity by the given identifier.
+func GetAPIKey(c context.Context, identifier string) (*entities.APIKey, error) {
+	return GetFromContext(c).GetAPIKey(identifier)
 }
 
-// CreateAccessKey persists a new AccessKey entity in the datastore.
-func CreateAccessKey(c context.Context, ak *entities.AccessKey) error {
-	return GetFromContext(c).CreateAccessKey(ak)
+// CreateAPIKey persists a new APIKey entity in the datastore.
+func CreateAPIKey(c context.Context, ak *entities.APIKey) error {
+	return GetFromContext(c).CreateAPIKey(ak)
 }
 
-// UpdateAccessKey updates an AccessKey entity.
-func UpdateAccessKey(c context.Context, ak *entities.AccessKey) error {
-	return GetFromContext(c).UpdateAccessKey(ak)
+// UpdateAPIKey updates an APIKey entity.
+func UpdateAPIKey(c context.Context, ak *entities.APIKey) error {
+	return GetFromContext(c).UpdateAPIKey(ak)
 }
 
-// DeleteAccessKey deletes an AccessKey entity by the given id.
-func DeleteAccessKey(c context.Context, id, userID int64) error {
-	return GetFromContext(c).DeleteAccessKey(id, userID)
+// DeleteAPIKey deletes an APIKey entity by the given id.
+func DeleteAPIKey(c context.Context, id, userID int64) error {
+	return GetFromContext(c).DeleteAPIKey(id, userID)
 }
 
 // GetSesKeys returns the SES keys by the given user id

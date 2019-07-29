@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,15 +9,14 @@ import (
 	"syscall"
 
 	"github.com/news-maily/app/consumers"
-
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
-	"github.com/sirupsen/logrus"
-
 	"github.com/news-maily/app/storage"
 	"github.com/nsqio/go-nsq"
+	"github.com/sirupsen/logrus"
 )
 
+// MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
 	s storage.Storage
 }
@@ -27,18 +25,21 @@ type MessageHandler struct {
 // nsq.Handler interface.
 func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	if len(m.Body) == 0 {
-		return errors.New("body is blank")
+		logrus.Error("Empty message, unable to proceed.")
+		return nil
 	}
 
 	msg := new(entities.BulkSendMessage)
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
-		return err
+		logrus.WithField("body", string(m.Body)).Error("Malformed JSON message.")
+		return nil
 	}
 
 	if msg.SesKeys == nil {
-		return errors.New("SES Keys are nil")
+		logrus.WithField("msg", msg).Error("SES Keys are nil.")
+		return nil
 	}
 
 	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
@@ -47,7 +48,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"user_id":     msg.UserID,
 			"campaign_id": msg.CampaignID,
 		}).Errorln(err.Error())
-		return err
+		return nil
 	}
 
 	count, err := h.s.CountLogsByUUID(msg.UUID)
@@ -57,7 +58,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"campaign_id": msg.CampaignID,
 			"uuid":        msg.UUID,
 		}).Errorln(err.Error())
-		return err
+		return nil
 	}
 
 	if count > 0 {
@@ -77,6 +78,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"campaign_id": msg.CampaignID,
 			"uuid":        msg.UUID,
 		}).Errorln(err.Error())
+
+		// TODO - handle throttle exceptions from SES and re-queue accordingly.
 		return nil
 	}
 

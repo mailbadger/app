@@ -41,6 +41,7 @@ type tokenPayload struct {
 	Refresh   string `json:"refresh_token,omitempty"`
 }
 
+// PostAuthenticate authenticates a user with the given username and password.
 func PostAuthenticate(c *gin.Context) {
 	username, password := c.PostForm("username"), c.PostForm("password")
 
@@ -62,7 +63,6 @@ func PostAuthenticate(c *gin.Context) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(password))
 	if err != nil {
-		logrus.Errorf("Invalid credentials. %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Invalid credentials.",
 		})
@@ -73,7 +73,7 @@ func PostAuthenticate(c *gin.Context) {
 	t := token.New(token.SessionToken, user.Username)
 	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
 	if err != nil {
-		logrus.Errorf("cannot create token for %s. %s", user.Username, err)
+		logrus.WithField("username", user.Username).WithError(err).Error("cannot create token")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create token.",
 		})
@@ -95,6 +95,8 @@ type signupParams struct {
 	TokenResponse string `form:"token_response" valid:"optional"`
 }
 
+// PostSignup validates and creates a user account by the given
+// user parameters. The handler also sends a verification email
 func PostSignup(c *gin.Context) {
 	enableSignup := os.Getenv("ENABLE_SIGNUP")
 	if enableSignup == "" || enableSignup == "false" {

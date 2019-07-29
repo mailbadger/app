@@ -9,13 +9,18 @@ import (
 )
 
 const (
-	StatusDraft     = "draft"
-	StatusSending   = "sending"
-	StatusSent      = "sent"
+	// StatusDraft indicates a draft campaign ready to be sent.
+	StatusDraft = "draft"
+	// StatusSending indicates that the campaign is in the sending process.
+	StatusSending = "sending"
+	// StatusSent indicates that a campaign has been sent.
+	StatusSent = "sent"
+	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
-
+	// CampaignsTopic is the topic used by the campaigner consumer.
 	CampaignsTopic = "campaigns"
-	SendBulkTopic  = "send_bulk"
+	// SendBulkTopic is the topic used by the bulksender consumer.
+	SendBulkTopic = "send_bulk"
 )
 
 //Campaign represents the campaign entity
@@ -32,6 +37,8 @@ type Campaign struct {
 	Errors       map[string]string `json:"-" sql:"-"`
 }
 
+// BulkSendMessage represents the entity used to transport the bulk send message
+// used by the bulksender consumer.
 type BulkSendMessage struct {
 	UUID       string                           `json:"msg_uuid"`
 	UserID     int64                            `json:"user_id"`
@@ -40,6 +47,8 @@ type BulkSendMessage struct {
 	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
+// SendCampaignParams represent the request params used
+// by the send campaign endpoint.
 type SendCampaignParams struct {
 	ListIDs      []int64           `json:"list_ids"`
 	TemplateData map[string]string `json:"template_data"`
@@ -49,9 +58,11 @@ type SendCampaignParams struct {
 	SesKeys      `json:"ses_keys"`
 }
 
-var ErrCampaignNameEmpty = errors.New("The name cannot be empty.")
+// ErrCampaignNameEmpty indicates an empty campaign name error used in validation process.
+var ErrCampaignNameEmpty = errors.New("the campaign name cannot be empty")
 
-// Validate campaign properties,
+// Validate validates the campaign properties and populates the Errors map
+// in case of any errors.
 func (c *Campaign) Validate() bool {
 	c.Errors = make(map[string]string)
 

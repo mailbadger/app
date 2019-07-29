@@ -2,6 +2,7 @@ package entities
 
 import "time"
 
+// Complaint represents an entity regarding user complaint information.
 type Complaint struct {
 	ID         int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID     int64     `json:"-"`

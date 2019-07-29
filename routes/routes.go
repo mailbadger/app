@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/unrolled/secure"
-
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/limiter"
+	"github.com/didip/tollbooth_gin"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/ginrus"
@@ -15,6 +16,7 @@ import (
 	"github.com/news-maily/app/actions"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/sirupsen/logrus"
+	"github.com/unrolled/secure"
 )
 
 // New creates a new HTTP handler with the specified middleware.
@@ -40,7 +42,6 @@ func New() http.Handler {
 	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(sessions.Sessions("mbsess", store))
 	handler.Use(middleware.Storage())
-	handler.Use(middleware.SecretProvider())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 
@@ -98,9 +99,14 @@ func New() http.Handler {
 	// Assets
 	handler.Static("/static", appDir+"/static")
 
+	//rate limiter
+	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
+	lmt.SetMessageContentType("application/json; charset=utf-8")
 	// Guest routes
 	guest := handler.Group("/api")
 	guest.Use(middleware.NoCache())
+	guest.Use(tollbooth_gin.LimitHandler(lmt))
 
 	guest.GET("/auth/github/callback", actions.GithubCallback)
 	guest.GET("/auth/github", actions.GetGithubAuth)
@@ -119,6 +125,7 @@ func New() http.Handler {
 	authorized := handler.Group("/api")
 	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
+	authorized.Use(tollbooth_gin.LimitHandler(lmt))
 	{
 		users := authorized.Group("/users")
 		{

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,18 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/google/uuid"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/queue"
-
 	"github.com/news-maily/app/consumers"
-
+	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
-	"github.com/sirupsen/logrus"
-
+	"github.com/news-maily/app/queue"
 	"github.com/news-maily/app/storage"
 	"github.com/nsqio/go-nsq"
+	"github.com/sirupsen/logrus"
 )
 
+// MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
 	s storage.Storage
 	p queue.Producer
@@ -35,14 +32,16 @@ type MessageHandler struct {
 // nsq.Handler interface.
 func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	if len(m.Body) == 0 {
-		return errors.New("body is blank")
+		logrus.Error("Empty message, unable to proceed.")
+		return nil
 	}
 
 	msg := new(entities.SendCampaignParams)
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
-		return err
+		logrus.WithField("body", string(m.Body)).Error("Malformed JSON message.")
+		return nil
 	}
 
 	// fetching subs that are active and that have not been blacklisted
@@ -91,7 +90,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			defaultData, err := json.Marshal(msg.TemplateData)
 			if err != nil {
-				logrus.Errorln(err)
+				logrus.WithError(err).Error("Unable to marshal template data as JSON.")
 				continue
 			}
 
@@ -121,14 +120,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			})
 
 			if err != nil {
-				logrus.Errorln(err)
+				logrus.WithError(err).Error("Unable to marshal bulk message input.")
 				continue
 			}
 
 			// publish the message to the queue
 			err = h.p.Publish(entities.SendBulkTopic, msg)
 			if err != nil {
-				logrus.Errorln(err)
+				logrus.WithError(err).Error("Unable to publish message to send bulk topic.")
 			}
 		}
 
@@ -142,7 +141,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	err = h.s.UpdateCampaign(&c)
 	if err != nil {
-		logrus.WithField("campaign", c).Errorln(err)
+		logrus.WithField("campaign", c).WithError(err).Error("Unable to update campaign.")
 	}
 
 	return nil

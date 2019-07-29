@@ -85,7 +85,6 @@ func (db *store) GetDistinctSubscribersByListIDs(
 			AND subscribers.id > ?`, listIDs, userID, blacklisted, active, nextID).
 		Order("id").
 		Limit(limit).
-		Preload("Metadata").
 		Find(&subs).Error
 
 	return subs, err
