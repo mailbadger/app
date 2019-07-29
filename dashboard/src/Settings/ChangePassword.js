@@ -1,5 +1,5 @@
-import React from "react";
-import { FormField, Button, TextInput, Heading, Box } from "grommet";
+import React, { Fragment } from "react";
+import { FormField, TextInput, Heading, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
@@ -20,47 +20,56 @@ const changePassValidation = object().shape({
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Box
-    pad="medium"
-    alignSelf="left"
-    background="#ffffff"
-    elevation="medium"
-    animation="fadeIn"
-    width="large"
-  >
-    <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
-      Change password
-    </Heading>
-    {errors && errors.message && <div>{errors.message}</div>}
-    <form onSubmit={handleSubmit}>
-      <FormField label="Old password" htmlFor="password">
-        <TextInput name="password" type="password" onChange={handleChange} />
-        <ErrorMessage name="password" />
-      </FormField>
-      <FormField label="New password" htmlFor="new_password">
-        <TextInput
-          name="new_password"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="new_password" />
-      </FormField>
-      <FormField label="Confirm new password" htmlFor="new_password_confirm">
-        <TextInput
-          name="new_password_confirm"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="new_password_confirm" />
-      </FormField>
+  <Fragment>
+    <Box
+      direction="row"
+      flex="grow"
+      alignSelf="center"
+      background="#ffffff"
+      border={{ color: "#CFCFCF" }}
+      animation="fadeIn"
+      margin={{ top: "40px", bottom: "10px" }}
+      elevation="medium"
+      width="medium"
+      gap="small"
+      pad="medium"
+      align="center"
+      justify="center"
+    >
+      <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
+        Change password
+      </Heading>
+      {errors && errors.message && <div>{errors.message}</div>}
+      <form onSubmit={handleSubmit}>
+        <FormField label="Old password" htmlFor="password">
+          <TextInput name="password" type="password" onChange={handleChange} />
+          <ErrorMessage name="password" />
+        </FormField>
+        <FormField label="New password" htmlFor="new_password">
+          <TextInput
+            name="new_password"
+            type="password"
+            onChange={handleChange}
+          />
+          <ErrorMessage name="new_password" />
+        </FormField>
+        <FormField label="Confirm new password" htmlFor="new_password_confirm">
+          <TextInput
+            name="new_password_confirm"
+            type="password"
+            onChange={handleChange}
+          />
+          <ErrorMessage name="new_password_confirm" />
+        </FormField>
 
-      <StyledButton
-        type="submit"
-        disabled={isSubmitting}
-        label="Update password"
-      />
-    </form>
-  </Box>
+        <StyledButton
+          type="submit"
+          disabled={isSubmitting}
+          label="Update password"
+        />
+      </form>
+    </Box>
+  </Fragment>
 );
 
 const ChangePasswordForm = () => {

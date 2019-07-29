@@ -1,37 +1,28 @@
 import React from "react";
-import { Grid, Box, Button } from "grommet";
+import { Grid, Box } from "grommet";
 import { Switch } from "react-router-dom";
 import { Add } from "grommet-icons";
-
 import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
 import CreateTemplateForm from "./Create";
 import history from "../history";
 import EditTemplateForm from "./Edit";
+import StyledButton from "../ui/StyledButton";
 
 const Templates = () => (
   <Grid
     rows={["small", "fill"]}
-    columns={["15%", "4fr", "1fr"]}
+    columns={["5fr", "1fr"]}
     gap="medium"
     margin="medium"
     areas={[
-      { name: "nav", start: [0, 0], end: [0, 0] },
+      { name: "nav", start: [0, 0], end: [0, 1] },
       { name: "main", start: [0, 1], end: [1, 1] }
     ]}
   >
-    <Box
-      gridArea="nav"
-      direction="row"
-      margin={{ top: "medium", left: "medium" }}
-    >
+    <Box gridArea="nav" direction="row">
       <Box>
-        <Button
-          style={{
-            color: "#ffffff",
-            background: "#654FAA",
-            width: "150px"
-          }}
+        <StyledButton
           label="Create new"
           icon={<Add color="#ffffff" />}
           reverse

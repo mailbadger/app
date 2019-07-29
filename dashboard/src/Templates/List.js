@@ -1,10 +1,9 @@
 import React, { Fragment, useState } from "react";
 import { parse } from "date-fns";
-import { Edit, Trash } from "grommet-icons";
+import { More } from "grommet-icons";
 import axios from "axios";
 import useApi from "../hooks/useApi";
 import {
-  Table,
   TableHeader,
   TableBody,
   TableRow,
@@ -12,9 +11,12 @@ import {
   Box,
   Button,
   Layer,
-  Heading
+  Heading,
+  Select
 } from "grommet";
 import history from "../history";
+import StyledTable from "../ui/StyledTable";
+import StyledButton from "../ui/StyledButton";
 
 const deleteTemplate = async name => {
   await axios.delete(`/api/templates/${name}`);
@@ -24,26 +26,38 @@ const Row = ({ template, setShowDelete }) => {
   const res = parse(template.timestamp);
   return (
     <TableRow>
-      <TableCell scope="row" size="large">
-        <strong>{template.name}</strong>
+      <TableCell scope="row" size="xlarge">
+        {template.name}
       </TableCell>
       <TableCell scope="row" size="medium">
         {res.toUTCString()}
       </TableCell>
-      <TableCell scope="row">
-        <Button
+      <TableCell scope="row" size="xsmall">
+        <Select
+          alignSelf="center"
           plain
-          icon={<Edit />}
-          onClick={() =>
-            history.push(`/dashboard/templates/${template.name}/edit`)
-          }
-        />
-      </TableCell>
-      <TableCell scope="row">
-        <Button
-          plain
-          icon={<Trash />}
-          onClick={() => setShowDelete({ show: true, name: template.name })}
+          icon={<More />}
+          options={["Edit", "Preview", "Send Test", "Delete"]}
+          onChange={({ option }) => {
+            (function() {
+              switch (option) {
+                case "Edit":
+                  history.push(`/dashboard/templates/${template.name}/edit`);
+                  break;
+                case "Preview":
+                  setShowDelete({ show: true, name: template.name });
+                  break;
+                case "Send Test":
+                  setShowDelete({ show: true, name: template.name });
+                  break;
+                case "Delete":
+                  setShowDelete({ show: true, name: template.name });
+                  break;
+                default:
+                  return null;
+              }
+            })();
+          }}
         />
       </TableCell>
     </TableRow>
@@ -51,21 +65,22 @@ const Row = ({ template, setShowDelete }) => {
 };
 
 const TemplateTable = React.memo(({ list, setShowDelete }) => (
-  <Table caption="Templates">
+  <StyledTable caption="Templates">
     <TableHeader>
       <TableRow>
-        <TableCell scope="col" border="bottom" size="xlarge">
-          Name
+        <TableCell scope="col" border="bottom" size="medium">
+          <strong>Name</strong>
         </TableCell>
-        <TableCell scope="col" border="bottom">
-          Created At
+        <TableCell scope="col" border="bottom" size="medium">
+          <strong>Date</strong>
         </TableCell>
-        <TableCell scope="col" border="bottom">
-          Edit
-        </TableCell>
-        <TableCell scope="col" border="bottom">
-          Delete
-        </TableCell>
+        <TableCell
+          style={{ textAlign: "right" }}
+          align="right"
+          scope="col"
+          border="bottom"
+          size="xsmall"
+        />
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -73,7 +88,7 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
         <Row template={t} key={t.name} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
-  </Table>
+  </StyledTable>
 ));
 
 const DeleteLayer = ({ setShowDelete, name, callApi }) => {
@@ -132,7 +147,7 @@ const List = () => {
       <TemplateTable list={state.data.list} setShowDelete={setShowDelete} />
       <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
         <Box margin={{ right: "small" }}>
-          <Button
+          <StyledButton
             label="Previous"
             onClick={() => {
               const t = currentPage.tokens[currentPage.current];
@@ -151,7 +166,7 @@ const List = () => {
           />
         </Box>
         <Box>
-          <Button
+          <StyledButton
             label="Next"
             onClick={() => {
               const { next_token } = state.data;
