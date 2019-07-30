@@ -25,21 +25,7 @@ class Landing extends Component {
 
     return (
       <Fragment>
-        <Box
-          direction="row"
-          flex="grow"
-          alignSelf="center"
-          background="#ffffff"
-          border={{ color: "#CFCFCF" }}
-          animation="fadeIn"
-          margin={{ top: "40px", bottom: "40px" }}
-          elevation="medium"
-          width="medium"
-          gap="small"
-          pad="medium"
-          align="center"
-          justify="center"
-        >
+        <Box>
           <Auth
             setSession={auth.setSession}
             redirect={() => this.setState({ redirectToReferrer: true })}

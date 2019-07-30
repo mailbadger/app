@@ -12,21 +12,62 @@ import history from "./history";
 const theme = {
   global: {
     font: {
-      family: "Roboto",
+      family:
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif;",
       size: "14px",
       height: "20px"
     },
     colors: {
-      background: "#F5F7F9",
+      background: "#E3E8EE",
       brand: "#6650AA"
     }
   },
+  tabs: {
+    header: {
+      background: "white"
+    }
+  },
+  tab: {
+    color: "#888888",
+    active: {
+      color: "brand"
+    },
+    border: false
+  },
+  select: {
+    options: {
+      text: {
+        color: "#333",
+        size: "small",
+        weight: "400",
+        margin: "0px 20px",
+        border: "none"
+      },
+      container: {
+        marginLeft: "-30px"
+      }
+    },
+    connrol: {
+      extend: {
+        marginLeft: "-30px"
+      }
+    },
+    container: {
+      marginLeft: "-30px",
+      extend: {
+        boxShaddow:
+          "0 7px 14px 0 rgba(60,66,87, 0.1), 0 3px 6px 0 rgba(0, 0, 0, .07)",
+        border: "1px solid #e4e4e4"
+      }
+    }
+  },
+
   formField: {
     label: {
-      color: "dark-3",
+      color: "#ACACAC",
       size: "small",
       margin: { vertical: "0", top: "small", horizontal: "0" },
-      weight: 600
+      weight: 300
     },
     border: false,
     borderColor: "#CACACA",
@@ -55,7 +96,6 @@ const theme = {
           color: white;
           font-size: 12px;
           font-weight: bold;
-          width: 100%;
           border: 0px;
           border-radius:5px;
           ${extraStyles}

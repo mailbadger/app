@@ -1,15 +1,17 @@
 import React, { Fragment } from "react";
-import { Paragraph, FormField, Button, TextInput, Anchor } from "grommet";
+import { Paragraph, FormField, Anchor, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { NavLink } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Mail } from "grommet-icons";
+import { Mail, StatusCriticalSmall } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
 import equalTo from "../utils/equalTo";
 import { socialAuthEnabled } from "../Auth";
 import SocialButtons from "./SocialButtons";
+import StyledTextInput from "../ui/StyledTextInput";
+import StyledButton from "../ui/StyledButton";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -31,93 +33,133 @@ const Form = ({
   errors
 }) => (
   <Fragment>
-    {errors && errors.message && <div>{errors.message}</div>}
-    <form
-      onSubmit={handleSubmit}
-      style={{ color: "black", width: "90%", height: "100%" }}
+    <Box
+      direction="row"
+      flex="grow"
+      alignSelf="center"
+      background="#ffffff"
+      border={{ color: "#CFCFCF" }}
+      animation="fadeIn"
+      margin={{ top: "40px", bottom: "10px" }}
+      elevation="medium"
+      width="medium"
+      gap="small"
+      pad="medium"
+      align="center"
+      justify="center"
+      style={{ borderRadius: "5px" }}
     >
-      <FormField label="Email" htmlFor="email">
-        <TextInput
-          style={{ border: "1px solid #CACACA" }}
-          placeholder="you@email.com"
-          name="email"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="email" />
-      </FormField>
-      <FormField label="Password" htmlFor="password">
-        <TextInput
-          placeholder="****"
-          name="password"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="password" />
-      </FormField>
-      <FormField label="Confirm Password" htmlFor="password_confirm">
-        <TextInput
-          placeholder="****"
-          name="password_confirm"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="password_confirm" />
-      </FormField>
-      {process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
-        <ReCAPTCHA
-          sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-          onChange={value => setFieldValue("token_response", value, true)}
-        />
-      )}
-      Already have an account? <NavLink to="/login">Sign in</NavLink>
-      <Paragraph
-        style={{ marginTop: "14px", paddingTop: "0px" }}
-        size="small"
-        textAlign="center"
-        alignSelf="center"
-        alignContent="center"
-      >
-        By clicking any of the Sign Up buttons, I agree to the{" "}
-        <Anchor href="">terms of service</Anchor>
-      </Paragraph>
-      <Button
-        plain
-        style={{
-          marginTop: "10px",
-          marginBottom: "10px",
-          borderRadius: "5px",
-          padding: "8px",
-          background: "#654FAA",
-          width: "100%",
-          textAlign: "center"
-        }}
-        icon={<Mail />}
-        disabled={isSubmitting}
-        type="submit"
-        alignSelf="stretch"
-        textAlign="center"
-        primary
-        label="Sign UP with email"
-      />
-      {socialAuthEnabled() && (
-        <Fragment>
+      {errors && errors.message && <div>{errors.message}</div>}
+      <form onSubmit={handleSubmit} style={{}}>
+        <Heading
+          textAlign="center"
+          level="3"
+          color="#564392"
+          style={{
+            fontWeight: "400",
+            marginTop: "0px",
+            paddingBottom: "0px",
+            marginBottom: "0px"
+          }}
+        >
+          Create your MailBadger account now
+        </Heading>
+        <FormField label="Email" htmlFor="email">
+          <StyledTextInput
+            style={{ border: "1px solid #CACACA" }}
+            placeholder="you@email.com"
+            name="email"
+            onChange={handleChange}
+          />
           <Paragraph
-            style={{
-              borderTop: "1px solid #CACACA",
-              marginTop: "14px",
-              paddingTop: "0px"
-            }}
+            style={{ margin: "0", padding: "0" }}
             size="small"
-            textAlign="center"
-            alignSelf="center"
-            alignContent="center"
+            color="#D85555"
           >
-            or
+            <ErrorMessage name="email" />
           </Paragraph>
-          <SocialButtons />
-        </Fragment>
-      )}
-    </form>
+        </FormField>
+        <FormField label="Password" htmlFor="password">
+          <StyledTextInput
+            placeholder="****"
+            name="password"
+            type="password"
+            onChange={handleChange}
+          />
+          <Paragraph
+            style={{ margin: "0", padding: "0" }}
+            size="small"
+            color="#D85555"
+          >
+            <ErrorMessage name="password" />
+          </Paragraph>
+        </FormField>
+        <FormField label="Confirm Password" htmlFor="password_confirm">
+          <StyledTextInput
+            placeholder="****"
+            name="password_confirm"
+            type="password"
+            onChange={handleChange}
+          />
+          <Paragraph
+            style={{ margin: "0", padding: "0" }}
+            size="small"
+            color="#D85555"
+          >
+            <ErrorMessage name="password_confirm" />
+          </Paragraph>
+        </FormField>
+        {process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
+          <ReCAPTCHA
+            sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+            onChange={value => setFieldValue("token_response", value, true)}
+          />
+        )}
+        <Paragraph
+          style={{ marginTop: "14px", paddingTop: "0px" }}
+          size="small"
+          textAlign="center"
+          alignSelf="center"
+          alignContent="center"
+        >
+          By clicking any of the Sign Up buttons, I agree to the{" "}
+          <Anchor href="">terms of service</Anchor>
+        </Paragraph>
+        <StyledButton
+          style={{
+            width: "100%",
+            marginBottom: "4px"
+          }}
+          icon={<Mail />}
+          disabled={isSubmitting}
+          type="submit"
+          primary
+          label="Sign UP with email"
+        />
+        {socialAuthEnabled() && (
+          <Fragment>
+            <Paragraph
+              style={{
+                borderTop: "1px solid #CACACA",
+                marginTop: "14px",
+                paddingTop: "0px"
+              }}
+              size="small"
+              textAlign="center"
+              alignSelf="center"
+              alignContent="center"
+            >
+              or
+            </Paragraph>
+            <SocialButtons />
+          </Fragment>
+        )}
+      </form>
+    </Box>
+    <Paragraph alignSelf="center" size="small" textAlign="center">
+      {" "}
+      Already have an account? <NavLink to="/login">Sign in</NavLink>{" "}
+    </Paragraph>
   </Fragment>
 );
 

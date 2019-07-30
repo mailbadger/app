@@ -1,6 +1,6 @@
 import React, { Fragment, useState } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField, Button, TextInput } from "grommet";
+import { FormField } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import axios from "axios";
@@ -12,6 +12,9 @@ import "codemirror/mode/xml/xml";
 import "codemirror/mode/javascript/javascript";
 
 import history from "../history";
+
+import StyledButton from "../ui/StyledButton";
+import StyledTextInput from "../ui/StyledTextInput";
 
 const initialHtml = `<!DOCTYPE html>
 <html>
@@ -46,24 +49,28 @@ const Form = ({
       {errors && errors.message && <div>{errors.message}</div>}
 
       <form onSubmit={handleSubmit}>
-        <FormField label="Template Name" htmlFor="name">
-          <TextInput
+        <FormField htmlFor="name">
+          Template Name
+          <StyledTextInput
             name="name"
             onChange={handleChange}
             placeholder="MyTemplate"
           />
           <ErrorMessage name="name" />
         </FormField>
-        <FormField label="Subject" htmlFor="subject">
-          <TextInput
+        <br />
+        Template Subject
+        <FormField htmlFor="subject">
+          <StyledTextInput
             name="subject"
             onChange={handleChange}
             placeholder="Greetings, {{name}}"
           />
           <ErrorMessage name="subject" />
         </FormField>
-
-        <FormField label="HTML Template" htmlFor="htmlPart">
+        <br />
+        HTML Conntent
+        <FormField htmlFor="htmlPart">
           <CodeMirror
             value={html}
             options={{
@@ -80,7 +87,13 @@ const Form = ({
           />
           <ErrorMessage name="htmlPart" />
         </FormField>
-        <Button type="submit" primary disabled={isSubmitting} label="Submit" />
+        <br />
+        <StyledButton
+          type="submit"
+          primary
+          disabled={isSubmitting}
+          label="Save Template"
+        />
       </form>
     </Fragment>
   );
