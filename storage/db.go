@@ -181,10 +181,11 @@ func MakeConfigFromEnv(driver string) string {
 	case "sqlite3":
 		return os.Getenv("SQLITE3_FILE")
 	case "mysql":
-		return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=true",
+		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
 			os.Getenv("MYSQL_USER"),
 			os.Getenv("MYSQL_PASS"),
 			os.Getenv("MYSQL_HOST"),
+			os.Getenv("MYSQL_PORT"),
 			os.Getenv("MYSQL_DATABASE"),
 		)
 	default:
