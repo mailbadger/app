@@ -6,10 +6,11 @@ import { string, object } from "yup";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import qs from "qs";
+
 import SocialButtons from "./SocialButtons";
 import { socialAuthEnabled } from "../Auth";
 import StyledTextInput from "../ui/StyledTextInput";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
   <Fragment>
@@ -72,7 +73,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
 
         <NavLink to="/forgot-password">Forgot your password?</NavLink>
 
-        <StyledButton
+        <ButtonWithLoader
           icon={<Mail />}
           style={{
             width: "100%",
@@ -82,7 +83,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           disabled={isSubmitting}
           type="submit"
           primary
-          label="Login with email"
+          label={"Login with email"}
         />
 
         {socialAuthEnabled() && (
