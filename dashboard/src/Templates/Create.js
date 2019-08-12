@@ -13,7 +13,7 @@ import "codemirror/mode/javascript/javascript";
 
 import history from "../history";
 
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 import StyledTextInput from "../ui/StyledTextInput";
 
 const initialHtml = `<!DOCTYPE html>
@@ -88,7 +88,7 @@ const Form = ({
           <ErrorMessage name="htmlPart" />
         </FormField>
         <br />
-        <StyledButton
+        <ButtonWithLoader
           type="submit"
           primary
           disabled={isSubmitting}

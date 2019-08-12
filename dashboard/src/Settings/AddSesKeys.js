@@ -16,7 +16,7 @@ import qs from "qs";
 
 import regions from "../regions/regions.json";
 import useApi from "../hooks/useApi";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
@@ -57,7 +57,11 @@ const Form = ({
         <ErrorMessage name="region" />
       </FormField>
 
-      <StyledButton type="submit" disabled={isSubmitting} label="Add keys" />
+      <ButtonWithLoader
+        type="submit"
+        disabled={isSubmitting}
+        label="Add keys"
+      />
     </form>
   </Fragment>
 );
@@ -159,7 +163,6 @@ const AddSesKeysForm = () => {
     body = <div>Loading...</div>;
   }
 
-  console.log("here");
   if (!state.isError && state.data) {
     body = (
       <SesKey

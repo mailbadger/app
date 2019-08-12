@@ -5,7 +5,7 @@ import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import axios from "axios";
 import qs from "qs";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 import StyledTextInput from "../ui/StyledTextInput";
 import history from "../history";
 import useApi from "../hooks/useApi";
@@ -63,7 +63,7 @@ const Form = ({
           <ErrorMessage name="htmlPart" />
         </FormField>
         <br />
-        <StyledButton
+        <ButtonWithLoader
           type="submit"
           primary
           disabled={isSubmitting}

@@ -5,7 +5,7 @@ import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
 import equalTo from "../utils/equalTo";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -62,7 +62,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           <ErrorMessage name="new_password_confirm" />
         </FormField>
 
-        <StyledButton
+        <ButtonWithLoader
           type="submit"
           disabled={isSubmitting}
           label="Update password"
