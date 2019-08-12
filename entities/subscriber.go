@@ -2,15 +2,11 @@ package entities
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/sirupsen/logrus"
 )
-
-var ErrSubscriberNameEmpty = errors.New("The subscriber name cannot be empty.")
-var ErrEmailInvalid = errors.New("The specified email is not valid.")
 
 //Subscriber represents the subscriber entity
 type Subscriber struct {
@@ -48,11 +44,11 @@ func (s *Subscriber) Validate() bool {
 	s.Errors = make(map[string]string)
 
 	if valid.Trim(s.Name, "") == "" {
-		s.Errors["name"] = ErrSubscriberNameEmpty.Error()
+		s.Errors["name"] = "The subscriber name cannot be empty."
 	}
 
 	if !valid.IsEmail(s.Email) {
-		s.Errors["email"] = ErrEmailInvalid.Error()
+		s.Errors["email"] = "The specified email is not valid."
 	}
 
 	return len(s.Errors) == 0

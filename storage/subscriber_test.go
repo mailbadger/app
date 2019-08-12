@@ -24,10 +24,10 @@ func TestSubscriber(t *testing.T) {
 
 	//Test create subscriber
 	s := &entities.Subscriber{
-		Name:   "foo",
-		Email:  "john@example.com",
-		UserID: 1,
-		MetaJSON: []byte(`{"foo":"bar"}`),
+		Name:        "foo",
+		Email:       "john@example.com",
+		UserID:      1,
+		MetaJSON:    []byte(`{"foo":"bar"}`),
 		Blacklisted: false,
 		Active:      true,
 	}
@@ -60,8 +60,8 @@ func TestSubscriber(t *testing.T) {
 	s.Name = ""
 	s.Email = "foo bar"
 	s.Validate()
-	assert.Equal(t, s.Errors["name"], entities.ErrSubscriberNameEmpty.Error())
-	assert.Equal(t, s.Errors["email"], entities.ErrEmailInvalid.Error())
+	assert.Equal(t, s.Errors["name"], "The subscriber name cannot be empty.")
+	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
 
 	//Test get subs
 	p := &pagination.Pagination{PerPage: 10}
@@ -81,9 +81,11 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
 	subs, err = store.GetAllSubscribersByListID(l.ID, 1)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subs))
 
 	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.ID}, 1, false, true, 0, 10)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subs))
 
 	err = store.DeleteSubscriber(1, 1)

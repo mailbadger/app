@@ -24,9 +24,10 @@ func TestUser(t *testing.T) {
 	assert.Nil(t, err)
 
 	user, err = store.GetUser(1)
+	assert.Nil(t, err)
 	assert.Equal(t, user.Username, "foo")
 
 	// Test get user by username
-	user, err = store.GetActiveUserByUsername("foo")
+	_, err = store.GetActiveUserByUsername("foo")
 	assert.Nil(t, err)
 }

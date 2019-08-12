@@ -88,7 +88,7 @@ func main() {
 		Addr:         ":" + addr,
 		Handler:      handler,
 		TLSConfig:    cfg,
-		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 
 	idleConnsClosed := make(chan struct{})

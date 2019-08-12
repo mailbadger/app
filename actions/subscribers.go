@@ -45,7 +45,6 @@ func GetSubscriber(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func PostSubscriber(c *gin.Context) {
@@ -81,8 +80,6 @@ func PostSubscriber(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, s)
-	return
-
 }
 
 func PutSubscriber(c *gin.Context) {
@@ -121,7 +118,6 @@ func PutSubscriber(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func DeleteSubscriber(c *gin.Context) {
@@ -150,5 +146,4 @@ func DeleteSubscriber(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }

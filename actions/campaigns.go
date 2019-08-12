@@ -119,7 +119,6 @@ func StartCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "The campaign has started. You can track the progress in the campaign details page.",
 	})
-	return
 }
 
 func GetCampaigns(c *gin.Context) {
@@ -155,7 +154,6 @@ func GetCampaign(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func PostCampaign(c *gin.Context) {
@@ -195,7 +193,6 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, campaign)
-	return
 }
 
 func PutCampaign(c *gin.Context) {
@@ -247,7 +244,6 @@ func PutCampaign(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func DeleteCampaign(c *gin.Context) {
@@ -277,5 +273,4 @@ func DeleteCampaign(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }

@@ -13,10 +13,10 @@ func TestSesKeys(t *testing.T) {
 
 	store := From(db)
 
-	keys, err := store.GetSesKeys(1)
+	_, err := store.GetSesKeys(1)
 	assert.NotNil(t, err)
 
-	keys = &entities.SesKeys{
+	keys := &entities.SesKeys{
 		UserID:    1,
 		AccessKey: "abcd",
 		SecretKey: "efgh",

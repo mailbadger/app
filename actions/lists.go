@@ -50,7 +50,6 @@ func GetList(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func PostList(c *gin.Context) {
@@ -85,7 +84,6 @@ func PostList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, l)
-	return
 }
 
 func PutList(c *gin.Context) {
@@ -131,7 +129,6 @@ func PutList(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func DeleteList(c *gin.Context) {
@@ -160,7 +157,6 @@ func DeleteList(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func PutListSubscribers(c *gin.Context) {
@@ -206,7 +202,6 @@ func PutListSubscribers(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func GetListSubscribers(c *gin.Context) {
@@ -231,7 +226,6 @@ func GetListSubscribers(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }
 
 func DetachListSubscribers(c *gin.Context) {
@@ -277,5 +271,4 @@ func DetachListSubscribers(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
-	return
 }

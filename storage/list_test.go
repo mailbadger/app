@@ -42,7 +42,7 @@ func TestList(t *testing.T) {
 	//Test list validation when name is invalid
 	l.Name = ""
 	l.Validate()
-	assert.Equal(t, l.Errors["name"], entities.ErrListNameEmpty.Error())
+	assert.Equal(t, l.Errors["name"], "The list name cannot be empty.")
 
 	//Test get lists
 	p := &pagination.Pagination{PerPage: 10}
@@ -64,6 +64,8 @@ func TestList(t *testing.T) {
 	assert.Nil(t, err)
 
 	l, err = store.GetList(l.ID, 1)
+	assert.Nil(t, err)
+
 	assert.NotEmpty(t, l.Subscribers)
 	assert.Equal(t, l.Subscribers[0].Name, "john")
 

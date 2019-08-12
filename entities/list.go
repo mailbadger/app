@@ -1,14 +1,10 @@
 package entities
 
 import (
-	"errors"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
 )
-
-// ErrListNameEmpty indicates an empty list name error used in validation process.
-var ErrListNameEmpty = errors.New("The list name cannot be empty.")
 
 // List represents the list entity
 type List struct {
@@ -27,7 +23,7 @@ func (l *List) Validate() bool {
 	l.Errors = make(map[string]string)
 
 	if valid.Trim(l.Name, "") == "" {
-		l.Errors["name"] = ErrListNameEmpty.Error()
+		l.Errors["name"] = "The list name cannot be empty."
 	}
 
 	return len(l.Errors) == 0

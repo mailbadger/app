@@ -38,7 +38,7 @@ func GetSESKeys(c *gin.Context) {
 func PostSESKeys(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
+	_, err := storage.GetSesKeys(c, u.ID)
 	if err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys are already set.",
@@ -46,7 +46,7 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	keys = &entities.SesKeys{
+	keys := &entities.SesKeys{
 		AccessKey: c.PostForm("access_key"),
 		SecretKey: c.PostForm("secret_key"),
 		Region:    c.PostForm("region"),

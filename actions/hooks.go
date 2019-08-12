@@ -18,6 +18,11 @@ func HandleHook(c *gin.Context) {
 	var payload sns.Payload
 
 	body, err := c.GetRawData()
+	if err != nil {
+		logrus.Errorf("Cannot fetch raw data: %s", err.Error())
+		return
+	}
+
 	err = json.Unmarshal(body, &payload)
 	if err != nil {
 		logrus.Errorf("Cannot decode request: %s", err.Error())

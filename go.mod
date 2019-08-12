@@ -26,7 +26,6 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
-	github.com/rogpeppe/go-internal v1.1.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20190212093014-1007f53448d7
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.3.0
@@ -38,4 +37,5 @@ require (
 	google.golang.org/appengine v1.6.1 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
+	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
 )
