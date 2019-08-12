@@ -3,7 +3,7 @@ import { Paragraph, FormField, Anchor, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { NavLink } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { Mail, StatusCriticalSmall } from "grommet-icons";
+import { Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
@@ -11,7 +11,7 @@ import equalTo from "../utils/equalTo";
 import { socialAuthEnabled } from "../Auth";
 import SocialButtons from "./SocialButtons";
 import StyledTextInput from "../ui/StyledTextInput";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -125,7 +125,7 @@ const Form = ({
           By clicking any of the Sign Up buttons, I agree to the{" "}
           <Anchor href="">terms of service</Anchor>
         </Paragraph>
-        <StyledButton
+        <ButtonWithLoader
           style={{
             width: "100%",
             marginBottom: "4px"

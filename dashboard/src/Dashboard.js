@@ -6,20 +6,6 @@ import Sidebar from "./Sidebar";
 import Templates from "./Templates";
 import Settings from "./Settings";
 
-const AppBar = props => (
-  <Box
-    tag="header"
-    direction="row"
-    align="center"
-    justify="between"
-    background="brand"
-    pad={{ left: "medium", right: "small", vertical: "small" }}
-    elevation="medium"
-    style={{ zIndex: "1" }}
-    {...props}
-  />
-);
-
 const Routes = React.memo(() => (
   <Box flex align="stretch" justify="start">
     <ProtectedRoute

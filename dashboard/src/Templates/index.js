@@ -7,7 +7,7 @@ import List from "./List";
 import CreateTemplateForm from "./Create";
 import history from "../history";
 import EditTemplateForm from "./Edit";
-import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
 
 const Templates = () => (
   <Grid
@@ -22,7 +22,7 @@ const Templates = () => (
   >
     <Box gridArea="nav" direction="row">
       <Box>
-        <StyledButton
+        <ButtonWithLoader
           label="Create new"
           icon={<Add color="#ffffff" />}
           reverse
