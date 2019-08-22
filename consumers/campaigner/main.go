@@ -48,11 +48,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	var nextID int64
 	var limit int64 = 1000
 	for {
-		subs, err := h.s.GetDistinctSubscribersByListIDs(msg.ListIDs, msg.UserID, false, true, nextID, limit)
+		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(msg.SegmentIDs, msg.UserID, false, true, nextID, limit)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"user_id":  msg.UserID,
-				"list_ids": msg.ListIDs,
+				"segment_ids": msg.SegmentIDs,
 			}).Errorf("unable to fetch subscribers: %s", err.Error())
 			break
 		}

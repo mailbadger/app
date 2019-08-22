@@ -18,7 +18,7 @@ import (
 )
 
 type sendCampaignParams struct {
-	Ids    []int64 `form:"list_id[]" valid:"required"`
+	Ids    []int64 `form:"segment_id[]" valid:"required"`
 	Source string  `form:"source" valid:"email,required~Email is blank or in invalid format"`
 }
 
@@ -74,7 +74,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	lists, err := storage.GetListsByIDs(c, u.ID, params.Ids)
+	lists, err := storage.GetSegmentsByIDs(c, u.ID, params.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Subscriber lists are not found.",
@@ -83,7 +83,7 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	msg, err := json.Marshal(entities.SendCampaignParams{
-		ListIDs:      params.Ids,
+		SegmentIDs:   params.Ids,
 		Source:       params.Source,
 		TemplateData: templateData,
 		UserID:       u.ID,
@@ -102,7 +102,7 @@ func StartCampaign(c *gin.Context) {
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
 			"user_id":     u.ID,
-			"list_ids":    params.Ids,
+			"segment_ids":    params.Ids,
 		}).WithError(err).Error("unable to queue campaign for sending")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",

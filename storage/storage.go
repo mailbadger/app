@@ -28,23 +28,23 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
 
-	GetLists(int64, *pagination.Pagination)
-	GetListsByIDs(userID int64, ids []int64) ([]entities.List, error)
-	GetList(int64, int64) (*entities.List, error)
-	GetListByName(name string, userID int64) (*entities.List, error)
-	CreateList(*entities.List) error
-	UpdateList(*entities.List) error
-	DeleteList(int64, int64) error
-	AppendSubscribers(*entities.List) error
-	DetachSubscribers(*entities.List) error
+	GetSegments(int64, *pagination.Pagination)
+	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
+	GetSegment(int64, int64) (*entities.Segment, error)
+	GetSegmentByName(name string, userID int64) (*entities.Segment, error)
+	CreateSegment(*entities.Segment) error
+	UpdateSegment(*entities.Segment) error
+	DeleteSegment(int64, int64) error
+	AppendSubscribers(*entities.Segment) error
+	DetachSubscribers(*entities.Segment) error
 
 	GetSubscribers(int64, *pagination.Pagination)
-	GetSubscribersByListID(int64, int64, *pagination.Pagination)
+	GetSubscribersBySegmentID(int64, int64, *pagination.Pagination)
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
-	GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error)
-	GetDistinctSubscribersByListIDs(listIDs []int64, userID int64, blacklisted, active bool, nextID, limit int64) ([]entities.Subscriber, error)
+	GetAllSubscribersBySegmentID(listID, userID int64) ([]entities.Subscriber, error)
+	GetDistinctSubscribersBySegmentIDs(listIDs []int64, userID int64, blacklisted, active bool, nextID, limit int64) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
 	BlacklistSubscriber(userID int64, email string) error
@@ -147,49 +147,49 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteCampaign(id, userID)
 }
 
-// GetLists populates a pagination object with a collection of
+// GetSegments populates a pagination object with a collection of
 // lists by the specified user id.
-func GetLists(c context.Context, userID int64, p *pagination.Pagination) {
-	GetFromContext(c).GetLists(userID, p)
+func GetSegments(c context.Context, userID int64, p *pagination.Pagination) {
+	GetFromContext(c).GetSegments(userID, p)
 }
 
-// GetListsByIDs fetches lists by user id and the given ids
-func GetListsByIDs(c context.Context, userID int64, ids []int64) ([]entities.List, error) {
-	return GetFromContext(c).GetListsByIDs(userID, ids)
+// GetSegmentsByIDs fetches lists by user id and the given ids
+func GetSegmentsByIDs(c context.Context, userID int64, ids []int64) ([]entities.Segment, error) {
+	return GetFromContext(c).GetSegmentsByIDs(userID, ids)
 }
 
-// GetList returns a List entity by the given id and user id.
-func GetList(c context.Context, id, userID int64) (*entities.List, error) {
-	return GetFromContext(c).GetList(id, userID)
+// GetSegment returns a Segment entity by the given id and user id.
+func GetSegment(c context.Context, id, userID int64) (*entities.Segment, error) {
+	return GetFromContext(c).GetSegment(id, userID)
 }
 
-// GetListByName returns a Campaign entity by the given name and user id.
-func GetListByName(c context.Context, name string, userID int64) (*entities.List, error) {
-	return GetFromContext(c).GetListByName(name, userID)
+// GetSegmentByName returns a Campaign entity by the given name and user id.
+func GetSegmentByName(c context.Context, name string, userID int64) (*entities.Segment, error) {
+	return GetFromContext(c).GetSegmentByName(name, userID)
 }
 
-// CreateList persists a new List entity in the datastore.
-func CreateList(c context.Context, l *entities.List) error {
-	return GetFromContext(c).CreateList(l)
+// CreateSegment persists a new Segment entity in the datastore.
+func CreateSegment(c context.Context, l *entities.Segment) error {
+	return GetFromContext(c).CreateSegment(l)
 }
 
-// UpdateList updates a List entity.
-func UpdateList(c context.Context, l *entities.List) error {
-	return GetFromContext(c).UpdateList(l)
+// UpdateSegment updates a Segment entity.
+func UpdateSegment(c context.Context, l *entities.Segment) error {
+	return GetFromContext(c).UpdateSegment(l)
 }
 
-// DeleteList deletes a List entity by the given id.
-func DeleteList(c context.Context, id, userID int64) error {
-	return GetFromContext(c).DeleteList(id, userID)
+// DeleteSegment deletes a Segment entity by the given id.
+func DeleteSegment(c context.Context, id, userID int64) error {
+	return GetFromContext(c).DeleteSegment(id, userID)
 }
 
 // AppendSubscribers appends subscribers to the existing association.
-func AppendSubscribers(c context.Context, l *entities.List) error {
+func AppendSubscribers(c context.Context, l *entities.Segment) error {
 	return GetFromContext(c).AppendSubscribers(l)
 }
 
 // DetachSubscribers deletes subscribers from the list.
-func DetachSubscribers(c context.Context, l *entities.List) error {
+func DetachSubscribers(c context.Context, l *entities.Segment) error {
 	return GetFromContext(c).DetachSubscribers(l)
 }
 
@@ -199,10 +199,10 @@ func GetSubscribers(c context.Context, userID int64, p *pagination.Pagination) {
 	GetFromContext(c).GetSubscribers(userID, p)
 }
 
-// GetSubscribersByListID populates a pagination object with a collection of
+// GetSubscribersBySegmentID populates a pagination object with a collection of
 // subscribers by the specified user id and list id.
-func GetSubscribersByListID(c context.Context, listID, userID int64, p *pagination.Pagination) {
-	GetFromContext(c).GetSubscribersByListID(listID, userID, p)
+func GetSubscribersBySegmentID(c context.Context, listID, userID int64, p *pagination.Pagination) {
+	GetFromContext(c).GetSubscribersBySegmentID(listID, userID, p)
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.
@@ -220,20 +220,20 @@ func GetSubscriberByEmail(c context.Context, email string, userID int64) (*entit
 	return GetFromContext(c).GetSubscriberByEmail(email, userID)
 }
 
-// GetAllSubscribersByListID fetches all subscribers by user id and list id
-func GetAllSubscribersByListID(c context.Context, listID, userID int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetAllSubscribersByListID(listID, userID)
+// GetAllSubscribersBySegmentID fetches all subscribers by user id and list id
+func GetAllSubscribersBySegmentID(c context.Context, listID, userID int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).GetAllSubscribersBySegmentID(listID, userID)
 }
 
-// GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
-func GetDistinctSubscribersByListIDs(
+// GetDistinctSubscribersBySegmentIDs fetches all distinct subscribers by user id and list ids
+func GetDistinctSubscribersBySegmentIDs(
 	c context.Context,
 	listIDs []int64,
 	userID int64,
 	blacklisted, active bool,
 	nextID, limit int64,
 ) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetDistinctSubscribersByListIDs(listIDs, userID, blacklisted, active, nextID, limit)
+	return GetFromContext(c).GetDistinctSubscribersBySegmentIDs(listIDs, userID, blacklisted, active, nextID, limit)
 }
 
 // CreateSubscriber persists a new Subscriber entity in the datastore.

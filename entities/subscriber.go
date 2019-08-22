@@ -15,7 +15,7 @@ type Subscriber struct {
 	Name        string            `json:"name" gorm:"not null"`
 	Email       string            `json:"email" gorm:"not null"`
 	MetaJSON    JSON              `json:"-" gorm:"column:metadata; type:json"`
-	Lists       []List            `json:"-" gorm:"many2many:subscribers_lists;"`
+	Segments    []Segment         `json:"-" gorm:"many2many:subscribers_segments;"`
 	Blacklisted bool              `json:"blacklisted"`
 	Active      bool              `json:"active"`
 	CreatedAt   time.Time         `json:"created_at"`

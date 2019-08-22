@@ -17,7 +17,7 @@ type subs struct {
 	Ids []int64 `form:"ids[]"`
 }
 
-func GetLists(c *gin.Context) {
+func GetSegments(c *gin.Context) {
 	val, ok := c.Get("pagination")
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
@@ -30,19 +30,19 @@ func GetLists(c *gin.Context) {
 		return
 	}
 
-	storage.GetLists(c, middleware.GetUser(c).ID, p)
+	storage.GetSegments(c, middleware.GetUser(c).ID, p)
 	c.JSON(http.StatusOK, p)
 }
 
-func GetList(c *gin.Context) {
+func GetSegment(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if l, err := storage.GetList(c, id, middleware.GetUser(c).ID); err == nil {
+		if l, err := storage.GetSegment(c, id, middleware.GetUser(c).ID); err == nil {
 			c.JSON(http.StatusOK, l)
 			return
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "List not found",
+			"message": "Segment not found",
 		})
 		return
 	}
@@ -52,10 +52,10 @@ func GetList(c *gin.Context) {
 	})
 }
 
-func PostList(c *gin.Context) {
+func PostSegment(c *gin.Context) {
 	name := c.PostForm("name")
 
-	l := &entities.List{
+	l := &entities.Segment{
 		Name:   name,
 		UserID: middleware.GetUser(c).ID,
 	}
@@ -68,15 +68,15 @@ func PostList(c *gin.Context) {
 		return
 	}
 
-	_, err := storage.GetListByName(c, name, middleware.GetUser(c).ID)
+	_, err := storage.GetSegmentByName(c, name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "List with that name already exists",
+			"message": "Segment with that name already exists",
 		})
 		return
 	}
 
-	if err := storage.CreateList(c, l); err != nil {
+	if err := storage.CreateSegment(c, l); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": err.Error(),
 		})
@@ -86,12 +86,12 @@ func PostList(c *gin.Context) {
 	c.JSON(http.StatusCreated, l)
 }
 
-func PutList(c *gin.Context) {
+func PutSegment(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		l, err := storage.GetList(c, id, middleware.GetUser(c).ID)
+		l, err := storage.GetSegment(c, id, middleware.GetUser(c).ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "List not found",
+				"message": "Segment not found",
 			})
 			return
 		}
@@ -106,15 +106,15 @@ func PutList(c *gin.Context) {
 			return
 		}
 
-		l2, err := storage.GetListByName(c, l.Name, middleware.GetUser(c).ID)
+		l2, err := storage.GetSegmentByName(c, l.Name, middleware.GetUser(c).ID)
 		if err == nil && l2.ID != l.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "List with that name already exists",
+				"message": "Segment with that name already exists",
 			})
 			return
 		}
 
-		if err = storage.UpdateList(c, l); err != nil {
+		if err = storage.UpdateSegment(c, l); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err.Error(),
 			})
@@ -131,18 +131,18 @@ func PutList(c *gin.Context) {
 	})
 }
 
-func DeleteList(c *gin.Context) {
+func DeleteSegment(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		_, err := storage.GetList(c, id, user.ID)
+		_, err := storage.GetSegment(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "List not found",
+				"message": "Segment not found",
 			})
 			return
 		}
 
-		err = storage.DeleteList(c, id, user.ID)
+		err = storage.DeleteSegment(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": err.Error(),
@@ -159,13 +159,13 @@ func DeleteList(c *gin.Context) {
 	})
 }
 
-func PutListSubscribers(c *gin.Context) {
+func PutSegmentSubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		l, err := storage.GetList(c, id, user.ID)
+		l, err := storage.GetSegment(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "List not found",
+				"message": "Segment not found",
 			})
 			return
 		}
@@ -204,7 +204,7 @@ func PutListSubscribers(c *gin.Context) {
 	})
 }
 
-func GetListSubscribers(c *gin.Context) {
+func GetSegmentsubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		val, ok := c.Get("pagination")
 		if !ok {
@@ -218,7 +218,7 @@ func GetListSubscribers(c *gin.Context) {
 			return
 		}
 
-		storage.GetSubscribersByListID(c, id, middleware.GetUser(c).ID, p)
+		storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
 		c.JSON(http.StatusOK, p)
 		return
 	}
@@ -228,13 +228,13 @@ func GetListSubscribers(c *gin.Context) {
 	})
 }
 
-func DetachListSubscribers(c *gin.Context) {
+func DetachSegmentSubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		user := middleware.GetUser(c)
-		l, err := storage.GetList(c, id, user.ID)
+		l, err := storage.GetSegment(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "List not found",
+				"message": "Segment not found",
 			})
 			return
 		}

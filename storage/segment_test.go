@@ -8,34 +8,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestList(t *testing.T) {
+func TestSegment(t *testing.T) {
 	db := openTestDb()
 	defer db.Close()
 
 	store := From(db)
 
 	//Test create list
-	l := &entities.List{
+	l := &entities.Segment{
 		Name:   "foo",
 		UserID: 1,
 	}
 
-	err := store.CreateList(l)
+	err := store.CreateSegment(l)
 	assert.Nil(t, err)
 
 	//Test get list
-	l, err = store.GetList(l.ID, 1)
+	l, err = store.GetSegment(l.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "foo")
 
 	//Test update list
 	l.Name = "bar"
-	err = store.UpdateList(l)
+	err = store.UpdateSegment(l)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "bar")
 
 	//Test get list by name
-	l, err = store.GetListByName("bar", 1)
+	l, err = store.GetSegmentByName("bar", 1)
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "bar")
 
@@ -46,7 +46,7 @@ func TestList(t *testing.T) {
 
 	//Test get lists
 	p := &pagination.Pagination{PerPage: 10}
-	store.GetLists(1, p)
+	store.GetSegments(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
@@ -63,7 +63,7 @@ func TestList(t *testing.T) {
 	err = store.AppendSubscribers(l)
 	assert.Nil(t, err)
 
-	l, err = store.GetList(l.ID, 1)
+	l, err = store.GetSegment(l.ID, 1)
 	assert.Nil(t, err)
 
 	assert.NotEmpty(t, l.Subscribers)
@@ -74,6 +74,6 @@ func TestList(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test delete list
-	err = store.DeleteList(1, 1)
+	err = store.DeleteSegment(1, 1)
 	assert.Nil(t, err)
 }

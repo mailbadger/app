@@ -152,16 +152,16 @@ func New() http.Handler {
 			campaigns.POST("/:id/start", actions.StartCampaign)
 		}
 
-		lists := authorized.Group("/lists")
+		segments := authorized.Group("/segments")
 		{
-			lists.GET("", middleware.Paginate(), actions.GetLists)
-			lists.GET("/:id", actions.GetList)
-			lists.POST("", actions.PostList)
-			lists.PUT("/:id", actions.PutList)
-			lists.DELETE("/:id", actions.DeleteList)
-			lists.PUT("/:id/subscribers", actions.PutListSubscribers)
-			lists.GET("/:id/subscribers", middleware.Paginate(), actions.GetListSubscribers)
-			lists.DELETE("/:id/subscribers", actions.DetachListSubscribers)
+			segments.GET("", middleware.Paginate(), actions.GetSegments)
+			segments.GET("/:id", actions.GetSegment)
+			segments.POST("", actions.PostSegment)
+			segments.PUT("/:id", actions.PutSegment)
+			segments.DELETE("/:id", actions.DeleteSegment)
+			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
+			segments.GET("/:id/subscribers", middleware.Paginate(), actions.GetSegmentsubscribers)
+			segments.DELETE("/:id/subscribers", actions.DetachSegmentSubscribers)
 		}
 
 		subscribers := authorized.Group("/subscribers")

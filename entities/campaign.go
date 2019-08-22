@@ -50,7 +50,7 @@ type BulkSendMessage struct {
 // SendCampaignParams represent the request params used
 // by the send campaign endpoint.
 type SendCampaignParams struct {
-	ListIDs      []int64           `json:"list_ids"`
+	SegmentIDs   []int64           `json:"segment_ids"`
 	TemplateData map[string]string `json:"template_data"`
 	Source       string            `json:"source"`
 	UserID       int64             `json:"user_id"`

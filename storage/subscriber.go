@@ -39,9 +39,9 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 	return s, err
 }
 
-// GetSubscribersByListID fetches subscribers by user id and list id, and populates the pagination obj
-func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagination) {
-	var l = &entities.List{ID: listID}
+// GetSubscribersBySegmentID fetches subscribers by user id and list id, and populates the pagination obj
+func (db *store) GetSubscribersBySegmentID(listID, userID int64, p *pagination.Pagination) {
+	var l = &entities.Segment{ID: listID}
 	var subs []entities.Subscriber
 
 	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Association("Subscribers").Find(&subs)
@@ -52,16 +52,16 @@ func (db *store) GetSubscribersByListID(listID, userID int64, p *pagination.Pagi
 	}
 }
 
-// GetAllSubscribersByListID fetches all subscribers by user id and list id
-func (db *store) GetAllSubscribersByListID(listID, userID int64) ([]entities.Subscriber, error) {
-	var l = &entities.List{ID: listID}
+// GetAllSubscribersBySegmentID fetches all subscribers by user id and list id
+func (db *store) GetAllSubscribersBySegmentID(listID, userID int64) ([]entities.Subscriber, error) {
+	var l = &entities.Segment{ID: listID}
 	var subs []entities.Subscriber
 	err := db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Find(&subs).Error
 	return subs, err
 }
 
-// GetDistinctSubscribersByListIDs fetches all distinct subscribers by user id and list ids
-func (db *store) GetDistinctSubscribersByListIDs(
+// GetDistinctSubscribersBySegmentIDs fetches all distinct subscribers by user id and list ids
+func (db *store) GetDistinctSubscribersBySegmentIDs(
 	listIDs []int64,
 	userID int64,
 	blacklisted, active bool,
@@ -76,9 +76,9 @@ func (db *store) GetDistinctSubscribersByListIDs(
 
 	err := db.Table("subscribers").
 		Select("DISTINCT(id), name, email").
-		Joins("INNER JOIN subscribers_lists ON subscribers_lists.subscriber_id = subscribers.id").
+		Joins("INNER JOIN subscribers_segments ON subscribers_segments.subscriber_id = subscribers.id").
 		Where(`
-			subscribers_lists.list_id IN (?)
+			subscribers_segments.segment_id IN (?)
 			AND subscribers.user_id = ? 
 			AND subscribers.blacklisted = ? 
 			AND subscribers.active = ?
@@ -118,7 +118,7 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Lists").Clear().Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
 		tx.Rollback()
 		return err
 	}

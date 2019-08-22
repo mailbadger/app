@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS "subscribers" (
 CREATE INDEX IF NOT EXISTS i_user ON "subscribers" (user_id);
 CREATE INDEX IF NOT EXISTS i_user_blacklist_active ON "subscribers" (user_id, blacklisted, active);
 
-CREATE TABLE IF NOT EXISTS "lists" (
+CREATE TABLE IF NOT EXISTS "segments" (
   "id"          integer primary key autoincrement,
   "user_id"     integer,
   "name"        varchar(191),
@@ -61,16 +61,16 @@ CREATE TABLE IF NOT EXISTS "lists" (
   "updated_at"  datetime
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "lists" (user_id);
+CREATE INDEX IF NOT EXISTS i_user ON "segments" (user_id);
 
-CREATE TABLE IF NOT EXISTS "subscribers_lists" (
-  "list_id"       integer,
+CREATE TABLE IF NOT EXISTS "subscribers_segments" (
+  "segment_id"    integer,
   "subscriber_id" integer,
-  UNIQUE("list_id", "subscriber_id")
+  UNIQUE("segment_id", "subscriber_id")
 );
 
-CREATE INDEX IF NOT EXISTS i_list       ON "subscribers_lists" (list_id);
-CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_lists" (subscriber_id);
+CREATE INDEX IF NOT EXISTS i_segment    ON "subscribers_segments" (segment_id);
+CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_segments" (subscriber_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
   "id"              integer primary key autoincrement,
@@ -156,9 +156,9 @@ CREATE TABLE IF NOT EXISTS "sends" (
 
 DROP TABLE "users";
 DROP TABLE "campaigns";
-DROP TABLE "lists";
+DROP TABLE "segments";
 DROP TABLE "subscribers";
-DROP TABLE "subscribers_lists";
+DROP TABLE "subscribers_segments";
 DROP TABLE "bounces";
 DROP TABLE "send_bulk_logs";
 DROP TABLE "sends";

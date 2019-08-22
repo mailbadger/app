@@ -14,12 +14,12 @@ func TestSubscriber(t *testing.T) {
 
 	store := From(db)
 
-	l := &entities.List{
+	l := &entities.Segment{
 		Name:   "foo",
 		UserID: 1,
 	}
 
-	err := store.CreateList(l)
+	err := store.CreateSegment(l)
 	assert.Nil(t, err)
 
 	//Test create subscriber
@@ -31,7 +31,7 @@ func TestSubscriber(t *testing.T) {
 		Blacklisted: false,
 		Active:      true,
 	}
-	s.Lists = append(s.Lists, *l)
+	s.Segments = append(s.Segments, *l)
 
 	err = store.CreateSubscriber(s)
 	assert.Nil(t, err)
@@ -76,15 +76,15 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subs by list id
 	p = &pagination.Pagination{PerPage: 10}
-	store.GetSubscribersByListID(l.ID, 1, p)
+	store.GetSubscribersBySegmentID(l.ID, 1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))
 
-	subs, err = store.GetAllSubscribersByListID(l.ID, 1)
+	subs, err = store.GetAllSubscribersBySegmentID(l.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subs))
 
-	subs, err = store.GetDistinctSubscribersByListIDs([]int64{l.ID}, 1, false, true, 0, 10)
+	subs, err = store.GetDistinctSubscribersBySegmentIDs([]int64{l.ID}, 1, false, true, 0, 10)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subs))
 

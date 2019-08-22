@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.12 as go-build
+FROM golang:1.12-stretch as go-build
 
 ENV GO111MODULE=on
 

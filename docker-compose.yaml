@@ -46,7 +46,7 @@ services:
       - mysql
       - nsqd
     env_file: 
-    - .env
+    - .env.docker
   bulksender:
     image: news-maily/app
     command: /consumers/bulksender
@@ -55,7 +55,7 @@ services:
     depends_on:
       - app
     env_file: 
-    - .env
+    - .env.docker
   campaigner:
     image: news-maily/app
     command: /consumers/campaigner
@@ -64,7 +64,7 @@ services:
     depends_on:
       - app
     env_file: 
-    - .env
+    - .env.docker
 
 volumes:
   dbdata:

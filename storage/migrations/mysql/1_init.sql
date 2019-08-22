@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   FOREIGN KEY (`user_id`) REFERENCES users(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `lists` (
+CREATE TABLE IF NOT EXISTS `segments` (
   `id`          integer primary key AUTO_INCREMENT NOT NULL,
   `user_id`     integer NOT NULL,
   `name`        varchar(191) NOT NULL,
@@ -68,10 +68,10 @@ CREATE TABLE IF NOT EXISTS `lists` (
   FOREIGN KEY (`user_id`) REFERENCES users(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `subscribers_lists` (
-  `list_id`       integer NOT NULL,
+CREATE TABLE IF NOT EXISTS `subscribers_segments` (
+  `segment_id`    integer NOT NULL,
   `subscriber_id` integer NOT NULL,
-  PRIMARY KEY (`list_id`, `subscriber_id`)
+  PRIMARY KEY (`segment_id`, `subscriber_id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `bounces` (
@@ -167,9 +167,9 @@ CREATE TABLE IF NOT EXISTS `sends` (
 
 -- +migrate Down
 
-DROP TABLE `subscribers_lists`;
+DROP TABLE `subscribers_segments`;
 DROP TABLE `subscriber_metadata`;
-DROP TABLE `lists`;
+DROP TABLE `segments`;
 DROP TABLE `subscribers`;
 DROP TABLE `bounces`;
 DROP TABLE `send_bulk_logs`;
