@@ -35,36 +35,37 @@ services:
       - nsqlookupd  
     ports:
       - "4171:4171"
-  app:
-    image: news-maily/app
-    command: /app
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./maily.db:/maily.db
-    depends_on:
-      - mysql
-      - nsqd
-    env_file: 
-    - .env.docker
-  bulksender:
-    image: news-maily/app
-    command: /consumers/bulksender
-    volumes:
-      - ./maily.db:/maily.db
-    depends_on:
-      - app
-    env_file: 
-    - .env.docker
-  campaigner:
-    image: news-maily/app
-    command: /consumers/campaigner
-    volumes:
-      - ./maily.db:/maily.db
-    depends_on:
-      - app
-    env_file: 
-    - .env.docker
+
+  # app:
+  #   image: news-maily/app
+  #   command: /app
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./maily.db:/maily.db
+  #   depends_on:
+  #     - mysql
+  #     - nsqd
+  #   env_file: 
+  #   - .env.docker
+  # bulksender:
+  #   image: news-maily/app
+  #   command: /consumers/bulksender
+  #   volumes:
+  #     - ./maily.db:/maily.db
+  #   depends_on:
+  #     - app
+  #   env_file: 
+  #   - .env.docker
+  # campaigner:
+  #   image: news-maily/app
+  #   command: /consumers/campaigner
+  #   volumes:
+  #     - ./maily.db:/maily.db
+  #   depends_on:
+  #     - app
+  #   env_file: 
+  #   - .env.docker
 
 volumes:
   dbdata:

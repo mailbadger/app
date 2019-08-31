@@ -1,21 +1,70 @@
 package storage
 
 import (
+	"time"
+
+	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
+
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/utils/pagination"
 )
 
 // GetSubscribers fetches subscribers by user id, and populates the pagination obj
-func (db *store) GetSubscribers(userID int64, p *pagination.Pagination) {
+func (db *store) GetSubscribers(
+	userID int64,
+	p *pagination.Cursor,
+) {
 	var subs []entities.Subscriber
-	var count uint64
+	var query *gorm.DB
+	var reverse bool
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Find(&subs).Count(&count)
-	p.SetTotal(count)
+	if p.EndingBefore != 0 {
+		sub, err := db.GetSubscriber(p.EndingBefore, userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"ending_before": p.EndingBefore,
+				"user_id":       userID,
+			}).WithError(err).Error("Unable to find subscriber for pagination with ending before id.")
+			return
+		}
 
-	for _, t := range subs {
-		p.Append(t)
+		query = db.Where(`user_id = ?
+			AND (created_at > ? OR (created_at = ? AND id > ?))
+			AND created_at < ?`, userID, sub.CreatedAt, sub.CreatedAt, sub.ID, time.Now()).
+			Order("created_at, id")
+
+		reverse = true
+	} else if p.StartingAfter != 0 {
+		sub, err := db.GetSubscriber(p.StartingAfter, userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"starting_after": p.StartingAfter,
+				"user_id":        userID,
+			}).WithError(err).Error("Unable to find subscriber for pagination with starting after id.")
+			return
+		}
+		query = db.Where(`user_id = ?
+			AND (created_at < ? OR (created_at = ? AND id < ?))
+			AND created_at < ?`, userID, sub.CreatedAt, sub.CreatedAt, sub.ID, time.Now()).
+			Order("created_at desc, id desc")
+	} else {
+		query = db.Where("user_id = ?", userID).Order("created_at desc, id desc")
 	}
+
+	query.Limit(p.PerPage).Find(&subs)
+
+	if reverse {
+		for i := len(subs) - 1; i >= 0; i-- {
+			p.Append(subs[i])
+		}
+	} else {
+		for _, s := range subs {
+			p.Append(s)
+		}
+	}
+
+	p.PopulateLinks(1, 5)
 }
 
 // GetSubscriber returns the subscriber by the given id and user id
@@ -40,12 +89,11 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 }
 
 // GetSubscribersBySegmentID fetches subscribers by user id and list id, and populates the pagination obj
-func (db *store) GetSubscribersBySegmentID(listID, userID int64, p *pagination.Pagination) {
+func (db *store) GetSubscribersBySegmentID(listID, userID int64, p *pagination.Cursor) {
 	var l = &entities.Segment{ID: listID}
 	var subs []entities.Subscriber
 
-	db.Model(&l).Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Association("Subscribers").Find(&subs)
-	p.SetTotal(uint64(db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Count()))
+	db.Model(&l).Where("user_id = ?", userID).Association("Subscribers").Find(&subs)
 
 	for _, t := range subs {
 		p.Append(t)
@@ -65,6 +113,7 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 	listIDs []int64,
 	userID int64,
 	blacklisted, active bool,
+	timestamp time.Time,
 	nextID int64,
 	limit int64,
 ) ([]entities.Subscriber, error) {
@@ -82,8 +131,9 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 			AND subscribers.user_id = ? 
 			AND subscribers.blacklisted = ? 
 			AND subscribers.active = ?
-			AND subscribers.id > ?`, listIDs, userID, blacklisted, active, nextID).
-		Order("id").
+			AND (created_at > ? OR (created_at = ? AND id > ?))
+			AND created_at < ?`, listIDs, userID, blacklisted, active, timestamp, timestamp, nextID, time.Now()).
+		Order("created_at, id").
 		Limit(limit).
 		Find(&subs).Error
 

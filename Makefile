@@ -17,18 +17,18 @@ gen_migrations:
 test: 
 	go test -cover $(PACKAGES)
 
-build: build_static
+build: build_api
+
+build_api:
+	mkdir -p bin
+	go build -o bin/app .
+	go build -o bin/bulksender ./consumers/bulksender
+	go build -o bin/campaigner ./consumers/campaigner
 
 build_static:
-	mkdir -p release
-	go build -o release/app .
-	go build -o release/bulksender ./consumers/bulksender
-	go build -o release/campaigner ./consumers/campaigner
-
-build_web:
 	cd dashboard; yarn && yarn build
-	mkdir -p release
-	cp -r dashboard/build release/dashboard
+	mkdir -p static
+	cp -r dashboard/build static/dashboard
 
 image:
 	docker build -t news-maily/app:latest .

@@ -45,13 +45,26 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// fetching subs that are active and that have not been blacklisted
-	var nextID int64
-	var limit int64 = 1000
+	var (
+		active      = true
+		blacklisted = false
+		timestamp   time.Time
+		nextID      int64
+		limit       int64 = 1000
+	)
 	for {
-		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(msg.SegmentIDs, msg.UserID, false, true, nextID, limit)
+		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
+			msg.SegmentIDs,
+			msg.UserID,
+			blacklisted,
+			active,
+			timestamp,
+			nextID,
+			limit,
+		)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"user_id":  msg.UserID,
+				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
 			}).Errorf("unable to fetch subscribers: %s", err.Error())
 			break
@@ -131,7 +144,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 		}
 
-		nextID = subs[len(subs)-1].ID
+		lastSub := subs[len(subs)-1]
+		nextID = lastSub.ID
+		timestamp = lastSub.CreatedAt
 	}
 
 	c := msg.Campaign

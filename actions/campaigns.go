@@ -102,7 +102,7 @@ func StartCampaign(c *gin.Context) {
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
 			"user_id":     u.ID,
-			"segment_ids":    params.Ids,
+			"segment_ids": params.Ids,
 		}).WithError(err).Error("unable to queue campaign for sending")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
@@ -122,13 +122,13 @@ func StartCampaign(c *gin.Context) {
 }
 
 func GetCampaigns(c *gin.Context) {
-	val, ok := c.Get("pagination")
+	val, ok := c.Get("cursor")
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
 		return
 	}
 
-	p, ok := val.(*pagination.Pagination)
+	p, ok := val.(*pagination.Cursor)
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
 		return

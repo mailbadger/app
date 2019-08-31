@@ -45,7 +45,7 @@ func TestSegment(t *testing.T) {
 	assert.Equal(t, l.Errors["name"], "The list name cannot be empty.")
 
 	//Test get lists
-	p := &pagination.Pagination{PerPage: 10}
+	p := &pagination.Cursor{PerPage: 10}
 	store.GetSegments(1, p)
 	assert.NotEmpty(t, p.Collection)
 	assert.Equal(t, len(p.Collection), int(p.Total))

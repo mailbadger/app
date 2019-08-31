@@ -6,12 +6,10 @@ import (
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj
-func (db *store) GetCampaigns(userID int64, p *pagination.Pagination) {
+func (db *store) GetCampaigns(userID int64, p *pagination.Cursor) {
 	var campaigns []entities.Campaign
-	var count uint64
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Find(&campaigns).Count(&count)
-	p.SetTotal(count)
+	db.Where("user_id = ?", userID).Find(&campaigns)
 
 	for _, t := range campaigns {
 		p.Append(t)

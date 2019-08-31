@@ -18,13 +18,13 @@ type subs struct {
 }
 
 func GetSegments(c *gin.Context) {
-	val, ok := c.Get("pagination")
+	val, ok := c.Get("cursor")
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
 		return
 	}
 
-	p, ok := val.(*pagination.Pagination)
+	p, ok := val.(*pagination.Cursor)
 	if !ok {
 		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
 		return
@@ -206,13 +206,13 @@ func PutSegmentSubscribers(c *gin.Context) {
 
 func GetSegmentsubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		val, ok := c.Get("pagination")
+		val, ok := c.Get("cursor")
 		if !ok {
 			c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
 			return
 		}
 
-		p, ok := val.(*pagination.Pagination)
+		p, ok := val.(*pagination.Cursor)
 		if !ok {
 			c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
 			return

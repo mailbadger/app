@@ -6,12 +6,10 @@ import (
 )
 
 // GetSegments fetches lists by user id, and populates the pagination obj
-func (db *store) GetSegments(userID int64, p *pagination.Pagination) {
+func (db *store) GetSegments(userID int64, p *pagination.Cursor) {
 	var lists []entities.Segment
-	var count uint64
 
-	db.Offset(p.Offset).Limit(p.PerPage).Where("user_id = ?", userID).Find(&lists).Count(&count)
-	p.SetTotal(count)
+	db.Where("user_id = ?", userID).Find(&lists)
 
 	for _, t := range lists {
 		p.Append(t)

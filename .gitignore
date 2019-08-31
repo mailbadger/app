@@ -26,6 +26,9 @@ _testmain.go
 *.prof
 *.db
 
+bin
+static
+
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
