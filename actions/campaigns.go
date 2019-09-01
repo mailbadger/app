@@ -187,7 +187,7 @@ func PostCampaign(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
+			"message": "Unable to create the campaign.",
 		})
 		return
 	}
@@ -232,7 +232,7 @@ func PutCampaign(c *gin.Context) {
 
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to update campaign.",
 			})
 			return
 		}
@@ -261,7 +261,7 @@ func DeleteCampaign(c *gin.Context) {
 		err = storage.DeleteCampaign(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to delete the campaign.",
 			})
 			return
 		}

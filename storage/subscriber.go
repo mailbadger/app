@@ -28,7 +28,7 @@ func (db *store) GetSubscribers(
 			return
 		}
 
-		query.Debug().Where(`(created_at > ? OR (created_at = ? AND id > ?)) AND created_at < ?`,
+		query.Where(`(created_at > ? OR (created_at = ? AND id > ?)) AND created_at < ?`,
 			sub.CreatedAt.Format(time.RFC3339Nano),
 			sub.CreatedAt.Format(time.RFC3339Nano),
 			sub.ID,

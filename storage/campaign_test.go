@@ -51,7 +51,6 @@ func TestCampaign(t *testing.T) {
 	p := &pagination.Cursor{PerPage: 10}
 	store.GetCampaigns(1, p)
 	assert.NotEmpty(t, p.Collection)
-	assert.Equal(t, len(p.Collection), int(p.Total))
 
 	//Test get campaigns by template Id
 	campaigns, err := store.GetCampaignsByTemplateName("Template1", 1)
