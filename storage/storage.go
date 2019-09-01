@@ -44,7 +44,6 @@ type Storage interface {
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
-	GetAllSubscribersBySegmentID(listID, userID int64) ([]entities.Subscriber, error)
 	GetDistinctSubscribersBySegmentIDs(
 		listIDs []int64,
 		userID int64,
@@ -208,8 +207,8 @@ func GetSubscribers(c context.Context, userID int64, p *pagination.Cursor) {
 
 // GetSubscribersBySegmentID populates a pagination object with a collection of
 // subscribers by the specified user id and list id.
-func GetSubscribersBySegmentID(c context.Context, listID, userID int64, p *pagination.Cursor) {
-	GetFromContext(c).GetSubscribersBySegmentID(listID, userID, p)
+func GetSubscribersBySegmentID(c context.Context, segmentID, userID int64, p *pagination.Cursor) {
+	GetFromContext(c).GetSubscribersBySegmentID(segmentID, userID, p)
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.
@@ -225,11 +224,6 @@ func GetSubscribersByIDs(c context.Context, ids []int64, userID int64) ([]entiti
 // GetSubscriberByEmail returns a Subscriber entity by the given email and user id.
 func GetSubscriberByEmail(c context.Context, email string, userID int64) (*entities.Subscriber, error) {
 	return GetFromContext(c).GetSubscriberByEmail(email, userID)
-}
-
-// GetAllSubscribersBySegmentID fetches all subscribers by user id and list id
-func GetAllSubscribersBySegmentID(c context.Context, listID, userID int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetAllSubscribersBySegmentID(listID, userID)
 }
 
 // GetDistinctSubscribersBySegmentIDs fetches all distinct subscribers by user id and list ids

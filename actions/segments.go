@@ -78,7 +78,7 @@ func PostSegment(c *gin.Context) {
 
 	if err := storage.CreateSegment(c, l); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
+			"message": "Unable to create segment.",
 		})
 		return
 	}
@@ -116,7 +116,7 @@ func PutSegment(c *gin.Context) {
 
 		if err = storage.UpdateSegment(c, l); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to update segment.",
 			})
 			return
 		}
@@ -182,15 +182,21 @@ func PutSegmentSubscribers(c *gin.Context) {
 
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+				Error("Unable to find subscribers by the list of ids.")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to add subscribers to the segment.",
+			})
+			return
 		}
 
 		l.Subscribers = s
 
 		if err = storage.AppendSubscribers(c, l); err != nil {
-			logrus.Error(err)
+			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+				Error("Unable to create subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to add the subscribers to the segment.",
 			})
 			return
 		}
@@ -251,15 +257,21 @@ func DetachSegmentSubscribers(c *gin.Context) {
 
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+				Error("Unable to find subscribers by the list of ids.")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to detach subscribers from the segment.",
+			})
+			return
 		}
 
 		l.Subscribers = s
 
 		if err = storage.DetachSubscribers(c, l); err != nil {
-			logrus.Error(err)
+			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+				Error("Unable to remove subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to detach subscribers from the segment.",
 			})
 			return
 		}

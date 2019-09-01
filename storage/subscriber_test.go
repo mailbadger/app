@@ -65,10 +65,9 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
 
 	//Test get subs
-	cp := &pagination.CursorPagination{PerPage: 10, StartingAfter: 0}
+	cp := &pagination.Cursor{PerPage: 10, StartingAfter: 0}
 	store.GetSubscribers(1, cp)
 	assert.NotEmpty(t, cp.Collection)
-	assert.False(t, cp.HasMore)
 
 	//Test get subs by ids
 	subs, err := store.GetSubscribersByIDs([]int64{1}, 1)
@@ -79,11 +78,6 @@ func TestSubscriber(t *testing.T) {
 	p := &pagination.Cursor{PerPage: 10}
 	store.GetSubscribersBySegmentID(l.ID, 1, p)
 	assert.NotEmpty(t, p.Collection)
-	assert.Equal(t, len(p.Collection), int(p.Total))
-
-	subs, err = store.GetAllSubscribersBySegmentID(l.ID, 1)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(subs))
 
 	var timestamp time.Time
 	subs, err = store.GetDistinctSubscribersBySegmentIDs([]int64{l.ID}, 1, false, true, timestamp, 0, 10)
