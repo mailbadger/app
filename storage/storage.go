@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
@@ -20,7 +21,7 @@ type Storage interface {
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
 
-	GetCampaigns(int64, *pagination.Pagination)
+	GetCampaigns(int64, *pagination.Cursor)
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
 	GetCampaignsByTemplateName(string, int64) ([]entities.Campaign, error)
@@ -28,7 +29,7 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
 
-	GetSegments(int64, *pagination.Pagination)
+	GetSegments(int64, *pagination.Cursor)
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
 	GetSegment(int64, int64) (*entities.Segment, error)
 	GetSegmentByName(name string, userID int64) (*entities.Segment, error)
@@ -38,13 +39,18 @@ type Storage interface {
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
 
-	GetSubscribers(int64, *pagination.Pagination)
-	GetSubscribersBySegmentID(int64, int64, *pagination.Pagination)
+	GetSubscribers(int64, *pagination.Cursor)
+	GetSubscribersBySegmentID(int64, int64, *pagination.Cursor)
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
-	GetAllSubscribersBySegmentID(listID, userID int64) ([]entities.Subscriber, error)
-	GetDistinctSubscribersBySegmentIDs(listIDs []int64, userID int64, blacklisted, active bool, nextID, limit int64) ([]entities.Subscriber, error)
+	GetDistinctSubscribersBySegmentIDs(
+		listIDs []int64,
+		userID int64,
+		blacklisted, active bool,
+		timestamp time.Time,
+		nextID, limit int64,
+	) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
 	BlacklistSubscriber(userID int64, email string) error
@@ -113,7 +119,7 @@ func UpdateUser(c context.Context, user *entities.User) error {
 
 // GetCampaigns populates a pagination object with a collection of
 // campaigns by the specified user id.
-func GetCampaigns(c context.Context, userID int64, p *pagination.Pagination) {
+func GetCampaigns(c context.Context, userID int64, p *pagination.Cursor) {
 	GetFromContext(c).GetCampaigns(userID, p)
 }
 
@@ -149,7 +155,7 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 
 // GetSegments populates a pagination object with a collection of
 // lists by the specified user id.
-func GetSegments(c context.Context, userID int64, p *pagination.Pagination) {
+func GetSegments(c context.Context, userID int64, p *pagination.Cursor) {
 	GetFromContext(c).GetSegments(userID, p)
 }
 
@@ -195,14 +201,14 @@ func DetachSubscribers(c context.Context, l *entities.Segment) error {
 
 // GetSubscribers populates a pagination object with a collection of
 // subscribers by the specified user id.
-func GetSubscribers(c context.Context, userID int64, p *pagination.Pagination) {
+func GetSubscribers(c context.Context, userID int64, p *pagination.Cursor) {
 	GetFromContext(c).GetSubscribers(userID, p)
 }
 
 // GetSubscribersBySegmentID populates a pagination object with a collection of
 // subscribers by the specified user id and list id.
-func GetSubscribersBySegmentID(c context.Context, listID, userID int64, p *pagination.Pagination) {
-	GetFromContext(c).GetSubscribersBySegmentID(listID, userID, p)
+func GetSubscribersBySegmentID(c context.Context, segmentID, userID int64, p *pagination.Cursor) {
+	GetFromContext(c).GetSubscribersBySegmentID(segmentID, userID, p)
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.
@@ -220,20 +226,16 @@ func GetSubscriberByEmail(c context.Context, email string, userID int64) (*entit
 	return GetFromContext(c).GetSubscriberByEmail(email, userID)
 }
 
-// GetAllSubscribersBySegmentID fetches all subscribers by user id and list id
-func GetAllSubscribersBySegmentID(c context.Context, listID, userID int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetAllSubscribersBySegmentID(listID, userID)
-}
-
 // GetDistinctSubscribersBySegmentIDs fetches all distinct subscribers by user id and list ids
 func GetDistinctSubscribersBySegmentIDs(
 	c context.Context,
 	listIDs []int64,
 	userID int64,
 	blacklisted, active bool,
+	timestamp time.Time,
 	nextID, limit int64,
 ) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetDistinctSubscribersBySegmentIDs(listIDs, userID, blacklisted, active, nextID, limit)
+	return GetFromContext(c).GetDistinctSubscribersBySegmentIDs(listIDs, userID, blacklisted, active, timestamp, nextID, limit)
 }
 
 // CreateSubscriber persists a new Subscriber entity in the datastore.

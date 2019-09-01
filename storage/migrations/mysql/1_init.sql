@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `api_keys` (
   `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`    integer NOT NULL,
+  `user_id`    integer unsigned NOT NULL,
   `secret_key` varchar(191) NOT NULL,
   `active`     tinyint(1) NOT NULL,
   `created_at` datetime(6) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `api_keys` (
 
 CREATE TABLE IF NOT EXISTS `ses_keys` (
   `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`    integer NOT NULL,
+  `user_id`    integer unsigned NOT NULL,
   `access_key` varchar(191) NOT NULL,
   `secret_key` varchar(191) NOT NULL,
   `region`     varchar(30) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `ses_keys` (
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
   `id`            integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`       integer NOT NULL,
+  `user_id`       integer unsigned NOT NULL,
   `name`          varchar(191) NOT NULL,
   `template_name` varchar(191) NOT NULL,
   `status`        varchar(191) NOT NULL,
@@ -43,12 +43,13 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `updated_at`    datetime(6) NOT NULL,
   `scheduled_at`  datetime(6) DEFAULT NULL,
   `completed_at`  datetime(6) DEFAULT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `subscribers` (
-  `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`     integer NOT NULL,
+  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
   `name`        varchar(191) NOT NULL,
   `email`       varchar(191) NOT NULL,
   `metadata`    JSON,
@@ -56,28 +57,30 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `active`      integer NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   `updated_at`  datetime(6) NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `segments` (
   `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`     integer NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
   `name`        varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   `updated_at`  datetime(6) NOT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `subscribers_segments` (
-  `segment_id`    integer NOT NULL,
-  `subscriber_id` integer NOT NULL,
+  `segment_id`    integer unsigned NOT NULL,
+  `subscriber_id` bigint unsigned NOT NULL,
   PRIMARY KEY (`segment_id`, `subscriber_id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `bounces` (
-  `id`              integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `campaign_id`     integer NOT NULL,
-  `user_id`         integer NOT NULL,
+  `id`              bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `campaign_id`     integer unsigned NOT NULL,
+  `user_id`         integer unsigned NOT NULL,
   `recipient`       varchar(191) NOT NULL,
   `type`            varchar(30) NOT NULL,
   `sub_type`        varchar(30) NOT NULL,
@@ -87,49 +90,53 @@ CREATE TABLE IF NOT EXISTS `bounces` (
   `feedback_id`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `complaints` (
-  `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `campaign_id` integer NOT NULL,
-  `user_id`     integer NOT NULL,
+  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `campaign_id` integer unsigned NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
   `recipient`   varchar(191) NOT NULL,
   `type`        varchar(30) NOT NULL,
   `user_agent`  varchar(191) NOT NULL,
   `feedback_id` varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `clicks` (
-  `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `campaign_id` integer NOT NULL,
-  `user_id`     integer NOT NULL,
+  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `campaign_id` integer unsigned NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
   `ip_address`  varchar(50) NOT NULL,
   `user_agent`  varchar(191) NOT NULL,
   `link`        varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `opens` (
-  `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `campaign_id` integer NOT NULL,
-  `user_id`     integer NOT NULL,
+  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `campaign_id` integer unsigned NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
   `ip_address`  varchar(50) NOT NULL,
   `user_agent`  varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `deliveries` (
-  `id`                     integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `campaign_id`            integer NOT NULL,
-  `user_id`                integer NOT NULL,
+  `id`                     bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `campaign_id`            integer unsigned NOT NULL,
+  `user_id`                integer unsigned NOT NULL,
   `recipient`              varchar(191) NOT NULL,
   `processing_time_millis` integer NOT NULL,
   `smtp_response`          varchar(191) NOT NULL,
@@ -137,14 +144,15 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   `remote_mta_ip`          varchar(50) NOT NULL,
   `created_at`             datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
-  `id`          integer unsigned primary key AUTO_INCREMENT NOT NULL,
+  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
   `uuid`        varchar(36) NOT NULL,
-  `user_id`     integer NOT NULL,
-  `campaign_id` integer NOT NULL,
+  `user_id`     integer unsigned NOT NULL,
+  `campaign_id` integer unsigned NOT NULL,
   `message_id`  varchar(191) NOT NULL,
   `status`      varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
@@ -153,16 +161,17 @@ CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sends` (
-  `id`                 integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`            integer NOT NULL,
-  `campaign_id`        integer NOT NULL,
+  `id`                 bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `user_id`            integer unsigned NOT NULL,
+  `campaign_id`        integer unsigned NOT NULL,
   `message_id`         varchar(191) NOT NULL,
   `source`             varchar(191) NOT NULL,
   `sending_account_id` varchar(191) NOT NULL,
   `destination`        varchar(191) NOT NULL,
   `created_at`         datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- +migrate Down

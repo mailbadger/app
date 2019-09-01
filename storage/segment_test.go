@@ -45,10 +45,9 @@ func TestSegment(t *testing.T) {
 	assert.Equal(t, l.Errors["name"], "The list name cannot be empty.")
 
 	//Test get lists
-	p := &pagination.Pagination{PerPage: 10}
+	p := &pagination.Cursor{PerPage: 10}
 	store.GetSegments(1, p)
 	assert.NotEmpty(t, p.Collection)
-	assert.Equal(t, len(p.Collection), int(p.Total))
 
 	//Test append subscribers to list
 	s := &entities.Subscriber{
@@ -63,11 +62,9 @@ func TestSegment(t *testing.T) {
 	err = store.AppendSubscribers(l)
 	assert.Nil(t, err)
 
-	l, err = store.GetSegment(l.ID, 1)
+	store.GetSubscribersBySegmentID(l.ID, l.UserID, p)
 	assert.Nil(t, err)
-
-	assert.NotEmpty(t, l.Subscribers)
-	assert.Equal(t, l.Subscribers[0].Name, "john")
+	assert.NotEmpty(t, p.Collection)
 
 	//Test detach subscribers from list
 	err = store.DetachSubscribers(l)
