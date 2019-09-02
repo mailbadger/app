@@ -35,6 +35,10 @@ func New() http.Handler {
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
 		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
 	)
+	store.Options(sessions.Options{
+		Secure:   true,
+		HttpOnly: true,
+	})
 
 	handler := gin.New()
 

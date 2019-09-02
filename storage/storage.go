@@ -21,6 +21,10 @@ type Storage interface {
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
 
+	GetSession(sessionID string) (*entities.Session, error)
+	CreateSession(s *entities.Session) error
+	DeleteSession(userID int64) error
+
 	GetCampaigns(int64, *pagination.Cursor)
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
@@ -115,6 +119,21 @@ func CreateUser(c context.Context, user *entities.User) error {
 // UpdateUser updates the User entity.
 func UpdateUser(c context.Context, user *entities.User) error {
 	return GetFromContext(c).UpdateUser(user)
+}
+
+// GetSession returns the session by the given session id.
+func GetSession(c context.Context, sessionID string) (*entities.Session, error) {
+	return GetFromContext(c).GetSession(sessionID)
+}
+
+// CreateSession adds a new session in the database.
+func CreateSession(c context.Context, s *entities.Session) error {
+	return GetFromContext(c).CreateSession(s)
+}
+
+// DeleteSession deletes a session by the given user id from the database.
+func DeleteSession(c context.Context, userID int64) error {
+	return GetFromContext(c).DeleteSession(userID)
 }
 
 // GetCampaigns populates a pagination object with a collection of

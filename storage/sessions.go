@@ -1,0 +1,25 @@
+package storage
+
+import (
+	"github.com/news-maily/app/entities"
+)
+
+// GetSession returns the session by the given session id.
+func (db *store) GetSession(sessionID string) (*entities.Session, error) {
+	var s = new(entities.Session)
+	err := db.Where("session_id = ?", sessionID).Preload("User").First(s).Error
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
+// CreateSession adds a new session in the database.
+func (db *store) CreateSession(s *entities.Session) error {
+	return db.Create(s).Error
+}
+
+// DeleteSession deletes a session by the given user id from the database.
+func (db *store) DeleteSession(userID int64) error {
+	return db.Delete(&entities.Session{UserID: userID}).Error
+}

@@ -69,22 +69,45 @@ func PostAuthenticate(c *gin.Context) {
 		return
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, user.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("username", user.Username).WithError(err).Error("cannot create token")
+		logrus.WithField("username", user.Username).WithError(err).Error("Cannot create session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create token.",
+			"message": "Unable to create session id.",
+		})
+		return
+	}
+
+	err = storage.CreateSession(c, &entities.Session{
+		UserID:    user.ID,
+		SessionID: sessID,
+	})
+	if err != nil {
+		logrus.WithField("username", user.Username).WithError(err).Error("Cannot persist session id.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to persist session id.",
+		})
+		return
+	}
+
+	session := sessions.Default(c)
+	exp := time.Now().Add(time.Hour*72).Unix() - time.Now().Unix()
+	session.Options(sessions.Options{
+		Secure:   true,
+		HttpOnly: true,
+		MaxAge:   int(exp),
+	})
+	session.Set("sess_id", sessID)
+	err = session.Save()
+	if err != nil {
+		logrus.WithField("username", user.Username).WithError(err).Error("Cannot create session id.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to create session id.",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": &tokenPayload{
-			Access:    tokenStr,
-			ExpiresIn: exp - time.Now().Unix(), //seconds
-		},
 		"user": user,
 	})
 }

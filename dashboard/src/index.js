@@ -7,11 +7,7 @@ import history from "./history";
 
 axios.interceptors.request.use(
   config => {
-    const token = JSON.parse(localStorage.getItem("token"));
-
-    if (token && token.access_token) {
-      config.headers.Authorization = `Bearer ${token.access_token}`;
-    }
+    config.withCredentials = true;
 
     if (
       config.method === "post" ||
