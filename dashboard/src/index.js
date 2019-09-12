@@ -12,7 +12,7 @@ axios.interceptors.request.use(
     if (
       config.method === "post" ||
       config.method === "put" ||
-      config.method === "delete"
+      config.method === "patch"
     ) {
       config.headers["Content-Type"] = "application/x-www-form-urlencoded";
     }
@@ -28,7 +28,6 @@ axios.interceptors.response.use(
   res => res,
   error => {
     if (error.response && 401 === error.response.status) {
-      localStorage.clear();
       history.push("/login");
     }
 

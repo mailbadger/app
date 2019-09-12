@@ -182,12 +182,7 @@ const RegisterForm = props => {
         }
 
         const result = await axios.post("/api/signup", qs.stringify(params));
-
-        result.data.token.expires_in =
-          result.data.token.expires_in * 1000 + new Date().getTime();
-        localStorage.setItem("token", JSON.stringify(result.data.token));
-        localStorage.setItem("user", JSON.stringify(result.data.user));
-
+        props.setUser(result.data.user);
         props.redirect();
       } catch (error) {
         setErrors(error.response.data);

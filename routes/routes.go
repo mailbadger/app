@@ -130,6 +130,9 @@ func New() http.Handler {
 	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
 	authorized.Use(tollbooth_gin.LimitHandler(lmt))
+
+	authorized.POST("/logout", actions.PostLogout)
+
 	{
 		users := authorized.Group("/users")
 		{

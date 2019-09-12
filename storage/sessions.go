@@ -19,7 +19,7 @@ func (db *store) CreateSession(s *entities.Session) error {
 	return db.Create(s).Error
 }
 
-// DeleteSession deletes a session by the given user id from the database.
-func (db *store) DeleteSession(userID int64) error {
-	return db.Delete(&entities.Session{UserID: userID}).Error
+// DeleteSession deletes a session by the given session id from the database.
+func (db *store) DeleteSession(sessionID string) error {
+	return db.Delete(&entities.Session{SessionID: sessionID}).Error
 }

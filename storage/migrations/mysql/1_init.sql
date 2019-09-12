@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 
 CREATE TABLE IF NOT EXISTS `sessions` (
   `id` integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`    integer unsigned NOT NULL UNIQUE,
+  `user_id`    integer unsigned NOT NULL,
   `session_id` varchar(191) NOT NULL UNIQUE,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,

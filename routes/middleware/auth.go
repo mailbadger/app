@@ -60,22 +60,24 @@ func SetUser() gin.HandlerFunc {
 					c.Set("user", user)
 				}
 			}
-		} else {
-			session := sessions.Default(c)
-			v := session.Get("sess_id")
-			if v == nil {
-				c.Next()
-				return
-			}
-			sessID := v.(string)
-			s, err := storage.GetSession(c, sessID)
-			if err != nil {
-				c.Next()
-				return
-			}
-
-			c.Set("user", &s.User)
+			c.Next()
+			return
 		}
+
+		session := sessions.Default(c)
+		v := session.Get("sess_id")
+		if v == nil {
+			c.Next()
+			return
+		}
+		sessID := v.(string)
+		s, err := storage.GetSession(c, sessID)
+		if err != nil {
+			c.Next()
+			return
+		}
+
+		c.Set("user", &s.User)
 
 		c.Next()
 	}
