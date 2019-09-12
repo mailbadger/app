@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.23.12
+	github.com/aws/aws-sdk-go v1.23.20
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -33,7 +33,7 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20190605123033-f99c8df09eb5
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	google.golang.org/api v0.9.0
+	google.golang.org/api v0.10.0
 	google.golang.org/appengine v1.6.1 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
