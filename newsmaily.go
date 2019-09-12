@@ -31,7 +31,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/routes"
@@ -62,8 +64,9 @@ func main() {
 	if addr == "" {
 		addr = "8080"
 	}
+	skipTls, _ := strconv.ParseBool(os.Getenv("SKIP_TLS"))
 
-	if os.Getenv("ENVIRONMENT") == "prod" && os.Getenv("SKIP_TLS") == "" {
+	if !skipTls {
 		// TLS config
 		cer, err := tls.LoadX509KeyPair(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE"))
 		if err != nil {
@@ -75,10 +78,12 @@ func main() {
 			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 			PreferServerCipherSuites: true,
 			CipherSuites: []uint16{
+				tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305, // Go 1.8 only
+				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,   // Go 1.8 only
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 			},
 			Certificates: []tls.Certificate{cer},
 		}
@@ -88,6 +93,9 @@ func main() {
 		Addr:         ":" + addr,
 		Handler:      handler,
 		TLSConfig:    cfg,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler)),
 	}
 

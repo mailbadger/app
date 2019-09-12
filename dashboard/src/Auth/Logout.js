@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { withRouter } from "react-router-dom";
 
-import { AuthContext } from "./AuthContext";
+import { AuthContext } from "./context";
 
 const Logout = withRouter(({ history }) => {
   const { logout } = useContext(AuthContext);

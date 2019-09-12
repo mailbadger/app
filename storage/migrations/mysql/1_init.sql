@@ -12,10 +12,19 @@ CREATE TABLE IF NOT EXISTS `users` (
   `updated_at` datetime(6) NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id` integer unsigned primary key AUTO_INCREMENT NOT NULL,
+  `user_id`    integer unsigned NOT NULL,
+  `session_id` varchar(191) NOT NULL UNIQUE,
+  `created_at` datetime(6) NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `api_keys` (
   `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
   `user_id`    integer unsigned NOT NULL,
-  `secret_key` varchar(191) NOT NULL,
+  `secret_key` varchar(191) NOT NULL UNIQUE,
   `active`     tinyint(1) NOT NULL,
   `created_at` datetime(6) NOT NULL,
   `updated_at` datetime(6) NOT NULL,
@@ -24,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `api_keys` (
 
 CREATE TABLE IF NOT EXISTS `ses_keys` (
   `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
-  `user_id`    integer unsigned NOT NULL,
+  `user_id`    integer unsigned NOT NULL UNIQUE,
   `access_key` varchar(191) NOT NULL,
   `secret_key` varchar(191) NOT NULL,
   `region`     varchar(30) NOT NULL,
@@ -58,7 +67,8 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `created_at`  datetime(6) NOT NULL,
   `updated_at`  datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  INDEX id_created_at (`id`, `created_at`)
+  INDEX id_created_at (`id`, `created_at`),
+  UNIQUE(`user_id`, `email`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `segments` (
@@ -190,3 +200,4 @@ DROP TABLE `ses_keys`;
 DROP TABLE `opens`;
 DROP TABLE `campaigns`;
 DROP TABLE `users`;
+DROP TABLE `sessions`;

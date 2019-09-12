@@ -12,6 +12,16 @@ CREATE TABLE IF NOT EXISTS "users" (
   "updated_at" datetime
 );
 
+CREATE TABLE IF NOT EXISTS "sessions" (
+  `id` integer primary key autoincrement,
+  `user_id`    integer NOT NULL,
+  `session_id` varchar(191) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  UNIQUE("user_id"),
+  UNIQUE("session_id")
+);
+
 CREATE TABLE IF NOT EXISTS "ses_keys" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
@@ -155,6 +165,7 @@ CREATE TABLE IF NOT EXISTS "sends" (
 -- +migrate Down
 
 DROP TABLE "users";
+DROP TABLE "sessions";
 DROP TABLE "campaigns";
 DROP TABLE "segments";
 DROP TABLE "subscribers";

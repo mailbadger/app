@@ -9,20 +9,19 @@ import (
 	"strconv"
 	"time"
 
+	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-contrib/sessions"
-	"github.com/jinzhu/gorm"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/utils"
-
-	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
 	fb "github.com/huandu/facebook"
+	"github.com/jinzhu/gorm"
+	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/utils"
 	"github.com/news-maily/app/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -69,22 +68,25 @@ func PostAuthenticate(c *gin.Context) {
 		return
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, user.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("username", user.Username).WithError(err).Error("cannot create token")
+		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create token.",
+			"message": "Unable to create session id.",
+		})
+		return
+	}
+
+	err = persistSession(c, user.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to create session id.",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": &tokenPayload{
-			Access:    tokenStr,
-			ExpiresIn: exp - time.Now().Unix(), //seconds
-		},
 		"user": user,
 	})
 }
@@ -216,26 +218,30 @@ func PostSignup(c *gin.Context) {
 		logrus.WithError(err).Error("unable to instantiate ses sender")
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, user.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("username", user.Username).Errorf("cannot create token %s", err)
+		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create token.",
+			"message": "Unable to create session id.",
+		})
+		return
+	}
+
+	err = persistSession(c, user.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to create session id.",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": &tokenPayload{
-			Access:    tokenStr,
-			ExpiresIn: exp - time.Now().Unix(), //seconds
-		},
 		"user": user,
 	})
 }
 
+// GetGithubAuth redirects the user to the github oauth authorization page.
 func GetGithubAuth(c *gin.Context) {
 	state, err := utils.GenerateRandomString(12)
 	if err != nil {
@@ -259,6 +265,7 @@ func GetGithubAuth(c *gin.Context) {
 	c.Redirect(http.StatusPermanentRedirect, url)
 }
 
+// GithubCallback
 func GithubCallback(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 
@@ -309,33 +316,34 @@ func GithubCallback(c *gin.Context) {
 
 	u, err := storage.GetUserByUsername(c, ghUser.GetEmail())
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			uuid, err := uuid.NewRandom()
-			if err != nil {
-				logrus.WithError(err).Error("unable to generate random uuid")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-
-			u = &entities.User{
-				UUID:     uuid.String(),
-				Username: ghUser.GetEmail(),
-				Active:   true,
-				Verified: true,
-				Source:   "github",
-			}
-
-			err = storage.CreateUser(c, u)
-			if err != nil {
-				logrus.WithError(err).Error("github register failed")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-		} else {
+		if !gorm.IsRecordNotFoundError(err) {
 			logrus.WithError(err).Error("github social auth")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
+
+		uuid, err := uuid.NewRandom()
+		if err != nil {
+			logrus.WithError(err).Error("unable to generate random uuid")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		u = &entities.User{
+			UUID:     uuid.String(),
+			Username: ghUser.GetEmail(),
+			Active:   true,
+			Verified: true,
+			Source:   "github",
+		}
+
+		err = storage.CreateUser(c, u)
+		if err != nil {
+			logrus.WithError(err).Error("github register failed")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
 	}
 
 	if !u.Active {
@@ -344,18 +352,24 @@ func GithubCallback(c *gin.Context) {
 		return
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, u.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
 
-	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+	err = persistSession(c, u.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
+// GetGoogleAuth redirects the user to the google oauth authorization page.
 func GetGoogleAuth(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 
@@ -445,30 +459,29 @@ func GoogleCallback(c *gin.Context) {
 
 	u, err := storage.GetUserByUsername(c, gUser.Email)
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			uuid, err := uuid.NewRandom()
-			if err != nil {
-				logrus.WithError(err).Error("unable to generate random uuid")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-
-			u = &entities.User{
-				UUID:     uuid.String(),
-				Username: gUser.Email,
-				Active:   true,
-				Verified: true,
-				Source:   "google",
-			}
-
-			err = storage.CreateUser(c, u)
-			if err != nil {
-				logrus.WithError(err).Error("google register failed")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-		} else {
+		if !gorm.IsRecordNotFoundError(err) {
 			logrus.WithError(err).Error("google social auth")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+		uuid, err := uuid.NewRandom()
+		if err != nil {
+			logrus.WithError(err).Error("unable to generate random uuid")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		u = &entities.User{
+			UUID:     uuid.String(),
+			Username: gUser.Email,
+			Active:   true,
+			Verified: true,
+			Source:   "google",
+		}
+
+		err = storage.CreateUser(c, u)
+		if err != nil {
+			logrus.WithError(err).Error("google register failed")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
@@ -480,18 +493,24 @@ func GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, u.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
 
-	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+	err = persistSession(c, u.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
+// GetFacebookAuth redirects the user to the facebook oauth authorization page.
 func GetFacebookAuth(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 	state, err := utils.GenerateRandomString(12)
@@ -584,30 +603,30 @@ func FacebookCallback(c *gin.Context) {
 
 	u, err := storage.GetUserByUsername(c, emailStr)
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			uuid, err := uuid.NewRandom()
-			if err != nil {
-				logrus.WithError(err).Error("unable to generate random uuid")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-
-			u = &entities.User{
-				UUID:     uuid.String(),
-				Username: emailStr,
-				Active:   true,
-				Verified: true,
-				Source:   "facebook",
-			}
-
-			err = storage.CreateUser(c, u)
-			if err != nil {
-				logrus.WithError(err).Error("facebook register failed")
-				c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-				return
-			}
-		} else {
+		if !gorm.IsRecordNotFoundError(err) {
 			logrus.WithError(err).Error("facebook social auth")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		uuid, err := uuid.NewRandom()
+		if err != nil {
+			logrus.WithError(err).Error("unable to generate random uuid")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		u = &entities.User{
+			UUID:     uuid.String(),
+			Username: emailStr,
+			Active:   true,
+			Verified: true,
+			Source:   "facebook",
+		}
+
+		err = storage.CreateUser(c, u)
+		if err != nil {
+			logrus.WithError(err).Error("facebook register failed")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
@@ -619,16 +638,40 @@ func FacebookCallback(c *gin.Context) {
 		return
 	}
 
-	exp := time.Now().Add(time.Hour * 72).Unix()
-	t := token.New(token.SessionToken, u.Username)
-	tokenStr, err := t.SignWithExp(os.Getenv("AUTH_SECRET"), exp)
+	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("cannot create token")
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
 
-	c.Redirect(http.StatusPermanentRedirect, host+"/login/callback?t="+tokenStr+"&exp="+strconv.Itoa(int(exp)))
+	err = persistSession(c, u.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
+}
+
+func PostLogout(c *gin.Context) {
+	session := sessions.Default(c)
+	sessID := session.Get("sess_id")
+	s, ok := sessID.(string)
+	if ok {
+		err := storage.DeleteSession(c, s)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to delete session.")
+		}
+	}
+
+	session.Delete("sess_id")
+	session.Save()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "You have been successfully logged out.",
+	})
 }
 
 func sendVerifyEmail(token, email string, sender emails.Sender) {
@@ -646,4 +689,26 @@ func sendVerifyEmail(token, email string, sender emails.Sender) {
 	if err != nil {
 		logrus.WithError(err).Error("email verification - send email failure")
 	}
+}
+
+func persistSession(c *gin.Context, userID int64, sessID string) error {
+	err := storage.CreateSession(c, &entities.Session{
+		UserID:    userID,
+		SessionID: sessID,
+	})
+	if err != nil {
+		return err
+	}
+
+	session := sessions.Default(c)
+	exp := time.Now().Add(time.Hour*72).Unix() - time.Now().Unix()
+	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
+	session.Options(sessions.Options{
+		HttpOnly: true,
+		MaxAge:   int(exp),
+		Secure:   secureCookie,
+	})
+	session.Set("sess_id", sessID)
+
+	return session.Save()
 }

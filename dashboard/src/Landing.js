@@ -2,7 +2,7 @@ import React, { Component, Fragment } from "react";
 import { Box } from "grommet";
 import { Redirect } from "react-router-dom";
 
-import { AuthContext } from "./Auth/AuthContext";
+import { AuthContext } from "./Auth/context";
 import Auth from "./Auth";
 
 class Landing extends Component {
@@ -18,18 +18,14 @@ class Landing extends Component {
     };
 
     let auth = this.context;
-
-    if (auth.isAuthenticated() || this.state.redirectToReferrer) {
+    if (auth.isAuthenticated || this.state.redirectToReferrer) {
       return <Redirect to={from} />;
     }
 
     return (
       <Fragment>
         <Box>
-          <Auth
-            setSession={auth.setSession}
-            redirect={() => this.setState({ redirectToReferrer: true })}
-          />
+          <Auth redirect={() => this.setState({ redirectToReferrer: true })} />
         </Box>
       </Fragment>
     );

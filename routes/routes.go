@@ -35,6 +35,10 @@ func New() http.Handler {
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
 		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
 	)
+	store.Options(sessions.Options{
+		Secure:   true,
+		HttpOnly: true,
+	})
 
 	handler := gin.New()
 
@@ -126,6 +130,9 @@ func New() http.Handler {
 	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
 	authorized.Use(tollbooth_gin.LimitHandler(lmt))
+
+	authorized.POST("/logout", actions.PostLogout)
+
 	{
 		users := authorized.Group("/users")
 		{
