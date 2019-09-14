@@ -183,7 +183,6 @@ const RegisterForm = props => {
 
         const result = await axios.post("/api/signup", qs.stringify(params));
         props.setUser(result.data.user);
-        props.redirect();
       } catch (error) {
         setErrors(error.response.data);
       }

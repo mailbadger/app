@@ -100,8 +100,8 @@ type signupParams struct {
 // PostSignup validates and creates a user account by the given
 // user parameters. The handler also sends a verification email
 func PostSignup(c *gin.Context) {
-	enableSignup := os.Getenv("ENABLE_SIGNUP")
-	if enableSignup == "" || enableSignup == "false" {
+	enableSignup, _ := strconv.ParseBool(os.Getenv("ENABLE_SIGNUP"))
+	if !enableSignup {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Sign up is disabled.",
 		})
@@ -253,7 +253,6 @@ func GetGithubAuth(c *gin.Context) {
 	}
 
 	session := sessions.Default(c)
-
 	session.Set("state", state)
 	session.Save()
 
@@ -262,10 +261,13 @@ func GetGithubAuth(c *gin.Context) {
 		state,
 	)
 
-	c.Redirect(http.StatusPermanentRedirect, url)
+	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-// GithubCallback
+// GithubCallback fetches the github user by the given access code and creates a new session.
+// The callback creates a new user if the email does not exist in our system.
+// If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
+// to the login screen with an error message.
 func GithubCallback(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 
@@ -293,6 +295,10 @@ func GithubCallback(c *gin.Context) {
 	session.Clear()
 
 	if s != state {
+		logrus.WithFields(logrus.Fields{
+			"state":          s,
+			"callback_state": state,
+		}).Error("state mismatch")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -402,6 +408,10 @@ func GetGoogleAuth(c *gin.Context) {
 	c.Redirect(http.StatusPermanentRedirect, url)
 }
 
+// GoogleCallback fetches the google user by the given access code and creates a new session.
+// The callback creates a new user if the email does not exist in our system.
+// If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
+// to the login screen with an error message.
 func GoogleCallback(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 	conf := &oauth2.Config{
@@ -536,6 +546,10 @@ func GetFacebookAuth(c *gin.Context) {
 	c.Redirect(http.StatusPermanentRedirect, url)
 }
 
+// FacebookCallback fetches the facebook user by the given access code and creates a new session.
+// The callback creates a new user if the email does not exist in our system.
+// If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
+// to the login screen with an error message.
 func FacebookCallback(c *gin.Context) {
 	host := os.Getenv("DOMAIN_URL")
 
@@ -655,6 +669,7 @@ func FacebookCallback(c *gin.Context) {
 	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
+// PostLogout deletes the current user session.
 func PostLogout(c *gin.Context) {
 	session := sessions.Default(c)
 	sessID := session.Get("sess_id")
@@ -707,6 +722,7 @@ func persistSession(c *gin.Context, userID int64, sessID string) error {
 		HttpOnly: true,
 		MaxAge:   int(exp),
 		Secure:   secureCookie,
+		Path:     "/api",
 	})
 	session.Set("sess_id", sessID)
 

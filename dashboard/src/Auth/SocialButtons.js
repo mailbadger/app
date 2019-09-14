@@ -37,7 +37,7 @@ const SocialButtons = () => (
         background: "#333333"
       }}
       type="button"
-      href="/api/auth/github"
+      href="http://localhost:8080/api/auth/github"
       icon={<Github />}
       primary
       label=" Continue with github"
