@@ -9,7 +9,7 @@
     "formik": "^1.5.8",
     "grommet-icons": "^4.3.0",
     "grommet": "^2.7.8",
-    "history": "^4.10.0",
+    "history": "^4.10.1",
     "qs": "^6.8.0",
     "query-string": "^6.8.3",
     "react": "^16.9.0",
