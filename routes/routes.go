@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,8 +36,9 @@ func New() http.Handler {
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
 		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
 	)
+	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
 	store.Options(sessions.Options{
-		Secure:   true,
+		Secure:   secureCookie,
 		HttpOnly: true,
 	})
 

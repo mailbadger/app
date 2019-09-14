@@ -1,9 +1,7 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-contrib/sessions"
@@ -11,13 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/storage"
-	"github.com/news-maily/app/utils/token"
 	log "github.com/sirupsen/logrus"
 )
 
 // Authorization header prefixes.
 const (
-	BearerAuth = "Bearer"
 	APIKeyAuth = "Api-Key"
 )
 
@@ -43,23 +39,8 @@ func SetUser() gin.HandlerFunc {
 				}
 
 				c.Set("user", &key.User)
-			} else if parts[0] == BearerAuth {
-				var user *entities.User
-				_, err := token.ParseToken(parts[1], func(t *token.Token) (string, error) {
-					var err error
-					secret := os.Getenv("AUTH_SECRET")
-					if secret == "" {
-						log.Error("auth secret is empty, unable to validate jwt.")
-						return "", errors.New("auth secret is empty, unable to validate jwt")
-					}
-					user, err = storage.GetActiveUserByUsername(c, t.Value)
-					return secret, err
-				})
-
-				if err == nil {
-					c.Set("user", user)
-				}
 			}
+
 			c.Next()
 			return
 		}

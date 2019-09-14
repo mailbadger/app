@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS "sessions" (
   `session_id` varchar(191) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  UNIQUE("user_id"),
   UNIQUE("session_id")
 );
 

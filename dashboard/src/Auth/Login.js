@@ -139,7 +139,6 @@ const LoginForm = props => {
           })
         );
         props.setUser(result.data.user);
-        props.redirect();
       } catch (error) {
         setErrors(error.response.data);
       }

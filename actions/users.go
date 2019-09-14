@@ -150,7 +150,7 @@ func PostForgotPassword(c *gin.Context) {
 }
 
 func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
-	url := os.Getenv("DOMAIN_URL") + "/forgot-password/" + token
+	url := os.Getenv("APP_URL") + "/forgot-password/" + token
 
 	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
 		Template:     aws.String("ForgotPassword"),

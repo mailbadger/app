@@ -18,6 +18,10 @@ class Landing extends Component {
     };
 
     let auth = this.context;
+    if (auth.isLoading) {
+      return <div>Loading...</div>;
+    }
+
     if (auth.isAuthenticated || this.state.redirectToReferrer) {
       return <Redirect to={from} />;
     }
@@ -25,7 +29,7 @@ class Landing extends Component {
     return (
       <Fragment>
         <Box>
-          <Auth redirect={() => this.setState({ redirectToReferrer: true })} />
+          <Auth />
         </Box>
       </Fragment>
     );
