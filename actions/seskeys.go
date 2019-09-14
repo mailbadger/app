@@ -80,7 +80,7 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("DOMAIN_URL"), u.UUID)
+	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), u.UUID)
 
 	// Check if the configuration set is already created
 	topicArn := ""
