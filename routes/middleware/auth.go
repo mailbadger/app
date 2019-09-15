@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/csrf"
+
 	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +43,9 @@ func SetUser() gin.HandlerFunc {
 				c.Set("user", &key.User)
 			}
 
+			// When using api keys it's ok to skip the csrf token
+			// since we are not using cookies to authenticate the user
+			c.Request = csrf.UnsafeSkipCheck(c.Request)
 			c.Next()
 			return
 		}

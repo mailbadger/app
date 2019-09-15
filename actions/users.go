@@ -8,20 +8,22 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/utils/token"
+	"github.com/gorilla/csrf"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func GetMe(c *gin.Context) {
+	c.Header("X-CSRF-Token", csrf.Token(c.Request))
 	c.JSON(http.StatusOK, middleware.GetUser(c))
 }
 

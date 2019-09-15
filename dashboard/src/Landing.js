@@ -4,6 +4,7 @@ import { Redirect } from "react-router-dom";
 
 import { AuthContext } from "./Auth/context";
 import Auth from "./Auth";
+import LoadingOverlay from "./ui/LoadingOverlay";
 
 class Landing extends Component {
   state = {
@@ -19,7 +20,7 @@ class Landing extends Component {
 
     let auth = this.context;
     if (auth.isLoading) {
-      return <div>Loading...</div>;
+      return <LoadingOverlay />;
     }
 
     if (auth.isAuthenticated || this.state.redirectToReferrer) {
