@@ -18,6 +18,8 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/csrf v1.6.1
+	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.10
 	github.com/kisielk/errcheck v1.2.0 // indirect

@@ -41,7 +41,12 @@ const Dashboard = () => {
               Mail Badger
             </Heading>
           </AppBar>*/}
-          <Box direction="row" flex overflow={{ horizontal: "hidden" }}>
+          <Box
+            direction="row"
+            flex
+            animation="fadeIn"
+            overflow={{ horizontal: "hidden" }}
+          >
             <Sidebar
               showSidebar={showSidebar}
               size={size}
