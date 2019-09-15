@@ -34,12 +34,6 @@ import (
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
 
-type tokenPayload struct {
-	Access    string `json:"access_token,omitempty"`
-	ExpiresIn int64  `json:"expires_in,omitempty"`
-	Refresh   string `json:"refresh_token,omitempty"`
-}
-
 // PostAuthenticate authenticates a user with the given username and password.
 func PostAuthenticate(c *gin.Context) {
 	username, password := c.PostForm("username"), c.PostForm("password")
