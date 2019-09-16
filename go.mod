@@ -33,7 +33,7 @@ require (
 	github.com/securego/gosec v0.0.0-20190912120752-140048b2a218 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
-	github.com/unrolled/secure v1.0.1
+	github.com/unrolled/secure v1.0.3
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20190911031432-227b76d455e7
 	golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2 // indirect
