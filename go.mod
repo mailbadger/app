@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.23.21
+	github.com/aws/aws-sdk-go v1.24.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -18,6 +18,8 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/csrf v1.6.1
+	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.10
 	github.com/kisielk/errcheck v1.2.0 // indirect
@@ -31,7 +33,7 @@ require (
 	github.com/securego/gosec v0.0.0-20190912120752-140048b2a218 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
-	github.com/unrolled/secure v1.0.1
+	github.com/unrolled/secure v1.0.4
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20190911031432-227b76d455e7
 	golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2 // indirect

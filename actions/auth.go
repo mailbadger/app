@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
 	fb "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
 	"github.com/news-maily/app/emails"
@@ -762,6 +763,8 @@ func persistSession(c *gin.Context, userID int64, sessID string) error {
 		Path:     "/api",
 	})
 	session.Set("sess_id", sessID)
+
+	c.Header("X-CSRF-Token", csrf.Token(c.Request))
 
 	return session.Save()
 }

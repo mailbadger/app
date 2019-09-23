@@ -14,6 +14,8 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/csrf"
+	adapter "github.com/gwatts/gin-adapter"
 	"github.com/news-maily/app/actions"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/sirupsen/logrus"
@@ -131,6 +133,7 @@ func New() http.Handler {
 	authorized := handler.Group("/api")
 	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
+	authorized.Use(CSRF())
 	authorized.Use(tollbooth_gin.LimitHandler(lmt))
 
 	authorized.POST("/logout", actions.PostLogout)
@@ -191,4 +194,19 @@ func New() http.Handler {
 	}
 
 	return handler
+}
+
+func CSRF() gin.HandlerFunc {
+	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
+	csrfMd := csrf.Protect([]byte(os.Getenv("SESSION_AUTH_KEY")),
+		csrf.MaxAge(0),
+		csrf.Path("/api"),
+		csrf.Secure(secureCookie),
+		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))
+		})),
+	)
+
+	return adapter.Wrap(csrfMd)
 }
