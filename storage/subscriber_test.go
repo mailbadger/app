@@ -6,13 +6,18 @@ import (
 
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/utils/pagination"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSubscriber(t *testing.T) {
 	db := openTestDb()
-	defer db.Close()
-
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 	store := From(db)
 
 	l := &entities.Segment{

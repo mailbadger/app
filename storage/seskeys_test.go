@@ -4,13 +4,18 @@ import (
 	"testing"
 
 	"github.com/news-maily/app/entities"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSesKeys(t *testing.T) {
 	db := openTestDb()
-	defer db.Close()
-
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 	store := From(db)
 
 	_, err := store.GetSesKeys(1)

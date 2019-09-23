@@ -3,13 +3,18 @@ package storage
 import (
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUser(t *testing.T) {
 	db := openTestDb()
-	defer db.Close()
-
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 	store := From(db)
 
 	//Test get admin user

@@ -42,7 +42,12 @@ func HandleHook(c *gin.Context) {
 			return
 		}
 
-		defer response.Body.Close()
+		defer func() {
+			err := response.Body.Close()
+			if err != nil {
+				logrus.WithError(err).Error("Unable to close response body.")
+			}
+		}()
 
 		if response.StatusCode >= http.StatusBadRequest {
 			xml, _ := ioutil.ReadAll(response.Body)
@@ -161,7 +166,7 @@ func HandleHook(c *gin.Context) {
 		for _, d := range msg.Mail.Destination {
 			err := storage.CreateSend(c, &entities.Send{
 				UserID:           u.ID,
-				CampaignId:       cid,
+				CampaignID:       cid,
 				MessageID:        msg.Mail.MessageID,
 				Source:           msg.Mail.Source,
 				SendingAccountID: msg.Mail.SendingAccountID,

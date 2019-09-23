@@ -5,12 +5,18 @@ import (
 
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/utils/pagination"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSegment(t *testing.T) {
 	db := openTestDb()
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 
 	store := From(db)
 
@@ -55,7 +61,8 @@ func TestSegment(t *testing.T) {
 		Email:  "john@example.com",
 		UserID: 1,
 	}
-	store.CreateSubscriber(s)
+	err = store.CreateSubscriber(s)
+	assert.Nil(t, err)
 
 	l.Subscribers = append(l.Subscribers, *s)
 

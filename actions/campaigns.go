@@ -131,13 +131,19 @@ func StartCampaign(c *gin.Context) {
 func GetCampaigns(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+		if err != nil {
+			logrus.Error(err)
+		}
 		return
 	}
 
 	p, ok := val.(*pagination.Cursor)
 	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+		if err != nil {
+			logrus.Error(err)
+		}
 		return
 	}
 

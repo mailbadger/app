@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/utils/pagination"
 	"github.com/stretchr/testify/assert"
@@ -11,7 +13,12 @@ import (
 
 func TestCampaign(t *testing.T) {
 	db := openTestDb()
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}()
 
 	store := From(db)
 

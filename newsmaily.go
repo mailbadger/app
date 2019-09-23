@@ -64,9 +64,9 @@ func main() {
 	if addr == "" {
 		addr = "8080"
 	}
-	skipTls, _ := strconv.ParseBool(os.Getenv("SKIP_TLS"))
+	skipTLS, _ := strconv.ParseBool(os.Getenv("SKIP_TLS"))
 
-	if !skipTls {
+	if !skipTLS {
 		// TLS config
 		cer, err := tls.LoadX509KeyPair(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE"))
 		if err != nil {

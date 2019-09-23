@@ -204,7 +204,10 @@ func CSRF() gin.HandlerFunc {
 		csrf.Secure(secureCookie),
 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))
+			_, err := w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))
+			if err != nil {
+				logrus.Error(err)
+			}
 		})),
 	)
 

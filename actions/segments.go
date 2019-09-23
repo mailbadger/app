@@ -20,13 +20,19 @@ type subs struct {
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+		if err != nil {
+			logrus.Error(err)
+		}
 		return
 	}
 
 	p, ok := val.(*pagination.Cursor)
 	if !ok {
-		c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+		if err != nil {
+			logrus.Error(err)
+		}
 		return
 	}
 
@@ -221,13 +227,19 @@ func GetSegmentsubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		val, ok := c.Get("cursor")
 		if !ok {
-			c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+			err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
+			if err != nil {
+				logrus.Error(err)
+			}
 			return
 		}
 
 		p, ok := val.(*pagination.Cursor)
 		if !ok {
-			c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+			err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
+			if err != nil {
+				logrus.Error(err)
+			}
 			return
 		}
 
