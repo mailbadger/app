@@ -197,9 +197,11 @@ func New() http.Handler {
 }
 
 func CSRF() gin.HandlerFunc {
-	csrfMd := csrf.Protect([]byte("Taiwan NO.1."),
+	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
+	csrfMd := csrf.Protect([]byte(os.Getenv("SESSION_AUTH_KEY")),
 		csrf.MaxAge(0),
-		csrf.Secure(false),
+		csrf.Path("/api"),
+		csrf.Secure(secureCookie),
 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))

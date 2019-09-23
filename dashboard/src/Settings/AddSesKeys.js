@@ -176,7 +176,7 @@ const AddSesKeysForm = () => {
   return (
     <Box
       pad="medium"
-      alignSelf="left"
+      alignSelf="start"
       background="#ffffff"
       elevation="medium"
       animation="fadeIn"

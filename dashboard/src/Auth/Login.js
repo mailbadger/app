@@ -51,7 +51,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           We are so excited to see you again!
         </Paragraph>
         <Paragraph textAlign="center" size="small" color="#D85555">
-          {errors && errors.message && <div>{errors.message}</div>}
+          {errors && errors.message}
         </Paragraph>
         <FormField label="Email" htmlFor="email">
           <StyledTextInput

@@ -76,7 +76,7 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
         </TableCell>
         <TableCell
           style={{ textAlign: "right" }}
-          align="right"
+          align="end"
           scope="col"
           border="bottom"
           size="xsmall"

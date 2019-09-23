@@ -40,7 +40,6 @@ const theme = {
       text: {
         color: "#333",
         size: "small",
-        weight: "400",
         margin: "0px 20px",
         border: "none"
       },
