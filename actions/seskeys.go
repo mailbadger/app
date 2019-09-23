@@ -111,13 +111,15 @@ func PostSESKeys(c *gin.Context) {
 			Name: aws.String(events.SNSTopicName),
 		})
 		if err != nil {
+			logrus.WithFields(logrus.Fields{"user": u.ID}).Errorln(err)
 			// rollback
-			sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
+			_, err := sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
 				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 			})
-			logrus.WithFields(logrus.Fields{
-				"user": u.ID,
-			}).Errorln(err)
+			if err != nil {
+				logrus.Error(err)
+			}
+
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create topic.",
 			})
@@ -132,12 +134,20 @@ func PostSESKeys(c *gin.Context) {
 			TopicArn: aws.String(topicArn),
 		})
 		if err != nil {
+			logrus.WithError(err).Error("Unable to subscribe to topic.")
+
 			// rollback
-			sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
+			_, err := sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
 				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 			})
-			snsClient.DeleteTopic(&sns.DeleteTopicInput{TopicArn: snsRes.TopicArn})
-			logrus.Errorln(err)
+			if err != nil {
+				logrus.WithError(err).Error("Unable to delete configuration set.")
+			}
+			_, err = snsClient.DeleteTopic(&sns.DeleteTopicInput{TopicArn: snsRes.TopicArn})
+			if err != nil {
+				logrus.WithError(err).Error("Unable to delete topic.")
+			}
+
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to subscribe to topic.",
 			})

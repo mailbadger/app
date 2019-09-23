@@ -40,7 +40,14 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	params := &changePassParams{}
-	c.Bind(params)
+	err := c.Bind(params)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to bind params")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
+		})
+		return
+	}
 
 	v, err := valid.ValidateStruct(params)
 	if !v {
@@ -109,7 +116,14 @@ type forgotPassParams struct {
 
 func PostForgotPassword(c *gin.Context) {
 	params := &forgotPassParams{}
-	c.Bind(params)
+	err := c.Bind(params)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to bind params")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
+		})
+		return
+	}
 
 	v, err := valid.ValidateStruct(params)
 	if !v {
@@ -190,7 +204,14 @@ func PutForgotPassword(c *gin.Context) {
 	}
 
 	params := &putForgotPassParams{}
-	c.Bind(params)
+	err = c.Bind(params)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to bind params")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
+		})
+		return
+	}
 
 	v, err := valid.ValidateStruct(params)
 	if !v {

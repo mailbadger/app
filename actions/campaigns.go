@@ -32,7 +32,14 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	params := &sendCampaignParams{}
-	c.Bind(params)
+	err = c.Bind(params)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to bind params")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
+		})
+		return
+	}
 
 	v, err := valid.ValidateStruct(params)
 	if !v {

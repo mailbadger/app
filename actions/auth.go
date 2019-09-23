@@ -103,7 +103,14 @@ func PostSignup(c *gin.Context) {
 	}
 
 	params := &signupParams{}
-	c.Bind(params)
+	err := c.Bind(params)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to bind params")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
+		})
+		return
+	}
 
 	v, err := valid.ValidateStruct(params)
 	if !v {
@@ -248,7 +255,14 @@ func GetGithubAuth(c *gin.Context) {
 
 	session := sessions.Default(c)
 	session.Set("state", state)
-	session.Save()
+	err = session.Save()
+	if err != nil {
+		logrus.WithError(err).Error("Unable to save session.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to save session, please try again.",
+		})
+		return
+	}
 
 	url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&scope=user:email&state=%s",
 		os.Getenv("GITHUB_CLIENT_ID"),
@@ -385,7 +399,14 @@ func GetGoogleAuth(c *gin.Context) {
 	session := sessions.Default(c)
 
 	session.Set("state", state)
-	session.Save()
+	err = session.Save()
+	if err != nil {
+		logrus.WithError(err).Error("Unable to save session.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to save session, please try again.",
+		})
+		return
+	}
 
 	conf := &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
@@ -533,7 +554,14 @@ func GetFacebookAuth(c *gin.Context) {
 	session := sessions.Default(c)
 
 	session.Set("state", state)
-	session.Save()
+	err = session.Save()
+	if err != nil {
+		logrus.WithError(err).Error("Unable to save session.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to save session, please try again.",
+		})
+		return
+	}
 
 	url := fmt.Sprintf("https://www.facebook.com/v3.3/dialog/oauth?client_id=%s&scope=email&redirect_uri=%s&state=%s",
 		os.Getenv("FACEBOOK_CLIENT_ID"),
@@ -684,7 +712,14 @@ func PostLogout(c *gin.Context) {
 	}
 
 	session.Delete("sess_id")
-	session.Save()
+	err := session.Save()
+	if err != nil {
+		logrus.WithError(err).Error("Unable to save session.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to save session, please try again.",
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "You have been successfully logged out.",

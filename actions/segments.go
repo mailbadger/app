@@ -171,7 +171,14 @@ func PutSegmentSubscribers(c *gin.Context) {
 		}
 
 		subs := &subs{}
-		c.Bind(subs)
+		err = c.Bind(subs)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to bind params")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Invalid parameters, please try again.",
+			})
+			return
+		}
 
 		if len(subs.Ids) == 0 {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -246,7 +253,14 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		}
 
 		subs := &subs{}
-		c.Bind(subs)
+		err = c.Bind(subs)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to bind params")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Invalid parameters, please try again.",
+			})
+			return
+		}
 
 		if len(subs.Ids) == 0 {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
