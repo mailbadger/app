@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { parse } from "date-fns";
+import { parseISO } from "date-fns";
 import { More } from "grommet-icons";
 import axios from "axios";
 import useApi from "../hooks/useApi";
@@ -17,13 +17,15 @@ import {
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
 import StyledButton from "../ui/StyledButton";
+import ButtonWithLoader from "../ui/ButtonWithLoader";
+import PlaceholderRow from "../ui/PlaceholderRow";
 
 const deleteTemplate = async name => {
   await axios.delete(`/api/templates/${name}`);
 };
 
 const Row = ({ template, setShowDelete }) => {
-  const res = parse(template.timestamp);
+  const res = parseISO(template.timestamp);
   return (
     <TableRow>
       <TableCell scope="row" size="xlarge">
@@ -37,18 +39,12 @@ const Row = ({ template, setShowDelete }) => {
           alignSelf="center"
           plain
           icon={<More />}
-          options={["Edit", "Preview", "Send Test", "Delete"]}
+          options={["Edit", "Delete"]}
           onChange={({ option }) => {
             (function() {
               switch (option) {
                 case "Edit":
                   history.push(`/dashboard/templates/${template.name}/edit`);
-                  break;
-                case "Preview":
-                  setShowDelete({ show: true, name: template.name });
-                  break;
-                case "Send Test":
-                  setShowDelete({ show: true, name: template.name });
                   break;
                 case "Delete":
                   setShowDelete({ show: true, name: template.name });
@@ -64,7 +60,7 @@ const Row = ({ template, setShowDelete }) => {
   );
 };
 
-const TemplateTable = React.memo(({ list, setShowDelete }) => (
+const TemplateTable = React.memo(({ list, isLoading, setShowDelete }) => (
   <StyledTable caption="Templates">
     <TableHeader>
       <TableRow>
@@ -79,20 +75,31 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
           align="end"
           scope="col"
           border="bottom"
-          size="xsmall"
+          size="small"
         />
       </TableRow>
     </TableHeader>
     <TableBody>
-      {list.map(t => (
-        <Row template={t} key={t.name} setShowDelete={setShowDelete} />
-      ))}
+      {isLoading ? (
+        <Fragment>
+          <PlaceholderRow columns={3} />
+          <PlaceholderRow columns={3} />
+          <PlaceholderRow columns={3} />
+          <PlaceholderRow columns={3} />
+        </Fragment>
+      ) : (
+        list.map(t => (
+          <Row template={t} key={t.name} setShowDelete={setShowDelete} />
+        ))
+      )}
     </TableBody>
   </StyledTable>
 ));
 
 const DeleteLayer = ({ setShowDelete, name, callApi }) => {
   const hideModal = () => setShowDelete({ show: false, name: "" });
+  const [isSubmitting, setSubmitting] = useState(false);
+
   return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
       <Heading margin="small" level="4">
@@ -103,11 +110,16 @@ const DeleteLayer = ({ setShowDelete, name, callApi }) => {
           <Button label="Cancel" onClick={() => hideModal()} />
         </Box>
         <Box>
-          <Button
+          <ButtonWithLoader
+            primary
             label="Delete"
-            onClick={() => {
-              deleteTemplate(name);
-              callApi({ url: "/api/templates" });
+            color="#FF4040"
+            disabled={isSubmitting}
+            onClick={async () => {
+              setSubmitting(true);
+              await deleteTemplate(name);
+              await callApi({ url: "/api/templates" });
+              setSubmitting(false);
               hideModal();
             }}
           />
@@ -123,17 +135,13 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/templates"
+      url: "/api/templates?per_page=2"
     },
     {
       next_token: "",
       list: []
     }
   );
-
-  if (state.isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Fragment>
@@ -144,7 +152,13 @@ const List = () => {
           callApi={callApi}
         />
       )}
-      <TemplateTable list={state.data.list} setShowDelete={setShowDelete} />
+      <Box animation="fadeIn">
+        <TemplateTable
+          isLoading={state.isLoading}
+          list={state.data.list}
+          setShowDelete={setShowDelete}
+        />
+      </Box>
       <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
         <Box margin={{ right: "small" }}>
           <StyledButton

@@ -69,7 +69,7 @@ const Form = ({
           <ErrorMessage name="subject" />
         </FormField>
         <br />
-        HTML Conntent
+        HTML Content
         <FormField htmlFor="htmlPart">
           <CodeMirror
             value={html}

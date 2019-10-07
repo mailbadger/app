@@ -10,10 +10,10 @@ const StyledTable = styled(Table)`
     0 3px 6px 0 rgba(0, 0, 0, 0.07);
 
   ${this} tr:hover, focus {
-    background: fafafa;
+    background: #fafafa;
   }
   ${this} tr:focus {
-    background: fafafa;
+    background: #fafafa;
   }
 
   ${this} tr {
@@ -22,7 +22,6 @@ const StyledTable = styled(Table)`
 
   ${this} thead {
     color: #6650aa;
-    text-transform: uppercase;
   }
 
   ${this} thead th div {
@@ -33,7 +32,7 @@ const StyledTable = styled(Table)`
     color: #4f566b;
   }
 
-  ${this} tbody tr:hover {
+  ${this} tr:hover {
     background: #fafafa;
   }
 `;

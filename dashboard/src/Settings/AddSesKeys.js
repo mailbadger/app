@@ -32,8 +32,7 @@ const Form = ({
   values,
   handleChange,
   setFieldValue,
-  isSubmitting,
-  errors
+  isSubmitting
 }) => (
   <Box width="medium">
     <form onSubmit={handleSubmit}>
