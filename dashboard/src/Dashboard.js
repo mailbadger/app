@@ -1,6 +1,8 @@
 import React, { Fragment, useState } from "react";
 import { Box, ResponsiveContext } from "grommet";
 
+import Notification from "./Notifications";
+import { NotificationsProvider } from "./Notifications/context";
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
 import Templates from "./Templates";
@@ -32,15 +34,6 @@ const Dashboard = () => {
     <ResponsiveContext.Consumer>
       {size => (
         <Fragment>
-          {/*<AppBar>
-            <Heading
-              level="3"
-              onClick={() => setSidebar(!showSidebar)}
-              margin="none"
-            >
-              Mail Badger
-            </Heading>
-          </AppBar>*/}
           <Box
             direction="row"
             flex
@@ -52,7 +45,10 @@ const Dashboard = () => {
               size={size}
               closeSidebar={() => setSidebar(false)}
             />
-            <Routes />
+            <NotificationsProvider>
+              <Routes />
+              <Notification />
+            </NotificationsProvider>
           </Box>
         </Fragment>
       )}

@@ -1,9 +1,11 @@
-import React, { Fragment } from "react";
+import React, { useContext } from "react";
 import { FormField, TextInput, Heading, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
+
+import { NotificationsContext } from "../Notifications/context";
 import equalTo from "../utils/equalTo";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 
@@ -20,26 +22,17 @@ const changePassValidation = object().shape({
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Fragment>
-    <Box
-      direction="row"
-      flex="grow"
-      alignSelf="center"
-      background="#ffffff"
-      border={{ color: "#CFCFCF" }}
-      animation="fadeIn"
-      margin={{ top: "40px", bottom: "10px" }}
-      elevation="medium"
-      width="medium"
-      gap="small"
-      pad="medium"
-      align="center"
-      justify="center"
-    >
-      <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
-        Change password
-      </Heading>
-      {errors && errors.message && <div>{errors.message}</div>}
+  <Box
+    pad="large"
+    alignSelf="start"
+    background="#ffffff"
+    elevation="medium"
+    animation="fadeIn"
+  >
+    <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
+      Change password
+    </Heading>
+    <Box width="medium">
       <form onSubmit={handleSubmit}>
         <FormField label="Old password" htmlFor="password">
           <TextInput name="password" type="password" onChange={handleChange} />
@@ -62,29 +55,42 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           <ErrorMessage name="new_password_confirm" />
         </FormField>
 
-        <ButtonWithLoader
-          type="submit"
-          disabled={isSubmitting}
-          label="Update password"
-        />
+        <Box margin={{ top: "medium" }}>
+          <ButtonWithLoader
+            type="submit"
+            disabled={isSubmitting}
+            label="Update password"
+          />
+        </Box>
       </form>
     </Box>
-  </Fragment>
+  </Box>
 );
 
 const ChangePasswordForm = () => {
+  const { createNotification } = useContext(NotificationsContext);
+
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
-        await axios.post(
+        const res = await axios.post(
           "/api/users/password",
           qs.stringify({
             password: values.password,
             new_password: values.new_password
           })
         );
+
+        createNotification(res.data.message);
       } catch (error) {
         setErrors(error.response.data);
+
+        const { message } = error.response.data;
+        const msg = message
+          ? message
+          : "Unable to update your password. Please try again.";
+
+        createNotification(msg, "status-error");
       }
     };
 

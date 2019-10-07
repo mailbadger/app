@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Router, Route, Switch } from "react-router-dom";
 import { Box, Grommet } from "grommet";
-import { AuthProvider } from "./Auth/context";
 
+import { AuthProvider } from "./Auth/context";
 import Landing from "./Landing";
 import Dashboard from "./Dashboard";
 import Logout from "./Auth/Logout";
@@ -35,33 +35,6 @@ const theme = {
     },
     border: false
   },
-  select: {
-    options: {
-      text: {
-        color: "#333",
-        size: "small",
-        margin: "0px 20px",
-        border: "none"
-      },
-      container: {
-        marginLeft: "-30px"
-      }
-    },
-    connrol: {
-      extend: {
-        marginLeft: "-30px"
-      }
-    },
-    container: {
-      marginLeft: "-30px",
-      extend: {
-        boxShaddow:
-          "0 7px 14px 0 rgba(60,66,87, 0.1), 0 3px 6px 0 rgba(0, 0, 0, .07)",
-        border: "1px solid #e4e4e4"
-      }
-    }
-  },
-
   formField: {
     label: {
       color: "#ACACAC",
@@ -84,22 +57,6 @@ const theme = {
     },
     primary: {
       color: "#6650AA"
-    },
-    extend: props => {
-      let extraStyles = "";
-      if (props.primary) {
-        extraStyles = `
-            text-transform: uppercase;
-          `;
-      }
-      return `
-          color: white;
-          font-size: 12px;
-          font-weight: bold;
-          border: 0px;
-          border-radius:5px;
-          ${extraStyles}
-        `;
     }
   },
   anchor: {

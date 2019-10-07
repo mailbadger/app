@@ -14,7 +14,8 @@ axios.interceptors.request.use(
     if (
       config.method === "post" ||
       config.method === "put" ||
-      config.method === "patch"
+      config.method === "patch" ||
+      config.method === "delete"
     ) {
       config.headers["Content-Type"] = "application/x-www-form-urlencoded";
       const t = localStorage.getItem(xsrfTokenKey);

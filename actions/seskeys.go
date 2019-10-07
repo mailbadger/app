@@ -8,15 +8,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
-
-	"github.com/sirupsen/logrus"
-
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/events"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/sirupsen/logrus"
 )
 
 func GetSESKeys(c *gin.Context) {

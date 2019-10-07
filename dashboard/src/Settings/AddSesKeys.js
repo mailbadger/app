@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Layer,
   Box,
@@ -14,6 +14,7 @@ import { string, object } from "yup";
 import axios from "axios";
 import qs from "qs";
 
+import { NotificationsContext } from "../Notifications/context";
 import regions from "../regions/regions.json";
 import useApi from "../hooks/useApi";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
@@ -34,8 +35,7 @@ const Form = ({
   isSubmitting,
   errors
 }) => (
-  <Fragment>
-    {errors && errors.message && <div>{errors.message}</div>}
+  <Box width="medium">
     <form onSubmit={handleSubmit}>
       <FormField label="Access key" htmlFor="access_key">
         <TextInput name="access_key" onChange={handleChange} />
@@ -53,17 +53,20 @@ const Form = ({
           onChange={({ option }) => setFieldValue("region", option, true)}
           valueKey="code"
           labelKey="name"
+          placeholder="Select region"
         />
         <ErrorMessage name="region" />
       </FormField>
 
-      <ButtonWithLoader
-        type="submit"
-        disabled={isSubmitting}
-        label="Add keys"
-      />
+      <Box margin={{ top: "medium" }}>
+        <ButtonWithLoader
+          type="submit"
+          disabled={isSubmitting}
+          label="Add keys"
+        />
+      </Box>
     </form>
-  </Fragment>
+  </Box>
 );
 
 const SesKey = ({ sesKey, setShowDelete }) => (
@@ -92,6 +95,8 @@ const deleteKeys = async () => {
 
 const DeleteLayer = ({ setShowDelete, callApi }) => {
   const hideModal = () => setShowDelete(false);
+  const [isSubmitting, setSubmitting] = useState(false);
+
   return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
       <Heading margin="small" level="4">
@@ -102,11 +107,16 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
           <Button label="Cancel" onClick={() => hideModal()} />
         </Box>
         <Box>
-          <Button
+          <ButtonWithLoader
+            primary
             label="Delete"
+            color="#FF4040"
+            disabled={isSubmitting}
             onClick={async () => {
+              setSubmitting(true);
               await deleteKeys();
               callApi({ url: "/api/ses-keys" });
+              setSubmitting(false);
               hideModal();
             }}
           />
@@ -121,6 +131,7 @@ const AddSesKeysForm = () => {
   const [state, callApi] = useApi({
     url: `/api/ses-keys`
   });
+  const { createNotification } = useContext(NotificationsContext);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const addKeys = async () => {
@@ -134,9 +145,17 @@ const AddSesKeysForm = () => {
           })
         );
 
+        createNotification("SES keys have been successfully set.");
+
         await callApi({ url: `/api/ses-keys` });
       } catch (error) {
-        setErrors(error.response.data);
+        if (error.response) {
+          setErrors(error.response.data);
+          const { message } = error.response.data;
+          const msg = message ? message : "Unable to add SES keys";
+
+          createNotification(msg, "status-error");
+        }
       }
     };
 
@@ -175,12 +194,11 @@ const AddSesKeysForm = () => {
 
   return (
     <Box
-      pad="medium"
+      pad="large"
       alignSelf="start"
       background="#ffffff"
       elevation="medium"
       animation="fadeIn"
-      width="large"
     >
       {showDelete && (
         <DeleteLayer setShowDelete={setShowDelete} callApi={callApi} />
