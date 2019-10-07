@@ -12,7 +12,7 @@
     "history": "^4.10.1",
     "qs": "^6.9.0",
     "query-string": "^6.8.3",
-    "react": "^16.9.0",
+    "react": "^16.10.2",
     "react-codemirror2": "^6.0.0",
     "react-css-loaders": "^0.0.5",
     "react-dom": "^16.9.0",
