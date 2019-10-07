@@ -4907,10 +4907,10 @@ grommet-styles@^0.2.0:
   resolved "https://registry.yarnpkg.com/grommet-styles/-/grommet-styles-0.2.0.tgz#b2eac2b7e2747cb523434d21728ce5234f8ce4f4"
   integrity sha512-0OMSYuGeyifYKpg4Gv2HzL8rUdd0ddnJ5LbCBKgDuloC71XIwr9g/Fxa6rs737MbPV7OZ4pEm4wvrjH4epzf1A==
 
-grommet@^2.7.8:
-  version "2.7.8"
-  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.7.8.tgz#634e0be7755be10d68c8e2ea4f2b71a07049c3f9"
-  integrity sha512-hbqQFc48nlZImJnb/C8Hh/q6gTDQSMJ7xu162DZdTMMjfExJcU2+7sR6RaeARS80TWlHBI3Q4n6PkPW0OH/VIw==
+grommet@^2.7.9:
+  version "2.7.9"
+  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.7.9.tgz#9b6a3a06416ea241b1c84273eb84bfe2161d4582"
+  integrity sha512-zpq53X0o4AvbJGUpt4vSb/DQEFdBjD2gxkveQ0VcQswK+hLHQumBBE44ECNVE4mUAfKshfR/yBFlH7dQZY8Tkw==
   dependencies:
     "@testing-library/dom" "^6.1.0"
     "@testing-library/react" "^9.1.3"
