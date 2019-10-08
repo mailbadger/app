@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { useState } from "react";
 import { parseISO } from "date-fns";
 import { More, Add } from "grommet-icons";
 import axios from "axios";
@@ -61,39 +61,45 @@ const Row = ({ template, setShowDelete }) => {
   );
 };
 
+const Header = () => (
+  <TableHeader>
+    <TableRow>
+      <TableCell scope="col" border="bottom" size="medium">
+        <strong>Name</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="medium">
+        <strong>Date</strong>
+      </TableCell>
+      <TableCell
+        style={{ textAlign: "right" }}
+        align="end"
+        scope="col"
+        border="bottom"
+        size="small"
+      />
+    </TableRow>
+  </TableHeader>
+);
+const PlaceholderTable = () => (
+  <StyledTable caption="Templates">
+    <Header />
+    <TableBody>
+      <PlaceholderRow columns={3} />
+      <PlaceholderRow columns={3} />
+      <PlaceholderRow columns={3} />
+      <PlaceholderRow columns={3} />
+      <PlaceholderRow columns={3} />
+    </TableBody>
+  </StyledTable>
+);
+
 const TemplateTable = React.memo(({ list, isLoading, setShowDelete }) => (
   <StyledTable caption="Templates">
-    <TableHeader>
-      <TableRow>
-        <TableCell scope="col" border="bottom" size="medium">
-          <strong>Name</strong>
-        </TableCell>
-        <TableCell scope="col" border="bottom" size="medium">
-          <strong>Date</strong>
-        </TableCell>
-        <TableCell
-          style={{ textAlign: "right" }}
-          align="end"
-          scope="col"
-          border="bottom"
-          size="small"
-        />
-      </TableRow>
-    </TableHeader>
+    <Header />
     <TableBody>
-      {isLoading ? (
-        <Fragment>
-          <PlaceholderRow columns={3} />
-          <PlaceholderRow columns={3} />
-          <PlaceholderRow columns={3} />
-          <PlaceholderRow columns={3} />
-          <PlaceholderRow columns={3} />
-        </Fragment>
-      ) : (
-        list.map(t => (
-          <Row template={t} key={t.name} setShowDelete={setShowDelete} />
-        ))
-      )}
+      {list.map(t => (
+        <Row template={t} key={t.name} setShowDelete={setShowDelete} />
+      ))}
     </TableBody>
   </StyledTable>
 ));
@@ -141,9 +147,23 @@ const List = () => {
     },
     {
       next_token: "",
-      list: []
+      list: [],
+      init: true
     }
   );
+
+  let table = null;
+  if (state.isLoading) {
+    table = <PlaceholderTable />;
+  } else if (state.data.list.length > 0) {
+    table = (
+      <TemplateTable
+        isLoading={state.isLoading}
+        list={state.data.list}
+        setShowDelete={setShowDelete}
+      />
+    );
+  }
 
   return (
     <Grid
@@ -180,53 +200,59 @@ const List = () => {
       </Box>
       <Box gridArea="main">
         <Box animation="fadeIn">
-          <TemplateTable
-            isLoading={state.isLoading}
-            list={state.data.list}
-            setShowDelete={setShowDelete}
-          />
-        </Box>
-        <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-          <Box margin={{ right: "small" }}>
-            <StyledButton
-              label="Previous"
-              onClick={() => {
-                const t = currentPage.tokens[currentPage.current];
-                callApi({
-                  url: `/api/templates?next_token=${encodeURIComponent(t)}`
-                });
-                const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
-                currentPage.tokens.splice(-1, removeNumOfTokens);
+          {table}
 
-                setPage({
-                  current: currentPage.current - 1,
-                  tokens: currentPage.tokens
-                });
-              }}
-              disabled={currentPage.current === -1}
-            />
-          </Box>
-          <Box>
-            <StyledButton
-              label="Next"
-              onClick={() => {
-                const { next_token } = state.data;
-                callApi({
-                  url: `/api/templates?next_token=${encodeURIComponent(
-                    next_token
-                  )}`
-                });
-                currentPage.tokens.push(next_token);
-
-                setPage({
-                  current: currentPage.current + 1,
-                  tokens: currentPage.tokens
-                });
-              }}
-              disabled={state.data.next_token === ""}
-            />
-          </Box>
+          {!state.isLoading && state.data.list.length === 0 ? (
+            <Box align="center" margin={{ top: "large" }}>
+              <Heading level="3">
+                Currently you have no templates. Please create one.
+              </Heading>
+            </Box>
+          ) : null}
         </Box>
+        {!state.isLoading && state.data.list.length > 0 ? (
+          <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
+            <Box margin={{ right: "small" }}>
+              <StyledButton
+                label="Previous"
+                onClick={() => {
+                  const t = currentPage.tokens[currentPage.current];
+                  callApi({
+                    url: `/api/templates?next_token=${encodeURIComponent(t)}`
+                  });
+                  const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
+                  currentPage.tokens.splice(-1, removeNumOfTokens);
+
+                  setPage({
+                    current: currentPage.current - 1,
+                    tokens: currentPage.tokens
+                  });
+                }}
+                disabled={currentPage.current === -1}
+              />
+            </Box>
+            <Box>
+              <StyledButton
+                label="Next"
+                onClick={() => {
+                  const { next_token } = state.data;
+                  callApi({
+                    url: `/api/templates?next_token=${encodeURIComponent(
+                      next_token
+                    )}`
+                  });
+                  currentPage.tokens.push(next_token);
+
+                  setPage({
+                    current: currentPage.current + 1,
+                    tokens: currentPage.tokens
+                  });
+                }}
+                disabled={state.data.next_token === ""}
+              />
+            </Box>
+          </Box>
+        ) : null}
       </Box>
     </Grid>
   );
