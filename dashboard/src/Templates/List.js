@@ -1,9 +1,10 @@
 import React, { Fragment, useState } from "react";
 import { parseISO } from "date-fns";
-import { More } from "grommet-icons";
+import { More, Add } from "grommet-icons";
 import axios from "axios";
 import useApi from "../hooks/useApi";
 import {
+  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -86,6 +87,7 @@ const TemplateTable = React.memo(({ list, isLoading, setShowDelete }) => (
           <PlaceholderRow columns={3} />
           <PlaceholderRow columns={3} />
           <PlaceholderRow columns={3} />
+          <PlaceholderRow columns={3} />
         </Fragment>
       ) : (
         list.map(t => (
@@ -135,7 +137,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/templates?per_page=2"
+      url: "/api/templates"
     },
     {
       next_token: "",
@@ -144,7 +146,16 @@ const List = () => {
   );
 
   return (
-    <Fragment>
+    <Grid
+      rows={["fill", "fill"]}
+      columns={["1fr", "1fr"]}
+      gap="medium"
+      margin="medium"
+      areas={[
+        { name: "nav", start: [0, 0], end: [0, 1] },
+        { name: "main", start: [0, 1], end: [1, 1] }
+      ]}
+    >
       {showDelete.show && (
         <DeleteLayer
           name={showDelete.name}
@@ -152,55 +163,72 @@ const List = () => {
           callApi={callApi}
         />
       )}
-      <Box animation="fadeIn">
-        <TemplateTable
-          isLoading={state.isLoading}
-          list={state.data.list}
-          setShowDelete={setShowDelete}
-        />
-      </Box>
-      <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-        <Box margin={{ right: "small" }}>
-          <StyledButton
-            label="Previous"
-            onClick={() => {
-              const t = currentPage.tokens[currentPage.current];
-              callApi({
-                url: `/api/templates?next_token=${encodeURIComponent(t)}`
-              });
-              const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
-              currentPage.tokens.splice(-1, removeNumOfTokens);
-
-              setPage({
-                current: currentPage.current - 1,
-                tokens: currentPage.tokens
-              });
-            }}
-            disabled={currentPage.current === -1}
-          />
-        </Box>
+      <Box gridArea="nav" direction="row">
         <Box>
-          <StyledButton
-            label="Next"
-            onClick={() => {
-              const { next_token } = state.data;
-              callApi({
-                url: `/api/templates?next_token=${encodeURIComponent(
-                  next_token
-                )}`
-              });
-              currentPage.tokens.push(next_token);
-
-              setPage({
-                current: currentPage.current + 1,
-                tokens: currentPage.tokens
-              });
-            }}
-            disabled={state.data.next_token === ""}
+          <Heading level="2" margin={{ bottom: "xsmall" }}>
+            Templates
+          </Heading>
+        </Box>
+        <Box margin={{ left: "medium", top: "medium" }}>
+          <ButtonWithLoader
+            label="Create new"
+            icon={<Add color="#ffffff" />}
+            reverse
+            onClick={() => history.push("/dashboard/templates/new")}
           />
         </Box>
       </Box>
-    </Fragment>
+      <Box gridArea="main">
+        <Box animation="fadeIn">
+          <TemplateTable
+            isLoading={state.isLoading}
+            list={state.data.list}
+            setShowDelete={setShowDelete}
+          />
+        </Box>
+        <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
+          <Box margin={{ right: "small" }}>
+            <StyledButton
+              label="Previous"
+              onClick={() => {
+                const t = currentPage.tokens[currentPage.current];
+                callApi({
+                  url: `/api/templates?next_token=${encodeURIComponent(t)}`
+                });
+                const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
+                currentPage.tokens.splice(-1, removeNumOfTokens);
+
+                setPage({
+                  current: currentPage.current - 1,
+                  tokens: currentPage.tokens
+                });
+              }}
+              disabled={currentPage.current === -1}
+            />
+          </Box>
+          <Box>
+            <StyledButton
+              label="Next"
+              onClick={() => {
+                const { next_token } = state.data;
+                callApi({
+                  url: `/api/templates?next_token=${encodeURIComponent(
+                    next_token
+                  )}`
+                });
+                currentPage.tokens.push(next_token);
+
+                setPage({
+                  current: currentPage.current + 1,
+                  tokens: currentPage.tokens
+                });
+              }}
+              disabled={state.data.next_token === ""}
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Grid>
   );
 };
 

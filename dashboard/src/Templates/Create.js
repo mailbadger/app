@@ -1,6 +1,6 @@
-import React, { Fragment, useState } from "react";
+import React, { useState, useContext } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField } from "grommet";
+import { FormField, Box, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import axios from "axios";
@@ -11,10 +11,9 @@ import "codemirror/theme/material.css";
 import "codemirror/mode/xml/xml";
 import "codemirror/mode/javascript/javascript";
 
+import { NotificationsContext } from "../Notifications/context";
 import history from "../history";
-
 import ButtonWithLoader from "../ui/ButtonWithLoader";
-import StyledTextInput from "../ui/StyledTextInput";
 
 const initialHtml = `<!DOCTYPE html>
 <html>
@@ -41,66 +40,66 @@ const Form = ({
   handleSubmit,
   handleChange,
   setFieldValue,
-  isSubmitting,
-  errors
+  isSubmitting
 }) => {
   return (
-    <Fragment>
-      {errors && errors.message && <div>{errors.message}</div>}
-
+    <Box direction="column">
       <form onSubmit={handleSubmit}>
-        <FormField htmlFor="name">
-          Template Name
-          <StyledTextInput
-            name="name"
-            onChange={handleChange}
-            placeholder="MyTemplate"
+        <Box>
+          <FormField htmlFor="name" label="Template Name">
+            <TextInput
+              name="name"
+              onChange={handleChange}
+              placeholder="MyTemplate"
+            />
+            <ErrorMessage name="name" />
+          </FormField>
+        </Box>
+        <Box margin={{ top: "small" }}>
+          <FormField htmlFor="subject" label="Template Subject">
+            <TextInput
+              name="subject"
+              onChange={handleChange}
+              placeholder="Greetings, {{name}}"
+            />
+            <ErrorMessage name="subject" />
+          </FormField>
+        </Box>
+        <Box margin={{ top: "small" }}>
+          <FormField htmlFor="htmlPart" label="HTML Content">
+            <CodeMirror
+              value={html}
+              options={{
+                mode: "xml",
+                theme: "material",
+                lineNumbers: true
+              }}
+              onBeforeChange={(editor, data, value) => {
+                setHtml(value);
+              }}
+              onChange={editor => {
+                setFieldValue("htmlPart", editor.getValue(), true);
+              }}
+            />
+            <ErrorMessage name="htmlPart" />
+          </FormField>
+        </Box>
+        <Box margin={{ top: "medium" }} align="start">
+          <ButtonWithLoader
+            type="submit"
+            primary
+            disabled={isSubmitting}
+            label="Save Template"
           />
-          <ErrorMessage name="name" />
-        </FormField>
-        <br />
-        Template Subject
-        <FormField htmlFor="subject">
-          <StyledTextInput
-            name="subject"
-            onChange={handleChange}
-            placeholder="Greetings, {{name}}"
-          />
-          <ErrorMessage name="subject" />
-        </FormField>
-        <br />
-        HTML Content
-        <FormField htmlFor="htmlPart">
-          <CodeMirror
-            value={html}
-            options={{
-              mode: "xml",
-              theme: "material",
-              lineNumbers: true
-            }}
-            onBeforeChange={(editor, data, value) => {
-              setHtml(value);
-            }}
-            onChange={editor => {
-              setFieldValue("htmlPart", editor.getValue(), true);
-            }}
-          />
-          <ErrorMessage name="htmlPart" />
-        </FormField>
-        <br />
-        <ButtonWithLoader
-          type="submit"
-          primary
-          disabled={isSubmitting}
-          label="Save Template"
-        />
+        </Box>
       </form>
-    </Fragment>
+    </Box>
   );
 };
 
 const CreateTemplateForm = () => {
   const [html, setHtml] = useState(initialHtml);
+  const { createNotification } = useContext(NotificationsContext);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
@@ -113,10 +112,20 @@ const CreateTemplateForm = () => {
             subject: values.subject
           })
         );
+        createNotification("Template has been created successfully.");
 
         history.push(`/dashboard/templates`);
       } catch (error) {
-        setErrors(error.response.data);
+        if (error.response) {
+          setErrors(error.response.data);
+
+          const { message } = error.response.data;
+          const msg = message
+            ? message
+            : "Unable to create template. Please try again.";
+
+          createNotification(msg, "status-error");
+        }
       }
     };
 
@@ -129,14 +138,25 @@ const CreateTemplateForm = () => {
   };
 
   return (
-    <Formik
-      onSubmit={handleSubmit}
-      validationSchema={templateValidation}
-      initialValues={{
-        htmlPart: html
-      }}
-      render={props => <Form setHtml={setHtml} html={html} {...props} />}
-    />
+    <Box
+      direction="row"
+      gap="medium"
+      margin="medium"
+      background="#ffffff"
+      elevation="medium"
+      animation="fadeIn"
+    >
+      <Box pad="medium" fill>
+        <Formik
+          onSubmit={handleSubmit}
+          validationSchema={templateValidation}
+          initialValues={{
+            htmlPart: html
+          }}
+          render={props => <Form setHtml={setHtml} html={html} {...props} />}
+        />
+      </Box>
+    </Box>
   );
 };
 
