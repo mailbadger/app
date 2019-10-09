@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.25.7
+	github.com/aws/aws-sdk-go v1.25.8
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -41,7 +41,7 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7 // indirect
 	golang.org/x/tools v0.0.0-20190913181337-0240832f5c3d // indirect
-	google.golang.org/api v0.10.0
+	google.golang.org/api v0.11.0
 	google.golang.org/appengine v1.6.1 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
