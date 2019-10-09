@@ -1,7 +1,7 @@
 import React, { Fragment } from "react";
 import { Paragraph, FormField, Anchor, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
@@ -62,11 +62,10 @@ const Form = ({
             marginBottom: "0px"
           }}
         >
-          Create your MailBadger account now
+          Create your Mailbadger account now
         </Heading>
         <FormField label="Email" htmlFor="email">
           <StyledTextInput
-            style={{ border: "1px solid #CACACA" }}
             placeholder="you@email.com"
             name="email"
             onChange={handleChange}
@@ -158,7 +157,7 @@ const Form = ({
     </Box>
     <Paragraph alignSelf="center" size="small" textAlign="center">
       {" "}
-      Already have an account? <NavLink to="/login">Sign in</NavLink>{" "}
+      Already have an account? <Link to="/login">Sign in</Link>{" "}
     </Paragraph>
   </Fragment>
 );
