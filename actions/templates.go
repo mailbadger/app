@@ -107,8 +107,8 @@ func GetTemplates(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, entities.TemplateCollection{
-		NextToken: nt,
-		List:      list,
+		NextToken:  nt,
+		Collection: list,
 	})
 }
 

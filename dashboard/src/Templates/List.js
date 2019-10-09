@@ -93,7 +93,7 @@ const PlaceholderTable = () => (
   </StyledTable>
 );
 
-const TemplateTable = React.memo(({ list, isLoading, setShowDelete }) => (
+const TemplateTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable caption="Templates">
     <Header />
     <TableBody>
@@ -147,7 +147,7 @@ const List = () => {
     },
     {
       next_token: "",
-      list: [],
+      collection: [],
       init: true
     }
   );
@@ -155,11 +155,11 @@ const List = () => {
   let table = null;
   if (state.isLoading) {
     table = <PlaceholderTable />;
-  } else if (state.data.list.length > 0) {
+  } else if (state.data.collection.length > 0) {
     table = (
       <TemplateTable
         isLoading={state.isLoading}
-        list={state.data.list}
+        list={state.data.collection}
         setShowDelete={setShowDelete}
       />
     );
@@ -202,15 +202,13 @@ const List = () => {
         <Box animation="fadeIn">
           {table}
 
-          {!state.isLoading && state.data.list.length === 0 ? (
+          {!state.isLoading && state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
-              <Heading level="3">
-                Currently you have no templates. Please create one.
-              </Heading>
+              <Heading level="3">Create your first template.</Heading>
             </Box>
           ) : null}
         </Box>
-        {!state.isLoading && state.data.list.length > 0 ? (
+        {!state.isLoading && state.data.collection.length > 0 ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
               <StyledButton

@@ -10,8 +10,8 @@ type Template struct {
 }
 
 type TemplateCollection struct {
-	NextToken string         `json:"next_token"`
-	List      []TemplateMeta `json:"list"`
+	NextToken  string         `json:"next_token"`
+	Collection []TemplateMeta `json:"collection"`
 }
 
 type TemplateMeta struct {

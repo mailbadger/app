@@ -9,10 +9,7 @@ const StyledTable = styled(Table)`
   box-shadow: 0 7px 14px 0 rgba(60, 66, 87, 0.1),
     0 3px 6px 0 rgba(0, 0, 0, 0.07);
 
-  ${this} tr:hover, focus {
-    background: #fafafa;
-  }
-  ${this} tr:focus {
+  ${this} tbody tr:hover, focus {
     background: #fafafa;
   }
 
@@ -30,10 +27,6 @@ const StyledTable = styled(Table)`
 
   ${this} tbody {
     color: #4f566b;
-  }
-
-  ${this} tr:hover {
-    background: #fafafa;
   }
 `;
 

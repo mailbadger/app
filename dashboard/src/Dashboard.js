@@ -6,6 +6,7 @@ import { NotificationsProvider } from "./Notifications/context";
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
 import Templates from "./Templates";
+import Segments from "./Segments";
 import Settings from "./Settings";
 
 const Routes = React.memo(() => (
@@ -14,10 +15,7 @@ const Routes = React.memo(() => (
       path="/dashboard/subscribers"
       component={() => <div>subs</div>}
     />
-    <ProtectedRoute
-      path="/dashboard/lists"
-      component={() => <div>lists</div>}
-    />
+    <ProtectedRoute path="/dashboard/segments" component={Segments} />
     <ProtectedRoute path="/dashboard/templates" component={Templates} />
     <ProtectedRoute
       path="/dashboard/campaigns"

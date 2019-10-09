@@ -45,7 +45,7 @@ const NavLinks = () => (
         }}
       >
         <List size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <StyledNavLink to="/dashboard/lists">Lists</StyledNavLink>
+        <StyledNavLink to="/dashboard/segments">Segments</StyledNavLink>
       </Box>
       <Box
         pad="xsmall"
