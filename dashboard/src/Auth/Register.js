@@ -133,7 +133,7 @@ const Form = ({
           disabled={isSubmitting}
           type="submit"
           primary
-          label="Sign UP with email"
+          label="Sign Up"
         />
         {socialAuthEnabled() && (
           <Fragment>

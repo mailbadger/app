@@ -1,13 +1,11 @@
-import React, { Fragment } from "react";
-import { Button } from "grommet";
+import React from "react";
+import { Button, Box } from "grommet";
 import { Facebook, Google, Github } from "grommet-icons";
 
 const SocialButtons = () => (
-  <Fragment>
+  <Box direction="column">
     <Button
       style={{
-        marginTop: "4px",
-        marginBottom: "4px",
         background: "#4267B2"
       }}
       type="button"
@@ -16,11 +14,9 @@ const SocialButtons = () => (
       primary
       label=" Continue with facebook"
     />
-    <br />
     <Button
+      margin={{ top: "small" }}
       style={{
-        marginTop: "4px",
-        marginBottom: "4px",
         background: "#4285F4"
       }}
       type="button"
@@ -29,11 +25,9 @@ const SocialButtons = () => (
       primary
       label=" Continue with google"
     />
-    <br />
     <Button
+      margin={{ top: "small" }}
       style={{
-        marginTop: "4px",
-        marginBottom: "4px",
         background: "#333333"
       }}
       type="button"
@@ -42,7 +36,7 @@ const SocialButtons = () => (
       primary
       label=" Continue with github"
     />
-  </Fragment>
+  </Box>
 );
 
 export default SocialButtons;
