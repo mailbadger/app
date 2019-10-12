@@ -1,35 +1,46 @@
 import React from "react";
+import styled from "styled-components";
 import { Button, Box } from "grommet";
 import { Facebook, Google, Github } from "grommet-icons";
 
+const SocialButton = styled(Button)`
+  border: 1px solid ${props => props.color};
+  background: ${props => props.color};
+  :hover {
+    box-shadow: ${props => props.color};
+  }
+  :focus {
+    box-shadow: ${props => props.color};
+  }
+  color: white;
+  ${this} svg {
+    fill: white;
+    stroke: white;
+  }
+`;
+
 const SocialButtons = () => (
   <Box direction="column">
-    <Button
-      style={{
-        background: "#4267B2"
-      }}
+    <SocialButton
+      color="#4267B2"
       type="button"
       href="/api/auth/facebook"
       icon={<Facebook />}
       primary
       label=" Continue with facebook"
     />
-    <Button
+    <SocialButton
       margin={{ top: "small" }}
-      style={{
-        background: "#4285F4"
-      }}
+      color="#4285F4"
       type="button"
       href="/api/auth/google"
       icon={<Google />}
       primary
       label=" Continue with google"
     />
-    <Button
+    <SocialButton
       margin={{ top: "small" }}
-      style={{
-        background: "#333333"
-      }}
+      color="#333333"
       type="button"
       href="/api/auth/github"
       icon={<Github />}
