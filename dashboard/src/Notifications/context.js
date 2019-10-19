@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 
 const defaultValue = {
   isOpen: false,
@@ -9,13 +10,12 @@ const defaultValue = {
 export const NotificationsContext = React.createContext(defaultValue);
 
 class NotificationsProvider extends Component {
-  state = defaultValue;
-
   constructor(props) {
     super(props);
 
     this.createNotification = this.createNotification.bind(this);
     this.close = this.close.bind(this);
+    this.state = defaultValue;
   }
 
   createNotification(message, status = "status-ok") {
@@ -41,6 +41,9 @@ class NotificationsProvider extends Component {
   }
 }
 
+NotificationsProvider.propTypes = {
+  children: PropTypes.element.isRequired
+};
 const NotificationConsumer = NotificationsContext.Consumer;
 
 export { NotificationsProvider, NotificationConsumer };

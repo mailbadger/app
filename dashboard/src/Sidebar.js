@@ -1,4 +1,5 @@
 import React, { Fragment } from "react";
+import PropTypes from "prop-types";
 import {
   FormClose,
   Logout,
@@ -24,6 +25,10 @@ const StyledNavLink = props => (
     {props.children}
   </NavLink>
 );
+
+StyledNavLink.propTypes = {
+  children: PropTypes.element.isRequired
+};
 
 const NavLinks = () => (
   <Fragment>
@@ -152,6 +157,12 @@ const Sidebar = props => {
       )}
     </Fragment>
   );
+};
+
+Sidebar.propTypes = {
+  showSidebar: PropTypes.bool,
+  size: PropTypes.string,
+  closeSidebar: PropTypes.func
 };
 
 export default Sidebar;

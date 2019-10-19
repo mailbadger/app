@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import PropTypes from "prop-types";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import { FormField, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
@@ -10,6 +11,7 @@ import StyledTextInput from "../ui/StyledTextInput";
 import history from "../history";
 import useApi from "../hooks/useApi";
 import { NotificationsContext } from "../Notifications/context";
+import { FormPropTypes } from "../PropTypes";
 
 const templateValidation = object().shape({
   subject: string().required("Please enter a subject for the email."),
@@ -71,6 +73,8 @@ const Form = ({
     </Box>
   );
 };
+
+Form.propTypes = FormPropTypes;
 
 const EditTemplateForm = ({ match }) => {
   const [html, setHtml] = useState();
@@ -151,6 +155,14 @@ const EditTemplateForm = ({ match }) => {
       </Box>
     </Box>
   );
+};
+
+EditTemplateForm.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      id: PropTypes.number
+    })
+  })
 };
 
 export default EditTemplateForm;

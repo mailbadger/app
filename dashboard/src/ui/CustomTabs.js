@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Tab, Box, Tabs } from "grommet";
 
 const CustomTabs = props => {
@@ -11,6 +12,15 @@ const CustomTabs = props => {
       ))}
     </Tabs>
   );
+};
+
+CustomTabs.propTypes = {
+  tabs: PropTypes.arrayOf(
+    PropTypes.shape({
+      title: PropTypes.string,
+      children: PropTypes.element.isRequired
+    })
+  )
 };
 
 export default CustomTabs;

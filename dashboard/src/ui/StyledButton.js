@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import PropTypes from "prop-types";
 import { Button } from "grommet";
 
 const StyledButton = styled(Button)`
@@ -13,5 +14,9 @@ const StyledButton = styled(Button)`
     box-shadow: 0 0 0 2px ${props => props.color || "#6FFFB0"};
   }
 `;
+
+StyledButton.propTypes = {
+  color: PropTypes.string
+};
 
 export default StyledButton;

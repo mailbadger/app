@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 
 const defaultState = {
@@ -11,14 +12,13 @@ const defaultState = {
 export const AuthContext = React.createContext(defaultState);
 
 class AuthProvider extends Component {
-  state = defaultState;
-
   constructor(props) {
     super(props);
 
     this.fetchUser = this.fetchUser.bind(this);
     this.setUser = this.setUser.bind(this);
     this.logout = this.logout.bind(this);
+    this.state = defaultState;
   }
 
   componentDidMount() {
@@ -90,6 +90,10 @@ class AuthProvider extends Component {
     );
   }
 }
+
+AuthProvider.propTypes = {
+  children: PropTypes.element.isRequired
+};
 
 const AuthConsumer = AuthContext.Consumer;
 

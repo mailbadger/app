@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import PropTypes from "prop-types";
 import {
   Layer,
   Box,
@@ -18,6 +19,7 @@ import { NotificationsContext } from "../Notifications/context";
 import regions from "../regions/regions.json";
 import useApi from "../hooks/useApi";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { FormPropTypes } from "../PropTypes";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
@@ -68,6 +70,8 @@ const Form = ({
   </Box>
 );
 
+Form.propTypes = FormPropTypes;
+
 const SesKey = ({ sesKey, setShowDelete }) => (
   <Box direction="column" margin={{ top: "small" }}>
     <Box direction="row">
@@ -87,6 +91,14 @@ const SesKey = ({ sesKey, setShowDelete }) => (
     </Box>
   </Box>
 );
+
+SesKey.propTypes = {
+  setShowDelete: PropTypes.func,
+  sesKey: PropTypes.shape({
+    region: PropTypes.string,
+    access_key: PropTypes.string
+  })
+};
 
 const deleteKeys = async () => {
   await axios.delete(`/api/ses-keys`);
@@ -123,6 +135,11 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
       </Box>
     </Layer>
   );
+};
+
+DeleteLayer.propTypes = {
+  setShowDelete: PropTypes.func,
+  callApi: PropTypes.func
 };
 
 const AddSesKeysForm = () => {

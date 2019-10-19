@@ -1,4 +1,5 @@
 import React, { Fragment } from "react";
+import PropTypes from "prop-types";
 import { Paragraph, FormField, Anchor, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { Link } from "react-router-dom";
@@ -7,11 +8,13 @@ import { Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
+
 import equalTo from "../utils/equalTo";
 import { socialAuthEnabled } from "../Auth";
 import SocialButtons from "./SocialButtons";
 import StyledTextInput from "../ui/StyledTextInput";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -35,12 +38,11 @@ const Form = ({
   <Fragment>
     <Box
       direction="row"
-      flex="grow"
       alignSelf="center"
       background="#ffffff"
       border={{ color: "#CFCFCF" }}
       animation="fadeIn"
-      margin={{ top: "40px", bottom: "10px" }}
+      margin={{ top: "40px" }}
       elevation="medium"
       width="medium"
       gap="small"
@@ -121,20 +123,19 @@ const Form = ({
           alignSelf="center"
           alignContent="center"
         >
-          By clicking any of the Sign Up buttons, I agree to the{" "}
-          <Anchor href="">terms of service</Anchor>
+          By clicking any of the Sign Up buttons, I agree to the
+          <Anchor href=""> terms of service</Anchor>
         </Paragraph>
-        <ButtonWithLoader
-          style={{
-            width: "100%",
-            marginBottom: "4px"
-          }}
-          icon={<Mail />}
-          disabled={isSubmitting}
-          type="submit"
-          primary
-          label="Sign Up"
-        />
+        <Box>
+          <ButtonWithLoader
+            margin={{ bottom: "small" }}
+            icon={<Mail />}
+            disabled={isSubmitting}
+            type="submit"
+            primary
+            label="Sign Up"
+          />
+        </Box>
         {socialAuthEnabled() && (
           <Fragment>
             <Paragraph
@@ -161,6 +162,8 @@ const Form = ({
     </Paragraph>
   </Fragment>
 );
+
+Form.propTypes = FormPropTypes;
 
 const RegisterForm = props => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -191,6 +194,10 @@ const RegisterForm = props => {
 
     //done submitting, set submitting to false
     setSubmitting(false);
+  };
+
+  RegisterForm.propTypes = {
+    setUser: PropTypes.func.isRequired
   };
 
   return (
