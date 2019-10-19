@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import ContentLoader from "react-content-loader";
 import { TableCell, TableRow } from "grommet";
 
@@ -24,6 +25,10 @@ const PlaceholderRow = ({ columns }) => {
   }
 
   return <TableRow>{cols}</TableRow>;
+};
+
+PlaceholderRow.propTypes = {
+  columns: PropTypes.number
 };
 
 export default PlaceholderRow;

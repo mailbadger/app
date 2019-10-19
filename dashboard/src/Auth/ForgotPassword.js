@@ -4,7 +4,9 @@ import { Formik, ErrorMessage } from "formik";
 import { string, object, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
+
 import equalTo from "../utils/equalTo";
+import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -66,6 +68,8 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
     </Box>
   </Fragment>
 );
+
+Form.propTypes = FormPropTypes;
 
 const ForgotPasswordForm = () => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {

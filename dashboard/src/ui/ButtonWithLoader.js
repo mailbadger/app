@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import StyledButton from "./StyledButton";
 import StyledSpinner from "./StyledSpinner";
 
@@ -11,6 +12,12 @@ const ButtonWithLoader = ({ disabled, icon, label, ...rest }) => {
       {...rest}
     />
   );
+};
+
+ButtonWithLoader.propTypes = {
+  disabled: PropTypes.bool,
+  icon: PropTypes.element,
+  label: PropTypes.node
 };
 
 export default ButtonWithLoader;

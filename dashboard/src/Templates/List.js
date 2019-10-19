@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { parseISO } from "date-fns";
 import { More, Add } from "grommet-icons";
 import axios from "axios";
@@ -61,6 +62,14 @@ const Row = ({ template, setShowDelete }) => {
   );
 };
 
+Row.propTypes = {
+  setShowDelete: PropTypes.func,
+  template: PropTypes.shape({
+    name: PropTypes.string,
+    timestamp: PropTypes.string
+  })
+};
+
 const Header = () => (
   <TableHeader>
     <TableRow>
@@ -104,6 +113,12 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
   </StyledTable>
 ));
 
+TemplateTable.displayName = "TemplateTable";
+TemplateTable.propTypes = {
+  list: PropTypes.array,
+  setShowDelete: PropTypes.func
+};
+
 const DeleteLayer = ({ setShowDelete, name, callApi }) => {
   const hideModal = () => setShowDelete({ show: false, name: "" });
   const [isSubmitting, setSubmitting] = useState(false);
@@ -135,6 +150,12 @@ const DeleteLayer = ({ setShowDelete, name, callApi }) => {
       </Box>
     </Layer>
   );
+};
+
+DeleteLayer.propTypes = {
+  setShowDelete: PropTypes.func,
+  name: PropTypes.string,
+  callApi: PropTypes.func
 };
 
 const List = () => {

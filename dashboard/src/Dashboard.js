@@ -25,6 +25,8 @@ const Routes = React.memo(() => (
   </Box>
 ));
 
+Routes.displayName = "Routes";
+
 const Dashboard = () => {
   const [showSidebar, setSidebar] = useState(true);
 

@@ -8,6 +8,7 @@ import qs from "qs";
 import { NotificationsContext } from "../Notifications/context";
 import equalTo from "../utils/equalTo";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -21,7 +22,7 @@ const changePassValidation = object().shape({
     .required("Confirm Password is required")
 });
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
+const Form = ({ handleSubmit, handleChange, isSubmitting }) => (
   <Box
     pad="large"
     alignSelf="start"
@@ -66,6 +67,8 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
     </Box>
   </Box>
 );
+
+Form.propTypes = FormPropTypes;
 
 const ChangePasswordForm = () => {
   const { createNotification } = useContext(NotificationsContext);

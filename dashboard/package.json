@@ -7,9 +7,10 @@
     "codemirror": "^5.49.0",
     "date-fns": "^2.4.1",
     "formik": "^1.5.8",
-    "grommet-icons": "^4.3.0",
     "grommet": "^2.7.9",
+    "grommet-icons": "^4.3.0",
     "history": "^4.10.1",
+    "prop-types": "^15.7.2",
     "qs": "^6.9.0",
     "query-string": "^6.8.3",
     "react": "^16.10.2",
@@ -51,6 +52,8 @@
   },
   "proxy": "http://localhost:8080",
   "devDependencies": {
+    "eslint": "^6.5.1",
+    "eslint-plugin-react": "^7.16.0",
     "husky": "^3.0.8",
     "lint-staged": "^9.4.2",
     "prettier": "1.18.2"

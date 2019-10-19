@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from "react";
+import PropTypes from "prop-types";
 import { Box } from "grommet";
 import { Redirect } from "react-router-dom";
 
@@ -7,11 +8,12 @@ import Auth from "./Auth";
 import LoadingOverlay from "./ui/LoadingOverlay";
 
 class Landing extends Component {
-  state = {
-    redirectToReferrer: false
-  };
-
-  static contextType = AuthContext;
+  constructor(props) {
+    super(props);
+    this.state = {
+      redirectToReferrer: false
+    };
+  }
 
   render() {
     const { from } = this.props.location.state || {
@@ -36,5 +38,17 @@ class Landing extends Component {
     );
   }
 }
+
+Landing.propTypes = {
+  location: PropTypes.shape({
+    state: PropTypes.shape({
+      from: PropTypes.shape({
+        pathname: PropTypes.string
+      })
+    })
+  })
+};
+
+Landing.contextType = AuthContext;
 
 export default Landing;

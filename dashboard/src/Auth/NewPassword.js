@@ -1,11 +1,14 @@
 import React, { Fragment } from "react";
+import PropTypes from "prop-types";
 import { FormField, Button, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import axios from "axios";
 import qs from "qs";
+
 import equalTo from "../utils/equalTo";
 import history from "../history";
+import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -66,6 +69,8 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
   </Fragment>
 );
 
+Form.propTypes = FormPropTypes;
+
 const NewPasswordForm = props => {
   const {
     match: { params }
@@ -100,6 +105,14 @@ const NewPasswordForm = props => {
       render={props => <Form {...props} />}
     />
   );
+};
+
+NewPasswordForm.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      token: PropTypes.string
+    })
+  })
 };
 
 export default NewPasswordForm;

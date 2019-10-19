@@ -1,4 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 import { Paragraph } from "grommet";
 import axios from "axios";
@@ -29,9 +30,17 @@ const VerifyEmail = props => {
   return (
     <Fragment>
       <Paragraph>{data.message}</Paragraph>
-      <NavLink to="/dashboard">Go to app ></NavLink>
+      <NavLink to="/dashboard">Go to app &gt;</NavLink>
     </Fragment>
   );
+};
+
+VerifyEmail.propTypes = {
+  match: PropTypes.shape({
+    params: PropTypes.shape({
+      token: PropTypes.string
+    })
+  })
 };
 
 export default VerifyEmail;
