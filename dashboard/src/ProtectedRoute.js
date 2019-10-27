@@ -36,7 +36,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => (
 );
 
 ProtectedRoute.propTypes = {
-  component: PropTypes.elementType
+  component: PropTypes.any
 };
 
 export default ProtectedRoute;

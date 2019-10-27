@@ -16,7 +16,6 @@
     "react": "^16.10.2",
     "react-codemirror2": "^6.0.0",
     "react-content-loader": "^4.3.1",
-    "react-css-loaders": "^0.0.5",
     "react-dom": "^16.10.2",
     "react-google-recaptcha": "^2.0.1",
     "react-router-dom": "^5.1.2",

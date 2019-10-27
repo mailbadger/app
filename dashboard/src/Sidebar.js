@@ -27,7 +27,7 @@ const StyledNavLink = props => (
 );
 
 StyledNavLink.propTypes = {
-  children: PropTypes.element.isRequired
+  children: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
 };
 
 const NavLinks = () => (

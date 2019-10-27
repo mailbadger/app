@@ -42,7 +42,7 @@ class NotificationsProvider extends Component {
 }
 
 NotificationsProvider.propTypes = {
-  children: PropTypes.element.isRequired
+  children: PropTypes.arrayOf(PropTypes.element)
 };
 const NotificationConsumer = NotificationsContext.Consumer;
 
