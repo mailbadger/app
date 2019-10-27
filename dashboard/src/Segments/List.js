@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import { parseISO } from "date-fns";
 import { More, Add } from "grommet-icons";
 import axios from "axios";
+import { Formik, ErrorMessage } from "formik";
+import { string, object } from "yup";
+import qs from "qs";
+
 import useApi from "../hooks/useApi";
 import {
   Grid,
@@ -14,17 +18,16 @@ import {
   Button,
   Layer,
   Heading,
-  Select
+  Select,
+  FormField,
+  TextInput
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
 import StyledButton from "../ui/StyledButton";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import PlaceholderRow from "../ui/PlaceholderRow";
-
-const deleteSegment = async id => {
-  await axios.delete(`/api/segments/${id}`);
-};
+import { NotificationsContext } from "../Notifications/context";
 
 const Row = ({ segment, setShowDelete }) => {
   const res = parseISO(segment.created_at);
@@ -107,7 +110,7 @@ const PlaceholderTable = () => (
   </StyledTable>
 );
 
-const TemplateTable = React.memo(({ list, setShowDelete }) => (
+const SegmentTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable caption="Segments">
     <Header />
     <TableBody>
@@ -118,54 +121,177 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
   </StyledTable>
 ));
 
-TemplateTable.displayName = "TemplateTable";
-TemplateTable.propTypes = {
+SegmentTable.displayName = "SegmentTable";
+SegmentTable.propTypes = {
   list: PropTypes.array,
   setShowDelete: PropTypes.func
 };
 
-const DeleteLayer = ({ setShowDelete, name, id, callApi }) => {
-  const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
-  const [isSubmitting, setSubmitting] = useState(false);
+const segmentValidation = object().shape({
+  name: string().required("Please enter a segment name.")
+});
+
+const CreateForm = ({
+  handleSubmit,
+  handleChange,
+  isSubmitting,
+  hideModal
+}) => (
+  <Box
+    direction="column"
+    fill
+    margin={{ left: "medium", right: "medium", bottom: "medium" }}
+  >
+    <form onSubmit={handleSubmit}>
+      <Box>
+        <FormField htmlFor="name" label="Segment Name">
+          <TextInput
+            name="name"
+            onChange={handleChange}
+            placeholder="My segment"
+          />
+          <ErrorMessage name="name" />
+        </FormField>
+        <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
+          <Box margin={{ right: "small" }}>
+            <Button label="Cancel" onClick={() => hideModal()} />
+          </Box>
+          <Box>
+            <ButtonWithLoader
+              type="submit"
+              primary
+              disabled={isSubmitting}
+              label="Save Segment"
+            />
+          </Box>
+        </Box>
+      </Box>
+    </form>
+  </Box>
+);
+
+CreateForm.propTypes = {
+  hideModal: PropTypes.func,
+  handleSubmit: PropTypes.func,
+  handleChange: PropTypes.func,
+  isSubmitting: PropTypes.bool
+};
+
+const CreateSegment = ({ callApi, hideModal }) => {
+  const { createNotification } = useContext(NotificationsContext);
+
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    const postForm = async () => {
+      try {
+        await axios.post(
+          "/api/segments",
+          qs.stringify({
+            name: values.name
+          })
+        );
+        createNotification("Segment has been created successfully.");
+
+        await callApi({ url: "/api/segments" });
+
+        hideModal();
+      } catch (error) {
+        if (error.response) {
+          const { message, errors } = error.response.data;
+
+          setErrors(errors);
+
+          const msg = message
+            ? message
+            : "Unable to create segment. Please try again.";
+
+          createNotification(msg, "status-error");
+        }
+      }
+    };
+
+    await postForm();
+
+    //done submitting, set submitting to false
+    setSubmitting(false);
+
+    return;
+  };
 
   return (
+    <Box direction="row">
+      <Formik
+        onSubmit={handleSubmit}
+        validationSchema={segmentValidation}
+        render={props => <CreateForm {...props} hideModal={hideModal} />}
+      />
+    </Box>
+  );
+};
+
+CreateSegment.propTypes = {
+  callApi: PropTypes.func,
+  hideModal: PropTypes.func
+};
+
+const DeleteForm = ({ id, callApi, hideModal }) => {
+  const deleteSegment = async id => {
+    await axios.delete(`/api/segments/${id}`);
+  };
+
+  const [isSubmitting, setSubmitting] = useState(false);
+  return (
+    <Box direction="row" alignSelf="end" pad="small">
+      <Box margin={{ right: "small" }}>
+        <Button label="Cancel" onClick={() => hideModal()} />
+      </Box>
+      <Box>
+        <ButtonWithLoader
+          primary
+          label="Delete"
+          color="#FF4040"
+          disabled={isSubmitting}
+          onClick={async () => {
+            setSubmitting(true);
+            await deleteSegment(id);
+            await callApi({ url: "/api/segments" });
+            setSubmitting(false);
+            hideModal();
+          }}
+        />
+      </Box>
+    </Box>
+  );
+};
+
+DeleteForm.propTypes = {
+  id: PropTypes.string,
+  callApi: PropTypes.func,
+  hideModal: PropTypes.func
+};
+
+const Modal = ({ hideModal, title, form }) => {
+  return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
-      <Heading margin="small" level="4">
-        Delete segment {name} ?
-      </Heading>
-      <Box direction="row" alignSelf="end" pad="small">
-        <Box margin={{ right: "small" }}>
-          <Button label="Cancel" onClick={() => hideModal()} />
-        </Box>
-        <Box>
-          <ButtonWithLoader
-            primary
-            label="Delete"
-            color="#FF4040"
-            disabled={isSubmitting}
-            onClick={async () => {
-              setSubmitting(true);
-              await deleteSegment(id);
-              await callApi({ url: "/api/segments" });
-              setSubmitting(false);
-              hideModal();
-            }}
-          />
-        </Box>
+      <Box width="30em">
+        <Heading margin="small" level="3">
+          {title}
+        </Heading>
+        {form}
       </Box>
     </Layer>
   );
 };
 
-DeleteLayer.propTypes = {
-  setShowDelete: PropTypes.func,
-  name: PropTypes.string,
-  id: PropTypes.number,
-  callApi: PropTypes.func
+Modal.propTypes = {
+  hideModal: PropTypes.func,
+  title: PropTypes.string,
+  form: PropTypes.element.isRequired
 };
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
+  const [showCreate, openCreateModal] = useState(false);
+  const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
 
   const [state, callApi] = useApi(
     {
@@ -182,7 +308,7 @@ const List = () => {
     table = <PlaceholderTable />;
   } else if (state.data.collection.length > 0) {
     table = (
-      <TemplateTable
+      <SegmentTable
         isLoading={state.isLoading}
         list={state.data.collection}
         setShowDelete={setShowDelete}
@@ -202,10 +328,28 @@ const List = () => {
       ]}
     >
       {showDelete.show && (
-        <DeleteLayer
-          name={showDelete.name}
-          setShowDelete={setShowDelete}
-          callApi={callApi}
+        <Modal
+          title={`Delete segment ${showDelete.name} ?`}
+          hideModal={hideModal}
+          form={
+            <DeleteForm
+              id={showDelete.id}
+              callApi={callApi}
+              hideModal={hideModal}
+            />
+          }
+        />
+      )}
+      {showCreate && (
+        <Modal
+          title={`Create segment`}
+          hideModal={() => openCreateModal(false)}
+          form={
+            <CreateSegment
+              callApi={callApi}
+              hideModal={() => openCreateModal(false)}
+            />
+          }
         />
       )}
       <Box gridArea="nav" direction="row">
@@ -219,7 +363,7 @@ const List = () => {
             label="Create new"
             icon={<Add color="#ffffff" />}
             reverse
-            onClick={() => history.push("/dashboard/segments/new")}
+            onClick={() => openCreateModal(true)}
           />
         </Box>
       </Box>

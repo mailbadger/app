@@ -120,9 +120,9 @@ const CreateTemplateForm = () => {
         history.push(`/dashboard/templates`);
       } catch (error) {
         if (error.response) {
-          setErrors(error.response.data);
+          const { message, errors } = error.response.data;
 
-          const { message } = error.response.data;
+          setErrors(errors);
           const msg = message
             ? message
             : "Unable to create template. Please try again.";

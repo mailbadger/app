@@ -125,27 +125,29 @@ const DeleteLayer = ({ setShowDelete, name, callApi }) => {
 
   return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
-      <Heading margin="small" level="4">
-        Delete template {name} ?
-      </Heading>
-      <Box direction="row" alignSelf="end" pad="small">
-        <Box margin={{ right: "small" }}>
-          <Button label="Cancel" onClick={() => hideModal()} />
-        </Box>
-        <Box>
-          <ButtonWithLoader
-            primary
-            label="Delete"
-            color="#FF4040"
-            disabled={isSubmitting}
-            onClick={async () => {
-              setSubmitting(true);
-              await deleteTemplate(name);
-              await callApi({ url: "/api/templates" });
-              setSubmitting(false);
-              hideModal();
-            }}
-          />
+      <Box width="30em">
+        <Heading margin="small" level="3">
+          Delete template {name} ?
+        </Heading>
+        <Box direction="row" alignSelf="end" pad="small">
+          <Box margin={{ right: "small" }}>
+            <Button label="Cancel" onClick={() => hideModal()} />
+          </Box>
+          <Box>
+            <ButtonWithLoader
+              primary
+              label="Delete"
+              color="#FF4040"
+              disabled={isSubmitting}
+              onClick={async () => {
+                setSubmitting(true);
+                await deleteTemplate(name);
+                await callApi({ url: "/api/templates" });
+                setSubmitting(false);
+                hideModal();
+              }}
+            />
+          </Box>
         </Box>
       </Box>
     </Layer>
