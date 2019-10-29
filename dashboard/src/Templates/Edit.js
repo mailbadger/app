@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField, Box } from "grommet";
+import { FormField, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import axios from "axios";
 import qs from "qs";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import StyledTextInput from "../ui/StyledTextInput";
+import StyledSpinner from "../ui/StyledSpinner";
 import history from "../history";
 import useApi from "../hooks/useApi";
 import { NotificationsContext } from "../Notifications/context";
@@ -125,35 +126,47 @@ const EditTemplateForm = ({ match }) => {
   }, [state]);
 
   if (state.isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <Box margin="15%" alignSelf="center">
+        <StyledSpinner color="#2e2e2e" size={8} />
+      </Box>
+    );
   }
 
   if (state.isError) {
-    return <div>Template not found.</div>;
+    return (
+      <Box margin="15%" alignSelf="center">
+        <Heading>Template not found.</Heading>
+      </Box>
+    );
   }
 
   return (
     <Box
-      direction="row"
-      gap="medium"
+      direction="column"
       margin="medium"
       background="#ffffff"
       elevation="medium"
       animation="fadeIn"
     >
-      <Box pad="medium" fill>
-        {!state.isLoading && state.data && (
-          <Formik
-            onSubmit={handleSubmit(match.params.id)}
-            validationSchema={templateValidation}
-            initialValues={{
-              subject: state.data.subject_part
-            }}
-          >
-            {props => <Form setHtml={setHtml} html={html} {...props} />}
-          </Formik>
-        )}
-      </Box>
+      {!state.isLoading && state.data && (
+        <>
+          <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
+            <Heading size={3}>Edit Template</Heading>
+          </Box>
+          <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
+            <Formik
+              onSubmit={handleSubmit(match.params.id)}
+              validationSchema={templateValidation}
+              initialValues={{
+                subject: state.data.subject_part
+              }}
+            >
+              {props => <Form setHtml={setHtml} html={html} {...props} />}
+            </Formik>
+          </Box>
+        </>
+      )}
     </Box>
   );
 };

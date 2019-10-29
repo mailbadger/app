@@ -1,12 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import axios from "axios";
-import { Formik, ErrorMessage } from "formik";
-import { string, object } from "yup";
-import qs from "qs";
-
 import useApi from "../hooks/useApi";
 import {
   Grid,
@@ -17,30 +13,36 @@ import {
   Box,
   Button,
   Heading,
-  Select,
-  FormField,
-  TextInput
+  Select
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import PlaceholderTable from "../ui/PlaceholderTable";
 import Modal from "../ui/Modal";
-import { NotificationsContext } from "../Notifications/context";
+import Badge from "../ui/Badge";
 
-const Row = ({ segment, setShowDelete }) => {
-  const ca = parseISO(segment.created_at);
-  const ua = parseISO(segment.updated_at);
+const Row = ({ campaign, setShowDelete }) => {
+  const d = parseISO(campaign.created_at);
+  const statusColors = {
+    draft: "#CCCCCC",
+    sending: "#00739D",
+    sent: "#00C781",
+    scheduled: "#FFCA58"
+  };
   return (
     <TableRow>
-      <TableCell scope="row" size="xlarge">
-        <strong>{segment.name}</strong>
+      <TableCell scope="row" size="xxsmall">
+        <strong>{campaign.name}</strong>
       </TableCell>
-      <TableCell scope="row" size="medium">
-        {formatRelative(ca, new Date())}
+      <TableCell scope="row" size="xxsmall">
+        <Badge color={statusColors[campaign.status]}>{campaign.status}</Badge>
       </TableCell>
-      <TableCell scope="row" size="medium">
-        {formatRelative(ua, new Date())}
+      <TableCell scope="row" size="xxsmall">
+        {campaign.template_name}
+      </TableCell>
+      <TableCell scope="row" size="xxsmall">
+        {formatRelative(d, new Date())}
       </TableCell>
       <TableCell scope="row" size="xxsmall" align="end">
         <Select
@@ -52,13 +54,13 @@ const Row = ({ segment, setShowDelete }) => {
             (function() {
               switch (option) {
                 case "Edit":
-                  history.push(`/dashboard/segments/${segment.id}/edit`);
+                  history.push(`/dashboard/campaigns/${campaign.id}/edit`);
                   break;
                 case "Delete":
                   setShowDelete({
                     show: true,
-                    name: segment.name,
-                    id: segment.id
+                    name: campaign.name,
+                    id: campaign.id
                   });
                   break;
                 default:
@@ -73,11 +75,12 @@ const Row = ({ segment, setShowDelete }) => {
 };
 
 Row.propTypes = {
-  segment: PropTypes.shape({
+  campaign: PropTypes.shape({
     name: PropTypes.string,
     id: PropTypes.number,
-    created_at: PropTypes.string,
-    updated_at: PropTypes.string
+    status: PropTypes.string,
+    template_name: PropTypes.string,
+    created_at: PropTypes.string
   }),
   setShowDelete: PropTypes.func
 };
@@ -85,150 +88,51 @@ Row.propTypes = {
 const Header = () => (
   <TableHeader>
     <TableRow>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="xxsmall">
         <strong>Name</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="xxsmall">
+        <strong>Status</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="xxsmall">
+        <strong>Template</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="xxsmall">
         <strong>Created At</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
-        <strong>Updated At</strong>
-      </TableCell>
-      <TableCell align="end" scope="col" border="bottom" size="small">
+      <TableCell
+        style={{ textAlign: "right" }}
+        align="end"
+        scope="col"
+        border="bottom"
+        size="xxsmall"
+      >
         <strong>Action</strong>
       </TableCell>
     </TableRow>
   </TableHeader>
 );
 
-const SegmentTable = React.memo(({ list, setShowDelete }) => (
-  <StyledTable caption="Segments">
+const CampaignsTable = React.memo(({ list, setShowDelete }) => (
+  <StyledTable caption="Campaigns">
     <Header />
     <TableBody>
-      {list.map(s => (
-        <Row segment={s} key={s.id} setShowDelete={setShowDelete} />
+      {list.map(c => (
+        <Row campaign={c} key={c.id} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
   </StyledTable>
 ));
 
-SegmentTable.displayName = "SegmentTable";
-SegmentTable.propTypes = {
+CampaignsTable.displayName = "CampaignsTable";
+CampaignsTable.propTypes = {
   list: PropTypes.array,
   setShowDelete: PropTypes.func
 };
 
-const segmentValidation = object().shape({
-  name: string().required("Please enter a segment name.")
-});
-
-const CreateForm = ({
-  handleSubmit,
-  handleChange,
-  isSubmitting,
-  hideModal
-}) => (
-  <Box
-    direction="column"
-    fill
-    margin={{ left: "medium", right: "medium", bottom: "medium" }}
-  >
-    <form onSubmit={handleSubmit}>
-      <Box>
-        <FormField htmlFor="name" label="Segment Name">
-          <TextInput
-            name="name"
-            onChange={handleChange}
-            placeholder="My segment"
-          />
-          <ErrorMessage name="name" />
-        </FormField>
-        <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-          <Box margin={{ right: "small" }}>
-            <Button label="Cancel" onClick={() => hideModal()} />
-          </Box>
-          <Box>
-            <ButtonWithLoader
-              type="submit"
-              primary
-              disabled={isSubmitting}
-              label="Save Segment"
-            />
-          </Box>
-        </Box>
-      </Box>
-    </form>
-  </Box>
-);
-
-CreateForm.propTypes = {
-  hideModal: PropTypes.func,
-  handleSubmit: PropTypes.func,
-  handleChange: PropTypes.func,
-  isSubmitting: PropTypes.bool
-};
-
-const CreateSegment = ({ callApi, hideModal }) => {
-  const { createNotification } = useContext(NotificationsContext);
-
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    const postForm = async () => {
-      try {
-        await axios.post(
-          "/api/segments",
-          qs.stringify({
-            name: values.name
-          })
-        );
-        createNotification("Segment has been created successfully.");
-
-        await callApi({ url: "/api/segments" });
-
-        hideModal();
-      } catch (error) {
-        if (error.response) {
-          const { message, errors } = error.response.data;
-
-          setErrors(errors);
-
-          const msg = message
-            ? message
-            : "Unable to create segment. Please try again.";
-
-          createNotification(msg, "status-error");
-        }
-      }
-    };
-
-    await postForm();
-
-    //done submitting, set submitting to false
-    setSubmitting(false);
-
-    return;
-  };
-
-  return (
-    <Box direction="row">
-      <Formik
-        initialValues={{ name: "" }}
-        onSubmit={handleSubmit}
-        validationSchema={segmentValidation}
-      >
-        {props => <CreateForm {...props} hideModal={hideModal} />}
-      </Formik>
-    </Box>
-  );
-};
-
-CreateSegment.propTypes = {
-  callApi: PropTypes.func,
-  hideModal: PropTypes.func
-};
-
 const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteSegment = async id => {
-    await axios.delete(`/api/segments/${id}`);
+  const deleteCampaign = async id => {
+    await axios.delete(`/api/campaigns/${id}`);
   };
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -245,8 +149,8 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
           disabled={isSubmitting}
           onClick={async () => {
             setSubmitting(true);
-            await deleteSegment(id);
-            await callApi({ url: "/api/segments" });
+            await deleteCampaign(id);
+            await callApi({ url: "/api/campaigns" });
             setSubmitting(false);
             hideModal();
           }}
@@ -264,12 +168,11 @@ DeleteForm.propTypes = {
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
-  const [showCreate, openCreateModal] = useState(false);
   const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
 
   const [state, callApi] = useApi(
     {
-      url: "/api/segments"
+      url: "/api/campaigns"
     },
     {
       collection: [],
@@ -284,12 +187,12 @@ const List = () => {
         header={Header}
         numCols={3}
         numRows={3}
-        caption="SegmentsPlaceholder"
+        caption="CampaignsPlaceholder"
       />
     );
   } else if (state.data.collection.length > 0) {
     table = (
-      <SegmentTable
+      <CampaignsTable
         isLoading={state.isLoading}
         list={state.data.collection}
         setShowDelete={setShowDelete}
@@ -310,7 +213,7 @@ const List = () => {
     >
       {showDelete.show && (
         <Modal
-          title={`Delete segment ${showDelete.name} ?`}
+          title={`Delete campaign ${showDelete.name} ?`}
           hideModal={hideModal}
           form={
             <DeleteForm
@@ -321,22 +224,10 @@ const List = () => {
           }
         />
       )}
-      {showCreate && (
-        <Modal
-          title={`Create segment`}
-          hideModal={() => openCreateModal(false)}
-          form={
-            <CreateSegment
-              callApi={callApi}
-              hideModal={() => openCreateModal(false)}
-            />
-          }
-        />
-      )}
       <Box gridArea="nav" direction="row">
         <Box>
           <Heading level="2" margin={{ bottom: "xsmall" }}>
-            Segments
+            Campaigns
           </Heading>
         </Box>
         <Box margin={{ left: "medium", top: "medium" }}>
@@ -346,7 +237,7 @@ const List = () => {
             label="Create new"
             icon={<Add />}
             reverse
-            onClick={() => openCreateModal(true)}
+            onClick={() => console.log("new campaign!")}
           />
         </Box>
       </Box>
@@ -356,7 +247,7 @@ const List = () => {
 
           {!state.isLoading && state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
-              <Heading level="2">Create your first segment.</Heading>
+              <Heading level="2">Create your first campaign.</Heading>
             </Box>
           ) : null}
         </Box>

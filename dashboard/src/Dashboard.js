@@ -7,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
 import Templates from "./Templates";
 import Segments from "./Segments";
+import Campaigns from "./Campaigns";
 import Settings from "./Settings";
 
 const Routes = React.memo(() => (
@@ -17,10 +18,7 @@ const Routes = React.memo(() => (
     />
     <ProtectedRoute path="/dashboard/segments" component={Segments} />
     <ProtectedRoute path="/dashboard/templates" component={Templates} />
-    <ProtectedRoute
-      path="/dashboard/campaigns"
-      component={() => <div>campaigns</div>}
-    />
+    <ProtectedRoute path="/dashboard/campaigns" component={Campaigns} />
     <ProtectedRoute path="/dashboard/settings" component={Settings} />
   </Box>
 ));

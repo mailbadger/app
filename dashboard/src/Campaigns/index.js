@@ -6,7 +6,7 @@ import List from "./List";
 
 const Segments = () => (
   <Switch>
-    <ProtectedRoute exact path="/dashboard/segments" component={List} />
+    <ProtectedRoute exact path="/dashboard/campaigns" component={List} />
   </Switch>
 );
 

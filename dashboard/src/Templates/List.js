@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { parseISO } from "date-fns";
+import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import axios from "axios";
 import useApi from "../hooks/useApi";
@@ -12,28 +12,24 @@ import {
   TableCell,
   Box,
   Button,
-  Layer,
   Heading,
   Select
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
-import PlaceholderRow from "../ui/PlaceholderRow";
-
-const deleteTemplate = async name => {
-  await axios.delete(`/api/templates/${name}`);
-};
+import PlaceholderTable from "../ui/PlaceholderTable";
+import Modal from "../ui/Modal";
 
 const Row = ({ template, setShowDelete }) => {
-  const res = parseISO(template.timestamp);
+  const d = parseISO(template.timestamp);
   return (
     <TableRow>
       <TableCell scope="row" size="xlarge">
-        {template.name}
+        <strong>{template.name}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
-        {res.toUTCString()}
+        {formatRelative(d, new Date())}
       </TableCell>
       <TableCell scope="row" size="xsmall">
         <Select
@@ -76,29 +72,13 @@ const Header = () => (
         <strong>Name</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="medium">
-        <strong>Date</strong>
+        <strong>Created At</strong>
       </TableCell>
-      <TableCell
-        style={{ textAlign: "right" }}
-        align="end"
-        scope="col"
-        border="bottom"
-        size="small"
-      />
+      <TableCell align="end" scope="col" border="bottom" size="small">
+        <strong>Action</strong>
+      </TableCell>
     </TableRow>
   </TableHeader>
-);
-const PlaceholderTable = () => (
-  <StyledTable caption="Templates">
-    <Header />
-    <TableBody>
-      <PlaceholderRow columns={3} />
-      <PlaceholderRow columns={3} />
-      <PlaceholderRow columns={3} />
-      <PlaceholderRow columns={3} />
-      <PlaceholderRow columns={3} />
-    </TableBody>
-  </StyledTable>
 );
 
 const TemplateTable = React.memo(({ list, setShowDelete }) => (
@@ -118,50 +98,46 @@ TemplateTable.propTypes = {
   setShowDelete: PropTypes.func
 };
 
-const DeleteLayer = ({ setShowDelete, name, callApi }) => {
-  const hideModal = () => setShowDelete({ show: false, name: "" });
-  const [isSubmitting, setSubmitting] = useState(false);
+const DeleteForm = ({ name, callApi, hideModal }) => {
+  const deleteTemplate = async name => {
+    await axios.delete(`/api/templates/${name}`);
+  };
 
+  const [isSubmitting, setSubmitting] = useState(false);
   return (
-    <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
-      <Box width="30em">
-        <Heading margin="small" level="3">
-          Delete template {name} ?
-        </Heading>
-        <Box direction="row" alignSelf="end" pad="small">
-          <Box margin={{ right: "small" }}>
-            <Button label="Cancel" onClick={() => hideModal()} />
-          </Box>
-          <Box>
-            <ButtonWithLoader
-              primary
-              label="Delete"
-              color="#FF4040"
-              disabled={isSubmitting}
-              onClick={async () => {
-                setSubmitting(true);
-                await deleteTemplate(name);
-                await callApi({ url: "/api/templates" });
-                setSubmitting(false);
-                hideModal();
-              }}
-            />
-          </Box>
-        </Box>
+    <Box direction="row" alignSelf="end" pad="small">
+      <Box margin={{ right: "small" }}>
+        <Button label="Cancel" onClick={() => hideModal()} />
       </Box>
-    </Layer>
+      <Box>
+        <ButtonWithLoader
+          primary
+          label="Delete"
+          color="#FF4040"
+          disabled={isSubmitting}
+          onClick={async () => {
+            setSubmitting(true);
+            await deleteTemplate(name);
+            await callApi({ url: "/api/templates" });
+            setSubmitting(false);
+            hideModal();
+          }}
+        />
+      </Box>
+    </Box>
   );
 };
 
-DeleteLayer.propTypes = {
-  setShowDelete: PropTypes.func,
+DeleteForm.propTypes = {
   name: PropTypes.string,
-  callApi: PropTypes.func
+  callApi: PropTypes.func,
+  hideModal: PropTypes.func
 };
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
   const [currentPage, setPage] = useState({ current: -1, tokens: [""] });
+  const hideModal = () => setShowDelete({ show: false, name: "" });
 
   const [state, callApi] = useApi(
     {
@@ -176,7 +152,14 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = <PlaceholderTable />;
+    table = (
+      <PlaceholderTable
+        header={Header}
+        numCols={3}
+        numRows={5}
+        caption="TemplatesPlaceholder"
+      />
+    );
   } else if (state.data.collection.length > 0) {
     table = (
       <TemplateTable
@@ -199,10 +182,16 @@ const List = () => {
       ]}
     >
       {showDelete.show && (
-        <DeleteLayer
-          name={showDelete.name}
-          setShowDelete={setShowDelete}
-          callApi={callApi}
+        <Modal
+          title={`Delete template ${showDelete.name} ?`}
+          hideModal={hideModal}
+          form={
+            <DeleteForm
+              id={showDelete.name}
+              callApi={callApi}
+              hideModal={hideModal}
+            />
+          }
         />
       )}
       <Box gridArea="nav" direction="row">

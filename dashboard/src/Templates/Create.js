@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField, Box, TextInput } from "grommet";
+import { FormField, Box, TextInput, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import axios from "axios";
@@ -142,14 +142,16 @@ const CreateTemplateForm = () => {
 
   return (
     <Box
-      direction="row"
-      gap="medium"
+      direction="column"
       margin="medium"
       background="#ffffff"
       elevation="medium"
       animation="fadeIn"
     >
-      <Box pad="medium" fill>
+      <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
+        <Heading size={3}>Create Template</Heading>
+      </Box>
+      <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
         <Formik
           onSubmit={handleSubmit}
           validationSchema={templateValidation}

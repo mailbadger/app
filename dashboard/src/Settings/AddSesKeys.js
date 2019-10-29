@@ -111,27 +111,29 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
 
   return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
-      <Heading margin="small" level="4">
-        Delete key ?
-      </Heading>
-      <Box direction="row" alignSelf="end" pad="small">
-        <Box margin={{ right: "small" }}>
-          <Button label="Cancel" onClick={() => hideModal()} />
-        </Box>
-        <Box>
-          <ButtonWithLoader
-            primary
-            label="Delete"
-            color="#FF4040"
-            disabled={isSubmitting}
-            onClick={async () => {
-              setSubmitting(true);
-              await deleteKeys();
-              callApi({ url: "/api/ses-keys" });
-              setSubmitting(false);
-              hideModal();
-            }}
-          />
+      <Box width="30em">
+        <Heading margin="small" level="4">
+          Delete Amazon SES key?
+        </Heading>
+        <Box direction="row" alignSelf="end" pad="small">
+          <Box margin={{ right: "small" }}>
+            <Button label="Cancel" onClick={() => hideModal()} />
+          </Box>
+          <Box>
+            <ButtonWithLoader
+              primary
+              label="Delete"
+              color="#FF4040"
+              disabled={isSubmitting}
+              onClick={async () => {
+                setSubmitting(true);
+                await deleteKeys();
+                callApi({ url: "/api/ses-keys" });
+                setSubmitting(false);
+                hideModal();
+              }}
+            />
+          </Box>
         </Box>
       </Box>
     </Layer>
