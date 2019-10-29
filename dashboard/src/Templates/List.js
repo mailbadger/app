@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO } from "date-fns";
-import { More, Add } from "grommet-icons";
+import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import axios from "axios";
 import useApi from "../hooks/useApi";
 import {
@@ -18,7 +18,6 @@ import {
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
-import StyledButton from "../ui/StyledButton";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import PlaceholderRow from "../ui/PlaceholderRow";
 
@@ -213,9 +212,11 @@ const List = () => {
           </Heading>
         </Box>
         <Box margin={{ left: "medium", top: "medium" }}>
-          <ButtonWithLoader
+          <Button
+            primary
+            color="status-ok"
             label="Create new"
-            icon={<Add color="#ffffff" />}
+            icon={<Add />}
             reverse
             onClick={() => history.push("/dashboard/templates/new")}
           />
@@ -234,7 +235,8 @@ const List = () => {
         {!state.isLoading && state.data.collection.length > 0 ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
-              <StyledButton
+              <Button
+                icon={<FormPreviousLink />}
                 label="Previous"
                 onClick={() => {
                   const t = currentPage.tokens[currentPage.current];
@@ -253,7 +255,9 @@ const List = () => {
               />
             </Box>
             <Box>
-              <StyledButton
+              <Button
+                icon={<FormNextLink />}
+                reverse
                 label="Next"
                 onClick={() => {
                   const { next_token } = state.data;

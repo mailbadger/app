@@ -36,55 +36,67 @@ func (db *store) GetSegments(userID int64, p *pagination.Cursor) {
 		// populate prev and next
 		if len(seg) > 0 {
 			nextID = seg[0].ID
-			last, err := db.getLastSegment(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the last segment.")
-				return
-			}
+			if len(seg) == int(p.PerPage) {
+				last, err := db.getLastSegment(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the last segment.")
+					return
+				}
 
-			if last.ID != seg[len(seg)-1].ID {
-				prevID = seg[len(seg)-1].ID
+				if last.ID != seg[len(seg)-1].ID {
+					prevID = seg[len(seg)-1].ID
+				}
 			}
 		}
 
+		// since the order is ascending we'll need to
+		// reverse the list once again so the order can be preserved (DESC)
 		reverse = true
 	} else if p.StartingAfter != 0 {
-		sub, err := db.GetSegment(p.StartingAfter, userID)
+		s, err := db.GetSegment(p.StartingAfter, userID)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{"starting_after": p.StartingAfter, "user_id": userID}).WithError(err).
 				Error("Unable to find segment for pagination with starting after id.")
 			return
 		}
 		query.Where(`(created_at < ? OR (created_at = ? AND id < ?)) AND created_at < ?`,
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.ID,
+			s.CreatedAt.Format(time.RFC3339Nano),
+			s.CreatedAt.Format(time.RFC3339Nano),
+			s.ID,
 			time.Now().Format(time.RFC3339Nano),
 		).Find(&seg)
 
-		// populate prev and next
 		if len(seg) > 0 {
 			prevID = seg[0].ID
-			first, err := db.getFirstSegment(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the first segment.")
-				return
-			}
+			if len(seg) == int(p.PerPage) {
+				first, err := db.getFirstSegment(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the first segment.")
+					return
+				}
 
-			if first.ID != seg[len(seg)-1].ID {
-				nextID = seg[len(seg)-1].ID
+				if first.ID != seg[len(seg)-1].ID {
+					nextID = seg[len(seg)-1].ID
+				}
 			}
 		}
 	} else {
+		total, err := db.GetTotalSegments(userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+				Error("Unable to find total segments.")
+			return
+		}
 		query.Find(&seg)
-		if len(seg) > 0 {
+		if len(seg) == int(p.PerPage) && len(seg) < int(total) {
 			nextID = seg[len(seg)-1].ID
 		}
 	}
 
 	if reverse {
+		// reverse the list so the ordering will be preserved
 		for i := len(seg) - 1; i >= 0; i-- {
 			p.Append(seg[i])
 		}
@@ -109,6 +121,13 @@ func (db *store) getLastSegment(userID int64) (*entities.Segment, error) {
 	return s, err
 }
 
+// GetTotalSegments fetches the total count by user id
+func (db *store) GetTotalSegments(userID int64) (int64, error) {
+	var count int64
+	err := db.Model(entities.Segment{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
 // GetSegmentsByIDs fetches lists by user id and the given ids
 func (db *store) GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error) {
 	var lists []entities.Segment
@@ -120,16 +139,16 @@ func (db *store) GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment
 
 // GetSegment returns the list by the given id and user id
 func (db *store) GetSegment(id, userID int64) (*entities.Segment, error) {
-	var list = new(entities.Segment)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(list).Error
-	return list, err
+	var seg = new(entities.Segment)
+	err := db.Where("user_id = ? and id = ?", userID, id).Find(seg).Error
+	return seg, err
 }
 
 // GetSegmentByName returns the segment by the given name and user id
 func (db *store) GetSegmentByName(name string, userID int64) (*entities.Segment, error) {
-	var list = new(entities.Segment)
-	err := db.Where("user_id = ? and name = ?", userID, name).Find(list).Error
-	return list, err
+	var seg = new(entities.Segment)
+	err := db.Where("user_id = ? and name = ?", userID, name).Find(seg).Error
+	return seg, err
 }
 
 // CreateSegment creates a new list in the database.
@@ -152,17 +171,17 @@ func (db *store) DeleteSegment(id, userID int64) error {
 	return db.Delete(&l).Error
 }
 
-// RemoveSubscribersFromSegment clears the subscribers association.
+// RemoveSubscribersFromSegment clears the segscribers association.
 func (db *store) RemoveSubscribersFromSegment(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Clear().Error
 }
 
-// AppendSubscribers appends subscribers to the existing association.
+// AppendSubscribers appends segscribers to the existing association.
 func (db *store) AppendSubscribers(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Append(s.Subscribers).Error
 }
 
-// DetachSubscribers deletes the subscribers association by the given subscribers list.
+// DetachSubscribers deletes the segscribers association by the given segscribers list.
 func (db *store) DetachSubscribers(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Delete(s.Subscribers).Error
 }

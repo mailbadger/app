@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import { parseISO } from "date-fns";
-import { More, Add } from "grommet-icons";
+import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import axios from "axios";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
@@ -24,7 +24,6 @@ import {
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
-import StyledButton from "../ui/StyledButton";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import PlaceholderRow from "../ui/PlaceholderRow";
 import { NotificationsContext } from "../Notifications/context";
@@ -359,9 +358,11 @@ const List = () => {
           </Heading>
         </Box>
         <Box margin={{ left: "medium", top: "medium" }}>
-          <ButtonWithLoader
+          <Button
+            primary
+            color="status-ok"
             label="Create new"
-            icon={<Add color="#ffffff" />}
+            icon={<Add />}
             reverse
             onClick={() => openCreateModal(true)}
           />
@@ -380,13 +381,29 @@ const List = () => {
         {!state.isLoading && state.data.collection.length > 0 ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
-              <StyledButton
+              <Button
+                icon={<FormPreviousLink />}
                 label="Previous"
-                onClick={() => console.log("Previous")}
+                disabled={state.data.links.previous === null}
+                onClick={() => {
+                  callApi({
+                    url: state.data.links.previous
+                  });
+                }}
               />
             </Box>
             <Box>
-              <StyledButton label="Next" onClick={() => console.log("Next")} />
+              <Button
+                icon={<FormNextLink />}
+                reverse
+                label="Next"
+                disabled={state.data.links.next === null}
+                onClick={() => {
+                  callApi({
+                    url: state.data.links.next
+                  });
+                }}
+              />
             </Box>
           </Box>
         ) : null}

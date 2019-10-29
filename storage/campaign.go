@@ -36,15 +36,17 @@ func (db *store) GetCampaigns(userID int64, p *pagination.Cursor) {
 		// populate prev and next
 		if len(campaigns) > 0 {
 			nextID = campaigns[0].ID
-			last, err := db.getLastCampaign(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the last campaign.")
-				return
-			}
+			if len(campaigns) == int(p.PerPage) {
+				last, err := db.getLastCampaign(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the last campaign.")
+					return
+				}
 
-			if last.ID != campaigns[len(campaigns)-1].ID {
-				prevID = campaigns[len(campaigns)-1].ID
+				if last.ID != campaigns[len(campaigns)-1].ID {
+					prevID = campaigns[len(campaigns)-1].ID
+				}
 			}
 		}
 
@@ -66,20 +68,28 @@ func (db *store) GetCampaigns(userID int64, p *pagination.Cursor) {
 		// populate prev and next
 		if len(campaigns) > 0 {
 			prevID = campaigns[0].ID
-			first, err := db.getFirstCampaign(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the first campaign.")
-				return
-			}
+			if len(campaigns) == int(p.PerPage) {
+				first, err := db.getFirstCampaign(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the first campaign.")
+					return
+				}
 
-			if first.ID != campaigns[len(campaigns)-1].ID {
-				nextID = campaigns[len(campaigns)-1].ID
+				if first.ID != campaigns[len(campaigns)-1].ID {
+					nextID = campaigns[len(campaigns)-1].ID
+				}
 			}
 		}
 	} else {
+		total, err := db.GetTotalCampaigns(userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+				Error("Unable to find total campaigns.")
+			return
+		}
 		query.Find(&campaigns)
-		if len(campaigns) > 0 {
+		if len(campaigns) == int(p.PerPage) && len(campaigns) < int(total) {
 			nextID = campaigns[len(campaigns)-1].ID
 		}
 	}
@@ -107,6 +117,13 @@ func (db *store) getLastCampaign(userID int64) (*entities.Campaign, error) {
 	var c = new(entities.Campaign)
 	err := db.Where("user_id = ?", userID).Order("created_at desc, id desc").Limit(1).Find(c).Error
 	return c, err
+}
+
+// GetTotalCampaigns fetches the total count by user id
+func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
+	var count int64
+	err := db.Model(entities.Campaign{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
 }
 
 // GetCampaign returns the campaign by the given id and user id

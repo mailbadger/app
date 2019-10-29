@@ -62,6 +62,7 @@ const Form = ({
       <Box margin={{ top: "medium" }}>
         <ButtonWithLoader
           type="submit"
+          primary
           disabled={isSubmitting}
           label="Add keys"
         />

@@ -37,6 +37,7 @@ type Storage interface {
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
 	GetSegment(int64, int64) (*entities.Segment, error)
 	GetSegmentByName(name string, userID int64) (*entities.Segment, error)
+	GetTotalSegments(userID int64) (int64, error)
 	CreateSegment(*entities.Segment) error
 	UpdateSegment(*entities.Segment) error
 	DeleteSegment(int64, int64) error
@@ -188,9 +189,14 @@ func GetSegment(c context.Context, id, userID int64) (*entities.Segment, error) 
 	return GetFromContext(c).GetSegment(id, userID)
 }
 
-// GetSegmentByName returns a Campaign entity by the given name and user id.
+// GetSegmentByName returns a SEgment entity by the given name and user id.
 func GetSegmentByName(c context.Context, name string, userID int64) (*entities.Segment, error) {
 	return GetFromContext(c).GetSegmentByName(name, userID)
+}
+
+// GetTotalSegments fetches the total count by user id.
+func GetTotalSegments(c context.Context, userID int64) (int64, error) {
+	return GetFromContext(c).GetTotalSegments(userID)
 }
 
 // CreateSegment persists a new Segment entity in the datastore.

@@ -1,11 +1,11 @@
 import React from "react";
 import PropTypes from "prop-types";
-import StyledButton from "./StyledButton";
+import { Button } from "grommet";
 import StyledSpinner from "./StyledSpinner";
 
 const ButtonWithLoader = ({ disabled, icon, label, ...rest }) => {
   return (
-    <StyledButton
+    <Button
       icon={!disabled ? icon : null}
       label={!disabled ? label : <StyledSpinner size={3} color="#fff" />}
       disabled={disabled}

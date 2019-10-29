@@ -39,15 +39,17 @@ func (db *store) GetSubscribers(
 		// populate prev and next
 		if len(subs) > 0 {
 			nextID = subs[0].ID
-			last, err := db.getLastSubscriber(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the last subscriber.")
-				return
-			}
+			if len(subs) == int(p.PerPage) {
+				last, err := db.getLastSubscriber(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the last subscriber.")
+					return
+				}
 
-			if last.ID != subs[len(subs)-1].ID {
-				prevID = subs[len(subs)-1].ID
+				if last.ID != subs[len(subs)-1].ID {
+					prevID = subs[len(subs)-1].ID
+				}
 			}
 		}
 
@@ -69,20 +71,138 @@ func (db *store) GetSubscribers(
 		// populate prev and next
 		if len(subs) > 0 {
 			prevID = subs[0].ID
-			first, err := db.getFirstSubscriber(userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the first subscriber.")
-				return
-			}
+			if len(subs) == int(p.PerPage) {
+				first, err := db.getFirstSubscriber(userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the first subscriber.")
+					return
+				}
 
-			if first.ID != subs[len(subs)-1].ID {
-				nextID = subs[len(subs)-1].ID
+				if first.ID != subs[len(subs)-1].ID {
+					nextID = subs[len(subs)-1].ID
+				}
 			}
 		}
 	} else {
+		total, err := db.GetTotalSubscribers(userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+				Error("Unable to find total subs.")
+			return
+		}
 		query.Find(&subs)
+		if len(subs) == int(p.PerPage) && len(subs) < int(total) {
+			nextID = subs[len(subs)-1].ID
+		}
+	}
+
+	if reverse {
+		for i := len(subs) - 1; i >= 0; i-- {
+			p.Append(subs[i])
+		}
+	} else {
+		for _, s := range subs {
+			p.Append(s)
+		}
+	}
+
+	p.PopulateLinks(prevID, nextID)
+}
+
+// GetSubscribersBySegmentID fetches subscribers by user id and list id, and populates the pagination obj
+func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *pagination.Cursor) {
+	var subs []entities.Subscriber
+
+	var reverse bool
+	var prevID, nextID int64
+
+	query := db.Table("subscribers").
+		Joins("INNER JOIN subscribers_segments ON subscribers_segments.subscriber_id = subscribers.id").
+		Where("subscribers.user_id = ? AND subscribers_segments.segment_id = ?", userID, segmentID).
+		Limit(p.PerPage).
+		Order("created_at desc, id desc")
+
+	if p.EndingBefore != 0 {
+		sub, err := db.GetSubscriber(p.EndingBefore, userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"ending_before": p.EndingBefore, "user_id": userID}).WithError(err).
+				Error("Unable to find subscriber for pagination with ending before id.")
+			return
+		}
+
+		query.Where(`(
+				subscribers.created_at > ? 
+				OR (subscribers.created_at = ? AND subscribers.id > ?)
+			)
+			AND subscribers.created_at < ?`,
+			sub.CreatedAt.Format(time.RFC3339Nano),
+			sub.CreatedAt.Format(time.RFC3339Nano),
+			sub.ID,
+			time.Now().Format(time.RFC3339Nano),
+		).Order("created_at, id", true).Find(&subs)
+
+		// populate prev and next
 		if len(subs) > 0 {
+			nextID = subs[0].ID
+			if len(subs) == int(p.PerPage) {
+				last, err := db.getLastSubscriberBySegment(segmentID, userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the last subscriber.")
+					return
+				}
+
+				if last.ID != subs[len(subs)-1].ID {
+					prevID = subs[len(subs)-1].ID
+				}
+			}
+		}
+
+		reverse = true
+	} else if p.StartingAfter != 0 {
+		sub, err := db.GetSubscriber(p.StartingAfter, userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"starting_after": p.StartingAfter, "user_id": userID}).WithError(err).
+				Error("Unable to find subscriber for pagination with starting after id.")
+			return
+		}
+		query.Where(`(
+				subscribers.created_at < ? 
+				OR (subscribers.created_at = ? AND subscribers.id < ?)
+			)
+			AND subscribers.created_at < ?`,
+			sub.CreatedAt.Format(time.RFC3339Nano),
+			sub.CreatedAt.Format(time.RFC3339Nano),
+			sub.ID,
+			time.Now().Format(time.RFC3339Nano),
+		).Find(&subs)
+
+		// populate prev and next
+		if len(subs) > 0 {
+			prevID = subs[0].ID
+			if len(subs) == int(p.PerPage) {
+				first, err := db.getFirstSubscriberBySegment(segmentID, userID)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
+						Error("Unable to find the first subscriber.")
+					return
+				}
+
+				if first.ID != subs[len(subs)-1].ID {
+					nextID = subs[len(subs)-1].ID
+				}
+			}
+		}
+	} else {
+		total, err := db.GetTotalSubscribersBySegment(segmentID, userID)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"user_id": userID, "segment_id": segmentID}).WithError(err).
+				Error("Unable to find total subs by segment.")
+			return
+		}
+		query.Find(&subs)
+		if len(subs) > 0 && len(subs) < int(total) {
 			nextID = subs[len(subs)-1].ID
 		}
 	}
@@ -136,6 +256,21 @@ func (db *store) getLastSubscriberBySegment(segmentID, userID int64) (*entities.
 	return sub, err
 }
 
+// GetTotalSubscribers fetches the total count by user id
+func (db *store) GetTotalSubscribers(userID int64) (int64, error) {
+	var count int64
+	err := db.Model(entities.Subscriber{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
+// GetTotalSubscribers fetches the total count by user id
+func (db *store) GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error) {
+	var seg = entities.Segment{ID: segmentID}
+
+	assoc := db.Model(&seg).Where("user_id = ?", userID).Association("Subscribers")
+	return int64(assoc.Count()), assoc.Error
+}
+
 // GetSubscriber returns the subscriber by the given id and user id
 func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
@@ -155,106 +290,6 @@ func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Sub
 	var s = new(entities.Subscriber)
 	err := db.Where("user_id = ? and email = ?", userID, email).Find(s).Error
 	return s, err
-}
-
-// GetSubscribersBySegmentID fetches subscribers by user id and list id, and populates the pagination obj
-func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *pagination.Cursor) {
-	var subs []entities.Subscriber
-
-	var reverse bool
-	var prevID, nextID int64
-
-	query := db.Table("subscribers").
-		Joins("INNER JOIN subscribers_segments ON subscribers_segments.subscriber_id = subscribers.id").
-		Where("subscribers.user_id = ? AND subscribers_segments.segment_id = ?", userID, segmentID).
-		Limit(p.PerPage).
-		Order("created_at desc, id desc")
-
-	if p.EndingBefore != 0 {
-		sub, err := db.GetSubscriber(p.EndingBefore, userID)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{"ending_before": p.EndingBefore, "user_id": userID}).WithError(err).
-				Error("Unable to find subscriber for pagination with ending before id.")
-			return
-		}
-
-		query.Where(`(
-				subscribers.created_at > ? 
-				OR (subscribers.created_at = ? AND subscribers.id > ?)
-			)
-			AND subscribers.created_at < ?`,
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.ID,
-			time.Now().Format(time.RFC3339Nano),
-		).Order("created_at, id", true).Find(&subs)
-
-		// populate prev and next
-		if len(subs) > 0 {
-			nextID = subs[0].ID
-			last, err := db.getLastSubscriberBySegment(segmentID, userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the last subscriber.")
-				return
-			}
-
-			if last.ID != subs[len(subs)-1].ID {
-				prevID = subs[len(subs)-1].ID
-			}
-		}
-
-		reverse = true
-	} else if p.StartingAfter != 0 {
-		sub, err := db.GetSubscriber(p.StartingAfter, userID)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{"starting_after": p.StartingAfter, "user_id": userID}).WithError(err).
-				Error("Unable to find subscriber for pagination with starting after id.")
-			return
-		}
-		query.Where(`(
-				subscribers.created_at < ? 
-				OR (subscribers.created_at = ? AND subscribers.id < ?)
-			)
-			AND subscribers.created_at < ?`,
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.CreatedAt.Format(time.RFC3339Nano),
-			sub.ID,
-			time.Now().Format(time.RFC3339Nano),
-		).Find(&subs)
-
-		// populate prev and next
-		if len(subs) > 0 {
-			prevID = subs[0].ID
-			first, err := db.getFirstSubscriberBySegment(segmentID, userID)
-			if err != nil {
-				logrus.WithFields(logrus.Fields{"user_id": userID}).WithError(err).
-					Error("Unable to find the first subscriber.")
-				return
-			}
-
-			if first.ID != subs[len(subs)-1].ID {
-				nextID = subs[len(subs)-1].ID
-			}
-		}
-	} else {
-		query.Find(&subs)
-		if len(subs) > 0 {
-			nextID = subs[len(subs)-1].ID
-		}
-	}
-
-	if reverse {
-		for i := len(subs) - 1; i >= 0; i-- {
-			p.Append(subs[i])
-		}
-	} else {
-		for _, s := range subs {
-			p.Append(s)
-		}
-	}
-
-	p.PopulateLinks(prevID, nextID)
 }
 
 // GetDistinctSubscribersBySegmentIDs fetches all distinct subscribers by user id and list ids
@@ -281,7 +316,15 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 			AND subscribers.blacklisted = ? 
 			AND subscribers.active = ?
 			AND (created_at > ? OR (created_at = ? AND id > ?))
-			AND created_at < ?`, listIDs, userID, blacklisted, active, timestamp, timestamp, nextID, time.Now()).
+			AND created_at < ?`,
+			listIDs,
+			userID,
+			blacklisted,
+			active,
+			timestamp.Format(time.RFC3339Nano),
+			timestamp.Format(time.RFC3339Nano),
+			nextID,
+			time.Now().Format(time.RFC3339Nano)).
 		Order("created_at, id").
 		Limit(limit).
 		Find(&subs).Error

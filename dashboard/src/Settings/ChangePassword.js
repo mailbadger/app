@@ -59,6 +59,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting }) => (
         <Box margin={{ top: "medium" }}>
           <ButtonWithLoader
             type="submit"
+            primary
             disabled={isSubmitting}
             label="Update password"
           />
