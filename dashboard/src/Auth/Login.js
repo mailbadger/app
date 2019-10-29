@@ -151,10 +151,12 @@ const LoginForm = props => {
 
   return (
     <Formik
+      initialValues={{ email: "", password: "" }}
       onSubmit={handleSubmit}
       validationSchema={loginValidation}
-      render={props => <Form {...props} />}
-    />
+    >
+      {props => <Form {...props} />}
+    </Formik>
   );
 };
 

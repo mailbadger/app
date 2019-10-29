@@ -149,8 +149,9 @@ const EditTemplateForm = ({ match }) => {
             initialValues={{
               subject: state.data.subject_part
             }}
-            render={props => <Form setHtml={setHtml} html={html} {...props} />}
-          />
+          >
+            {props => <Form setHtml={setHtml} html={html} {...props} />}
+          </Formik>
         )}
       </Box>
     </Box>

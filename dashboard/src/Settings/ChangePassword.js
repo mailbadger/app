@@ -108,10 +108,16 @@ const ChangePasswordForm = () => {
 
   return (
     <Formik
+      initialValues={{
+        password: "",
+        new_password: "",
+        new_password_confirm: ""
+      }}
       onSubmit={handleSubmit}
       validationSchema={changePassValidation}
-      render={Form}
-    />
+    >
+      {Form}
+    </Formik>
   );
 };
 

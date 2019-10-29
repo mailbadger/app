@@ -219,10 +219,12 @@ const CreateSegment = ({ callApi, hideModal }) => {
   return (
     <Box direction="row">
       <Formik
+        initialValues={{ name: "" }}
         onSubmit={handleSubmit}
         validationSchema={segmentValidation}
-        render={props => <CreateForm {...props} hideModal={hideModal} />}
-      />
+      >
+        {props => <CreateForm {...props} hideModal={hideModal} />}
+      </Formik>
     </Box>
   );
 };

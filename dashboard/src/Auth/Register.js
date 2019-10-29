@@ -202,10 +202,12 @@ const RegisterForm = props => {
 
   return (
     <Formik
+      initialValues={{ email: "", password: "", password_confirm: "" }}
       onSubmit={handleSubmit}
       validationSchema={registerValidation}
-      render={props => <Form {...props} />}
-    />
+    >
+      {props => <Form {...props} />}
+    </Formik>
   );
 };
 

@@ -100,10 +100,12 @@ const NewPasswordForm = props => {
 
   return (
     <Formik
+      initialValues={{ password: "", password_confirm: "" }}
       onSubmit={handleSubmit}
       validationSchema={passwordValidation}
-      render={props => <Form {...props} />}
-    />
+    >
+      {props => <Form {...props} />}
+    </Formik>
   );
 };
 

@@ -191,8 +191,9 @@ const AddSesKeysForm = () => {
         region: { code: "", name: "" }
       }}
       validationSchema={addSesKeysValidation}
-      render={Form}
-    />
+    >
+      {Form}
+    </Formik>
   );
 
   if (state.isLoading) {

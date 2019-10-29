@@ -156,8 +156,9 @@ const CreateTemplateForm = () => {
           initialValues={{
             htmlPart: html
           }}
-          render={props => <Form setHtml={setHtml} html={html} {...props} />}
-        />
+        >
+          {props => <Form setHtml={setHtml} html={html} {...props} />}
+        </Formik>
       </Box>
     </Box>
   );

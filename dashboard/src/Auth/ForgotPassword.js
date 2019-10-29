@@ -94,10 +94,12 @@ const ForgotPasswordForm = () => {
 
   return (
     <Formik
+      initialValues={{ email: "" }}
       onSubmit={handleSubmit}
       validationSchema={forgotPassValidation}
-      render={props => <Form {...props} />}
-    />
+    >
+      {props => <Form {...props} />}
+    </Formik>
   );
 };
 
