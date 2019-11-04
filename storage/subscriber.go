@@ -99,10 +99,12 @@ func (db *store) GetSubscribers(
 
 	if reverse {
 		for i := len(subs) - 1; i >= 0; i-- {
+			subs[i].Normalize()
 			p.Append(subs[i])
 		}
 	} else {
 		for _, s := range subs {
+			s.Normalize()
 			p.Append(s)
 		}
 	}
@@ -209,10 +211,12 @@ func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *paginatio
 
 	if reverse {
 		for i := len(subs) - 1; i >= 0; i-- {
+			subs[i].Normalize()
 			p.Append(subs[i])
 		}
 	} else {
 		for _, s := range subs {
+			s.Normalize()
 			p.Append(s)
 		}
 	}

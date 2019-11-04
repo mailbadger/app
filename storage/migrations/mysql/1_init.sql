@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
 CREATE TABLE IF NOT EXISTS `subscribers` (
   `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
   `user_id`     integer unsigned NOT NULL,
-  `name`        varchar(191) NOT NULL,
+  `name`        varchar(191) DEFAULT NULL,
   `email`       varchar(191) NOT NULL,
   `metadata`    JSON,
   `blacklisted` integer NOT NULL,

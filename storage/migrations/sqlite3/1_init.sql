@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
 CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"          integer primary key autoincrement,
   "user_id"     integer,
-  "name"        varchar(191) NOT NULL,
+  "name"        varchar(191),
   "email"       varchar(191) NOT NULL,
   "metadata"    json,
   "blacklisted" integer,

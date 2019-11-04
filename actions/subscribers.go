@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
@@ -55,12 +57,14 @@ func GetSubscriber(c *gin.Context) {
 }
 
 func PostSubscriber(c *gin.Context) {
-	name, email := c.PostForm("name"), c.PostForm("email")
+	name, email := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("email"))
+	meta := c.PostFormMap("metadata")
 
 	s := &entities.Subscriber{
-		Name:   name,
-		Email:  email,
-		UserID: middleware.GetUser(c).ID,
+		Name:     name,
+		Email:    email,
+		Metadata: meta,
+		UserID:   middleware.GetUser(c).ID,
 	}
 
 	if !s.Validate() {
@@ -78,6 +82,15 @@ func PostSubscriber(c *gin.Context) {
 		})
 		return
 	}
+
+	metaJSON, err := json.Marshal(meta)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to create subscriber, invalid metadata.",
+		})
+		return
+	}
+	s.MetaJSON = metaJSON
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{

@@ -217,7 +217,7 @@ const List = () => {
 
           {!state.isLoading && state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
-              <Heading level="3">Create your first template.</Heading>
+              <Heading level="2">Create your first template.</Heading>
             </Box>
           ) : null}
         </Box>

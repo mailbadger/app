@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
@@ -59,7 +60,7 @@ func GetSegment(c *gin.Context) {
 }
 
 func PostSegment(c *gin.Context) {
-	name := c.PostForm("name")
+	name := strings.TrimSpace(c.PostForm("name"))
 
 	l := &entities.Segment{
 		Name:   name,
@@ -102,7 +103,7 @@ func PutSegment(c *gin.Context) {
 			return
 		}
 
-		l.Name = c.PostForm("name")
+		l.Name = strings.TrimSpace(c.PostForm("name"))
 
 		if !l.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
