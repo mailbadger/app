@@ -48,7 +48,7 @@ func TestSegment(t *testing.T) {
 	//Test list validation when name is invalid
 	l.Name = ""
 	l.Validate()
-	assert.Equal(t, l.Errors["name"], "The list name cannot be empty.")
+	assert.Equal(t, l.Errors["name"], "The segment name cannot be empty.")
 
 	//Test get lists
 	p := &pagination.Cursor{PerPage: 10}

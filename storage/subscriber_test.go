@@ -66,7 +66,6 @@ func TestSubscriber(t *testing.T) {
 	s.Name = ""
 	s.Email = "foo bar"
 	s.Validate()
-	assert.Equal(t, s.Errors["name"], "The subscriber name cannot be empty.")
 	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
 
 	//Test get subs
