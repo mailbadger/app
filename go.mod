@@ -24,7 +24,7 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/lib/pq v1.2.0
-	github.com/mattn/go-sqlite3 v1.11.0
+	github.com/mattn/go-sqlite3 v1.12.0
 	github.com/nsqio/go-nsq v1.0.7
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
