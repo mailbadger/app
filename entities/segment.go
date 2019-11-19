@@ -9,7 +9,7 @@ import (
 // Segment represents the list entity
 type Segment struct {
 	ID          int64             `json:"id"`
-	Name        string            `json:"name" gorm:"not null" valid:"required,stringlength(1,191)"`
+	Name        string            `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
 	UserID      int64             `json:"-" gorm:"column:user_id; index"`
 	Subscribers []Subscriber      `json:"-" gorm:"many2many:subscribers_segments;"`
 	CreatedAt   time.Time         `json:"created_at"`

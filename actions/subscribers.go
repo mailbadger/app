@@ -56,9 +56,24 @@ func GetSubscriber(c *gin.Context) {
 	})
 }
 
+type segmentsParam struct {
+	Ids []int64 `form:"segments[]"`
+}
+
 func PostSubscriber(c *gin.Context) {
 	name, email := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("email"))
 	meta := c.PostFormMap("metadata")
+	segments := &segmentsParam{}
+	err := c.Bind(segments)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors": map[string]string{
+				"segments": "The segments array is in an invalid format.",
+			},
+		})
+		return
+	}
 
 	s := &entities.Subscriber{
 		Name:     name,
@@ -66,6 +81,19 @@ func PostSubscriber(c *gin.Context) {
 		Metadata: meta,
 		UserID:   middleware.GetUser(c).ID,
 	}
+
+	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors": map[string]string{
+				"segments": "Unable to find the specified segments.",
+			},
+		})
+		return
+	}
+
+	s.Segments = segs
 
 	if !s.Validate() {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -75,7 +103,7 @@ func PostSubscriber(c *gin.Context) {
 		return
 	}
 
-	_, err := storage.GetSubscriberByEmail(c, s.Email, s.UserID)
+	_, err = storage.GetSubscriberByEmail(c, s.Email, s.UserID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Subscriber with that email already exists",

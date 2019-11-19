@@ -184,6 +184,9 @@ const CreateSegment = ({ callApi, hideModal }) => {
 
         await callApi({ url: "/api/segments" });
 
+        //done submitting, set submitting to false
+        setSubmitting(false);
+
         hideModal();
       } catch (error) {
         if (error.response) {
@@ -196,14 +199,14 @@ const CreateSegment = ({ callApi, hideModal }) => {
             : "Unable to create segment. Please try again.";
 
           createNotification(msg, "status-error");
+
+          //done submitting, set submitting to false
+          setSubmitting(false);
         }
       }
     };
 
     await postForm();
-
-    //done submitting, set submitting to false
-    setSubmitting(false);
 
     return;
   };
