@@ -5,7 +5,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "codemirror": "^5.49.2",
-    "date-fns": "^2.7.0",
+    "date-fns": "^2.8.0",
     "formik": "^2.0.4",
     "grommet": "^2.8.0",
     "grommet-icons": "^4.4.0",
