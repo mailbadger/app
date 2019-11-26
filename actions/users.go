@@ -2,11 +2,13 @@ package actions
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/utils"
 
 	"github.com/gorilla/csrf"
 
@@ -17,7 +19,6 @@ import (
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
-	"github.com/news-maily/app/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -147,16 +148,25 @@ func PostForgotPassword(c *gin.Context) {
 			os.Getenv("AWS_SES_REGION"),
 		)
 		if err == nil {
-			exp := time.Now().Add(time.Hour * 1).Unix()
-			t := token.New(token.ForgotPassToken, u.UUID)
-			tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+
+			tokenStr, err := utils.GenerateRandomString(32)
 			if err != nil {
-				logrus.Errorf("cannot create token %s", err)
+				logrus.WithError(err).Error("Unable to generate random string.")
+			}
+			t := &entities.Token{
+				UserID:    u.ID,
+				Token:     tokenStr,
+				Type:      entities.ForgotPasswordTokenType,
+				ExpiresAt: time.Now().Add(time.Hour * 1),
+			}
+			err = storage.CreateToken(c, t)
+			if err != nil {
+				logrus.WithError(err).Error("Cannot create token.")
 			} else {
 				go sendForgotPasswordEmail(tokenStr, params.Email, sender)
 			}
 		} else {
-			logrus.Error(err.Error())
+			logrus.WithError(err).Error("Unable to create SES sender.")
 		}
 	}
 
@@ -189,16 +199,8 @@ type putForgotPassParams struct {
 func PutForgotPassword(c *gin.Context) {
 	tokenStr := c.Param("token")
 
-	t, err := token.ParseToken(tokenStr, func(t *token.Token) (string, error) {
-		secret := os.Getenv("EMAILS_TOKEN_SECRET")
-		if secret == "" {
-			logrus.Error("token secret is empty, unable to validate jwt.")
-			return "", errors.New("token secret is empty, unable to validate jwt")
-		}
-		return secret, nil
-	})
-
-	if err != nil || t.Type != token.ForgotPassToken {
+	t, err := storage.GetToken(c, tokenStr)
+	if err != nil || t.Type != entities.ForgotPasswordTokenType {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. The token is invalid.",
 		})
@@ -234,7 +236,7 @@ func PutForgotPassword(c *gin.Context) {
 		return
 	}
 
-	user, err := storage.GetUserByUUID(c, t.Value)
+	user, err := storage.GetUser(c, t.UserID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Unable to update your password. The user associated with the token is not found.",
@@ -269,6 +271,14 @@ func PutForgotPassword(c *gin.Context) {
 		return
 	}
 
+	err = storage.DeleteToken(c, tokenStr)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"token":   tokenStr,
+			"user_id": user.ID,
+		}).WithError(err).Error("Unable to delete token.")
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Your password has been updated successfully.",
 	})
@@ -277,23 +287,15 @@ func PutForgotPassword(c *gin.Context) {
 func PutVerifyEmail(c *gin.Context) {
 	tokenStr := c.Param("token")
 
-	t, err := token.ParseToken(tokenStr, func(t *token.Token) (string, error) {
-		secret := os.Getenv("EMAILS_TOKEN_SECRET")
-		if secret == "" {
-			logrus.Error("token secret is empty, unable to validate jwt.")
-			return "", errors.New("token secret is empty, unable to validate jwt")
-		}
-		return secret, nil
-	})
-
-	if err != nil || t.Type != token.VerifyEmailToken {
+	t, err := storage.GetToken(c, tokenStr)
+	if err != nil || t.Type != entities.VerifyEmailTokenType {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to verify your email. The token is invalid.",
 		})
 		return
 	}
 
-	user, err := storage.GetUserByUUID(c, t.Value)
+	user, err := storage.GetUser(c, t.UserID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Unable to verify your email. The user associated with the token is not found.",
@@ -313,6 +315,14 @@ func PutVerifyEmail(c *gin.Context) {
 			})
 			return
 		}
+	}
+
+	err = storage.DeleteToken(c, tokenStr)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"token":   tokenStr,
+			"user_id": user.ID,
+		}).WithError(err).Error("Unable to delete token.")
 	}
 
 	c.JSON(http.StatusOK, gin.H{

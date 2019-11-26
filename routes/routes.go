@@ -202,6 +202,7 @@ func CSRF() gin.HandlerFunc {
 		csrf.MaxAge(0),
 		csrf.Path("/api"),
 		csrf.Secure(secureCookie),
+		csrf.SameSite(csrf.SameSiteStrictMode),
 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)
 			_, err := w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))

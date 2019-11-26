@@ -137,16 +137,17 @@ const LoginForm = props => {
             password: values.password
           })
         );
+
+        setSubmitting(false);
+
         props.setUser(result.data.user);
       } catch (error) {
+        setSubmitting(false);
         setErrors(error.response.data);
       }
     };
 
     await callApi();
-
-    //done submitting, set submitting to false
-    setSubmitting(false);
   };
 
   return (

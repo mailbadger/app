@@ -1,0 +1,4 @@
+development:
+  dialect: mysql
+  datasource: mailbadger:changeme@tcp(localhost:3307)/mailbadger?charset=utf8mb4&parseTime=true
+  dir: storage/migrations/mysql

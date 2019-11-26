@@ -5,11 +5,7 @@ import (
 )
 
 const (
-	SignerAlgorithm  = "HS256"
-	SessionToken     = "session_token"
-	ForgotPassToken  = "forgot_pass_token"
-	UnsubscribeToken = "unsubscribe_token"
-	VerifyEmailToken = "verify_token"
+	SignerAlgorithm = "HS256"
 )
 
 type SecretFunc func(*Token) (string, error)

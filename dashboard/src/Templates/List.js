@@ -82,7 +82,7 @@ const Header = () => (
 );
 
 const TemplateTable = React.memo(({ list, setShowDelete }) => (
-  <StyledTable caption="Templates">
+  <StyledTable>
     <Header />
     <TableBody>
       {list.map(t => (
@@ -152,14 +152,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = (
-      <PlaceholderTable
-        header={Header}
-        numCols={3}
-        numRows={5}
-        caption="TemplatesPlaceholder"
-      />
-    );
+    table = <PlaceholderTable header={Header} numCols={3} numRows={5} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <TemplateTable

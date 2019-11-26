@@ -71,6 +71,10 @@ type Storage interface {
 	CreateSesKeys(s *entities.SesKeys) error
 	DeleteSesKeys(userID int64) error
 
+	GetToken(token string) (*entities.Token, error)
+	CreateToken(s *entities.Token) error
+	DeleteToken(token string) error
+
 	CreateSendBulkLog(l *entities.SendBulkLog) error
 	CountLogsByUUID(uuid string) (int, error)
 
@@ -321,6 +325,22 @@ func CreateSesKeys(c context.Context, s *entities.SesKeys) error {
 // DeleteSesKeys deletes SES keys configuration by the given user ID.
 func DeleteSesKeys(c context.Context, userID int64) error {
 	return GetFromContext(c).DeleteSesKeys(userID)
+}
+
+// GetToken returns the one-time token by the given token string.
+// If the token is expired, we return an error indicating that a token is not found.
+func GetToken(c context.Context, token string) (*entities.Token, error) {
+	return GetFromContext(c).GetToken(token)
+}
+
+// CreateToken adds new token in the database.
+func CreateToken(c context.Context, s *entities.Token) error {
+	return GetFromContext(c).CreateToken(s)
+}
+
+// DeleteToken deletes the token by the given token.
+func DeleteToken(c context.Context, token string) error {
+	return GetFromContext(c).DeleteToken(token)
 }
 
 // CreateBounce adds new bounce in the database.

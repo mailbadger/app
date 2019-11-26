@@ -14,7 +14,7 @@ require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
-	github.com/gobuffalo/packr v1.21.8 // indirect
+	github.com/gobuffalo/packr/v2 v2.0.0-rc.12 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.1
@@ -22,15 +22,14 @@ require (
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.11
-	github.com/kisielk/errcheck v1.2.0 // indirect
 	github.com/lib/pq v1.2.0
 	github.com/mattn/go-sqlite3 v1.13.0
 	github.com/nsqio/go-nsq v1.0.7
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
-	github.com/rubenv/sql-migrate v0.0.0-20190212093014-1007f53448d7
-	github.com/securego/gosec v0.0.0-20190912120752-140048b2a218 // indirect
+	github.com/rogpeppe/go-internal v1.3.0 // indirect
+	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 	github.com/unrolled/secure v1.0.5
@@ -43,7 +42,7 @@ require (
 	golang.org/x/tools v0.0.0-20190913181337-0240832f5c3d // indirect
 	google.golang.org/api v0.14.0
 	google.golang.org/appengine v1.6.1 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/gorp.v1 v1.7.2 // indirect
-	honnef.co/go/tools v0.0.1-2019.2.3 // indirect
 )

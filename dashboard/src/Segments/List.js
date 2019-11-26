@@ -102,7 +102,7 @@ const Header = () => (
 );
 
 const SegmentTable = React.memo(({ list, setShowDelete }) => (
-  <StyledTable caption="Segments">
+  <StyledTable>
     <Header />
     <TableBody>
       {list.map(s => (
@@ -282,14 +282,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = (
-      <PlaceholderTable
-        header={Header}
-        numCols={3}
-        numRows={3}
-        caption="SegmentsPlaceholder"
-      />
-    );
+    table = <PlaceholderTable header={Header} numCols={3} numRows={8} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <SegmentTable

@@ -114,7 +114,7 @@ const Header = () => (
 );
 
 const CampaignsTable = React.memo(({ list, setShowDelete }) => (
-  <StyledTable caption="Campaigns">
+  <StyledTable>
     <Header />
     <TableBody>
       {list.map(c => (
@@ -182,14 +182,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = (
-      <PlaceholderTable
-        header={Header}
-        numCols={3}
-        numRows={3}
-        caption="CampaignsPlaceholder"
-      />
-    );
+    table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <CampaignsTable

@@ -23,7 +23,6 @@ import (
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/storage"
 	"github.com/news-maily/app/utils"
-	"github.com/news-maily/app/utils/token"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
@@ -208,11 +207,19 @@ func PostSignup(c *gin.Context) {
 		os.Getenv("AWS_SES_REGION"),
 	)
 	if err == nil {
-		exp := time.Now().Add(time.Hour * 24).Unix()
-		t := token.New(token.VerifyEmailToken, user.UUID)
-		tokenStr, err := t.SignWithExp(os.Getenv("EMAILS_TOKEN_SECRET"), exp)
+		tokenStr, err := utils.GenerateRandomString(32)
 		if err != nil {
-			logrus.WithError(err).Error("cannot create token")
+			logrus.WithError(err).Error("Unable to generate random string.")
+		}
+		t := &entities.Token{
+			UserID:    user.ID,
+			Token:     tokenStr,
+			Type:      entities.VerifyEmailTokenType,
+			ExpiresAt: time.Now().AddDate(0, 0, 1),
+		}
+		err = storage.CreateToken(c, t)
+		if err != nil {
+			logrus.WithError(err).Error("Cannot create token.")
 		} else {
 			go sendVerifyEmail(tokenStr, user.Username, sender)
 		}
