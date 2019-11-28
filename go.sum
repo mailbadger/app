@@ -458,6 +458,8 @@ github.com/unrolled/secure v0.0.0-20180918153822-f340ee86eb8b/go.mod h1:mnPT77IA
 github.com/unrolled/secure v0.0.0-20181005190816-ff9db2ff917f/go.mod h1:mnPT77IAdsi/kV7+Es7y+pXALeV3h7G6dQF6mNYjcLA=
 github.com/unrolled/secure v1.0.5 h1:KRGJ8DQC3jKpERjBKF3H6b3HcAsM/SRTVwfNJnWs25E=
 github.com/unrolled/secure v1.0.5/go.mod h1:R6rugAuzh4TQpbFAq69oqZggyBQxFRFQIewtz5z7Jsc=
+github.com/unrolled/secure v1.0.6 h1:/siLSqiwvtlI/Vk3xJCjAYGIhoVrB2pAwaDazxLFZ0Y=
+github.com/unrolled/secure v1.0.6/go.mod h1:uGc1OcRF8gCVBA+ANksKmvM85Hka6SZtQIbrKc3sHS4=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
