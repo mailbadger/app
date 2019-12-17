@@ -7,7 +7,7 @@
     "codemirror": "^5.49.2",
     "date-fns": "^2.8.1",
     "formik": "^2.0.8",
-    "grommet": "^2.8.1",
+    "grommet": "^2.9.0",
     "grommet-icons": "^4.4.0",
     "history": "^4.10.1",
     "prop-types": "^15.7.2",
