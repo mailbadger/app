@@ -163,7 +163,7 @@ func PostForgotPassword(c *gin.Context) {
 			if err != nil {
 				logrus.WithError(err).Error("Cannot create token.")
 			} else {
-				go sendForgotPasswordEmail(tokenStr, u.Email, sender)
+				go sendForgotPasswordEmail(tokenStr, u.Username, sender)
 			}
 		} else {
 			logrus.WithError(err).Error("Unable to create SES sender.")
