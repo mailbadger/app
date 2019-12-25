@@ -24,7 +24,7 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-sqlite3 v1.13.0
-	github.com/nsqio/go-nsq v1.0.7
+	github.com/nsqio/go-nsq v1.0.8
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
