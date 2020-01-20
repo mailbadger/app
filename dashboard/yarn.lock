@@ -5050,10 +5050,10 @@ grommet-styles@^0.2.0:
   resolved "https://registry.yarnpkg.com/grommet-styles/-/grommet-styles-0.2.0.tgz#b2eac2b7e2747cb523434d21728ce5234f8ce4f4"
   integrity sha512-0OMSYuGeyifYKpg4Gv2HzL8rUdd0ddnJ5LbCBKgDuloC71XIwr9g/Fxa6rs737MbPV7OZ4pEm4wvrjH4epzf1A==
 
-grommet@^2.9.0:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.9.0.tgz#a40095bb678a111872ba050607c16ddf6454382e"
-  integrity sha512-v+AWKeVK9YTWdjb5nXnIUg3uMVUQPKA+Py6GkRBfORjwlQVxaNRUSfEHXajIWnEE0XB1eKr70DX62/5ZryCByA==
+grommet@^2.10.0:
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.10.0.tgz#98905888adb9a673f4b518876c52d8a411c4b5f5"
+  integrity sha512-FnbLbq5sYRE4C/MrDG0a4Hj1zZcwsOoT2JrwZvnarPp/sr5CoJXZhV4SJtFlVbgTQpeJsDStotggZFrc00V5kg==
   dependencies:
     "@testing-library/dom" "^6.1.0"
     "@testing-library/jest-dom" "^4.2.4"
