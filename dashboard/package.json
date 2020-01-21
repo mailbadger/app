@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "axios": "^0.19.1",
-    "codemirror": "^5.50.2",
+    "codemirror": "^5.51.0",
     "date-fns": "^2.9.0",
     "formik": "^2.1.2",
     "grommet": "^2.10.0",
