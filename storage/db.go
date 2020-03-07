@@ -107,19 +107,16 @@ func initDb(config string, db *gorm.DB) error {
 	// Hashing the password with the default cost of 10
 	secret, err := utils.GenerateRandomString(12)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		log.Errorf("unable to generate random uuid: %s", err.Error())
 		return err
 	}
 
@@ -138,7 +135,6 @@ func initDb(config string, db *gorm.DB) error {
 
 	err = db.Save(&admin).Error
 	if err != nil {
-		log.Errorln(err)
 		return err
 	}
 
