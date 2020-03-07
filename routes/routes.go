@@ -18,6 +18,7 @@ import (
 	adapter "github.com/gwatts/gin-adapter"
 	"github.com/news-maily/app/actions"
 	"github.com/news-maily/app/routes/middleware"
+	"github.com/news-maily/app/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/secure"
 )
@@ -31,8 +32,10 @@ func New() http.Handler {
 
 	log := logrus.New()
 	log.SetLevel(lvl)
-	log.SetFormatter(&logrus.JSONFormatter{})
 	log.SetOutput(os.Stdout)
+	if utils.IsProductionMode() {
+		log.SetFormatter(&logrus.JSONFormatter{})
+	}
 
 	store := cookie.NewStore(
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
@@ -54,7 +57,6 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 
 	// Security headers
-	isDev := os.Getenv("ENVIRONMENT") != "prod"
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny:             true,
 		ContentTypeNosniff:    true,
@@ -66,7 +68,7 @@ func New() http.Handler {
 		STSPreload:            true,
 		ContentSecurityPolicy: "default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'",
 
-		IsDevelopment: isDev,
+		IsDevelopment: !utils.IsProductionMode(),
 	})
 	secureFunc := func() gin.HandlerFunc {
 		return func(c *gin.Context) {
@@ -200,8 +202,8 @@ func CSRF() gin.HandlerFunc {
 	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
 	csrfMd := csrf.Protect([]byte(os.Getenv("SESSION_AUTH_KEY")),
 		csrf.MaxAge(0),
-		csrf.Path("/api"),
 		csrf.Secure(secureCookie),
+		csrf.Path("/api"),
 		csrf.SameSite(csrf.SameSiteStrictMode),
 		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusForbidden)

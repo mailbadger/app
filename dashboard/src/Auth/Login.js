@@ -130,7 +130,7 @@ const LoginForm = props => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
-        const result = await axios.post(
+        await axios.post(
           "/api/authenticate",
           qs.stringify({
             username: values.email,
@@ -140,7 +140,7 @@ const LoginForm = props => {
 
         setSubmitting(false);
 
-        props.setUser(result.data.user);
+        props.fetchUser();
       } catch (error) {
         setSubmitting(false);
         setErrors(error.response.data);
@@ -162,7 +162,7 @@ const LoginForm = props => {
 };
 
 LoginForm.propTypes = {
-  setUser: PropTypes.func.isRequired
+  fetchUser: PropTypes.func.isRequired
 };
 
 export default LoginForm;

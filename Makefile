@@ -27,8 +27,6 @@ build_api:
 
 build_static:
 	cd dashboard; yarn && yarn build
-	mkdir -p static
-	cp -r dashboard/build static/dashboard
 
 image:
 	docker build -t news-maily/app:latest .

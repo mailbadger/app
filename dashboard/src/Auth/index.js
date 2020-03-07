@@ -12,16 +12,19 @@ export const socialAuthEnabled = () =>
 const Auth = () => {
   return (
     <AuthConsumer>
-      {({ setUser }) => (
+      {({ fetchUser }) => (
         <Switch>
-          <Route path="/login" component={() => <Login setUser={setUser} />} />
+          <Route
+            path="/login"
+            component={() => <Login fetchUser={fetchUser} />}
+          />
           <Route
             path="/signup"
-            component={() => <Register setUser={setUser} />}
+            component={() => <Register fetchUser={fetchUser} />}
           />
           <Route path="/forgot-password/:token" component={NewPassword} />
           <Route path="/forgot-password" component={ForgotPassword} />
-          <Route path="/" component={() => <Login setUser={setUser} />} />
+          <Route path="/" component={() => <Login fetchUser={fetchUser} />} />
         </Switch>
       )}
     </AuthConsumer>

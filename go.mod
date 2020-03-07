@@ -15,7 +15,6 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
 	github.com/gobuffalo/packr/v2 v2.0.0-rc.12 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/csrf v1.6.2
@@ -34,7 +33,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/unrolled/secure v1.0.7
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20190911031432-227b76d455e7
+	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 	golang.org/x/net v0.0.0-20190912160710-24e19bdeb0f2 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect

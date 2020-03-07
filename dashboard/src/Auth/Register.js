@@ -183,8 +183,8 @@ const RegisterForm = props => {
           params.token_response = values.token_response;
         }
 
-        const result = await axios.post("/api/signup", qs.stringify(params));
-        props.setUser(result.data.user);
+        await axios.post("/api/signup", qs.stringify(params));
+        props.fetchUser();
       } catch (error) {
         setErrors(error.response.data);
       }
@@ -197,7 +197,7 @@ const RegisterForm = props => {
   };
 
   RegisterForm.propTypes = {
-    setUser: PropTypes.func.isRequired
+    fetchUser: PropTypes.func.isRequired
   };
 
   return (

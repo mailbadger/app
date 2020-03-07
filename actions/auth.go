@@ -16,7 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
-	"github.com/gorilla/csrf"
 	fb "github.com/huandu/facebook"
 	"github.com/jinzhu/gorm"
 	"github.com/news-maily/app/emails"
@@ -336,59 +335,7 @@ func GithubCallback(c *gin.Context) {
 		return
 	}
 
-	u, err := storage.GetUserByUsername(c, ghUser.GetEmail())
-	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
-			logrus.WithError(err).Error("github social auth")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-		uuid, err := uuid.NewRandom()
-		if err != nil {
-			logrus.WithError(err).Error("unable to generate random uuid")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-		u = &entities.User{
-			UUID:     uuid.String(),
-			Username: ghUser.GetEmail(),
-			Active:   true,
-			Verified: true,
-			Source:   "github",
-		}
-
-		err = storage.CreateUser(c, u)
-		if err != nil {
-			logrus.WithError(err).Error("github register failed")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-	}
-
-	if !u.Active {
-		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via github")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	err = persistSession(c, u.ID, sessID)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
+	completeCallback(c, ghUser.GetEmail(), "github", host)
 }
 
 // GetGoogleAuth redirects the user to the google oauth authorization page.
@@ -494,57 +441,7 @@ func GoogleCallback(c *gin.Context) {
 		return
 	}
 
-	u, err := storage.GetUserByUsername(c, gUser.Email)
-	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
-			logrus.WithError(err).Error("google social auth")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-		uuid, err := uuid.NewRandom()
-		if err != nil {
-			logrus.WithError(err).Error("unable to generate random uuid")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-		u = &entities.User{
-			UUID:     uuid.String(),
-			Username: gUser.Email,
-			Active:   true,
-			Verified: true,
-			Source:   "google",
-		}
-
-		err = storage.CreateUser(c, u)
-		if err != nil {
-			logrus.WithError(err).Error("google register failed")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-	}
-
-	if !u.Active {
-		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via google")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	err = persistSession(c, u.ID, sessID)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
+	completeCallback(c, gUser.Email, "google", host)
 }
 
 // GetFacebookAuth redirects the user to the facebook oauth authorization page.
@@ -653,58 +550,7 @@ func FacebookCallback(c *gin.Context) {
 		return
 	}
 
-	u, err := storage.GetUserByUsername(c, emailStr)
-	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
-			logrus.WithError(err).Error("facebook social auth")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-		uuid, err := uuid.NewRandom()
-		if err != nil {
-			logrus.WithError(err).Error("unable to generate random uuid")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-
-		u = &entities.User{
-			UUID:     uuid.String(),
-			Username: emailStr,
-			Active:   true,
-			Verified: true,
-			Source:   "facebook",
-		}
-
-		err = storage.CreateUser(c, u)
-		if err != nil {
-			logrus.WithError(err).Error("facebook register failed")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
-	}
-
-	if !u.Active {
-		logrus.WithField("user_id", u.ID).Warn("inactive user sign in via facebook")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	err = persistSession(c, u.ID, sessID)
-	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
+	completeCallback(c, emailStr, "facebook", host)
 }
 
 // PostLogout deletes the current user session.
@@ -732,6 +578,61 @@ func PostLogout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "You have been successfully logged out.",
 	})
+}
+
+func completeCallback(c *gin.Context, email, source, host string) {
+	u, err := storage.GetUserByUsername(c, email)
+	if err != nil {
+		if !gorm.IsRecordNotFoundError(err) {
+			logrus.WithError(err).Error("Unable to fetch user by username")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		uuid, err := uuid.NewRandom()
+		if err != nil {
+			logrus.WithError(err).Error("Unable to generate random uuid")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		u = &entities.User{
+			UUID:     uuid.String(),
+			Username: email,
+			Active:   true,
+			Verified: true,
+			Source:   source,
+		}
+
+		err = storage.CreateUser(c, u)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to create user")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+	}
+
+	if !u.Active {
+		logrus.WithField("user_id", u.ID).Warn("Inactive user sign in")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	sessID, err := utils.GenerateRandomString(32)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	err = persistSession(c, u.ID, sessID)
+	if err != nil {
+		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
+		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		return
+	}
+
+	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
 func sendVerifyEmail(token, email string, sender emails.Sender) {
@@ -770,8 +671,6 @@ func persistSession(c *gin.Context, userID int64, sessID string) error {
 		Path:     "/api",
 	})
 	session.Set("sess_id", sessID)
-
-	c.Header("X-CSRF-Token", csrf.Token(c.Request))
 
 	return session.Save()
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/utils"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 )
@@ -106,11 +107,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 func main() {
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
-		logrus.Panic(err)
+		lvl = logrus.InfoLevel
 	}
 
 	logrus.SetLevel(lvl)
-	logrus.SetFormatter(&logrus.JSONFormatter{})
+	if utils.IsProductionMode() {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
 	logrus.SetOutput(os.Stdout)
 
 	driver := os.Getenv("DATABASE_DRIVER")

@@ -9,3 +9,7 @@ import (
 func IsDebugMode() bool {
 	return strings.ToLower(os.Getenv("ENVIRONMENT")) == "debug"
 }
+
+func IsProductionMode() bool {
+	return strings.ToLower(os.Getenv("ENVIRONMENT")) == "prod"
+}

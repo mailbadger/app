@@ -48,10 +48,9 @@ func init() {
 	}
 
 	logrus.SetLevel(lvl)
-	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
-
-	if !utils.IsDebugMode() {
+	if utils.IsProductionMode() {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
 		gin.SetMode(gin.ReleaseMode)
 	}
 }
