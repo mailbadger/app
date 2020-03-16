@@ -9611,10 +9611,10 @@ react-async-script@^1.1.1:
     hoist-non-react-statics "^3.3.0"
     prop-types "^15.5.0"
 
-react-codemirror2@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/react-codemirror2/-/react-codemirror2-6.0.0.tgz#180065df57a64026026cde569a9708fdf7656525"
-  integrity sha512-D7y9qZ05FbUh9blqECaJMdDwKluQiO3A9xB+fssd5jKM7YAXucRuEOlX32mJQumUvHUkHRHqXIPBjm6g0FW0Ag==
+react-codemirror2@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/react-codemirror2/-/react-codemirror2-7.0.0.tgz#d74570398439184d26bcf04e434aac2087aa32f5"
+  integrity sha512-q/cHi3IH961LDfR+EsPljziTCMuEQjwGaRusFTkBoNAq/wCoij//9Q9122XagJt8HqScZgw39BmokwmUDHf/Ug==
 
 react-content-loader@^4.3.4:
   version "4.3.4"

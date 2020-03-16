@@ -14,7 +14,7 @@
     "qs": "^6.9.1",
     "query-string": "^6.11.1",
     "react": "^16.13.0",
-    "react-codemirror2": "^6.0.0",
+    "react-codemirror2": "^7.0.0",
     "react-content-loader": "^4.3.4",
     "react-dom": "^16.13.0",
     "react-google-recaptcha": "^2.0.1",
