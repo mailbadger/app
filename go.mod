@@ -28,7 +28,7 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.5.1
 	github.com/unrolled/secure v1.0.7
 	github.com/ziutek/mymysql v1.5.4 // indirect
