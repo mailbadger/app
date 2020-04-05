@@ -14,12 +14,15 @@ import (
 
 func createCampaigns(store Storage) {
 	for i := 0; i < 100; i++ {
-		store.CreateCampaign(&entities.Campaign{
+		err := store.CreateCampaign(&entities.Campaign{
 			Name:         "foo " + strconv.Itoa(i),
 			TemplateName: "Template " + strconv.Itoa(i),
 			UserID:       1,
 			Status:       "draft",
 		})
+		if err != nil {
+			logrus.Fatal(err)
+		}
 	}
 }
 
@@ -69,7 +72,8 @@ func TestCampaign(t *testing.T) {
 	//Test get campaigns
 	p := NewPaginationCursor("campaigns", "/api/campaigns", 13)
 	for i := 0; i < 10; i++ {
-		store.GetCampaigns(1, p)
+		err := store.GetCampaigns(1, p)
+		assert.Nil(t, err)
 		col := p.Collection.(*[]entities.Campaign)
 		assert.NotNil(t, col)
 		assert.NotEmpty(t, *col)
@@ -87,7 +91,8 @@ func TestCampaign(t *testing.T) {
 	p = NewPaginationCursor("campaigns", "/api/campaigns", 13)
 	p.SetEndingBefore(1)
 	for i := 0; i < 8; i++ {
-		store.GetCampaigns(1, p)
+		err := store.GetCampaigns(1, p)
+		assert.Nil(t, err)
 		col := p.Collection.(*[]entities.Campaign)
 		assert.NotNil(t, col)
 		assert.NotEmpty(t, *col)

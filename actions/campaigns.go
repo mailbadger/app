@@ -145,7 +145,15 @@ func GetCampaigns(c *gin.Context) {
 		return
 	}
 
-	storage.GetCampaigns(c, middleware.GetUser(c).ID, p)
+	err := storage.GetCampaigns(c, middleware.GetUser(c).ID, p)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to fetch campaigns collection.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch campaigns. Please try again.",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, p)
 }
 
