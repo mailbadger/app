@@ -34,7 +34,7 @@ jobs:
       env:
         GO111MODULE: "on"
       with:
-        args: go get github.com/securego/gosec/cmd/gosec; make gen && gosec ./... # https://github.com/securego/gosec
+        args: go get github.com/securego/gosec/cmd/gosec; make gen && gosec -exclude-dir=storage/migrations ./... # https://github.com/securego/gosec
   test:
     name: Testable
     runs-on: ubuntu-latest
