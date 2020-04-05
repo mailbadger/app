@@ -25,7 +25,7 @@ type Storage interface {
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
 
-	GetCampaigns(int64, *pagination.Cursor)
+	GetCampaigns(int64, *PaginationCursor) error
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
 	GetCampaignsByTemplateName(string, int64) ([]entities.Campaign, error)
@@ -143,8 +143,8 @@ func DeleteSession(c context.Context, sessionID string) error {
 
 // GetCampaigns populates a pagination object with a collection of
 // campaigns by the specified user id.
-func GetCampaigns(c context.Context, userID int64, p *pagination.Cursor) {
-	GetFromContext(c).GetCampaigns(userID, p)
+func GetCampaigns(c context.Context, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetCampaigns(userID, p)
 }
 
 // GetCampaign returns a Campaign entity by the given id and user id.

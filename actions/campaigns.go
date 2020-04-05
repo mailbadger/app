@@ -2,7 +2,6 @@ package actions
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,7 +12,6 @@ import (
 	"github.com/news-maily/app/queue"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
-	"github.com/news-maily/app/utils/pagination"
 	"github.com/sirupsen/logrus"
 )
 
@@ -131,19 +129,19 @@ func StartCampaign(c *gin.Context) {
 func GetCampaigns(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
-		if err != nil {
-			logrus.Error(err)
-		}
+		logrus.Error("Unable to fetch pagination cursor from context.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch campaigns. Please try again.",
+		})
 		return
 	}
 
-	p, ok := val.(*pagination.Cursor)
+	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
-		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
-		if err != nil {
-			logrus.Error(err)
-		}
+		logrus.Error("Unable to cast pagination cursor from context value.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch campaigns. Please try again.",
+		})
 		return
 	}
 

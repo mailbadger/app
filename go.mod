@@ -1,6 +1,6 @@
 module github.com/news-maily/app
 
-go 1.12
+go 1.14
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf

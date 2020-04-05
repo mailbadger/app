@@ -3,6 +3,8 @@ package pagination
 import (
 	"net/url"
 	"strconv"
+
+	"github.com/news-maily/app/entities"
 )
 
 var DefaultPerPage int64 = 10
@@ -13,17 +15,23 @@ type Links struct {
 }
 
 type Cursor struct {
-	StartingAfter int64         `json:"-"`
-	EndingBefore  int64         `json:"-"`
-	Path          string        `json:"-"`
-	PerPage       int64         `json:"per_page"`
-	Links         Links         `json:"links"`
+	StartingAfter int64  `json:"-"`
+	EndingBefore  int64  `json:"-"`
+	Path          string `json:"-"`
+	PerPage       int64  `json:"per_page"`
+	Links         Links  `json:"links"`
+	Model         entities.Model
 	Collection    []interface{} `json:"collection"`
+	Results       interface{}
 }
 
 // Append appends the object to the page collection.
 func (c *Cursor) Append(obj interface{}) {
 	c.Collection = append(c.Collection, obj)
+}
+
+func (c *Cursor) SetResults(res interface{}) {
+	c.Results = res
 }
 
 // PopulateLinks populates the Links property with the query params needed for the
