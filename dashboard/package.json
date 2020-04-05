@@ -5,7 +5,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "codemirror": "^5.52.0",
-    "date-fns": "^2.9.0",
+    "date-fns": "^2.10.0",
     "formik": "^2.1.4",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
@@ -13,15 +13,15 @@
     "prop-types": "^15.7.2",
     "qs": "^6.9.1",
     "query-string": "^6.11.1",
-    "react": "^16.12.0",
+    "react": "^16.13.0",
     "react-codemirror2": "^6.0.0",
     "react-content-loader": "^4.3.4",
-    "react-dom": "^16.12.0",
+    "react-dom": "^16.13.0",
     "react-google-recaptcha": "^2.0.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
     "styled-components": "^4.4.1",
-    "yup": "^0.28.2"
+    "yup": "^0.28.3"
   },
   "scripts": {
     "start": "react-scripts start",
