@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "axios": "^0.19.2",
+    "date-fns": "^2.11.1",
     "codemirror": "^5.52.2",
-    "date-fns": "^2.10.0",
     "formik": "^2.1.4",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
