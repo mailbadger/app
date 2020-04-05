@@ -4,13 +4,13 @@ go 1.14
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.29.19
+	github.com/aws/aws-sdk-go v1.30.3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
 	github.com/gin-gonic/contrib v0.0.0-20190302003538-54ff787f7c73
-	github.com/gin-gonic/gin v1.5.0
+	github.com/gin-gonic/gin v1.6.2
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
@@ -28,7 +28,7 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.5.1
 	github.com/unrolled/secure v1.0.7
 	github.com/ziutek/mymysql v1.5.4 // indirect
