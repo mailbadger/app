@@ -8,6 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/aws/aws-sdk-go/service/ses"
+
+	"github.com/aws/aws-sdk-go/aws/awserr"
+
 	"github.com/news-maily/app/consumers"
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
@@ -48,7 +52,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		logrus.WithFields(logrus.Fields{
 			"user_id":     msg.UserID,
 			"campaign_id": msg.CampaignID,
-		}).Errorln(err.Error())
+		}).WithError(err).Error("Unable to create SES sender")
 		return nil
 	}
 
@@ -58,7 +62,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"user_id":     msg.UserID,
 			"campaign_id": msg.CampaignID,
 			"uuid":        msg.UUID,
-		}).Errorln(err.Error())
+		}).WithError(err).Error("Unable to count sent logs")
 		return nil
 	}
 
@@ -74,13 +78,40 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	res, err := client.SendBulkTemplatedEmail(msg.Input)
 
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user_id":     msg.UserID,
-			"campaign_id": msg.CampaignID,
-			"uuid":        msg.UUID,
-		}).Errorln(err.Error())
-
-		// TODO - handle throttle exceptions from SES and re-queue accordingly.
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case ses.ErrCodeMessageRejected:
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"campaign_id": msg.CampaignID,
+					"uuid":        msg.UUID,
+				}).WithError(aerr).Error("Unable to send bulk templated email. Message rejected.")
+			case ses.ErrCodeMailFromDomainNotVerifiedException:
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"campaign_id": msg.CampaignID,
+					"uuid":        msg.UUID,
+				}).WithError(aerr).Error("Unable to send bulk templated email. Domain not verified.")
+			case ses.ErrCodeConfigurationSetDoesNotExistException:
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"campaign_id": msg.CampaignID,
+					"uuid":        msg.UUID,
+				}).WithError(aerr).Error("Unable to send bulk templated email. Configuration set does not exist.")
+			default:
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"campaign_id": msg.CampaignID,
+					"uuid":        msg.UUID,
+				}).WithError(aerr).Error("Unable to send bulk templated email. Unknown status code.")
+			}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"user_id":     msg.UserID,
+				"campaign_id": msg.CampaignID,
+				"uuid":        msg.UUID,
+			}).WithError(err).Error("Unable to send bulk templated email.")
+		}
 		return nil
 	}
 
@@ -97,7 +128,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"campaign_id":      msg.CampaignID,
 				"user_id":          msg.UserID,
 				"send_bulk_status": s.GoString(),
-			}).Errorln(err.Error())
+			}).WithError(err).Error("Unable to add log for sent emails result.")
 		}
 	}
 

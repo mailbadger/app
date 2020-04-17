@@ -10,9 +10,9 @@ import (
 
 // PaginateWithCursor is a middleware that populates the cursor pagination object and sets it to the context.
 // If the parameters are not valid the request is aborted.
-func PaginateWithCursor(resource string) gin.HandlerFunc {
+func PaginateWithCursor() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		p := storage.NewPaginationCursor(resource, c.Request.URL.Path, storage.DefaultPerPage)
+		p := storage.NewPaginationCursor(c.Request.URL.Path, storage.DefaultPerPage)
 
 		if len(c.Query("per_page")) > 0 {
 			perpage, err := strconv.ParseInt(c.Query("per_page"), 10, 64)

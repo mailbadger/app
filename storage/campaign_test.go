@@ -70,7 +70,7 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.Errors["name"], entities.ErrCampaignNameEmpty.Error())
 
 	//Test get campaigns
-	p := NewPaginationCursor("campaigns", "/api/campaigns", 13)
+	p := NewPaginationCursor("/api/campaigns", 13)
 	for i := 0; i < 10; i++ {
 		err := store.GetCampaigns(1, p)
 		assert.Nil(t, err)
@@ -88,7 +88,7 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, int64(101), p.Total)
 
 	//Test get campaigns backwards
-	p = NewPaginationCursor("campaigns", "/api/campaigns", 13)
+	p = NewPaginationCursor("/api/campaigns", 13)
 	p.SetEndingBefore(1)
 	for i := 0; i < 8; i++ {
 		err := store.GetCampaigns(1, p)

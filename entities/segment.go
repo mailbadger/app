@@ -8,12 +8,10 @@ import (
 
 // Segment represents the list entity
 type Segment struct {
-	ID          int64             `json:"id"`
+	Model
 	Name        string            `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
 	UserID      int64             `json:"-" gorm:"column:user_id; index"`
 	Subscribers []Subscriber      `json:"-" gorm:"many2many:subscribers_segments;"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
 	Errors      map[string]string `json:"-" sql:"-"`
 }
 
@@ -32,4 +30,16 @@ func (l *Segment) Validate() bool {
 	}
 
 	return len(l.Errors) == 0
+}
+
+func (s Segment) GetID() int64 {
+	return s.Model.ID
+}
+
+func (s Segment) GetCreatedAt() time.Time {
+	return s.Model.CreatedAt
+}
+
+func (s Segment) GetUpdatedAt() time.Time {
+	return s.Model.UpdatedAt
 }

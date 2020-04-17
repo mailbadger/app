@@ -158,7 +158,7 @@ func New() http.Handler {
 
 		campaigns := authorized.Group("/campaigns")
 		{
-			campaigns.GET("", middleware.PaginateWithCursor("campaigns"), actions.GetCampaigns)
+			campaigns.GET("", middleware.PaginateWithCursor(), actions.GetCampaigns)
 			campaigns.GET("/:id", actions.GetCampaign)
 			campaigns.POST("", actions.PostCampaign)
 			campaigns.PUT("/:id", actions.PutCampaign)
@@ -168,19 +168,19 @@ func New() http.Handler {
 
 		segments := authorized.Group("/segments")
 		{
-			segments.GET("", middleware.PaginateWithCursor("segments"), actions.GetSegments)
+			segments.GET("", middleware.PaginateWithCursor(), actions.GetSegments)
 			segments.GET("/:id", actions.GetSegment)
 			segments.POST("", actions.PostSegment)
 			segments.PUT("/:id", actions.PutSegment)
 			segments.DELETE("/:id", actions.DeleteSegment)
 			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
-			segments.GET("/:id/subscribers", middleware.PaginateWithCursor("segments"), actions.GetSegmentsubscribers)
+			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers)
 			segments.DELETE("/:id/subscribers", actions.DetachSegmentSubscribers)
 		}
 
 		subscribers := authorized.Group("/subscribers")
 		{
-			subscribers.GET("", middleware.PaginateWithCursor("subscribers"), actions.GetSubscribers)
+			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers)
 			subscribers.GET("/:id", actions.GetSubscriber)
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)

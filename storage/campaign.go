@@ -1,19 +1,22 @@
 package storage
 
 import (
+	"github.com/jinzhu/gorm"
 	"github.com/news-maily/app/entities"
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj
 func (db *store) GetCampaigns(userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Campaign{})
+	p.SetResource("campaigns")
 
-	query := db.Model(entities.Campaign{}).
-		Where("user_id = ?", userID).
-		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+	scopes := []func(*gorm.DB) *gorm.DB{
+		BelongsToUser(userID),
+	}
 
-	return db.Paginate(query, p, userID)
+	p.SetScopes(scopes)
+
+	return db.Paginate(p, userID)
 }
 
 // GetTotalCampaigns fetches the total count by user id

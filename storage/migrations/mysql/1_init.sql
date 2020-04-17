@@ -84,7 +84,9 @@ CREATE TABLE IF NOT EXISTS `segments` (
 CREATE TABLE IF NOT EXISTS `subscribers_segments` (
   `segment_id`    integer unsigned NOT NULL,
   `subscriber_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`segment_id`, `subscriber_id`)
+  PRIMARY KEY (`segment_id`, `subscriber_id`),
+  FOREIGN KEY (`segment_id`) REFERENCES segments(`id`),
+  FOREIGN KEY (`subscriber_id`) REFERENCES subscribers(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `bounces` (

@@ -1,6 +1,9 @@
 package storage
 
-import "github.com/news-maily/app/entities"
+import (
+	"github.com/jinzhu/gorm"
+	"github.com/news-maily/app/entities"
+)
 
 //CreateUser creates a new user
 func (db *store) CreateUser(user *entities.User) error {
@@ -40,4 +43,11 @@ func (db *store) GetActiveUserByUsername(username string) (*entities.User, error
 	var user = new(entities.User)
 	err := db.Where("username = ? and active = ?", username, true).First(user).Error
 	return user, err
+}
+
+// BelongsToUser finds a resource by the given user id.
+func BelongsToUser(userID int64) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("user_id = ?", userID)
+	}
 }

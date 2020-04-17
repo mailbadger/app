@@ -33,6 +33,8 @@ type Links struct {
 
 // PaginationCursor represents the paginated results by the given model.
 type PaginationCursor struct {
+	Scopes []func(*gorm.DB) *gorm.DB `json:"-"`
+
 	StartingAfter int64       `json:"-"`
 	EndingBefore  int64       `json:"-"`
 	Path          string      `json:"-"`
@@ -45,13 +47,12 @@ type PaginationCursor struct {
 }
 
 // NewPaginationCursor creates new PaginationCursor object.
-func NewPaginationCursor(resource, path string, perPage int64) *PaginationCursor {
+func NewPaginationCursor(path string, perPage int64) *PaginationCursor {
 	if perPage <= 0 || perPage > 100 {
 		perPage = DefaultPerPage
 	}
 
 	return &PaginationCursor{
-		Resource:  resource,
 		Path:      path,
 		PerPage:   perPage,
 		Direction: Start,
@@ -87,6 +88,16 @@ func (c *PaginationCursor) SetCollection(collection interface{}) {
 	c.Collection = collection
 }
 
+// SetScopes sets the pagination query scopes.
+func (c *PaginationCursor) SetScopes(scopes []func(*gorm.DB) *gorm.DB) {
+	c.Scopes = scopes
+}
+
+// SetResource sets the pagination resource.
+func (c *PaginationCursor) SetResource(r string) {
+	c.Resource = r
+}
+
 // SetTotal sets the total number of items in the collection.
 func (c *PaginationCursor) SetTotal(total int64) {
 	c.Total = total
@@ -112,17 +123,22 @@ func (c *PaginationCursor) SetPerPage(perPage int64) {
 	c.PerPage = perPage
 }
 
-func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) error {
+func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 	var last *entities.Model
+
+	query := db.Table(p.Resource).
+		Scopes(p.Scopes...).
+		Where("user_id = ?", userID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
 
 	switch p.Direction {
 	case Backward:
-		m, err := db.GetOne(p.EndingBefore, userID, p.Resource)
+		m, err := db.GetOne(p.EndingBefore, userID, p.Resource, p.Scopes...)
 		if err != nil {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
-
-		query.Debug().Where(`id IN (?)`,
+		query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.id", p.Resource),
 			db.DB.
 				Table(p.Resource).
 				Select("id").
@@ -134,13 +150,13 @@ func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) err
 				).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
 		).Find(p.Collection)
 
-		last, err = db.GetLast(userID, p.Resource)
+		last, err = db.GetLast(userID, p.Resource, p.Scopes...)
 		if err != nil {
 			return fmt.Errorf("paginate: get last: %w", err)
 		}
 
 	case Forward:
-		m, err := db.GetOne(p.StartingAfter, userID, p.Resource)
+		m, err := db.GetOne(p.StartingAfter, userID, p.Resource, p.Scopes...)
 		if err != nil {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
@@ -155,7 +171,7 @@ func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) err
 		// when it is descending order we'll need the first record (last from behind) in order
 		// to check if it matches the last record from the current page. If they're the same
 		// the 'next' link will be nil.
-		last, err = db.GetFirst(userID, p.Resource)
+		last, err = db.GetFirst(userID, p.Resource, p.Scopes...)
 		if err != nil {
 			return fmt.Errorf("paginate: get first: %w", err)
 		}
@@ -163,7 +179,7 @@ func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) err
 		query.Find(p.Collection)
 	}
 
-	total, err := db.GetTotal(userID, p.Resource)
+	total, err := db.GetTotal(userID, p.Resource, p.Scopes...)
 	if err != nil {
 		return fmt.Errorf("paginate: get total: %w", err)
 	}
@@ -172,7 +188,7 @@ func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) err
 
 	models := interfaceToSlice(p.Collection)
 
-	prevID, nextID, err := findPrevAndNextIDs(p, userID, models, last)
+	prevID, nextID, err := findPrevAndNextIDs(p, models, last)
 	if err != nil {
 		return fmt.Errorf("paginate: find prev and next: %w", err)
 	}
@@ -182,31 +198,45 @@ func (db *store) Paginate(query *gorm.DB, p *PaginationCursor, userID int64) err
 	return nil
 }
 
-func (db *store) GetOne(id, userID int64, table string) (*entities.Model, error) {
+func (db *store) GetOne(id, userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	err := db.Table(table).Where("user_id = ? and id = ?", userID, id).Find(&model).Error
+	scopes = append(scopes, BelongsToUser(userID))
+	err := db.Table(table).Scopes(scopes...).Where("id = ?", id).Find(&model).Error
 	return &model, err
 }
 
-func (db *store) GetTotal(userID int64, table string) (int64, error) {
+func (db *store) GetTotal(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (int64, error) {
 	var count int64
-	err := db.Table(table).Where("user_id = ?", userID).Count(&count).Error
+	scopes = append(scopes, BelongsToUser(userID))
+	err := db.Table(table).Scopes(scopes...).Count(&count).Error
 	return count, err
 }
 
-func (db *store) GetFirst(userID int64, table string) (*entities.Model, error) {
+func (db *store) GetFirst(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	err := db.Table(table).Where("user_id = ?", userID).Order("created_at, id").Limit(1).Find(&model).Error
+	scopes = append(scopes, BelongsToUser(userID))
+	err := db.Table(table).
+		Scopes(scopes...).
+		Order("created_at, id").
+		Limit(1).
+		Find(&model).
+		Error
 	return &model, err
 }
 
-func (db *store) GetLast(userID int64, table string) (*entities.Model, error) {
+func (db *store) GetLast(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	err := db.Table(table).Where("user_id = ?", userID).Order("created_at desc, id desc").Limit(1).Find(&model).Error
+	scopes = append(scopes, BelongsToUser(userID))
+	err := db.Table(table).
+		Scopes(scopes...).
+		Order("created_at desc, id desc").
+		Limit(1).
+		Find(&model).
+		Error
 	return &model, err
 }
 
-func findPrevAndNextIDs(p *PaginationCursor, userID int64, models []interface{}, last *entities.Model) (int64, int64, error) {
+func findPrevAndNextIDs(p *PaginationCursor, models []interface{}, last *entities.Model) (int64, int64, error) {
 	var (
 		prevID, nextID int64
 	)

@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/utils/pagination"
 )
 
 const key = "storage"
@@ -33,7 +32,7 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
 
-	GetSegments(int64, *pagination.Cursor)
+	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
 	GetSegment(int64, int64) (*entities.Segment, error)
 	GetSegmentByName(name string, userID int64) (*entities.Segment, error)
@@ -44,8 +43,8 @@ type Storage interface {
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
 
-	GetSubscribers(int64, *pagination.Cursor)
-	GetSubscribersBySegmentID(int64, int64, *pagination.Cursor)
+	GetSubscribers(int64, *PaginationCursor) error
+	GetSubscribersBySegmentID(int64, int64, *PaginationCursor) error
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
 	GetSubscriberByEmail(string, int64) (*entities.Subscriber, error)
@@ -179,8 +178,8 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 
 // GetSegments populates a pagination object with a collection of
 // lists by the specified user id.
-func GetSegments(c context.Context, userID int64, p *pagination.Cursor) {
-	GetFromContext(c).GetSegments(userID, p)
+func GetSegments(c context.Context, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetSegments(userID, p)
 }
 
 // GetSegmentsByIDs fetches lists by user id and the given ids
@@ -230,14 +229,14 @@ func DetachSubscribers(c context.Context, l *entities.Segment) error {
 
 // GetSubscribers populates a pagination object with a collection of
 // subscribers by the specified user id.
-func GetSubscribers(c context.Context, userID int64, p *pagination.Cursor) {
-	GetFromContext(c).GetSubscribers(userID, p)
+func GetSubscribers(c context.Context, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetSubscribers(userID, p)
 }
 
 // GetSubscribersBySegmentID populates a pagination object with a collection of
 // subscribers by the specified user id and list id.
-func GetSubscribersBySegmentID(c context.Context, segmentID, userID int64, p *pagination.Cursor) {
-	GetFromContext(c).GetSubscribersBySegmentID(segmentID, userID, p)
+func GetSubscribersBySegmentID(c context.Context, segmentID, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetSubscribersBySegmentID(segmentID, userID, p)
 }
 
 // GetSubscriber returns a Subscriber entity by the given id and user id.
