@@ -250,7 +250,15 @@ func GetSegmentsubscribers(c *gin.Context) {
 			return
 		}
 
-		storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
+		err := storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to fetch subscribers for segment collection.")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to fetch segments. Please try again.",
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, p)
 		return
 	}

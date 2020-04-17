@@ -70,7 +70,8 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subs
 	p := NewPaginationCursor("/api/subcribers", 10)
-	store.GetSubscribers(1, p)
+	err = store.GetSubscribers(1, p)
+	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
 	//Test get subs by ids
@@ -81,7 +82,8 @@ func TestSubscriber(t *testing.T) {
 	//Test get subs by list id
 
 	p = NewPaginationCursor(fmt.Sprintf("/api/segments/%d/subscribers", l.ID), 10)
-	store.GetSubscribersBySegmentID(l.ID, 1, p)
+	err = store.GetSubscribersBySegmentID(l.ID, 1, p)
+	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
 	var timestamp time.Time
