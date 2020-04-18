@@ -9,8 +9,15 @@ import (
 )
 
 func TestSubscriberEntity(t *testing.T) {
-	os.Setenv("APP_URL", "https://mailbadger.io")
-	os.Setenv("UNSUBSCRIBE_SECRET", "secret")
+	err := os.Setenv("APP_URL", "https://mailbadger.io")
+	if err != nil {
+		assert.FailNow(t, "unable to set os env.")
+	}
+
+	err = os.Setenv("UNSUBSCRIBE_SECRET", "secret")
+	if err != nil {
+		assert.FailNow(t, "unable to set os env.")
+	}
 
 	sub := &Subscriber{
 		Model:    Model{ID: 123},
@@ -18,7 +25,7 @@ func TestSubscriberEntity(t *testing.T) {
 		Email:    "john.doe@example.com",
 	}
 
-	err := sub.AppendUnsubscribeURLToMeta()
+	err = sub.AppendUnsubscribeURLToMeta()
 	assert.Nil(t, err)
 
 	var m map[string]string

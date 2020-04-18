@@ -84,8 +84,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
-				s.AppendUnsubscribeURLToMeta()
+				err := s.AppendUnsubscribeURLToMeta()
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to append unsubscribe url to metadata.")
 
+					continue
+				}
 				d := &ses.BulkEmailDestination{
 					Destination: &ses.Destination{
 						ToAddresses: []*string{aws.String(s.Email)},
