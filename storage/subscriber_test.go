@@ -44,9 +44,11 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subscriber
 	s, err = store.GetSubscriber(s.ID, 1)
-	s.Normalize()
-
 	assert.Nil(t, err)
+
+	err = s.Normalize()
+	assert.Nil(t, err)
+
 	assert.Equal(t, s.Name, "foo")
 	assert.NotEmpty(t, s.Metadata)
 	assert.Equal(t, s.Metadata["foo"], "bar")

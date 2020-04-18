@@ -55,6 +55,8 @@ func New() http.Handler {
 	handler.Use(middleware.Storage())
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
+	handler.Use(middleware.RequestID())
+	handler.Use(middleware.SetLoggerEntry())
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{

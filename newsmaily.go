@@ -112,7 +112,7 @@ func main() {
 		// We received an interrupt signal, shut down.
 		if err := srv.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout:
-			logrus.Printf("HTTP server Shutdown: %v", err)
+			logrus.Infof("HTTP server Shutdown: %v", err)
 		}
 		close(idleConnsClosed)
 	}()
@@ -120,7 +120,7 @@ func main() {
 	logrus.Infoln("Starting HTTP server on port", srv.Addr)
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
-		logrus.Printf("HTTP server ListenAndServe: %v", err)
+		logrus.Infof("HTTP server ListenAndServe: %v", err)
 	}
 
 	<-idleConnsClosed

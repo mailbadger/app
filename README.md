@@ -1,5 +1,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/news-maily/app)](https://goreportcard.com/report/github.com/news-maily/app)
-[![Go 1.12](https://img.shields.io/badge/go-1.12-9cf.svg)](https://golang.org/dl/)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/news-maily/app)
+[![codecov](https://codecov.io/gh/news-maily/app/branch/master/graph/badge.svg)](https://codecov.io/gh/news-maily/app)
 
 # news-maily
 

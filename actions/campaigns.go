@@ -9,6 +9,7 @@ import (
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/queue"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
@@ -32,7 +33,7 @@ func StartCampaign(c *gin.Context) {
 	params := &sendCampaignParams{}
 	err = c.Bind(params)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to bind params")
+		logger.From(c).WithError(err).Error("Unable to bind send campaign params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
@@ -104,11 +105,10 @@ func StartCampaign(c *gin.Context) {
 
 	err = queue.Publish(c, entities.CampaignsTopic, msg)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
-			"user_id":     u.ID,
 			"segment_ids": params.Ids,
-		}).WithError(err).Error("unable to queue campaign for sending")
+		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
@@ -118,7 +118,7 @@ func StartCampaign(c *gin.Context) {
 	campaign.Status = entities.StatusSending
 	err = storage.UpdateCampaign(c, campaign)
 	if err != nil {
-		logrus.WithField("campaign", campaign).WithError(err).Error("unable to update campaign status")
+		logger.From(c).WithField("campaign_id", campaign.ID).WithError(err).Error("Unable to update campaign status.")
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -129,7 +129,7 @@ func StartCampaign(c *gin.Context) {
 func GetCampaigns(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		logrus.Error("Unable to fetch pagination cursor from context.")
+		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch campaigns. Please try again.",
 		})
@@ -138,7 +138,7 @@ func GetCampaigns(c *gin.Context) {
 
 	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
-		logrus.Error("Unable to cast pagination cursor from context value.")
+		logger.From(c).Error("Unable to cast pagination cursor from context value.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch campaigns. Please try again.",
 		})
@@ -147,7 +147,10 @@ func GetCampaigns(c *gin.Context) {
 
 	err := storage.GetCampaigns(c, middleware.GetUser(c).ID, p)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to fetch campaigns collection.")
+		logger.From(c).WithFields(logrus.Fields{
+			"starting_after": p.StartingAfter,
+			"ending_before":  p.EndingBefore,
+		}).WithError(err).Warn("Unable to fetch campaigns collection.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch campaigns. Please try again.",
 		})

@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/storage"
 	sns "github.com/robbiet480/go.sns"
 	"github.com/sirupsen/logrus"
@@ -19,41 +20,46 @@ func HandleHook(c *gin.Context) {
 
 	body, err := c.GetRawData()
 	if err != nil {
-		logrus.Errorf("Cannot fetch raw data: %s", err.Error())
+		logger.From(c).WithError(err).Error("Cannot fetch raw data")
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	err = json.Unmarshal(body, &payload)
 	if err != nil {
-		logrus.Errorf("Cannot decode request: %s", err.Error())
+		logger.From(c).WithError(err).Errorf("Cannot decode SNS request.")
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	err = payload.VerifyPayload()
 	if err != nil {
-		logrus.Error(err)
+		logger.From(c).WithError(err).Warn("Unable to verify SNS payload.")
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	if payload.Type == emails.SubConfirmationType {
 		response, err := http.Get(payload.SubscribeURL)
 		if err != nil {
-			logrus.Errorf("AWS error while confirming the subscribe URL: %s", err.Error())
+			logger.From(c).WithError(err).Error("AWS unable to confirm SNS subscription.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
 		defer func() {
 			err := response.Body.Close()
 			if err != nil {
-				logrus.WithError(err).Error("Unable to close response body.")
+				logger.From(c).WithError(err).Error("Unable to close response body.")
 			}
 		}()
 
 		if response.StatusCode >= http.StatusBadRequest {
 			xml, _ := ioutil.ReadAll(response.Body)
-			logrus.Errorf("AWS error while confirming the subscribe URL: %s", string(xml))
-		} else {
-			logrus.Infof("AWS SNS topic successfully subscribed: %s", payload.SubscribeURL)
+			logger.From(c).WithFields(logrus.Fields{
+				"response":    string(xml),
+				"status_code": response.StatusCode,
+			}).Warn("AWS error while confirming the subscribe URL.")
 		}
 
 		return
@@ -63,38 +69,41 @@ func HandleHook(c *gin.Context) {
 
 	err = json.Unmarshal([]byte(payload.Message), &msg)
 	if err != nil {
-		logrus.Errorf("Cannot unmarshal SNS raw message: %s", err.Error())
+		logger.From(c).WithError(err).Error("Cannot unmarshal SNS raw message.")
 		return
 	}
 
 	// fetch the campaign id from tags
 	cidTag, ok := msg.Mail.Tags["campaign_id"]
 	if !ok || len(cidTag) == 0 {
-		logrus.WithFields(logrus.Fields{
+		logger.From(c).WithFields(logrus.Fields{
 			"message_id": msg.Mail.MessageID,
 			"source":     msg.Mail.Source,
 			"tags":       msg.Mail.Tags,
-		}).Error("campaign id not found in mail tags")
+		}).Error("Campaign id not found in mail tags.")
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	cid, err := strconv.ParseInt(cidTag[0], 10, 64)
 	if err != nil {
-		logrus.Errorf("unable to parse campaign id str to int: %s", err.Error())
+		logger.From(c).WithError(err).Error("Unable to parse campaign id.")
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
 	uuid := c.Param("uuid")
 	u, err := storage.GetUserByUUID(c, uuid)
 	if err != nil {
-		logrus.WithField("uuid", uuid).WithError(err).Error("unable to fetch user")
+		logger.From(c).WithField("uuid", uuid).WithError(err).Error("unable to fetch user by uuid.")
 		return
 	}
 
 	switch msg.NotificationType {
 	case emails.BounceType:
 		if msg.Bounce == nil {
-			logrus.WithField("notif", msg).Errorln("bounce is empty")
+			logger.From(c).WithField("message", msg).Error("BounceType: bounce is nil.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
@@ -112,19 +121,26 @@ func HandleHook(c *gin.Context) {
 				CreatedAt:      msg.Bounce.Timestamp,
 			})
 			if err != nil {
-				logrus.WithField("notif", msg).Errorln(err.Error())
+				logger.From(c).WithFields(logrus.Fields{
+					"message":   msg,
+					"recipient": recipient,
+				}).WithError(err).Error("Unable to create bounce record.")
 			}
 
 			if msg.Bounce.BounceType == "Permanent" {
 				err = storage.BlacklistSubscriber(c, u.ID, recipient.EmailAddress)
 				if err != nil {
-					logrus.WithField("notif", msg).Errorln(err.Error())
+					logger.From(c).WithFields(logrus.Fields{
+						"message":   msg,
+						"recipient": recipient,
+					}).WithError(err).Error("Unable to blacklist bounced recipient.")
 				}
 			}
 		}
 	case emails.ComplaintType:
 		if msg.Complaint == nil {
-			logrus.WithField("notif", msg).Errorln("complaint is empty")
+			logger.From(c).WithField("message", msg).Error("ComplaintType: complaint is nil.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
@@ -138,12 +154,18 @@ func HandleHook(c *gin.Context) {
 				CreatedAt:  msg.Complaint.Timestamp,
 			})
 			if err != nil {
-				logrus.WithField("notif", msg).Errorln(err.Error())
+				logger.From(c).WithFields(logrus.Fields{
+					"user_id":     u.ID,
+					"campaign_id": cid,
+					"message":     msg,
+					"recipient":   recipient,
+				}).WithError(err).Error("Unable to create complaint record.")
 			}
 		}
 	case emails.DeliveryType:
 		if msg.Delivery == nil {
-			logrus.WithField("notif", msg).Errorln("delivery is empty")
+			logger.From(c).WithField("message", msg).Error("DeliveryType: delivery is nil.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
@@ -159,7 +181,11 @@ func HandleHook(c *gin.Context) {
 				CreatedAt:            msg.Delivery.Timestamp,
 			})
 			if err != nil {
-				logrus.WithField("notif", msg).Errorln(err.Error())
+				logger.From(c).WithFields(logrus.Fields{
+					"user_id":     u.ID,
+					"campaign_id": cid,
+					"message":     msg,
+				}).WithError(err).Error("Unable to create delivery record.")
 			}
 		}
 	case emails.SendType:
@@ -174,12 +200,17 @@ func HandleHook(c *gin.Context) {
 				CreatedAt:        msg.Mail.Timestamp,
 			})
 			if err != nil {
-				logrus.WithField("notif", msg).Errorln(err.Error())
+				logger.From(c).WithFields(logrus.Fields{
+					"message":     msg,
+					"user_id":     u.ID,
+					"campaign_id": cid,
+				}).WithError(err).Error("Unable to create send record.")
 			}
 		}
 	case emails.ClickType:
 		if msg.Click == nil {
-			logrus.WithField("notif", msg).Errorln("click is empty")
+			logger.From(c).WithField("message", msg).Error("ClickType: click is nil.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
@@ -192,11 +223,16 @@ func HandleHook(c *gin.Context) {
 			CreatedAt:  msg.Click.Timestamp,
 		})
 		if err != nil {
-			logrus.WithField("notif", msg).Errorln(err.Error())
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":     u.ID,
+				"campaign_id": cid,
+				"message":     msg,
+			}).WithError(err).Error("Unable to create click record.")
 		}
 	case emails.OpenType:
 		if msg.Open == nil {
-			logrus.WithField("notif", msg).Errorln("open is empty")
+			logger.From(c).WithField("message", msg).Error("OpenType: open is nil.")
+			c.AbortWithStatus(http.StatusBadRequest)
 			return
 		}
 
@@ -208,16 +244,20 @@ func HandleHook(c *gin.Context) {
 			CreatedAt:  msg.Open.Timestamp,
 		})
 		if err != nil {
-			logrus.WithField("notif", msg).Errorln(err.Error())
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":     u.ID,
+				"campaign_id": cid,
+				"message":     msg,
+			}).WithError(err).Error("Unable to create open record.")
 		}
 	case emails.RenderingFailureType:
-		logrus.WithFields(logrus.Fields{
+		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id":   cid,
 			"user_id":       u.ID,
 			"error":         msg.RenderingFailure.ErrorMessage,
 			"template_name": msg.RenderingFailure.TemplateName,
-		}).Warn("rendering failure")
+		}).Warn("Rendering html template failure.")
 	default:
-		logrus.WithField("sns", msg).Error("unknown AWS SES message")
+		logger.From(c).WithField("sns", msg).Error("Unknown AWS SES message.")
 	}
 }
