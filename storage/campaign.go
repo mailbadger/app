@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"github.com/jinzhu/gorm"
 	"github.com/news-maily/app/entities"
 )
 
@@ -9,12 +8,6 @@ import (
 func (db *store) GetCampaigns(userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Campaign{})
 	p.SetResource("campaigns")
-
-	scopes := []func(*gorm.DB) *gorm.DB{
-		BelongsToUser(userID),
-	}
-
-	p.SetScopes(scopes)
 
 	return db.Paginate(p, userID)
 }

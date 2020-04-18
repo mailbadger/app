@@ -6,7 +6,6 @@ import (
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
-	"github.com/sirupsen/logrus"
 )
 
 // Subscriber represents the subscriber entity
@@ -23,17 +22,18 @@ type Subscriber struct {
 	Metadata    map[string]string `json:"metadata" sql:"-"`
 }
 
-func (s *Subscriber) Normalize() {
+func (s *Subscriber) Normalize() error {
 	m := make(map[string]string)
 
 	if !s.MetaJSON.IsNull() {
 		err := json.Unmarshal(s.MetaJSON, &m)
 		if err != nil {
-			logrus.WithError(err).Error("unable to unmarshal json metadata")
+			return err
 		}
 	}
 
 	s.Metadata = m
+	return nil
 }
 
 // Validate subscriber properties,

@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,12 +18,11 @@ import (
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
 	fb "github.com/huandu/facebook"
-	"github.com/jinzhu/gorm"
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/storage"
 	"github.com/news-maily/app/utils"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	oauthfb "golang.org/x/oauth2/facebook"
@@ -39,7 +39,10 @@ func PostAuthenticate(c *gin.Context) {
 
 	user, err := storage.GetActiveUserByUsername(c, username)
 	if err != nil {
-		logrus.Errorf("Invalid credentials. %s", err)
+		if !errors.Is(err, sql.ErrNoRows) {
+			logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
+		}
+
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Invalid credentials.",
 		})
@@ -63,7 +66,7 @@ func PostAuthenticate(c *gin.Context) {
 
 	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
+		logger.From(c).WithError(err).Error("Cannot create session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create session id.",
 		})
@@ -72,7 +75,7 @@ func PostAuthenticate(c *gin.Context) {
 
 	err = persistSession(c, user.ID, sessID)
 	if err != nil {
-		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
+		logger.From(c).WithError(err).Error("Cannot persist session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create session id.",
 		})
@@ -104,7 +107,7 @@ func PostSignup(c *gin.Context) {
 	params := &signupParams{}
 	err := c.Bind(params)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to bind params")
+		logger.From(c).WithError(err).Error("Unable to bind signup params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
@@ -133,7 +136,7 @@ func PostSignup(c *gin.Context) {
 
 	_, err = storage.GetUserByUsername(c, params.Email)
 	if err == nil {
-		logrus.WithField("username", params.Email).Error("duplicate account")
+		logger.From(c).WithField("email", params.Email).Warn("Duplicate account.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -144,7 +147,7 @@ func PostSignup(c *gin.Context) {
 	if secret != "" {
 		captcha, err := recaptcha.NewReCAPTCHA(secret, recaptcha.V2, 10*time.Second)
 		if err != nil {
-			logrus.WithError(err).Error("recaptcha initialize error")
+			logger.From(c).WithError(err).Error("Recaptcha initialize error.")
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "Unable to create an account. Captcha is invalid.",
 			})
@@ -153,7 +156,7 @@ func PostSignup(c *gin.Context) {
 
 		err = captcha.Verify(params.TokenResponse)
 		if err != nil {
-			logrus.WithField("username", params.Email).Errorf("recaptcha invalid response. %s", err)
+			logger.From(c).WithField("username", params.Email).WithError(err).Infof("recaptcha invalid response.")
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "Unable to create an account.",
 			})
@@ -163,7 +166,7 @@ func PostSignup(c *gin.Context) {
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		logrus.WithError(err).Error("unable to generate random uuid")
+		logger.From(c).WithError(err).Error("Unable to generate random uuid.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -172,7 +175,7 @@ func PostSignup(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logrus.WithError(err).Error("unable to generate hash from password")
+		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -193,7 +196,7 @@ func PostSignup(c *gin.Context) {
 
 	err = storage.CreateUser(c, user)
 	if err != nil {
-		logrus.WithField("username", params.Email).WithError(err).Error("unable to persist user in db")
+		logger.From(c).WithField("username", params.Email).WithError(err).Error("Unable to persist user.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -208,7 +211,7 @@ func PostSignup(c *gin.Context) {
 	if err == nil {
 		tokenStr, err := utils.GenerateRandomString(32)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to generate random string.")
+			logger.From(c).WithError(err).Error("Unable to generate random string.")
 		}
 		t := &entities.Token{
 			UserID:    user.ID,
@@ -218,17 +221,22 @@ func PostSignup(c *gin.Context) {
 		}
 		err = storage.CreateToken(c, t)
 		if err != nil {
-			logrus.WithError(err).Error("Cannot create token.")
+			logger.From(c).WithError(err).Error("Cannot create token.")
 		} else {
-			go sendVerifyEmail(tokenStr, user.Username, sender)
+			go func(c *gin.Context) {
+				err := sendVerifyEmail(tokenStr, user.Username, sender)
+				if err != nil {
+					logger.From(c).WithError(err).Error("Unable to send verification email.")
+				}
+			}(c.Copy())
 		}
 	} else {
-		logrus.WithError(err).Error("unable to instantiate ses sender")
+		logger.From(c).WithError(err).Error("Unable to instantiate ses sender.")
 	}
 
 	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
+		logger.From(c).WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create session id.",
 		})
@@ -237,7 +245,7 @@ func PostSignup(c *gin.Context) {
 
 	err = persistSession(c, user.ID, sessID)
 	if err != nil {
-		logrus.WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
+		logger.From(c).WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create session id.",
 		})
@@ -253,7 +261,7 @@ func PostSignup(c *gin.Context) {
 func GetGithubAuth(c *gin.Context) {
 	state, err := utils.GenerateRandomString(12)
 	if err != nil {
-		logrus.WithError(err).Error("unable to generate random string")
+		logger.From(c).WithError(err).Error("Github: unable to generate random string.")
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"message": "Service unavailable.",
 		})
@@ -264,7 +272,7 @@ func GetGithubAuth(c *gin.Context) {
 	session.Set("state", state)
 	err = session.Save()
 	if err != nil {
-		logrus.WithError(err).Error("Unable to save session.")
+		logger.From(c).WithError(err).Error("Github: unable to save session.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to save session, please try again.",
 		})
@@ -302,7 +310,6 @@ func GithubCallback(c *gin.Context) {
 	sessState := session.Get("state")
 	s, ok := sessState.(string)
 	if !ok {
-		logrus.Error("unable to fetch state from session")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -310,17 +317,13 @@ func GithubCallback(c *gin.Context) {
 	session.Clear()
 
 	if s != state {
-		logrus.WithFields(logrus.Fields{
-			"state":          s,
-			"callback_state": state,
-		}).Error("state mismatch")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
 
 	ghToken, err := conf.Exchange(ctx, code)
 	if err != nil {
-		logrus.WithError(err).Error("exchange token error")
+		logger.From(c).WithError(err).Warn("Github: unable to exchange code for access token.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -330,7 +333,7 @@ func GithubCallback(c *gin.Context) {
 
 	ghUser, _, err := client.Users.Get(ctx, "")
 	if err != nil {
-		logrus.WithError(err).Error("fetch user error")
+		logger.From(c).WithError(err).Error("Github: get user error.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -344,7 +347,7 @@ func GetGoogleAuth(c *gin.Context) {
 
 	state, err := utils.GenerateRandomString(12)
 	if err != nil {
-		logrus.WithError(err).Error("unable to generate random string")
+		logger.From(c).WithError(err).Error("Unable to generate random string.")
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"message": "Service unavailable.",
 		})
@@ -356,7 +359,7 @@ func GetGoogleAuth(c *gin.Context) {
 	session.Set("state", state)
 	err = session.Save()
 	if err != nil {
-		logrus.WithError(err).Error("Unable to save session.")
+		logger.From(c).WithError(err).Error("Unable to save session.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to save session, please try again.",
 		})
@@ -402,7 +405,6 @@ func GoogleCallback(c *gin.Context) {
 	sessState := session.Get("state")
 	s, ok := sessState.(string)
 	if !ok {
-		logrus.Error("unable to fetch state from session")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -410,10 +412,6 @@ func GoogleCallback(c *gin.Context) {
 	session.Clear()
 
 	if s != state {
-		logrus.WithFields(logrus.Fields{
-			"state":          s,
-			"callback_state": state,
-		}).Error("state mismatch")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -421,14 +419,14 @@ func GoogleCallback(c *gin.Context) {
 	ctx := context.Background()
 	tok, err := conf.Exchange(ctx, code)
 	if err != nil {
-		logrus.WithError(err).Error("exchange token error")
+		logger.From(c).WithError(err).Warn("Google: exchange token error.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
 
 	oauth2Service, err := googleoauth2.NewService(ctx, option.WithTokenSource(conf.TokenSource(ctx, tok)))
 	if err != nil {
-		logrus.WithError(err).Error("unable to instantiate oauth2 service")
+		logger.From(c).WithError(err).Error("Google: unable to instantiate oauth2 service.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -436,7 +434,7 @@ func GoogleCallback(c *gin.Context) {
 	userInfoSvc := googleoauth2.NewUserinfoV2MeService(oauth2Service)
 	gUser, err := userInfoSvc.Get().Do()
 	if err != nil {
-		logrus.WithError(err).Error("fetch user error")
+		logger.From(c).WithError(err).Error("Google: fetch user error.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -449,7 +447,7 @@ func GetFacebookAuth(c *gin.Context) {
 	host := os.Getenv("APP_URL")
 	state, err := utils.GenerateRandomString(12)
 	if err != nil {
-		logrus.WithError(err).Error("unable to generate random string")
+		logger.From(c).WithError(err).Error("Unable to generate random string.")
 		c.JSON(http.StatusServiceUnavailable, gin.H{
 			"message": "Service unavailable.",
 		})
@@ -461,7 +459,7 @@ func GetFacebookAuth(c *gin.Context) {
 	session.Set("state", state)
 	err = session.Save()
 	if err != nil {
-		logrus.WithError(err).Error("Unable to save session.")
+		logger.From(c).WithError(err).Error("Unable to save session.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to save session, please try again.",
 		})
@@ -500,7 +498,6 @@ func FacebookCallback(c *gin.Context) {
 	sessState := session.Get("state")
 	s, ok := sessState.(string)
 	if !ok {
-		logrus.Error("unable to fetch state from session")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -508,17 +505,13 @@ func FacebookCallback(c *gin.Context) {
 	session.Clear()
 
 	if s != state {
-		logrus.WithFields(logrus.Fields{
-			"state":          s,
-			"callback_state": state,
-		}).Error("state mismatch")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
 
 	fbToken, err := conf.Exchange(ctx, code)
 	if err != nil {
-		logrus.WithError(err).Error("exchange token error")
+		logger.From(c).WithError(err).Warn("FB: exchange token error.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -531,21 +524,21 @@ func FacebookCallback(c *gin.Context) {
 
 	res, err := sess.Get("/me", nil)
 	if err != nil {
-		logrus.WithError(err).Error("fb client error")
+		logger.From(c).WithError(err).Error("FB: unable to get user.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
 
 	email, ok := res["email"]
 	if !ok {
-		logrus.WithField("resp", res).Error("fb response does not include email")
+		logger.From(c).WithField("resp", res).Warn("FB: response does not include email.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
 
 	emailStr, ok := email.(string)
 	if !ok {
-		logrus.WithField("email", email).Error("cannot convert email to string")
+		logger.From(c).WithField("email", email).Error("FB: cannot convert email to string.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
 		return
 	}
@@ -561,14 +554,14 @@ func PostLogout(c *gin.Context) {
 	if ok {
 		err := storage.DeleteSession(c, s)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to delete session.")
+			logger.From(c).WithError(err).Error("Unable to delete session.")
 		}
 	}
 
 	session.Delete("sess_id")
 	err := session.Save()
 	if err != nil {
-		logrus.WithError(err).Error("Unable to save session.")
+		logger.From(c).WithError(err).Error("Unable to save session.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to save session, please try again.",
 		})
@@ -583,15 +576,15 @@ func PostLogout(c *gin.Context) {
 func completeCallback(c *gin.Context, email, source, host string) {
 	u, err := storage.GetUserByUsername(c, email)
 	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
-			logrus.WithError(err).Error("Unable to fetch user by username")
+		if !errors.Is(err, sql.ErrNoRows) {
+			logger.From(c).WithError(err).Error("Social auth callback: unable to fetch user by username.")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
 
 		uuid, err := uuid.NewRandom()
 		if err != nil {
-			logrus.WithError(err).Error("Unable to generate random uuid")
+			logger.From(c).WithError(err).Error("Unable to generate random uuid.")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
@@ -606,28 +599,28 @@ func completeCallback(c *gin.Context, email, source, host string) {
 
 		err = storage.CreateUser(c, u)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to create user")
+			logger.From(c).WithError(err).Error("Unable to create user.")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return
 		}
 	}
 
 	if !u.Active {
-		logrus.WithField("user_id", u.ID).Warn("Inactive user sign in")
+		logger.From(c).WithField("user_id", u.ID).Warn("Inactive user sign in.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
 
 	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
+		logger.From(c).WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
 
 	err = persistSession(c, u.ID, sessID)
 	if err != nil {
-		logrus.WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
+		logger.From(c).WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
 		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
 		return
 	}
@@ -635,7 +628,7 @@ func completeCallback(c *gin.Context, email, source, host string) {
 	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
-func sendVerifyEmail(token, email string, sender emails.Sender) {
+func sendVerifyEmail(token, email string, sender emails.Sender) error {
 	url := os.Getenv("APP_URL") + "/verify-email/" + token
 
 	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
@@ -647,9 +640,7 @@ func sendVerifyEmail(token, email string, sender emails.Sender) {
 		},
 	})
 
-	if err != nil {
-		logrus.WithError(err).Error("email verification - send email failure")
-	}
+	return err
 }
 
 func persistSession(c *gin.Context, userID int64, sessID string) error {
