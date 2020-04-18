@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -41,7 +40,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).Error("Malformed JSON message.")
+		logrus.WithField("body", string(m.Body)).WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
 
@@ -67,7 +66,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
-			}).Errorf("unable to fetch subscribers: %s", err.Error())
+			}).WithError(err).Error("Unable to fetch subscribers.")
 			break
 		}
 
@@ -83,9 +82,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				end = len(subs)
 			}
 
-			// create
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
+				s.AppendUnsubscribeURLToMeta()
+
 				d := &ses.BulkEmailDestination{
 					Destination: &ses.Destination{
 						ToAddresses: []*string{aws.String(s.Email)},
@@ -98,7 +98,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			uuid, err := uuid.NewRandom()
 			if err != nil {
-				logrus.Errorf("unable to generate random uuid: %s", err.Error())
+				logrus.WithError(err).Error("Unable to generate random uuid.")
 				continue
 			}
 
@@ -181,14 +181,14 @@ func main() {
 
 	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(entities.CampaignsTopic, entities.CampaignsTopic, config)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	consumer.ChangeMaxInFlight(200)
@@ -206,7 +206,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
 	nsqlds := []string{addr}
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	shutdown := make(chan os.Signal, 2)

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -46,12 +47,13 @@ func TestSubscriber(t *testing.T) {
 	s, err = store.GetSubscriber(s.ID, 1)
 	assert.Nil(t, err)
 
-	err = s.Normalize()
-	assert.Nil(t, err)
-
 	assert.Equal(t, s.Name, "foo")
-	assert.NotEmpty(t, s.Metadata)
-	assert.Equal(t, s.Metadata["foo"], "bar")
+	assert.NotEmpty(t, s.MetaJSON)
+
+	var m map[string]string
+	err = json.Unmarshal(s.MetaJSON, &m)
+	assert.Nil(t, err)
+	assert.Equal(t, m["foo"], "bar")
 
 	//Test get subscriber by email
 	s, err = store.GetSubscriberByEmail("john@example.com", 1)

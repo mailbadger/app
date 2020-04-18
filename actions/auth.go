@@ -231,7 +231,7 @@ func PostSignup(c *gin.Context) {
 			}(c.Copy())
 		}
 	} else {
-		logger.From(c).WithError(err).Error("Unable to instantiate ses sender.")
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
 	}
 
 	sessID, err := utils.GenerateRandomString(32)

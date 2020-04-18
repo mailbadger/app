@@ -8,15 +8,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
-	"github.com/sirupsen/logrus"
 )
 
 func GetSubscribers(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		logrus.Error("Unable to fetch pagination cursor from context.")
+		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch segments. Please try again.",
 		})
@@ -25,7 +25,7 @@ func GetSubscribers(c *gin.Context) {
 
 	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
-		logrus.Error("Unable to cast pagination cursor from context value.")
+		logger.From(c).Error("Unable to cast pagination cursor from context value.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch segments. Please try again.",
 		})
@@ -34,7 +34,7 @@ func GetSubscribers(c *gin.Context) {
 
 	err := storage.GetSubscribers(c, middleware.GetUser(c).ID, p)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to fetch subscribers collection.")
+		logger.From(c).WithError(err).Error("Unable to fetch subscribers collection.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch subscribers. Please try again.",
 		})
@@ -112,7 +112,7 @@ func PostSubscriber(c *gin.Context) {
 	_, err = storage.GetSubscriberByEmail(c, s.Email, s.UserID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Subscriber with that email already exists",
+			"message": "Subscriber with that email already exists.",
 		})
 		return
 	}
@@ -128,7 +128,7 @@ func PostSubscriber(c *gin.Context) {
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": err.Error(),
+			"message": "Unable to create subscriber",
 		})
 		return
 	}
@@ -146,8 +146,8 @@ func PutSubscriber(c *gin.Context) {
 			return
 		}
 
-		s.Name = c.PostForm("name")
-		s.Email = c.PostForm("email")
+		s.Name = strings.TrimSpace(c.PostForm("name"))
+		s.Email = strings.TrimSpace(c.PostForm("email"))
 
 		if !s.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -159,7 +159,7 @@ func PutSubscriber(c *gin.Context) {
 
 		if err = storage.UpdateSubscriber(c, s); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to update subscriber.",
 			})
 			return
 		}
@@ -188,7 +188,7 @@ func DeleteSubscriber(c *gin.Context) {
 		err = storage.DeleteSubscriber(c, id, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to delete subscriber.",
 			})
 			return
 		}

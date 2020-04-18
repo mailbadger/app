@@ -2,10 +2,15 @@ package entities
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/url"
+	"os"
+	"strconv"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/news-maily/app/utils"
 )
 
 // Subscriber represents the subscriber entity
@@ -14,15 +19,15 @@ type Subscriber struct {
 	UserID      int64             `json:"-" gorm:"column:user_id; index"`
 	Name        string            `json:"name"`
 	Email       string            `json:"email" gorm:"not null"`
-	MetaJSON    JSON              `json:"-" gorm:"column:metadata; type:json"`
+	MetaJSON    JSON              `json:"metadata" gorm:"column:metadata; type:json"`
 	Segments    []Segment         `json:"-" gorm:"many2many:subscribers_segments;"`
 	Blacklisted bool              `json:"blacklisted"`
 	Active      bool              `json:"active"`
 	Errors      map[string]string `json:"-" sql:"-"`
-	Metadata    map[string]string `json:"metadata" sql:"-"`
+	Metadata    map[string]string `json:"-" sql:"-"`
 }
 
-func (s *Subscriber) Normalize() error {
+func (s *Subscriber) AppendUnsubscribeURLToMeta() error {
 	m := make(map[string]string)
 
 	if !s.MetaJSON.IsNull() {
@@ -32,7 +37,23 @@ func (s *Subscriber) Normalize() error {
 		}
 	}
 
-	s.Metadata = m
+	t, err := s.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
+	if err != nil {
+		return err
+	}
+	params := url.Values{}
+	params.Add("email", s.Email)
+	params.Add("token", t)
+
+	m["unsubscribe_url"] = os.Getenv("APP_URL") + "/unsubscribe?" + params.Encode()
+
+	jsonMeta, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	s.MetaJSON = jsonMeta
+
 	return nil
 }
 
@@ -62,6 +83,21 @@ func (s *Subscriber) Validate() bool {
 	}
 
 	return len(s.Errors) == 0
+}
+
+// GenerateUnsubscribeToken generates and signs a new unsubscribe token with the given secret, from the
+// ID of the subscriber. When a subscriber wants to unsubscribe from future emails, we check this hash
+// against a newly generated hash and compare them, if they match we unsubscribe the user.
+func (s *Subscriber) GenerateUnsubscribeToken(secret string) (string, error) {
+	if s.ID == 0 {
+		return "", errors.New("entities: unable to generate unsubscribe token: subscriber ID is 0")
+	}
+
+	if secret == "" {
+		return "", errors.New("entities: unable to generate unsubscribe token: secret is empty")
+	}
+
+	return utils.SignData(strconv.FormatInt(s.ID, 10), secret), nil
 }
 
 func (s Subscriber) GetID() int64 {
