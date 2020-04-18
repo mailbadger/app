@@ -27,6 +27,9 @@ type Subscriber struct {
 	Metadata    map[string]string `json:"-" sql:"-"`
 }
 
+// AppendUnsubscribeURLToMeta generates and signs a token based on the subscriber ID
+// and appends an unsubscribe url with the email and token as query parameters, to the
+// json metadata.
 func (s *Subscriber) AppendUnsubscribeURLToMeta() error {
 	m := make(map[string]string)
 
@@ -97,7 +100,7 @@ func (s *Subscriber) GenerateUnsubscribeToken(secret string) (string, error) {
 		return "", errors.New("entities: unable to generate unsubscribe token: secret is empty")
 	}
 
-	return utils.SignData(strconv.FormatInt(s.ID, 10), secret), nil
+	return utils.SignData(strconv.FormatInt(s.ID, 10), secret)
 }
 
 func (s Subscriber) GetID() int64 {

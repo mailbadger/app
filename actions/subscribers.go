@@ -127,6 +127,9 @@ func PostSubscriber(c *gin.Context) {
 	s.MetaJSON = metaJSON
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
+		logger.From(c).
+			WithError(err).
+			Warn("Unable to create subscriber.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber",
 		})
@@ -158,6 +161,10 @@ func PutSubscriber(c *gin.Context) {
 		}
 
 		if err = storage.UpdateSubscriber(c, s); err != nil {
+			logger.From(c).
+				WithError(err).
+				WithField("subscriber_id", id).
+				Warn("Unable to update subscriber.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to update subscriber.",
 			})
@@ -187,6 +194,7 @@ func DeleteSubscriber(c *gin.Context) {
 
 		err = storage.DeleteSubscriber(c, id, user.ID)
 		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to delete subscriber.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to delete subscriber.",
 			})

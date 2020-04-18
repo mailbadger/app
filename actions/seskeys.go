@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -12,9 +13,9 @@ import (
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/events"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
-	"github.com/sirupsen/logrus"
 )
 
 func GetSESKeys(c *gin.Context) {
@@ -45,9 +46,9 @@ func PostSESKeys(c *gin.Context) {
 	}
 
 	keys := &entities.SesKeys{
-		AccessKey: c.PostForm("access_key"),
-		SecretKey: c.PostForm("secret_key"),
-		Region:    c.PostForm("region"),
+		AccessKey: strings.TrimSpace(c.PostForm("access_key")),
+		SecretKey: strings.TrimSpace(c.PostForm("secret_key")),
+		Region:    strings.TrimSpace(c.PostForm("region")),
 		UserID:    u.ID,
 	}
 
@@ -58,9 +59,7 @@ func PostSESKeys(c *gin.Context) {
 
 	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": u.ID,
-		}).Errorln(err.Error())
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
@@ -69,16 +68,45 @@ func PostSESKeys(c *gin.Context) {
 
 	snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": u.ID,
-		}).Errorln(err.Error())
+		logger.From(c).WithError(err).Warn("Unable to create SNS client.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
 		return
 	}
 
-	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), u.UUID)
+	//TODO: Move this to work queue to be more robust.
+	//createAWSResources is a slow process and could fail periodically.
+	go func(
+		c *gin.Context,
+		sender emails.Sender,
+		snsClient events.EventsClient,
+		keys *entities.SesKeys,
+		uuid string,
+	) {
+		err := createAWSResources(sender, snsClient, uuid)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create AWS resources.")
+			return
+		}
+
+		err = storage.CreateSesKeys(c, keys)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SES keys.")
+		}
+	}(c.Copy(), sender, snsClient, keys, u.UUID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "We are currently processing the request.",
+	})
+}
+
+func createAWSResources(
+	sender emails.Sender,
+	snsClient events.EventsClient,
+	uuid string,
+) error {
+	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), uuid)
 
 	// Check if the configuration set is already created
 	topicArn := ""
@@ -96,32 +124,14 @@ func PostSESKeys(c *gin.Context) {
 			},
 		})
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"user": u.ID,
-			}).Errorln(err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to create configuration set.",
-			})
-			return
+			return fmt.Errorf("ses keys: unable to create configuration set: %w", err)
 		}
 
 		snsRes, err := snsClient.CreateTopic(&sns.CreateTopicInput{
 			Name: aws.String(events.SNSTopicName),
 		})
 		if err != nil {
-			logrus.WithFields(logrus.Fields{"user": u.ID}).Errorln(err)
-			// rollback
-			_, err := sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
-				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-			})
-			if err != nil {
-				logrus.Error(err)
-			}
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to create topic.",
-			})
-			return
+			return fmt.Errorf("ses keys: unable to create SNS topic: %w", err)
 		}
 
 		topicArn = *snsRes.TopicArn
@@ -132,24 +142,7 @@ func PostSESKeys(c *gin.Context) {
 			TopicArn: aws.String(topicArn),
 		})
 		if err != nil {
-			logrus.WithError(err).Error("Unable to subscribe to topic.")
-
-			// rollback
-			_, err := sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
-				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-			})
-			if err != nil {
-				logrus.WithError(err).Error("Unable to delete configuration set.")
-			}
-			_, err = snsClient.DeleteTopic(&sns.DeleteTopicInput{TopicArn: snsRes.TopicArn})
-			if err != nil {
-				logrus.WithError(err).Error("Unable to delete topic.")
-			}
-
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to subscribe to topic.",
-			})
-			return
+			return fmt.Errorf("ses keys: unable to subscribe to topic: %w", err)
 		}
 	}
 
@@ -167,11 +160,7 @@ func PostSESKeys(c *gin.Context) {
 				Name: aws.String(events.SNSTopicName),
 			})
 			if err != nil {
-				logrus.Errorln(err)
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": "Unable to create topic.",
-				})
-				return
+				return fmt.Errorf("ses keys: unable to create SNS topic: %w", err)
 			}
 
 			topicArn = *snsRes.TopicArn
@@ -182,11 +171,7 @@ func PostSESKeys(c *gin.Context) {
 				TopicArn: aws.String(topicArn),
 			})
 			if err != nil {
-				logrus.Errorln(err)
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": "Unable to subscribe to topic.",
-				})
-				return
+				return fmt.Errorf("ses keys: unable to subscribe to topic: %w", err)
 			}
 		}
 
@@ -212,92 +197,74 @@ func PostSESKeys(c *gin.Context) {
 		})
 
 		if err != nil {
-			logrus.Errorln(err)
+			return fmt.Errorf("ses keys: unable to set event destination: %w", err)
 		}
 	}
 
-	err = storage.CreateSesKeys(c, keys)
-
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"input": *keys,
-		}).Error(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to add ses keys.",
-		})
-		return
-	}
-
-	keys.SecretKey = ""
-
-	c.JSON(http.StatusCreated, keys)
+	return nil
 }
 
 func DeleteSESKeys(c *gin.Context) {
 	u := middleware.GetUser(c)
 
 	keys, err := storage.GetSesKeys(c, u.ID)
-	if err == nil {
-		sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"user": u.ID,
-			}).Errorln(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "SES keys are incorrect.",
-			})
-			return
-		}
+	if err != nil {
+		c.Status(http.StatusNoContent)
+		return
+	}
 
-		snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"user": u.ID,
-			}).Errorln(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "SES keys are incorrect.",
-			})
-			return
-		}
-
-		cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
-			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-			ConfigurationSetAttributeNames: []*string{
-				aws.String("eventDestinations"),
-			},
+	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
 		})
+		return
+	}
 
-		if err == nil {
-			// find and delete topic
-			for _, e := range cs.EventDestinations {
-				if e.Name != nil && *e.Name == events.SNSTopicName {
-					_, err := snsClient.DeleteTopic(&sns.DeleteTopicInput{
-						TopicArn: e.SNSDestination.TopicARN,
-					})
-					if err != nil {
-						logrus.WithFields(logrus.Fields{
-							"user": u.ID,
-						}).Errorln(err.Error())
-					}
-					break
+	snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create SNS client.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
+		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+		ConfigurationSetAttributeNames: []*string{
+			aws.String("eventDestinations"),
+		},
+	})
+
+	if err == nil {
+		// find and delete topic
+		for _, e := range cs.EventDestinations {
+			if e.Name != nil && *e.Name == events.SNSTopicName {
+				_, err := snsClient.DeleteTopic(&sns.DeleteTopicInput{
+					TopicArn: e.SNSDestination.TopicARN,
+				})
+				if err != nil {
+					logger.From(c).WithError(err).Warn("Unable to delete topic.")
 				}
+				break
 			}
+		}
 
-			_, err = sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
-				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-			})
-			if err != nil {
-				logrus.WithFields(logrus.Fields{
-					"user": u.ID,
-				}).Errorln(err.Error())
-			}
+		_, err = sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
+			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+		})
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to delete configuration set.")
 		}
 	}
 
 	err = storage.DeleteSesKeys(c, u.ID)
 	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to delete SES keys.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
+			"message": "Unable to delete SES keys.",
 		})
 		return
 	}

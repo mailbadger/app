@@ -29,10 +29,3 @@ func TestGenerateRandomString(t *testing.T) {
 
 	assert.Len(t, decoded, 16, "they should be equal")
 }
-
-func TestCamelCase(t *testing.T) {
-	const testStr = "First Name"
-	if camelCase := CamelCase(testStr); camelCase != "FirstName" {
-		t.Errorf("could not transform string %v to %v", testStr, "FirstName")
-	}
-}

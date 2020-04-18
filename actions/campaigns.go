@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
@@ -179,7 +180,7 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-	name, templateName := c.PostForm("name"), c.PostForm("template_name")
+	name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
 	user := middleware.GetUser(c)
 
 	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
@@ -208,6 +209,7 @@ func PostCampaign(c *gin.Context) {
 	err = storage.CreateCampaign(c, campaign)
 
 	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create campaign.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create the campaign.",
 		})
@@ -229,7 +231,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		name, templateName := c.PostForm("name"), c.PostForm("template_name")
+		name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
 
 		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
 		if err == nil && campaign.ID != campaign2.ID {
@@ -253,6 +255,10 @@ func PutCampaign(c *gin.Context) {
 		err = storage.UpdateCampaign(c, campaign)
 
 		if err != nil {
+			logger.From(c).
+				WithError(err).
+				WithField("campaign_id", id).
+				Warn("Unable to update campaign.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to update campaign.",
 			})
@@ -282,6 +288,7 @@ func DeleteCampaign(c *gin.Context) {
 
 		err = storage.DeleteCampaign(c, id, user.ID)
 		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to delete campaign.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to delete the campaign.",
 			})
