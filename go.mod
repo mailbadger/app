@@ -1,6 +1,6 @@
 module github.com/news-maily/app
 
-go 1.12
+go 1.14
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
@@ -35,7 +35,6 @@ require (
 	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7 // indirect
 	golang.org/x/tools v0.0.0-20190913181337-0240832f5c3d // indirect
 	google.golang.org/api v0.21.0
 	google.golang.org/appengine v1.6.1 // indirect

@@ -1,15 +1,30 @@
 package storage
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/utils/pagination"
 	"github.com/stretchr/testify/assert"
 )
+
+func createCampaigns(store Storage) {
+	for i := 0; i < 100; i++ {
+		err := store.CreateCampaign(&entities.Campaign{
+			Name:         "foo " + strconv.Itoa(i),
+			TemplateName: "Template " + strconv.Itoa(i),
+			UserID:       1,
+			Status:       "draft",
+		})
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	}
+}
 
 func TestCampaign(t *testing.T) {
 	db := openTestDb()
@@ -21,7 +36,7 @@ func TestCampaign(t *testing.T) {
 	}()
 
 	store := From(db)
-
+	createCampaigns(store)
 	//Test create campaign
 	campaign := &entities.Campaign{
 		Name:         "foo",
@@ -55,9 +70,40 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, campaign.Errors["name"], entities.ErrCampaignNameEmpty.Error())
 
 	//Test get campaigns
-	p := &pagination.Cursor{PerPage: 10}
-	store.GetCampaigns(1, p)
-	assert.NotEmpty(t, p.Collection)
+	p := NewPaginationCursor("/api/campaigns", 13)
+	for i := 0; i < 10; i++ {
+		err := store.GetCampaigns(1, p)
+		assert.Nil(t, err)
+		col := p.Collection.(*[]entities.Campaign)
+		assert.NotNil(t, col)
+		assert.NotEmpty(t, *col)
+		if p.Links.Next != nil {
+			assert.Equal(t, int(13), len(*col))
+			assert.Equal(t, fmt.Sprintf("/api/campaigns?per_page=%d&starting_after=%d", 13, (*col)[len(*col)-1].GetID()), *p.Links.Next)
+			p.SetStartingAfter((*col)[len(*col)-1].GetID())
+		} else {
+			assert.Equal(t, 10, len(*col))
+		}
+	}
+	assert.Equal(t, int64(101), p.Total)
+
+	//Test get campaigns backwards
+	p = NewPaginationCursor("/api/campaigns", 13)
+	p.SetEndingBefore(1)
+	for i := 0; i < 8; i++ {
+		err := store.GetCampaigns(1, p)
+		assert.Nil(t, err)
+		col := p.Collection.(*[]entities.Campaign)
+		assert.NotNil(t, col)
+		assert.NotEmpty(t, *col)
+		if p.Links.Previous != nil {
+			assert.Equal(t, int(13), len(*col))
+			assert.Equal(t, fmt.Sprintf("/api/campaigns?ending_before=%d&per_page=%d", (*col)[0].GetID(), 13), *p.Links.Previous)
+			p.SetEndingBefore((*col)[0].GetID())
+		} else {
+			assert.Equal(t, 9, len(*col))
+		}
+	}
 
 	//Test get campaigns by template Id
 	campaigns, err := store.GetCampaignsByTemplateName("Template1", 1)

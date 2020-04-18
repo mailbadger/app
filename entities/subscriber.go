@@ -9,9 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Subscriber represents the subscriber entity
+// Subscriber represents the subscriber entity
 type Subscriber struct {
-	ID          int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	Model
 	UserID      int64             `json:"-" gorm:"column:user_id; index"`
 	Name        string            `json:"name"`
 	Email       string            `json:"email" gorm:"not null"`
@@ -19,8 +19,6 @@ type Subscriber struct {
 	Segments    []Segment         `json:"-" gorm:"many2many:subscribers_segments;"`
 	Blacklisted bool              `json:"blacklisted"`
 	Active      bool              `json:"active"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
 	Errors      map[string]string `json:"-" sql:"-"`
 	Metadata    map[string]string `json:"metadata" sql:"-"`
 }
@@ -46,6 +44,10 @@ func (s *Subscriber) Validate() bool {
 		if valid.Trim(s.Name, "") == "" {
 			s.Errors["name"] = "The subscriber name cannot be empty."
 		}
+
+		if !valid.StringLength(s.Name, "1", "191") {
+			s.Errors["name"] = "The name needs to be shorter than 190 characters."
+		}
 	}
 
 	if !valid.IsEmail(s.Email) {
@@ -60,4 +62,16 @@ func (s *Subscriber) Validate() bool {
 	}
 
 	return len(s.Errors) == 0
+}
+
+func (s Subscriber) GetID() int64 {
+	return s.Model.ID
+}
+
+func (s Subscriber) GetCreatedAt() time.Time {
+	return s.Model.CreatedAt
+}
+
+func (s Subscriber) GetUpdatedAt() time.Time {
+	return s.Model.UpdatedAt
 }

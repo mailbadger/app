@@ -25,13 +25,11 @@ const (
 
 //Campaign represents the campaign entity
 type Campaign struct {
-	ID           int64             `json:"id" gorm:"column:id; primary_key:yes"`
+	Model
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
-	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required"`
+	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required,stringlength(1|191)"`
 	TemplateName string            `json:"template_name" valid:"required"`
 	Status       string            `json:"status"`
-	CreatedAt    time.Time         `json:"created_at"`
-	UpdatedAt    time.Time         `json:"updated_at"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	Errors       map[string]string `json:"-" sql:"-"`
@@ -76,4 +74,16 @@ func (c *Campaign) Validate() bool {
 	}
 
 	return len(c.Errors) == 0
+}
+
+func (c Campaign) GetID() int64 {
+	return c.Model.ID
+}
+
+func (c Campaign) GetCreatedAt() time.Time {
+	return c.Model.CreatedAt
+}
+
+func (c Campaign) GetUpdatedAt() time.Time {
+	return c.Model.UpdatedAt
 }

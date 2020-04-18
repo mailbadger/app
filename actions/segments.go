@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
-	"github.com/news-maily/app/utils/pagination"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,23 +19,31 @@ type subs struct {
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
-		if err != nil {
-			logrus.Error(err)
-		}
+		logrus.Error("Unable to fetch pagination cursor from context.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch segments. Please try again.",
+		})
 		return
 	}
 
-	p, ok := val.(*pagination.Cursor)
+	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
-		err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
-		if err != nil {
-			logrus.Error(err)
-		}
+		logrus.Error("Unable to cast pagination cursor from context value.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch segments. Please try again.",
+		})
 		return
 	}
 
-	storage.GetSegments(c, middleware.GetUser(c).ID, p)
+	err := storage.GetSegments(c, middleware.GetUser(c).ID, p)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to fetch segments collection.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch segments. Please try again.",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, p)
 }
 
@@ -228,23 +234,31 @@ func GetSegmentsubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		val, ok := c.Get("cursor")
 		if !ok {
-			err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot create pagination object"))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error("Unable to fetch pagination cursor from context.")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to fetch subscribers. Please try again.",
+			})
 			return
 		}
 
-		p, ok := val.(*pagination.Cursor)
+		p, ok := val.(*storage.PaginationCursor)
 		if !ok {
-			err := c.AbortWithError(http.StatusInternalServerError, errors.New("cannot cast pagination object"))
-			if err != nil {
-				logrus.Error(err)
-			}
+			logrus.Error("Unable to cast pagination cursor from context value.")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to fetch subscribers. Please try again.",
+			})
 			return
 		}
 
-		storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
+		err := storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to fetch subscribers for segment collection.")
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to fetch segments. Please try again.",
+			})
+			return
+		}
+
 		c.JSON(http.StatusOK, p)
 		return
 	}

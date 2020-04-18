@@ -1,11 +1,11 @@
 package storage
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/utils/pagination"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,9 +69,10 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
 
 	//Test get subs
-	cp := &pagination.Cursor{PerPage: 10, StartingAfter: 0}
-	store.GetSubscribers(1, cp)
-	assert.NotEmpty(t, cp.Collection)
+	p := NewPaginationCursor("/api/subcribers", 10)
+	err = store.GetSubscribers(1, p)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, p.Collection)
 
 	//Test get subs by ids
 	subs, err := store.GetSubscribersByIDs([]int64{1}, 1)
@@ -79,8 +80,10 @@ func TestSubscriber(t *testing.T) {
 	assert.NotEmpty(t, subs)
 
 	//Test get subs by list id
-	p := &pagination.Cursor{PerPage: 10}
-	store.GetSubscribersBySegmentID(l.ID, 1, p)
+
+	p = NewPaginationCursor(fmt.Sprintf("/api/segments/%d/subscribers", l.ID), 10)
+	err = store.GetSubscribersBySegmentID(l.ID, 1, p)
+	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
 	var timestamp time.Time

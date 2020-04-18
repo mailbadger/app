@@ -92,7 +92,7 @@ type ClickMsg struct {
 	LinkTags  map[string][]string `json:"linkTags"`
 }
 
-// ClickMsg field from the AWS incoming JSON notification.
+// OpenMsg field from the AWS incoming JSON notification.
 type OpenMsg struct {
 	Timestamp time.Time `json:"timestamp"`
 	IPAddress string    `json:"ipAddress"`
