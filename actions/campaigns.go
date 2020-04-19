@@ -8,7 +8,10 @@ import (
 	"strings"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/queue"
@@ -80,6 +83,14 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
+		})
+		return
+	}
 
 	lists, err := storage.GetSegmentsByIDs(c, u.ID, params.Ids)
 	if err != nil || len(lists) == 0 {
@@ -89,13 +100,21 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
+		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+	})
+
+	csExists := err == nil
+
 	msg, err := json.Marshal(entities.SendCampaignParams{
-		SegmentIDs:   params.Ids,
-		Source:       params.Source,
-		TemplateData: templateData,
-		UserID:       u.ID,
-		Campaign:     *campaign,
-		SesKeys:      *sesKeys,
+		SegmentIDs:             params.Ids,
+		Source:                 params.Source,
+		TemplateData:           templateData,
+		UserID:                 u.ID,
+		UserUUID:               u.UUID,
+		Campaign:               *campaign,
+		SesKeys:                *sesKeys,
+		ConfigurationSetExists: csExists,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

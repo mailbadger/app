@@ -108,8 +108,25 @@ func createAWSResources(
 ) error {
 	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), uuid)
 
+	snsRes, err := snsClient.CreateTopic(&sns.CreateTopicInput{
+		Name: aws.String(events.SNSTopicName),
+	})
+	if err != nil {
+		return fmt.Errorf("ses keys: unable to create SNS topic: %w", err)
+	}
+
+	topicArn := *snsRes.TopicArn
+
+	_, err = snsClient.Subscribe(&sns.SubscribeInput{
+		Protocol: aws.String("https"),
+		Endpoint: aws.String(hookURL),
+		TopicArn: aws.String(topicArn),
+	})
+	if err != nil {
+		return fmt.Errorf("ses keys: unable to subscribe to topic: %w", err)
+	}
+
 	// Check if the configuration set is already created
-	topicArn := ""
 	cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 		ConfigurationSetAttributeNames: []*string{
@@ -118,31 +135,13 @@ func createAWSResources(
 	})
 
 	if err != nil {
-		_, err := sender.CreateConfigurationSet(&ses.CreateConfigurationSetInput{
+		_, err = sender.CreateConfigurationSet(&ses.CreateConfigurationSetInput{
 			ConfigurationSet: &ses.ConfigurationSet{
 				Name: aws.String(emails.ConfigurationSetName),
 			},
 		})
 		if err != nil {
 			return fmt.Errorf("ses keys: unable to create configuration set: %w", err)
-		}
-
-		snsRes, err := snsClient.CreateTopic(&sns.CreateTopicInput{
-			Name: aws.String(events.SNSTopicName),
-		})
-		if err != nil {
-			return fmt.Errorf("ses keys: unable to create SNS topic: %w", err)
-		}
-
-		topicArn = *snsRes.TopicArn
-
-		_, err = snsClient.Subscribe(&sns.SubscribeInput{
-			Protocol: aws.String("https"),
-			Endpoint: aws.String(hookURL),
-			TopicArn: aws.String(topicArn),
-		})
-		if err != nil {
-			return fmt.Errorf("ses keys: unable to subscribe to topic: %w", err)
 		}
 	}
 
@@ -154,51 +153,33 @@ func createAWSResources(
 		}
 	}
 
-	if !eventFound {
-		if topicArn == "" {
-			snsRes, err := snsClient.CreateTopic(&sns.CreateTopicInput{
-				Name: aws.String(events.SNSTopicName),
-			})
-			if err != nil {
-				return fmt.Errorf("ses keys: unable to create SNS topic: %w", err)
-			}
+	if eventFound {
+		return nil
+	}
 
-			topicArn = *snsRes.TopicArn
-
-			_, err = snsClient.Subscribe(&sns.SubscribeInput{
-				Protocol: aws.String("https"),
-				Endpoint: aws.String(hookURL),
-				TopicArn: aws.String(topicArn),
-			})
-			if err != nil {
-				return fmt.Errorf("ses keys: unable to subscribe to topic: %w", err)
-			}
-		}
-
-		_, err = sender.CreateConfigurationSetEventDestination(&ses.CreateConfigurationSetEventDestinationInput{
-			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-			EventDestination: &ses.EventDestination{
-				Name:    aws.String(events.SNSTopicName),
-				Enabled: aws.Bool(true),
-				MatchingEventTypes: []*string{
-					aws.String("send"),
-					aws.String("open"),
-					aws.String("click"),
-					aws.String("bounce"),
-					aws.String("reject"),
-					aws.String("delivery"),
-					aws.String("complaint"),
-					aws.String("renderingFailure"),
-				},
-				SNSDestination: &ses.SNSDestination{
-					TopicARN: aws.String(topicArn),
-				},
+	_, err = sender.CreateConfigurationSetEventDestination(&ses.CreateConfigurationSetEventDestinationInput{
+		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+		EventDestination: &ses.EventDestination{
+			Name:    aws.String(events.SNSTopicName),
+			Enabled: aws.Bool(true),
+			MatchingEventTypes: []*string{
+				aws.String("send"),
+				aws.String("open"),
+				aws.String("click"),
+				aws.String("bounce"),
+				aws.String("reject"),
+				aws.String("delivery"),
+				aws.String("complaint"),
+				aws.String("renderingFailure"),
 			},
-		})
+			SNSDestination: &ses.SNSDestination{
+				TopicARN: aws.String(topicArn),
+			},
+		},
+	})
 
-		if err != nil {
-			return fmt.Errorf("ses keys: unable to set event destination: %w", err)
-		}
+	if err != nil {
+		return fmt.Errorf("ses keys: unable to set event destination: %w", err)
 	}
 
 	return nil

@@ -21,6 +21,7 @@ import useApi from "../hooks/useApi";
 import useInterval from "../hooks/useInterval";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import { FormPropTypes } from "../PropTypes";
+import StyledSpinner from "../ui/StyledSpinner";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
@@ -206,15 +207,15 @@ const AddSesKeysForm = () => {
     </Formik>
   );
 
-  if (retries == 0) {
+  if (retries === 0) {
     setRetries(-1);
     createNotification(
-      "Unable to add SES keys, please try again",
+      "Unable to add SES keys, check the IAM permissions and try again.",
       "status-error"
     );
   }
   if (state.isLoading || retries > 0) {
-    body = <div>Loading...</div>;
+    body = <StyledSpinner size={4} />;
   }
 
   if (!state.isError && state.data) {

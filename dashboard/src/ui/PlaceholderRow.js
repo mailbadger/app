@@ -14,8 +14,8 @@ const PlaceholderRow = ({ columns }) => {
           height={45}
           width={700}
           speed={2}
-          primaryColor="#d9d9d9"
-          secondaryColor="#ecebeb"
+          backgroundColor="#d9d9d9"
+          foregroundColor="#ecebeb"
         >
           <rect x="0" y="13" rx="4" ry="4" width={36 * random} height="12" />
           <rect x="34" y="13" rx="6" ry="6" width={240 * random} height="12" />
@@ -28,7 +28,7 @@ const PlaceholderRow = ({ columns }) => {
 };
 
 PlaceholderRow.propTypes = {
-  columns: PropTypes.number
+  columns: PropTypes.number,
 };
 
 export default PlaceholderRow;

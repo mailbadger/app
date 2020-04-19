@@ -115,29 +115,35 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 
 			// prepare message for publishing to the queue
-			msg, err := json.Marshal(entities.BulkSendMessage{
-				UUID: uuid.String(),
-				Input: &ses.SendBulkTemplatedEmailInput{
-					Source:               aws.String(msg.Source),
-					Template:             aws.String(msg.Campaign.TemplateName),
-					Destinations:         dest,
-					ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-					DefaultTemplateData:  aws.String(string(defaultData)),
-					DefaultTags: []*ses.MessageTag{
-						&ses.MessageTag{
-							Name:  aws.String("campaign_id"),
-							Value: aws.String(strconv.Itoa(int(msg.Campaign.ID))),
-						},
-						&ses.MessageTag{
-							Name:  aws.String("user_id"),
-							Value: aws.String(strconv.Itoa(int(msg.UserID))),
-						},
+			input := &ses.SendBulkTemplatedEmailInput{
+				Source:              aws.String(msg.Source),
+				Template:            aws.String(msg.Campaign.TemplateName),
+				Destinations:        dest,
+				DefaultTemplateData: aws.String(string(defaultData)),
+				DefaultTags: []*ses.MessageTag{
+					&ses.MessageTag{
+						Name:  aws.String("campaign_id"),
+						Value: aws.String(strconv.FormatInt(msg.Campaign.ID, 10)),
+					},
+					&ses.MessageTag{
+						Name:  aws.String("user_id"),
+						Value: aws.String(msg.UserUUID),
 					},
 				},
+			}
+
+			if msg.ConfigurationSetExists {
+				input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
+			}
+
+			bulkMsg := entities.BulkSendMessage{
+				UUID:       uuid.String(),
+				Input:      input,
 				CampaignID: msg.Campaign.ID,
 				UserID:     msg.UserID,
 				SesKeys:    &msg.SesKeys,
-			})
+			}
+			msg, err := json.Marshal(bulkMsg)
 
 			if err != nil {
 				logrus.WithError(err).Error("Unable to marshal bulk message input.")
