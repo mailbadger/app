@@ -1,8 +1,10 @@
 package actions
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/sirupsen/logrus"
 )
 
 func GetSubscribers(c *gin.Context) {
@@ -207,5 +210,82 @@ func DeleteSubscriber(c *gin.Context) {
 
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
+	})
+}
+
+func PostUnsubscribe(c *gin.Context) {
+	email := strings.TrimSpace(c.PostForm("email"))
+	uuid := strings.TrimSpace(c.PostForm("uuid"))
+	token := strings.TrimSpace(c.PostForm("t"))
+
+	if token == "" || email == "" || uuid == "" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, invalid data sent.",
+		})
+		return
+	}
+
+	u, err := storage.GetUserByUUID(c, uuid)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"email": email,
+			"uuid":  uuid,
+		}).WithError(err).Warn("Unsubscribe: cannot find user by uuid.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, invalid data sent.",
+		})
+		return
+	}
+
+	sub, err := storage.GetSubscriberByEmail(c, email, u.ID)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"email": email,
+			"uuid":  uuid,
+		}).WithError(err).Warn("Unsubscribe: unable to fetch subscriber by email.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, invalid data sent.",
+		})
+		return
+	}
+
+	hash, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"email": email,
+			"uuid":  uuid,
+		}).WithError(err).Error("Unsubscribe: unable to generate hash.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, invalid data sent.",
+		})
+		return
+	}
+
+	if subtle.ConstantTimeCompare([]byte(token), []byte(hash)) != 1 {
+		logger.From(c).WithFields(logrus.Fields{
+			"email": email,
+			"uuid":  uuid,
+		}).WithError(err).Warn("Unsubscribe: hashes don't match.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, invalid data sent.",
+		})
+		return
+	}
+
+	sub.Active = false
+	err = storage.UpdateSubscriber(c, sub)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"email": email,
+			"uuid":  uuid,
+		}).WithError(err).Warn("Unsubscribe: unable to update subscriber's status.")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to process the request, please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "You have successfully unsusbcribed.",
 	})
 }

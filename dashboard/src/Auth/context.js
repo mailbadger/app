@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { authInstance as axios } from "../axios";
 
 const defaultState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
-  error: null
+  error: null,
 };
 
 export const AuthContext = React.createContext(defaultState);
@@ -18,6 +18,7 @@ class AuthProvider extends Component {
     this.fetchUser = this.fetchUser.bind(this);
     this.setUser = this.setUser.bind(this);
     this.logout = this.logout.bind(this);
+    this.clear = this.clear.bind(this);
     this.state = defaultState;
   }
 
@@ -34,14 +35,14 @@ class AuthProvider extends Component {
           error: null,
           isLoading: false,
           isAuthenticated: true,
-          user: result.data
+          user: result.data,
         });
       } catch (error) {
         this.setState({
           error: error.response.data,
           isLoading: false,
           isAuthenticated: false,
-          user: null
+          user: null,
         });
       }
     };
@@ -53,8 +54,13 @@ class AuthProvider extends Component {
       user: user,
       isAuthenticated: true,
       isLoading: false,
-      error: null
+      error: null,
     });
+  }
+
+  clear() {
+    this.setState(defaultState);
+    localStorage.clear();
   }
 
   logout() {
@@ -68,11 +74,12 @@ class AuthProvider extends Component {
           error: error.response.data,
           isLoading: false,
           isAuthenticated: false,
-          user: null
+          user: null,
         });
       }
     };
     callApi();
+    localStorage.clear();
   }
 
   render() {
@@ -82,7 +89,8 @@ class AuthProvider extends Component {
           ...this.state,
           logout: this.logout,
           fetchUser: this.fetchUser,
-          setUser: this.setUser
+          setUser: this.setUser,
+          clear: this.clear,
         }}
       >
         {this.props.children}
@@ -92,7 +100,7 @@ class AuthProvider extends Component {
 }
 
 AuthProvider.propTypes = {
-  children: PropTypes.element.isRequired
+  children: PropTypes.element.isRequired,
 };
 
 const AuthConsumer = AuthContext.Consumer;

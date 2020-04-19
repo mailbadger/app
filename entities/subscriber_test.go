@@ -25,7 +25,7 @@ func TestSubscriberEntity(t *testing.T) {
 		Email:    "john.doe@example.com",
 	}
 
-	err = sub.AppendUnsubscribeURLToMeta()
+	err = sub.AppendUnsubscribeURLToMeta("foobar")
 	assert.Nil(t, err)
 
 	var m map[string]string
@@ -33,7 +33,7 @@ func TestSubscriberEntity(t *testing.T) {
 	err = json.Unmarshal(sub.MetaJSON, &m)
 	assert.Nil(t, err)
 	assert.Equal(t, m["foo"], "bar")
-	assert.Equal(t, m["unsubscribe_url"], "https://mailbadger.io/unsubscribe?email=john.doe%40example.com&token=77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5")
+	assert.Equal(t, m["unsubscribe_url"], "https://mailbadger.io/unsubscribe?email=john.doe%40example.com&t=77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5&uuid=foobar")
 
 	tt, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	assert.Nil(t, err)

@@ -30,7 +30,7 @@ type Subscriber struct {
 // AppendUnsubscribeURLToMeta generates and signs a token based on the subscriber ID
 // and appends an unsubscribe url with the email and token as query parameters, to the
 // json metadata.
-func (s *Subscriber) AppendUnsubscribeURLToMeta() error {
+func (s *Subscriber) AppendUnsubscribeURLToMeta(uuid string) error {
 	m := make(map[string]string)
 
 	if !s.MetaJSON.IsNull() {
@@ -46,7 +46,8 @@ func (s *Subscriber) AppendUnsubscribeURLToMeta() error {
 	}
 	params := url.Values{}
 	params.Add("email", s.Email)
-	params.Add("token", t)
+	params.Add("uuid", uuid)
+	params.Add("t", t)
 
 	m["unsubscribe_url"] = os.Getenv("APP_URL") + "/unsubscribe?" + params.Encode()
 

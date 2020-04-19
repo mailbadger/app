@@ -4,7 +4,7 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import { FormField, Box, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import StyledTextInput from "../ui/StyledTextInput";
@@ -16,7 +16,7 @@ import { FormPropTypes } from "../PropTypes";
 
 const templateValidation = object().shape({
   subject: string().required("Please enter a subject for the email."),
-  htmlPart: string().required("Please enter a valid HTML")
+  htmlPart: string().required("Please enter a valid HTML"),
 });
 
 const Form = ({
@@ -26,7 +26,7 @@ const Form = ({
   handleChange,
   setFieldValue,
   isSubmitting,
-  values
+  values,
 }) => {
   return (
     <Box direction="column">
@@ -50,12 +50,12 @@ const Form = ({
               options={{
                 mode: "xml",
                 theme: "material",
-                lineNumbers: true
+                lineNumbers: true,
               }}
               onBeforeChange={(editor, data, value) => {
                 setHtml(value);
               }}
-              onChange={editor => {
+              onChange={(editor) => {
                 setFieldValue("htmlPart", editor.getValue(), true);
               }}
             />
@@ -80,19 +80,19 @@ Form.propTypes = FormPropTypes;
 const EditTemplateForm = ({ match }) => {
   const [html, setHtml] = useState();
   const [state] = useApi({
-    url: `/api/templates/${match.params.id}`
+    url: `/api/templates/${match.params.id}`,
   });
 
   const { createNotification } = useContext(NotificationsContext);
 
-  const handleSubmit = id => async (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = (id) => async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         await axios.put(
           `/api/templates/${id}`,
           qs.stringify({
             content: values.htmlPart,
-            subject: values.subject
+            subject: values.subject,
           })
         );
 
@@ -159,10 +159,10 @@ const EditTemplateForm = ({ match }) => {
               onSubmit={handleSubmit(match.params.id)}
               validationSchema={templateValidation}
               initialValues={{
-                subject: state.data.subject_part
+                subject: state.data.subject_part,
               }}
             >
-              {props => <Form setHtml={setHtml} html={html} {...props} />}
+              {(props) => <Form setHtml={setHtml} html={html} {...props} />}
             </Formik>
           </Box>
         </>
@@ -174,9 +174,9 @@ const EditTemplateForm = ({ match }) => {
 EditTemplateForm.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      id: PropTypes.string
-    })
-  })
+      id: PropTypes.string,
+    }),
+  }),
 };
 
 export default EditTemplateForm;

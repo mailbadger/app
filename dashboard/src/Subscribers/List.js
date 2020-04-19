@@ -6,9 +6,9 @@ import {
   Add,
   FormPreviousLink,
   FormNextLink,
-  Trash
+  Trash,
 } from "grommet-icons";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
 import qs from "qs";
@@ -26,7 +26,7 @@ import {
   Select,
   FormField,
   TextInput,
-  Text
+  Text,
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
@@ -56,7 +56,7 @@ const Row = ({ subscriber, setShowDelete }) => {
           icon={<More />}
           options={["Edit", "Delete"]}
           onChange={({ option }) => {
-            (function() {
+            (function () {
               switch (option) {
                 case "Edit":
                   history.push(`/dashboard/subscribers/${subscriber.id}/edit`);
@@ -65,7 +65,7 @@ const Row = ({ subscriber, setShowDelete }) => {
                   setShowDelete({
                     show: true,
                     name: subscriber.email,
-                    id: subscriber.id
+                    id: subscriber.id,
                   });
                   break;
                 default:
@@ -84,9 +84,9 @@ Row.propTypes = {
     email: PropTypes.string,
     id: PropTypes.number,
     created_at: PropTypes.string,
-    updated_at: PropTypes.string
+    updated_at: PropTypes.string,
   }),
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const Header = () => (
@@ -112,7 +112,7 @@ const SubscriberTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable>
     <Header />
     <TableBody>
-      {list.map(s => (
+      {list.map((s) => (
         <Row subscriber={s} key={s.id} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
@@ -122,13 +122,11 @@ const SubscriberTable = React.memo(({ list, setShowDelete }) => (
 SubscriberTable.displayName = "SubscriberTable";
 SubscriberTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const subscrValidation = object().shape({
-  email: string()
-    .email()
-    .required("Please enter a subscriber email."),
+  email: string().email().required("Please enter a subscriber email."),
   name: string().max(191, "The name must not exceed 191 characters."),
   metadata: array().of(
     object().shape({
@@ -138,9 +136,9 @@ const subscrValidation = object().shape({
       ),
       val: string()
         .max(191, "The value must not exceed 191 characters.")
-        .required("Value is required.")
+        .required("Value is required."),
     })
-  )
+  ),
 });
 
 const CreateForm = ({
@@ -149,18 +147,18 @@ const CreateForm = ({
   isSubmitting,
   hideModal,
   values,
-  setFieldValue
+  setFieldValue,
 }) => {
   const [selected, setSelected] = useState("");
   const [options, setOptions] = useState({
     collection: [],
-    url: "/api/segments?per_page=40"
+    url: "/api/segments?per_page=40",
   });
   const callApi = async () => {
     const res = await axios(options.url);
     setOptions({
       collection: [...options.collection, ...res.data.collection],
-      url: res.data.links.next
+      url: res.data.links.next,
     });
   };
 
@@ -219,7 +217,7 @@ const CreateForm = ({
           </FormField>
           <FieldArray
             name="metadata"
-            render={arrayHelpers => (
+            render={(arrayHelpers) => (
               <Box flex={true} overflow="auto" style={{ maxHeight: "200px" }}>
                 <Button
                   margin={{ top: "small", bottom: "small" }}
@@ -301,10 +299,10 @@ CreateForm.propTypes = {
     metadata: PropTypes.arrayOf(
       PropTypes.shape({
         key: PropTypes.string,
-        val: PropTypes.string
+        val: PropTypes.string,
       })
-    )
-  })
+    ),
+  }),
 };
 
 const CreateSubscriber = ({ callApi, hideModal }) => {
@@ -315,7 +313,7 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
       try {
         let data = {
           email: values.email,
-          segments: values.segments
+          segments: values.segments,
         };
         if (values.name !== "") {
           data.name = values.name;
@@ -328,7 +326,7 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
         }
 
         if (values.segments.length > 0) {
-          data.segments = values.segments.map(s => s.id);
+          data.segments = values.segments.map((s) => s.id);
         }
 
         await axios.post(
@@ -372,7 +370,7 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
         onSubmit={handleSubmit}
         validationSchema={subscrValidation}
       >
-        {props => <CreateForm {...props} hideModal={hideModal} />}
+        {(props) => <CreateForm {...props} hideModal={hideModal} />}
       </Formik>
     </Box>
   );
@@ -380,11 +378,11 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
 
 CreateSubscriber.propTypes = {
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteSubscriber = async id => {
+  const deleteSubscriber = async (id) => {
     await axios.delete(`/api/subscribers/${id}`);
   };
 
@@ -416,7 +414,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
 DeleteForm.propTypes = {
   id: PropTypes.number,
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const List = () => {
@@ -426,11 +424,11 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/subscribers"
+      url: "/api/subscribers",
     },
     {
       collection: [],
-      init: true
+      init: true,
     }
   );
 
@@ -455,7 +453,7 @@ const List = () => {
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] }
+        { name: "main", start: [0, 1], end: [1, 1] },
       ]}
     >
       {showDelete.show && (
@@ -519,7 +517,7 @@ const List = () => {
                 disabled={state.data.links.previous === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.previous
+                    url: state.data.links.previous,
                   });
                 }}
               />
@@ -532,7 +530,7 @@ const List = () => {
                 disabled={state.data.links.next === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.next
+                    url: state.data.links.next,
                   });
                 }}
               />

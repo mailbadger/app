@@ -84,7 +84,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
-				err := s.AppendUnsubscribeURLToMeta()
+				err := s.AppendUnsubscribeURLToMeta(msg.UserUUID)
 				if err != nil {
 					logrus.WithError(err).
 						WithField("subscriber", s).

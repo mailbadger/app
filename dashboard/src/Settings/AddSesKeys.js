@@ -12,7 +12,7 @@ import {
 import { Trash } from "grommet-icons";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import { NotificationsContext } from "../Notifications/context";

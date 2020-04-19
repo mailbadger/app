@@ -1,19 +1,17 @@
 import React, { Fragment, useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import qs from "qs";
 import { NavLink } from "react-router-dom";
 import { Paragraph } from "grommet";
 import { mainInstance as axios } from "./axios";
 
-const VerifyEmail = (props) => {
+const Unsubscribe = () => {
   const [data, setData] = useState({ message: "" });
-  const {
-    match: { params },
-  } = props;
+  const parsed = qs.parse(window.location.search.slice(1));
 
   useEffect(() => {
     const callApi = async () => {
       try {
-        const res = await axios.put(`/api/verify-email/${params.token}`);
+        const res = await axios.post(`/api/unsubscribe`);
         setData(res.data);
       } catch (error) {
         setData(error.response.data);
@@ -35,12 +33,4 @@ const VerifyEmail = (props) => {
   );
 };
 
-VerifyEmail.propTypes = {
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      token: PropTypes.string,
-    }),
-  }),
-};
-
-export default VerifyEmail;
+export default Unsubscribe;

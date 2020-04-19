@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useState } from "react";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 
 const dataFetchReducer = (state, action) => {
   switch (action.type) {

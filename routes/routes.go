@@ -132,6 +132,7 @@ func New() http.Handler {
 	guest.PUT("/verify-email/:token", actions.PutVerifyEmail)
 	guest.POST("/signup", actions.PostSignup)
 	guest.POST("/hooks/:uuid", actions.HandleHook)
+	guest.POST("/unsubscribe", actions.PostUnsubscribe)
 
 	// Authorized routes
 	authorized := handler.Group("/api")

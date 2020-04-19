@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 
 const defaultState = {
   keys: null,
