@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { FormField, Button, TextInput, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, addMethod } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import equalTo from "../utils/equalTo";
@@ -13,7 +13,7 @@ addMethod(string, "equalTo", equalTo);
 const forgotPassValidation = object().shape({
   email: string()
     .email("The email must be a valid format")
-    .required("Please enter your email")
+    .required("Please enter your email"),
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
@@ -55,7 +55,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
             padding: "8px",
             background: "#654FAA",
             width: "100%",
-            textAlign: "center"
+            textAlign: "center",
           }}
           disabled={isSubmitting}
           type="submit"
@@ -78,7 +78,7 @@ const ForgotPasswordForm = () => {
         await axios.post(
           `/api/forgot-password`,
           qs.stringify({
-            email: values.email
+            email: values.email,
           })
         );
       } catch (error) {
@@ -98,7 +98,7 @@ const ForgotPasswordForm = () => {
       onSubmit={handleSubmit}
       validationSchema={forgotPassValidation}
     >
-      {props => <Form {...props} />}
+      {(props) => <Form {...props} />}
     </Formik>
   );
 };

@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Mail } from "grommet-icons";
 import { string, object, ref, addMethod } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import equalTo from "../utils/equalTo";
@@ -20,12 +20,10 @@ addMethod(string, "equalTo", equalTo);
 
 const registerValidation = object().shape({
   email: string().email("Please enter your email"),
-  password: string()
-    .required("Please enter your password")
-    .min(8),
+  password: string().required("Please enter your password").min(8),
   password_confirm: string()
     .equalTo(ref("password"), "Passwords don't match")
-    .required("Confirm Password is required")
+    .required("Confirm Password is required"),
 });
 
 const Form = ({
@@ -33,7 +31,7 @@ const Form = ({
   handleChange,
   isSubmitting,
   setFieldValue,
-  errors
+  errors,
 }) => (
   <Fragment>
     <Box
@@ -61,7 +59,7 @@ const Form = ({
             fontWeight: "400",
             marginTop: "0px",
             paddingBottom: "0px",
-            marginBottom: "0px"
+            marginBottom: "0px",
           }}
         >
           Create your Mailbadger account now
@@ -113,7 +111,7 @@ const Form = ({
         {process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
           <ReCAPTCHA
             sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-            onChange={value => setFieldValue("token_response", value, true)}
+            onChange={(value) => setFieldValue("token_response", value, true)}
           />
         )}
         <Paragraph
@@ -142,7 +140,7 @@ const Form = ({
               style={{
                 borderTop: "1px solid #CACACA",
                 marginTop: "14px",
-                paddingTop: "0px"
+                paddingTop: "0px",
               }}
               size="small"
               textAlign="center"
@@ -165,13 +163,13 @@ const Form = ({
 
 Form.propTypes = FormPropTypes;
 
-const RegisterForm = props => {
+const RegisterForm = (props) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
         let params = {
           email: values.email,
-          password: values.password
+          password: values.password,
         };
 
         if (process.env.REACT_APP_RECAPTCHA_SITE_KEY !== "") {
@@ -197,7 +195,7 @@ const RegisterForm = props => {
   };
 
   RegisterForm.propTypes = {
-    fetchUser: PropTypes.func.isRequired
+    fetchUser: PropTypes.func.isRequired,
   };
 
   return (
@@ -206,7 +204,7 @@ const RegisterForm = props => {
       onSubmit={handleSubmit}
       validationSchema={registerValidation}
     >
-      {props => <Form {...props} />}
+      {(props) => <Form {...props} />}
     </Formik>
   );
 };

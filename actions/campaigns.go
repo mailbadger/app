@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	valid "github.com/asaskevich/govalidator"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
 	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/queue"
@@ -79,6 +83,14 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
+		})
+		return
+	}
 
 	lists, err := storage.GetSegmentsByIDs(c, u.ID, params.Ids)
 	if err != nil || len(lists) == 0 {
@@ -88,13 +100,21 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
+		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+	})
+
+	csExists := err == nil
+
 	msg, err := json.Marshal(entities.SendCampaignParams{
-		SegmentIDs:   params.Ids,
-		Source:       params.Source,
-		TemplateData: templateData,
-		UserID:       u.ID,
-		Campaign:     *campaign,
-		SesKeys:      *sesKeys,
+		SegmentIDs:             params.Ids,
+		Source:                 params.Source,
+		TemplateData:           templateData,
+		UserID:                 u.ID,
+		UserUUID:               u.UUID,
+		Campaign:               *campaign,
+		SesKeys:                *sesKeys,
+		ConfigurationSetExists: csExists,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -179,7 +199,7 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-	name, templateName := c.PostForm("name"), c.PostForm("template_name")
+	name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
 	user := middleware.GetUser(c)
 
 	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
@@ -208,6 +228,7 @@ func PostCampaign(c *gin.Context) {
 	err = storage.CreateCampaign(c, campaign)
 
 	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create campaign.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create the campaign.",
 		})
@@ -229,7 +250,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		name, templateName := c.PostForm("name"), c.PostForm("template_name")
+		name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
 
 		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
 		if err == nil && campaign.ID != campaign2.ID {
@@ -253,6 +274,10 @@ func PutCampaign(c *gin.Context) {
 		err = storage.UpdateCampaign(c, campaign)
 
 		if err != nil {
+			logger.From(c).
+				WithError(err).
+				WithField("campaign_id", id).
+				Warn("Unable to update campaign.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to update campaign.",
 			})
@@ -282,6 +307,7 @@ func DeleteCampaign(c *gin.Context) {
 
 		err = storage.DeleteCampaign(c, id, user.ID)
 		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to delete campaign.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to delete the campaign.",
 			})

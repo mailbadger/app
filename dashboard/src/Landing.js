@@ -11,16 +11,24 @@ class Landing extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      redirectToReferrer: false
+      redirectToReferrer: false,
     };
+  }
+
+  componentDidMount() {
+    if (localStorage.getItem("force_login")) {
+      let auth = this.context;
+      auth.clear();
+    }
   }
 
   render() {
     const { from } = this.props.location.state || {
-      from: { pathname: "/dashboard" }
+      from: { pathname: "/dashboard" },
     };
 
     let auth = this.context;
+
     if (auth.isLoading) {
       return <LoadingOverlay />;
     }
@@ -43,10 +51,10 @@ Landing.propTypes = {
   location: PropTypes.shape({
     state: PropTypes.shape({
       from: PropTypes.shape({
-        pathname: PropTypes.string
-      })
-    })
-  })
+        pathname: PropTypes.string,
+      }),
+    }),
+  }),
 };
 
 Landing.contextType = AuthContext;

@@ -3,15 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/aws/aws-sdk-go/service/ses"
-
 	"github.com/aws/aws-sdk-go/aws/awserr"
-
+	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/news-maily/app/consumers"
 	"github.com/news-maily/app/emails"
 	"github.com/news-maily/app/entities"
@@ -71,7 +68,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"user_id":     msg.UserID,
 			"campaign_id": msg.CampaignID,
 			"uuid":        msg.UUID,
-		}).Warn("bulk already sent")
+		}).Warn("Bulk already sent.")
 		return nil
 	}
 
@@ -155,7 +152,7 @@ func main() {
 
 	consumer, err := nsq.NewConsumer(entities.SendBulkTopic, entities.SendBulkTopic, config)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	consumer.ChangeMaxInFlight(200)
@@ -173,7 +170,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
 	nsqlds := []string{addr}
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	shutdown := make(chan os.Signal, 2)

@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import qs from "qs";
@@ -19,7 +19,7 @@ import {
   Heading,
   Select,
   FormField,
-  TextInput
+  TextInput,
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
@@ -49,7 +49,7 @@ const Row = ({ segment, setShowDelete }) => {
           icon={<More />}
           options={["Edit", "Delete"]}
           onChange={({ option }) => {
-            (function() {
+            (function () {
               switch (option) {
                 case "Edit":
                   history.push(`/dashboard/segments/${segment.id}/edit`);
@@ -58,7 +58,7 @@ const Row = ({ segment, setShowDelete }) => {
                   setShowDelete({
                     show: true,
                     name: segment.name,
-                    id: segment.id
+                    id: segment.id,
                   });
                   break;
                 default:
@@ -77,9 +77,9 @@ Row.propTypes = {
     name: PropTypes.string,
     id: PropTypes.number,
     created_at: PropTypes.string,
-    updated_at: PropTypes.string
+    updated_at: PropTypes.string,
   }),
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const Header = () => (
@@ -105,7 +105,7 @@ const SegmentTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable>
     <Header />
     <TableBody>
-      {list.map(s => (
+      {list.map((s) => (
         <Row segment={s} key={s.id} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
@@ -115,18 +115,18 @@ const SegmentTable = React.memo(({ list, setShowDelete }) => (
 SegmentTable.displayName = "SegmentTable";
 SegmentTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const segmentValidation = object().shape({
-  name: string().required("Please enter a segment name.")
+  name: string().required("Please enter a segment name."),
 });
 
 const CreateForm = ({
   handleSubmit,
   handleChange,
   isSubmitting,
-  hideModal
+  hideModal,
 }) => (
   <Box
     direction="column"
@@ -165,7 +165,7 @@ CreateForm.propTypes = {
   hideModal: PropTypes.func,
   handleSubmit: PropTypes.func,
   handleChange: PropTypes.func,
-  isSubmitting: PropTypes.bool
+  isSubmitting: PropTypes.bool,
 };
 
 const CreateSegment = ({ callApi, hideModal }) => {
@@ -177,7 +177,7 @@ const CreateSegment = ({ callApi, hideModal }) => {
         await axios.post(
           "/api/segments",
           qs.stringify({
-            name: values.name
+            name: values.name,
           })
         );
         createNotification("Segment has been created successfully.");
@@ -218,7 +218,7 @@ const CreateSegment = ({ callApi, hideModal }) => {
         onSubmit={handleSubmit}
         validationSchema={segmentValidation}
       >
-        {props => <CreateForm {...props} hideModal={hideModal} />}
+        {(props) => <CreateForm {...props} hideModal={hideModal} />}
       </Formik>
     </Box>
   );
@@ -226,11 +226,11 @@ const CreateSegment = ({ callApi, hideModal }) => {
 
 CreateSegment.propTypes = {
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteSegment = async id => {
+  const deleteSegment = async (id) => {
     await axios.delete(`/api/segments/${id}`);
   };
 
@@ -262,7 +262,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
 DeleteForm.propTypes = {
   id: PropTypes.number,
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const List = () => {
@@ -272,11 +272,11 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/segments"
+      url: "/api/segments",
     },
     {
       collection: [],
-      init: true
+      init: true,
     }
   );
 
@@ -301,7 +301,7 @@ const List = () => {
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] }
+        { name: "main", start: [0, 1], end: [1, 1] },
       ]}
     >
       {showDelete.show && (
@@ -365,7 +365,7 @@ const List = () => {
                 disabled={state.data.links.previous === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.previous
+                    url: state.data.links.previous,
                   });
                 }}
               />
@@ -378,7 +378,7 @@ const List = () => {
                 disabled={state.data.links.next === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.next
+                    url: state.data.links.next,
                   });
                 }}
               />

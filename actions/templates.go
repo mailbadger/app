@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/news-maily/app/storage/templates"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/sirupsen/logrus"
-
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/storage/templates"
 )
 
 func GetTemplate(c *gin.Context) {
@@ -32,7 +30,7 @@ func GetTemplate(c *gin.Context) {
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.Errorln(err.Error())
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
@@ -73,7 +71,7 @@ func GetTemplates(c *gin.Context) {
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.Errorln(err.Error())
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
@@ -85,7 +83,7 @@ func GetTemplates(c *gin.Context) {
 	})
 
 	if err != nil {
-		logrus.WithField("token", nextToken).Error(err)
+		logger.From(c).WithField("token", nextToken).WithError(err).Error("Unable to list templates.")
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Templates not found, invalid page token.",
 		})
@@ -125,7 +123,7 @@ func PostTemplate(c *gin.Context) {
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.Errorln(err.Error())
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
@@ -179,7 +177,7 @@ func PutTemplate(c *gin.Context) {
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.Errorln(err.Error())
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})
@@ -233,7 +231,7 @@ func DeleteTemplate(c *gin.Context) {
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
-		logrus.Errorln(err.Error())
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
 		})

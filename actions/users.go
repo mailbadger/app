@@ -7,18 +7,17 @@ import (
 	"os"
 	"time"
 
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/utils"
-
-	"github.com/gorilla/csrf"
-
 	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/csrf"
 	"github.com/news-maily/app/emails"
+	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -45,7 +44,7 @@ func ChangePassword(c *gin.Context) {
 	params := &changePassParams{}
 	err := c.Bind(params)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to bind params")
+		logger.From(c).WithError(err).Error("Unable to bind params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
@@ -74,7 +73,6 @@ func ChangePassword(c *gin.Context) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(params.Password))
 	if err != nil {
-		logrus.Errorf("Invalid credentials. %s", err)
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "The password that you entered is incorrect.",
 		})
@@ -83,9 +81,7 @@ func ChangePassword(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": u.ID,
-		}).Println(err)
+		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -99,9 +95,7 @@ func ChangePassword(c *gin.Context) {
 
 	err = storage.UpdateUser(c, u)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": u.ID,
-		}).Println(err)
+		logger.From(c).WithError(err).Error("Unable to update user's password.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -121,7 +115,7 @@ func PostForgotPassword(c *gin.Context) {
 	params := &forgotPassParams{}
 	err := c.Bind(params)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to bind params")
+		logger.From(c).WithError(err).Error("Unable to bind params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
@@ -148,10 +142,9 @@ func PostForgotPassword(c *gin.Context) {
 			os.Getenv("AWS_SES_REGION"),
 		)
 		if err == nil {
-
 			tokenStr, err := utils.GenerateRandomString(32)
 			if err != nil {
-				logrus.WithError(err).Error("Unable to generate random string.")
+				logger.From(c).WithError(err).Error("Unable to generate random string.")
 			}
 			t := &entities.Token{
 				UserID:    u.ID,
@@ -161,12 +154,17 @@ func PostForgotPassword(c *gin.Context) {
 			}
 			err = storage.CreateToken(c, t)
 			if err != nil {
-				logrus.WithError(err).Error("Cannot create token.")
+				logger.From(c).WithError(err).Error("Cannot create token.")
 			} else {
-				go sendForgotPasswordEmail(tokenStr, u.Username, sender)
+				go func(c *gin.Context) {
+					err := sendForgotPasswordEmail(tokenStr, u.Username, sender)
+					if err != nil {
+						logger.From(c).WithError(err).Error("Unable to send forgot pass email.")
+					}
+				}(c.Copy())
 			}
 		} else {
-			logrus.WithError(err).Error("Unable to create SES sender.")
+			logger.From(c).WithError(err).Warn("Unable to create SES sender.")
 		}
 	}
 
@@ -175,7 +173,7 @@ func PostForgotPassword(c *gin.Context) {
 	})
 }
 
-func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
+func sendForgotPasswordEmail(token, email string, sender emails.Sender) error {
 	url := os.Getenv("APP_URL") + "/forgot-password/" + token
 
 	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
@@ -187,9 +185,7 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) {
 		},
 	})
 
-	if err != nil {
-		logrus.WithError(err).Error("forgot password email failure")
-	}
+	return err
 }
 
 type putForgotPassParams struct {
@@ -210,7 +206,7 @@ func PutForgotPassword(c *gin.Context) {
 	params := &putForgotPassParams{}
 	err = c.Bind(params)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to bind params")
+		logger.From(c).WithError(err).Error("Unable to bind params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
@@ -246,9 +242,7 @@ func PutForgotPassword(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": user.ID,
-		}).Error(err)
+		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -262,9 +256,7 @@ func PutForgotPassword(c *gin.Context) {
 
 	err = storage.UpdateUser(c, user)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"user": user.ID,
-		}).Error(err)
+		logger.From(c).WithError(err).Error("Unable to update user.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to update your password. Please try again.",
 		})
@@ -273,9 +265,8 @@ func PutForgotPassword(c *gin.Context) {
 
 	err = storage.DeleteToken(c, tokenStr)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"token":   tokenStr,
-			"user_id": user.ID,
+		logger.From(c).WithFields(logrus.Fields{
+			"token": tokenStr,
 		}).WithError(err).Error("Unable to delete token.")
 	}
 
@@ -307,9 +298,7 @@ func PutVerifyEmail(c *gin.Context) {
 		user.Verified = true
 		err = storage.UpdateUser(c, user)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"user": user.ID,
-			}).Error(err)
+			logger.From(c).WithError(err).Error("Unable to update user status to verified.")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to verify your email. Please try again.",
 			})
@@ -319,9 +308,8 @@ func PutVerifyEmail(c *gin.Context) {
 
 	err = storage.DeleteToken(c, tokenStr)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"token":   tokenStr,
-			"user_id": user.ID,
+		logger.From(c).WithFields(logrus.Fields{
+			"token": tokenStr,
 		}).WithError(err).Error("Unable to delete token.")
 	}
 

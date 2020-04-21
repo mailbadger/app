@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.12-stretch as go-build
+FROM golang:1.14-buster as go-build
 
 ENV GO111MODULE=on
 
@@ -18,7 +18,7 @@ RUN go build -o /go/bin/app .
 RUN go build -o /go/bin/consumers/bulksender ./consumers/bulksender
 RUN go build -o /go/bin/consumers/campaigner ./consumers/campaigner
 
-FROM node:8-alpine as node-build
+FROM node:13-buster as node-build
 
 WORKDIR /www/app
 
@@ -27,7 +27,7 @@ COPY dashboard .
 RUN yarn && yarn build
 
 # Copy into base image
-FROM gcr.io/distroless/base
+FROM gcr.io/distroless/base-debian10
 
 USER nobody:nobody
 

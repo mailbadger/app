@@ -57,7 +57,7 @@ type Storage interface {
 	) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
-	BlacklistSubscriber(userID int64, email string) error
+	DeactivateSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
 
 	GetAPIKeys(userID int64) []*entities.APIKey
@@ -276,9 +276,9 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 	return GetFromContext(c).UpdateSubscriber(s)
 }
 
-// BlacklistSubscriber blacklists a Subscriber entity by the given email.
-func BlacklistSubscriber(c context.Context, userID int64, email string) error {
-	return GetFromContext(c).BlacklistSubscriber(userID, email)
+// DeactivateSubscriber blacklists a Subscriber entity by the given email.
+func DeactivateSubscriber(c context.Context, userID int64, email string) error {
+	return GetFromContext(c).DeactivateSubscriber(userID, email)
 }
 
 // DeleteSubscriber deletes a Subscriber entity by the given id.

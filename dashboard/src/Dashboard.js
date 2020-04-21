@@ -5,7 +5,6 @@ import Notification from "./Notifications";
 import { NotificationsProvider } from "./Notifications/context";
 import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
-
 import Subscribers from "./Subscribers";
 import Templates from "./Templates";
 import Segments from "./Segments";
@@ -29,7 +28,7 @@ const Dashboard = () => {
 
   return (
     <ResponsiveContext.Consumer>
-      {size => (
+      {(size) => (
         <Fragment>
           <Box
             direction="row"

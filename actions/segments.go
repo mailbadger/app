@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/news-maily/app/entities"
+	"github.com/news-maily/app/logger"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
 	"github.com/sirupsen/logrus"
@@ -19,7 +20,7 @@ type subs struct {
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
-		logrus.Error("Unable to fetch pagination cursor from context.")
+		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch segments. Please try again.",
 		})
@@ -28,7 +29,7 @@ func GetSegments(c *gin.Context) {
 
 	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
-		logrus.Error("Unable to cast pagination cursor from context value.")
+		logger.From(c).Error("Unable to cast pagination cursor from context value.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch segments. Please try again.",
 		})
@@ -37,7 +38,7 @@ func GetSegments(c *gin.Context) {
 
 	err := storage.GetSegments(c, middleware.GetUser(c).ID, p)
 	if err != nil {
-		logrus.WithError(err).Error("Unable to fetch segments collection.")
+		logger.From(c).WithError(err).Error("Unable to fetch segments collection.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to fetch segments. Please try again.",
 		})
@@ -84,7 +85,7 @@ func PostSegment(c *gin.Context) {
 	_, err := storage.GetSegmentByName(c, name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Segment with that name already exists",
+			"message": "Segment with that name already exists.",
 		})
 		return
 	}
@@ -157,8 +158,9 @@ func DeleteSegment(c *gin.Context) {
 
 		err = storage.DeleteSegment(c, id, user.ID)
 		if err != nil {
+			logger.From(c).WithError(err).Error("Unable to delete segment.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": err.Error(),
+				"message": "Unable to delete segment.",
 			})
 			return
 		}
@@ -186,7 +188,7 @@ func PutSegmentSubscribers(c *gin.Context) {
 		subs := &subs{}
 		err = c.Bind(subs)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to bind params")
+			logger.From(c).WithError(err).Error("Unable to bind params")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid parameters, please try again.",
 			})
@@ -202,8 +204,8 @@ func PutSegmentSubscribers(c *gin.Context) {
 
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
-				Error("Unable to find subscribers by the list of ids.")
+			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
+				Warn("Unable to find subscribers by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to add subscribers to the segment.",
 			})
@@ -213,7 +215,7 @@ func PutSegmentSubscribers(c *gin.Context) {
 		l.Subscribers = s
 
 		if err = storage.AppendSubscribers(c, l); err != nil {
-			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
 				Error("Unable to create subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to add the subscribers to the segment.",
@@ -234,7 +236,7 @@ func GetSegmentsubscribers(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		val, ok := c.Get("cursor")
 		if !ok {
-			logrus.Error("Unable to fetch pagination cursor from context.")
+			logger.From(c).Error("Unable to fetch pagination cursor from context.")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Unable to fetch subscribers. Please try again.",
 			})
@@ -243,7 +245,7 @@ func GetSegmentsubscribers(c *gin.Context) {
 
 		p, ok := val.(*storage.PaginationCursor)
 		if !ok {
-			logrus.Error("Unable to cast pagination cursor from context value.")
+			logger.From(c).Error("Unable to cast pagination cursor from context value.")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Unable to fetch subscribers. Please try again.",
 			})
@@ -252,7 +254,7 @@ func GetSegmentsubscribers(c *gin.Context) {
 
 		err := storage.GetSubscribersBySegmentID(c, id, middleware.GetUser(c).ID, p)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to fetch subscribers for segment collection.")
+			logger.From(c).WithError(err).Error("Unable to fetch subscribers for segment collection.")
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"message": "Unable to fetch segments. Please try again.",
 			})
@@ -282,7 +284,7 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		subs := &subs{}
 		err = c.Bind(subs)
 		if err != nil {
-			logrus.WithError(err).Error("Unable to bind params")
+			logger.From(c).WithError(err).Error("Unable to bind params")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid parameters, please try again.",
 			})
@@ -298,7 +300,7 @@ func DetachSegmentSubscribers(c *gin.Context) {
 
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
 				Error("Unable to find subscribers by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to detach subscribers from the segment.",
@@ -309,7 +311,7 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		l.Subscribers = s
 
 		if err = storage.DetachSubscribers(c, l); err != nil {
-			logrus.WithFields(logrus.Fields{"user_id": user.ID, "ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
 				Error("Unable to remove subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to detach subscribers from the segment.",

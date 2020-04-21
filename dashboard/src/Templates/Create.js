@@ -3,7 +3,7 @@ import { Controlled as CodeMirror } from "react-codemirror2";
 import { FormField, Box, TextInput, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import "codemirror/lib/codemirror.css";
@@ -32,7 +32,7 @@ const initialHtml = `<!DOCTYPE html>
 const templateValidation = object().shape({
   name: string().required("Please enter a template name."),
   subject: string().required("Please enter a subject for the email."),
-  htmlPart: string().required("Please enter a valid HTML")
+  htmlPart: string().required("Please enter a valid HTML"),
 });
 
 const Form = ({
@@ -41,7 +41,7 @@ const Form = ({
   handleSubmit,
   handleChange,
   setFieldValue,
-  isSubmitting
+  isSubmitting,
 }) => {
   return (
     <Box direction="column">
@@ -73,12 +73,12 @@ const Form = ({
               options={{
                 mode: "xml",
                 theme: "material",
-                lineNumbers: true
+                lineNumbers: true,
               }}
               onBeforeChange={(editor, data, value) => {
                 setHtml(value);
               }}
-              onChange={editor => {
+              onChange={(editor) => {
                 setFieldValue("htmlPart", editor.getValue(), true);
               }}
             />
@@ -112,7 +112,7 @@ const CreateTemplateForm = () => {
           qs.stringify({
             name: values.name,
             content: values.htmlPart,
-            subject: values.subject
+            subject: values.subject,
           })
         );
         createNotification("Template has been created successfully.");
@@ -156,10 +156,10 @@ const CreateTemplateForm = () => {
           onSubmit={handleSubmit}
           validationSchema={templateValidation}
           initialValues={{
-            htmlPart: html
+            htmlPart: html,
           }}
         >
-          {props => <Form setHtml={setHtml} html={html} {...props} />}
+          {(props) => <Form setHtml={setHtml} html={html} {...props} />}
         </Formik>
       </Box>
     </Box>

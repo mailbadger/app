@@ -7,34 +7,36 @@ import {
   Button,
   TextInput,
   Select,
-  Heading
+  Heading,
 } from "grommet";
 import { Trash } from "grommet-icons";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import { NotificationsContext } from "../Notifications/context";
 import regions from "../regions/regions.json";
 import useApi from "../hooks/useApi";
+import useInterval from "../hooks/useInterval";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
 import { FormPropTypes } from "../PropTypes";
+import StyledSpinner from "../ui/StyledSpinner";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
   secret_key: string().required("Please enter your Amazon secret key."),
-  region: string().required("Please enter the Amazon region")
+  region: string().required("Please enter the Amazon region"),
 });
 
-const opts = regions.filter(r => r.public);
+const opts = regions.filter((r) => r.public);
 
 const Form = ({
   handleSubmit,
   values,
   handleChange,
   setFieldValue,
-  isSubmitting
+  isSubmitting,
 }) => (
   <Box width="medium">
     <form onSubmit={handleSubmit}>
@@ -97,8 +99,8 @@ SesKey.propTypes = {
   setShowDelete: PropTypes.func,
   sesKey: PropTypes.shape({
     region: PropTypes.string,
-    access_key: PropTypes.string
-  })
+    access_key: PropTypes.string,
+  }),
 };
 
 const deleteKeys = async () => {
@@ -128,7 +130,7 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
               onClick={async () => {
                 setSubmitting(true);
                 await deleteKeys();
-                callApi({ url: "/api/ses-keys" });
+                await callApi({ url: "/api/ses-keys" });
                 setSubmitting(false);
                 hideModal();
               }}
@@ -142,15 +144,24 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
 
 DeleteLayer.propTypes = {
   setShowDelete: PropTypes.func,
-  callApi: PropTypes.func
+  callApi: PropTypes.func,
 };
 
 const AddSesKeysForm = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [state, callApi] = useApi({
-    url: `/api/ses-keys`
+    url: `/api/ses-keys`,
   });
   const { createNotification } = useContext(NotificationsContext);
+  const [retries, setRetries] = useState(-1);
+
+  useInterval(
+    async () => {
+      await callApi({ url: `/api/ses-keys` });
+      setRetries(retries - 1);
+    },
+    retries > 0 ? 1000 : null
+  );
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const addKeys = async () => {
@@ -160,13 +171,11 @@ const AddSesKeysForm = () => {
           qs.stringify({
             access_key: values.access_key,
             secret_key: values.secret_key,
-            region: values.region.code
+            region: values.region.code,
           })
         );
 
-        createNotification("SES keys have been successfully set.");
-
-        await callApi({ url: `/api/ses-keys` });
+        setRetries(5); //reset retries
       } catch (error) {
         if (error.response) {
           setErrors(error.response.data);
@@ -190,7 +199,7 @@ const AddSesKeysForm = () => {
     <Formik
       onSubmit={handleSubmit}
       initialValues={{
-        region: { code: "", name: "" }
+        region: { code: "", name: "" },
       }}
       validationSchema={addSesKeysValidation}
     >
@@ -198,18 +207,23 @@ const AddSesKeysForm = () => {
     </Formik>
   );
 
-  if (state.isLoading) {
-    body = <div>Loading...</div>;
+  if (retries === 0) {
+    setRetries(-1);
+    createNotification(
+      "Unable to add SES keys, check the IAM permissions and try again.",
+      "status-error"
+    );
+  }
+  if (state.isLoading || retries > 0) {
+    body = <StyledSpinner size={4} />;
   }
 
   if (!state.isError && state.data) {
-    body = (
-      <SesKey
-        callApi={callApi}
-        setShowDelete={setShowDelete}
-        sesKey={state.data}
-      />
-    );
+    if (retries > 0) {
+      setRetries(-1);
+    }
+
+    body = <SesKey setShowDelete={setShowDelete} sesKey={state.data} />;
   }
 
   return (
