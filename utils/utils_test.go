@@ -29,3 +29,12 @@ func TestGenerateRandomString(t *testing.T) {
 
 	assert.Len(t, decoded, 16, "they should be equal")
 }
+
+func TestSignData(t *testing.T) {
+	data := "foobar"
+	secret := "supersecret"
+
+	hash, err := SignData(data, secret)
+	assert.Nil(t, err)
+	assert.Equal(t, "bd209680297c13ce4d5eaf0c8dea68691de725cfb7ae116b8e8845a9606b22d4", hash)
+}
