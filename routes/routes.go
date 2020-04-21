@@ -123,6 +123,11 @@ func New() http.Handler {
 			return
 		}
 
+		if strings.HasPrefix(c.Request.URL.Path, "/unsubscribe-success.html") {
+			c.HTML(http.StatusOK, "unsubscribe-success.html", nil)
+			return
+		}
+
 		c.File(appDir + "/index.html")
 	})
 
