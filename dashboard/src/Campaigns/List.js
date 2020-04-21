@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import useApi from "../hooks/useApi";
 import {
   Grid,
@@ -13,7 +13,7 @@ import {
   Box,
   Button,
   Heading,
-  Select
+  Select,
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
@@ -28,7 +28,7 @@ const Row = ({ campaign, setShowDelete }) => {
     draft: "#CCCCCC",
     sending: "#00739D",
     sent: "#00C781",
-    scheduled: "#FFCA58"
+    scheduled: "#FFCA58",
   };
   return (
     <TableRow>
@@ -51,7 +51,7 @@ const Row = ({ campaign, setShowDelete }) => {
           icon={<More />}
           options={["Edit", "Delete"]}
           onChange={({ option }) => {
-            (function() {
+            (function () {
               switch (option) {
                 case "Edit":
                   history.push(`/dashboard/campaigns/${campaign.id}/edit`);
@@ -60,7 +60,7 @@ const Row = ({ campaign, setShowDelete }) => {
                   setShowDelete({
                     show: true,
                     name: campaign.name,
-                    id: campaign.id
+                    id: campaign.id,
                   });
                   break;
                 default:
@@ -80,9 +80,9 @@ Row.propTypes = {
     id: PropTypes.number,
     status: PropTypes.string,
     template_name: PropTypes.string,
-    created_at: PropTypes.string
+    created_at: PropTypes.string,
   }),
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const Header = () => (
@@ -117,7 +117,7 @@ const CampaignsTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable>
     <Header />
     <TableBody>
-      {list.map(c => (
+      {list.map((c) => (
         <Row campaign={c} key={c.id} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
@@ -127,11 +127,11 @@ const CampaignsTable = React.memo(({ list, setShowDelete }) => (
 CampaignsTable.displayName = "CampaignsTable";
 CampaignsTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteCampaign = async id => {
+  const deleteCampaign = async (id) => {
     await axios.delete(`/api/campaigns/${id}`);
   };
 
@@ -163,7 +163,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
 DeleteForm.propTypes = {
   id: PropTypes.number,
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const List = () => {
@@ -172,11 +172,11 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/campaigns"
+      url: "/api/campaigns",
     },
     {
       collection: [],
-      init: true
+      init: true,
     }
   );
 
@@ -201,7 +201,7 @@ const List = () => {
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] }
+        { name: "main", start: [0, 1], end: [1, 1] },
       ]}
     >
       {showDelete.show && (
@@ -253,7 +253,7 @@ const List = () => {
                 disabled={state.data.links.previous === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.previous
+                    url: state.data.links.previous,
                   });
                 }}
               />
@@ -266,7 +266,7 @@ const List = () => {
                 disabled={state.data.links.next === null}
                 onClick={() => {
                   callApi({
-                    url: state.data.links.next
+                    url: state.data.links.next,
                   });
                 }}
               />

@@ -48,12 +48,14 @@ type BulkSendMessage struct {
 // SendCampaignParams represent the request params used
 // by the send campaign endpoint.
 type SendCampaignParams struct {
-	SegmentIDs   []int64           `json:"segment_ids"`
-	TemplateData map[string]string `json:"template_data"`
-	Source       string            `json:"source"`
-	UserID       int64             `json:"user_id"`
-	Campaign     `json:"campaign"`
-	SesKeys      `json:"ses_keys"`
+	SegmentIDs             []int64           `json:"segment_ids"`
+	TemplateData           map[string]string `json:"template_data"`
+	Source                 string            `json:"source"`
+	UserID                 int64             `json:"user_id"`
+	UserUUID               string            `json:"user_uuid"`
+	ConfigurationSetExists bool              `json:"configuration_set_exists"`
+	Campaign               `json:"campaign"`
+	SesKeys                `json:"ses_keys"`
 }
 
 // ErrCampaignNameEmpty indicates an empty campaign name error used in validation process.

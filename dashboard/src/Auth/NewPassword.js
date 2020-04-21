@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { FormField, Button, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import equalTo from "../utils/equalTo";
@@ -13,12 +13,10 @@ import { FormPropTypes } from "../PropTypes";
 addMethod(string, "equalTo", equalTo);
 
 const passwordValidation = object().shape({
-  password: string()
-    .required("Please enter a password")
-    .min(8),
+  password: string().required("Please enter a password").min(8),
   password_confirm: string()
     .equalTo(ref("password"), "Passwords don't match")
-    .required("Confirm Password is required")
+    .required("Confirm Password is required"),
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
@@ -56,7 +54,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           padding: "8px",
           background: "#654FAA",
           width: "100%",
-          textAlign: "center"
+          textAlign: "center",
         }}
         disabled={isSubmitting}
         type="submit"
@@ -71,9 +69,9 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
 
 Form.propTypes = FormPropTypes;
 
-const NewPasswordForm = props => {
+const NewPasswordForm = (props) => {
   const {
-    match: { params }
+    match: { params },
   } = props;
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -82,7 +80,7 @@ const NewPasswordForm = props => {
         await axios.put(
           `/api/forgot-password/${params.token}`,
           qs.stringify({
-            password: values.password
+            password: values.password,
           })
         );
 
@@ -104,7 +102,7 @@ const NewPasswordForm = props => {
       onSubmit={handleSubmit}
       validationSchema={passwordValidation}
     >
-      {props => <Form {...props} />}
+      {(props) => <Form {...props} />}
     </Formik>
   );
 };
@@ -112,9 +110,9 @@ const NewPasswordForm = props => {
 NewPasswordForm.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      token: PropTypes.string
-    })
-  })
+      token: PropTypes.string,
+    }),
+  }),
 };
 
 export default NewPasswordForm;

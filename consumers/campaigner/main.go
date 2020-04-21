@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -41,7 +40,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).Error("Malformed JSON message.")
+		logrus.WithField("body", string(m.Body)).WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
 
@@ -67,7 +66,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
-			}).Errorf("unable to fetch subscribers: %s", err.Error())
+			}).WithError(err).Error("Unable to fetch subscribers.")
 			break
 		}
 
@@ -83,14 +82,43 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				end = len(subs)
 			}
 
-			// create
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
+				m, err := s.GetMetadata()
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to get subscriber metadata.")
+
+					continue
+				}
+
+				if s.Name != "" {
+					m["name"] = s.Name
+				}
+
+				url, err := s.GetUnsubscribeURL(msg.UserUUID)
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to get unsubscribe url.")
+				} else {
+					m["unsubscribe_url"] = url
+				}
+
+				jsonMeta, err := json.Marshal(m)
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to marshal metadata to json.")
+
+					continue
+				}
 				d := &ses.BulkEmailDestination{
 					Destination: &ses.Destination{
 						ToAddresses: []*string{aws.String(s.Email)},
 					},
-					ReplacementTemplateData: aws.String(string(s.MetaJSON)),
+					ReplacementTemplateData: aws.String(string(jsonMeta)),
 				}
 
 				dest = append(dest, d)
@@ -98,7 +126,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			uuid, err := uuid.NewRandom()
 			if err != nil {
-				logrus.Errorf("unable to generate random uuid: %s", err.Error())
+				logrus.WithError(err).Error("Unable to generate random uuid.")
 				continue
 			}
 
@@ -109,29 +137,35 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 
 			// prepare message for publishing to the queue
-			msg, err := json.Marshal(entities.BulkSendMessage{
-				UUID: uuid.String(),
-				Input: &ses.SendBulkTemplatedEmailInput{
-					Source:               aws.String(msg.Source),
-					Template:             aws.String(msg.Campaign.TemplateName),
-					Destinations:         dest,
-					ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-					DefaultTemplateData:  aws.String(string(defaultData)),
-					DefaultTags: []*ses.MessageTag{
-						&ses.MessageTag{
-							Name:  aws.String("campaign_id"),
-							Value: aws.String(strconv.Itoa(int(msg.Campaign.ID))),
-						},
-						&ses.MessageTag{
-							Name:  aws.String("user_id"),
-							Value: aws.String(strconv.Itoa(int(msg.UserID))),
-						},
+			input := &ses.SendBulkTemplatedEmailInput{
+				Source:              aws.String(msg.Source),
+				Template:            aws.String(msg.Campaign.TemplateName),
+				Destinations:        dest,
+				DefaultTemplateData: aws.String(string(defaultData)),
+				DefaultTags: []*ses.MessageTag{
+					&ses.MessageTag{
+						Name:  aws.String("campaign_id"),
+						Value: aws.String(strconv.FormatInt(msg.Campaign.ID, 10)),
+					},
+					&ses.MessageTag{
+						Name:  aws.String("user_id"),
+						Value: aws.String(msg.UserUUID),
 					},
 				},
+			}
+
+			if msg.ConfigurationSetExists {
+				input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
+			}
+
+			bulkMsg := entities.BulkSendMessage{
+				UUID:       uuid.String(),
+				Input:      input,
 				CampaignID: msg.Campaign.ID,
 				UserID:     msg.UserID,
 				SesKeys:    &msg.SesKeys,
-			})
+			}
+			msg, err := json.Marshal(bulkMsg)
 
 			if err != nil {
 				logrus.WithError(err).Error("Unable to marshal bulk message input.")
@@ -181,14 +215,14 @@ func main() {
 
 	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(entities.CampaignsTopic, entities.CampaignsTopic, config)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	consumer.ChangeMaxInFlight(200)
@@ -206,7 +240,7 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
 	nsqlds := []string{addr}
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	shutdown := make(chan os.Signal, 2)

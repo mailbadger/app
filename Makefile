@@ -26,7 +26,7 @@ build_api:
 	go build -o bin/campaigner ./consumers/campaigner
 
 build_static:
-	cd dashboard; yarn && yarn build
+	cd dashboard; rm -rf build && yarn && yarn build
 
 image:
 	docker build -t news-maily/app:latest .

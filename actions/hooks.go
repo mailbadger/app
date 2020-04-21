@@ -128,7 +128,7 @@ func HandleHook(c *gin.Context) {
 			}
 
 			if msg.Bounce.BounceType == "Permanent" {
-				err = storage.BlacklistSubscriber(c, u.ID, recipient.EmailAddress)
+				err = storage.DeactivateSubscriber(c, u.ID, recipient.EmailAddress)
 				if err != nil {
 					logger.From(c).WithFields(logrus.Fields{
 						"message":   msg,

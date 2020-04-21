@@ -26,13 +26,17 @@ func (j *JSON) Scan(value interface{}) error {
 		return nil
 	}
 
+	var s []byte
 	switch v := value.(type) {
 	case []byte:
+		s = v
 	case string:
-		*j = append((*j)[0:0], v...)
+		s = []byte(v)
 	default:
 		return errors.New("invalid Scan Source")
 	}
+
+	*j = append((*j)[0:0], s...)
 
 	return nil
 }

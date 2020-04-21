@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useState } from "react";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 
 const dataFetchReducer = (state, action) => {
   switch (action.type) {
@@ -7,20 +7,21 @@ const dataFetchReducer = (state, action) => {
       return {
         ...state,
         isLoading: true,
-        isError: false
+        isError: false,
       };
     case "REQUEST_SUCCESS":
       return {
         ...state,
         isLoading: false,
         isError: false,
-        data: action.payload
+        data: action.payload,
       };
     case "REQUEST_FAILURE":
       return {
         ...state,
         isLoading: false,
-        isError: true
+        isError: true,
+        data: action.payload,
       };
     default:
       throw new Error();
@@ -35,7 +36,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
   const [state, dispatch] = useReducer(dataFetchReducer, {
     isLoading: false,
     isError: false,
-    data: initialData
+    data: initialData,
   });
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
         }
       } catch (error) {
         if (!didCancel) {
-          dispatch({ type: "REQUEST_FAILURE", error });
+          dispatch({ type: "REQUEST_FAILURE", error, payload: initialData });
         }
       }
     };
@@ -64,7 +65,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
     };
   }, [opts]);
 
-  const callApi = opts => {
+  const callApi = (opts) => {
     setOpts(opts);
   };
 

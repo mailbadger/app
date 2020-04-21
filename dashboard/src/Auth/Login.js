@@ -5,7 +5,7 @@ import { Formik, ErrorMessage } from "formik";
 import { Mail } from "grommet-icons";
 import { string, object } from "yup";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import SocialButtons from "./SocialButtons";
@@ -39,7 +39,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
           fontWeight: "400",
           marginTop: "0px",
           paddingBottom: "0px",
-          marginBottom: "0px"
+          marginBottom: "0px",
         }}
       >
         Welcome back!
@@ -90,7 +90,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
             style={{
               borderTop: "1px solid #CACACA",
               marginTop: "14px",
-              paddingTop: "0px"
+              paddingTop: "0px",
             }}
             size="small"
             textAlign="center"
@@ -106,7 +106,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
         style={{
           borderTop: "1px solid #CACACA",
           marginTop: "14px",
-          paddingTop: "10px"
+          paddingTop: "10px",
         }}
         size="small"
         textAlign="center"
@@ -123,10 +123,10 @@ Form.propTypes = FormPropTypes;
 
 const loginValidation = object().shape({
   email: string().required("Please enter your email"),
-  password: string().required("Please enter your password")
+  password: string().required("Please enter your password"),
 });
 
-const LoginForm = props => {
+const LoginForm = (props) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
@@ -134,7 +134,7 @@ const LoginForm = props => {
           "/api/authenticate",
           qs.stringify({
             username: values.email,
-            password: values.password
+            password: values.password,
           })
         );
 
@@ -156,13 +156,13 @@ const LoginForm = props => {
       onSubmit={handleSubmit}
       validationSchema={loginValidation}
     >
-      {props => <Form {...props} />}
+      {(props) => <Form {...props} />}
     </Formik>
   );
 };
 
 LoginForm.propTypes = {
-  fetchUser: PropTypes.func.isRequired
+  fetchUser: PropTypes.func.isRequired,
 };
 
 export default LoginForm;

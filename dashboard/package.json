@@ -4,15 +4,14 @@
   "private": true,
   "dependencies": {
     "axios": "^0.19.2",
-    "date-fns": "^2.12.0",
     "codemirror": "^5.52.2",
+    "date-fns": "^2.12.0",
     "formik": "^2.1.4",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
     "history": "^4.10.1",
     "prop-types": "^15.7.2",
     "qs": "^6.9.3",
-    "query-string": "^6.12.1",
     "react": "^16.13.1",
     "react-codemirror2": "^6.0.0",
     "react-content-loader": "^5.0.4",
@@ -21,7 +20,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
     "styled-components": "^4.4.1",
-    "yup": "^0.28.3"
+    "yup": "^0.28.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -51,9 +50,9 @@
   },
   "proxy": "http://localhost:8080",
   "devDependencies": {
+    "eslint": "^6.8.0",
     "eslint-plugin-react": "^7.19.0",
     "husky": "^4.2.5",
-    "eslint": "^6.8.0",
     "lint-staged": "^10.1.6",
     "prettier": "2.0.4"
   }

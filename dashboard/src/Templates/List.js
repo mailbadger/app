@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import useApi from "../hooks/useApi";
 import {
   Grid,
@@ -13,7 +13,7 @@ import {
   Box,
   Button,
   Heading,
-  Select
+  Select,
 } from "grommet";
 import history from "../history";
 import StyledTable from "../ui/StyledTable";
@@ -38,7 +38,7 @@ const Row = ({ template, setShowDelete }) => {
           icon={<More />}
           options={["Edit", "Delete"]}
           onChange={({ option }) => {
-            (function() {
+            (function () {
               switch (option) {
                 case "Edit":
                   history.push(`/dashboard/templates/${template.name}/edit`);
@@ -61,8 +61,8 @@ Row.propTypes = {
   setShowDelete: PropTypes.func,
   template: PropTypes.shape({
     name: PropTypes.string,
-    timestamp: PropTypes.string
-  })
+    timestamp: PropTypes.string,
+  }),
 };
 
 const Header = () => (
@@ -85,7 +85,7 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
   <StyledTable>
     <Header />
     <TableBody>
-      {list.map(t => (
+      {list.map((t) => (
         <Row template={t} key={t.name} setShowDelete={setShowDelete} />
       ))}
     </TableBody>
@@ -95,11 +95,11 @@ const TemplateTable = React.memo(({ list, setShowDelete }) => (
 TemplateTable.displayName = "TemplateTable";
 TemplateTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func
+  setShowDelete: PropTypes.func,
 };
 
 const DeleteForm = ({ name, callApi, hideModal }) => {
-  const deleteTemplate = async name => {
+  const deleteTemplate = async (name) => {
     await axios.delete(`/api/templates/${name}`);
   };
 
@@ -131,7 +131,7 @@ const DeleteForm = ({ name, callApi, hideModal }) => {
 DeleteForm.propTypes = {
   name: PropTypes.string,
   callApi: PropTypes.func,
-  hideModal: PropTypes.func
+  hideModal: PropTypes.func,
 };
 
 const List = () => {
@@ -141,12 +141,12 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/templates"
+      url: "/api/templates",
     },
     {
       next_token: "",
       collection: [],
-      init: true
+      init: true,
     }
   );
 
@@ -171,7 +171,7 @@ const List = () => {
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] }
+        { name: "main", start: [0, 1], end: [1, 1] },
       ]}
     >
       {showDelete.show && (
@@ -223,14 +223,14 @@ const List = () => {
                 onClick={() => {
                   const t = currentPage.tokens[currentPage.current];
                   callApi({
-                    url: `/api/templates?next_token=${encodeURIComponent(t)}`
+                    url: `/api/templates?next_token=${encodeURIComponent(t)}`,
                   });
                   const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
                   currentPage.tokens.splice(-1, removeNumOfTokens);
 
                   setPage({
                     current: currentPage.current - 1,
-                    tokens: currentPage.tokens
+                    tokens: currentPage.tokens,
                   });
                 }}
                 disabled={currentPage.current === -1}
@@ -246,13 +246,13 @@ const List = () => {
                   callApi({
                     url: `/api/templates?next_token=${encodeURIComponent(
                       next_token
-                    )}`
+                    )}`,
                   });
                   currentPage.tokens.push(next_token);
 
                   setPage({
                     current: currentPage.current + 1,
-                    tokens: currentPage.tokens
+                    tokens: currentPage.tokens,
                   });
                 }}
                 disabled={state.data.next_token === ""}

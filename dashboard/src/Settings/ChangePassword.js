@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { FormField, TextInput, Heading, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
-import axios from "axios";
+import { mainInstance as axios } from "../axios";
 import qs from "qs";
 
 import { NotificationsContext } from "../Notifications/context";
@@ -19,7 +19,7 @@ const changePassValidation = object().shape({
     .required("Password must not be empty."),
   new_password_confirm: string()
     .equalTo(ref("new_password"), "Passwords don't match")
-    .required("Confirm Password is required")
+    .required("Confirm Password is required"),
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting }) => (
@@ -81,7 +81,7 @@ const ChangePasswordForm = () => {
           "/api/users/password",
           qs.stringify({
             password: values.password,
-            new_password: values.new_password
+            new_password: values.new_password,
           })
         );
 
@@ -111,7 +111,7 @@ const ChangePasswordForm = () => {
       initialValues={{
         password: "",
         new_password: "",
-        new_password_confirm: ""
+        new_password_confirm: "",
       }}
       onSubmit={handleSubmit}
       validationSchema={changePassValidation}
