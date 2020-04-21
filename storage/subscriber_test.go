@@ -62,9 +62,14 @@ func TestSubscriber(t *testing.T) {
 
 	//Test update subscriber
 	s.Name = "bar"
+	s.MetaJSON = []byte(`{"foo": "baz"}`)
 	err = store.UpdateSubscriber(s)
 	assert.Nil(t, err)
 	assert.Equal(t, s.Name, "bar")
+
+	m, err = s.GetMetadata()
+	assert.Nil(t, err)
+	assert.Equal(t, m["foo"], "baz")
 
 	//Test subscriber validation when name and email are invalid
 	s.Name = ""

@@ -27,38 +27,34 @@ type Subscriber struct {
 	Metadata    map[string]string `json:"-" sql:"-"`
 }
 
-// AppendUnsubscribeURLToMeta generates and signs a token based on the subscriber ID
-// and appends an unsubscribe url with the email and token as query parameters, to the
-// json metadata.
-func (s *Subscriber) AppendUnsubscribeURLToMeta(uuid string) error {
+// GetMetadata returns the subscriber's metadata fields.
+func (s *Subscriber) GetMetadata() (map[string]string, error) {
 	m := make(map[string]string)
 
 	if !s.MetaJSON.IsNull() {
 		err := json.Unmarshal(s.MetaJSON, &m)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
+	s.Metadata = m
 
+	return m, nil
+}
+
+// GetUnsubscribeURL generates and signs a token based on the subscriber ID
+// and creates an unsubscribe url with the email and token as query parameters.
+func (s *Subscriber) GetUnsubscribeURL(uuid string) (string, error) {
 	t, err := s.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	if err != nil {
-		return err
+		return "", err
 	}
 	params := url.Values{}
 	params.Add("email", s.Email)
 	params.Add("uuid", uuid)
 	params.Add("t", t)
 
-	m["unsubscribe_url"] = os.Getenv("APP_URL") + "/unsubscribe?" + params.Encode()
-
-	jsonMeta, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	s.MetaJSON = jsonMeta
-
-	return nil
+	return os.Getenv("APP_URL") + "/unsubscribe.html?" + params.Encode(), nil
 }
 
 // Validate subscriber properties,

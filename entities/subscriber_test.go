@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"encoding/json"
 	"os"
 	"testing"
 
@@ -25,18 +24,16 @@ func TestSubscriberEntity(t *testing.T) {
 		Email:    "john.doe@example.com",
 	}
 
-	err = sub.AppendUnsubscribeURLToMeta("foobar")
+	url, err := sub.GetUnsubscribeURL("foobar")
 	assert.Nil(t, err)
 
-	var m map[string]string
-
-	err = json.Unmarshal(sub.MetaJSON, &m)
+	m, err := sub.GetMetadata()
 	assert.Nil(t, err)
+
 	assert.Equal(t, m["foo"], "bar")
-	assert.Equal(t, m["unsubscribe_url"], "https://mailbadger.io/unsubscribe?email=john.doe%40example.com&t=77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5&uuid=foobar")
+	assert.Equal(t, url, "https://mailbadger.io/unsubscribe.html?email=john.doe%40example.com&t=77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5&uuid=foobar")
 
 	tt, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	assert.Nil(t, err)
 	assert.Equal(t, tt, "77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5")
-
 }

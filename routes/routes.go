@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -97,10 +98,27 @@ func New() http.Handler {
 		logrus.Panic("app directory not set")
 	}
 
+	handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
+
 	handler.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/api") {
 			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Not found",
+				"message": "Not found.",
+			})
+			return
+		}
+
+		if strings.HasPrefix(c.Request.URL.Path, "/unsubscribe.html") {
+			email := c.Query("email")
+			t := c.Query("t")
+			uuid := c.Query("uuid")
+			failed := c.Query("failed")
+
+			c.HTML(http.StatusOK, "unsubscribe.html", gin.H{
+				"email":  email,
+				"t":      t,
+				"uuid":   uuid,
+				"failed": failed,
 			})
 			return
 		}

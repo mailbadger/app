@@ -84,11 +84,33 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			var dest []*ses.BulkEmailDestination
 			for _, s := range subs[i:end] {
-				err := s.AppendUnsubscribeURLToMeta(msg.UserUUID)
+				m, err := s.GetMetadata()
 				if err != nil {
 					logrus.WithError(err).
 						WithField("subscriber", s).
-						Error("Unable to append unsubscribe url to metadata.")
+						Error("Unable to get subscriber metadata.")
+
+					continue
+				}
+
+				if s.Name != "" {
+					m["name"] = s.Name
+				}
+
+				url, err := s.GetUnsubscribeURL(msg.UserUUID)
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to get unsubscribe url.")
+				} else {
+					m["unsubscribe_url"] = url
+				}
+
+				jsonMeta, err := json.Marshal(m)
+				if err != nil {
+					logrus.WithError(err).
+						WithField("subscriber", s).
+						Error("Unable to marshal metadata to json.")
 
 					continue
 				}
@@ -96,7 +118,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					Destination: &ses.Destination{
 						ToAddresses: []*string{aws.String(s.Email)},
 					},
-					ReplacementTemplateData: aws.String(string(s.MetaJSON)),
+					ReplacementTemplateData: aws.String(string(jsonMeta)),
 				}
 
 				dest = append(dest, d)

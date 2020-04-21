@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -88,6 +89,7 @@ func PostSubscriber(c *gin.Context) {
 		Name:     name,
 		Email:    email,
 		Metadata: meta,
+		Active:   true,
 		UserID:   middleware.GetUser(c).ID,
 	}
 
@@ -218,10 +220,18 @@ func PostUnsubscribe(c *gin.Context) {
 	uuid := strings.TrimSpace(c.PostForm("uuid"))
 	token := strings.TrimSpace(c.PostForm("t"))
 
+	redirWithError := c.Request.Referer()
+
+	params := url.Values{}
+	params.Add("email", email)
+	params.Add("uuid", uuid)
+	params.Add("t", token)
+	params.Add("failed", "true")
+
+	redirWithError = redirWithError + "?" + params.Encode()
+
 	if token == "" || email == "" || uuid == "" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, invalid data sent.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
@@ -231,9 +241,7 @@ func PostUnsubscribe(c *gin.Context) {
 			"email": email,
 			"uuid":  uuid,
 		}).WithError(err).Warn("Unsubscribe: cannot find user by uuid.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, invalid data sent.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
@@ -243,9 +251,7 @@ func PostUnsubscribe(c *gin.Context) {
 			"email": email,
 			"uuid":  uuid,
 		}).WithError(err).Warn("Unsubscribe: unable to fetch subscriber by email.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, invalid data sent.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
@@ -255,9 +261,7 @@ func PostUnsubscribe(c *gin.Context) {
 			"email": email,
 			"uuid":  uuid,
 		}).WithError(err).Error("Unsubscribe: unable to generate hash.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, invalid data sent.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
@@ -266,26 +270,19 @@ func PostUnsubscribe(c *gin.Context) {
 			"email": email,
 			"uuid":  uuid,
 		}).WithError(err).Warn("Unsubscribe: hashes don't match.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, invalid data sent.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	sub.Active = false
-	err = storage.UpdateSubscriber(c, sub)
+	err = storage.DeactivateSubscriber(c, u.ID, sub.Email)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": email,
 			"uuid":  uuid,
 		}).WithError(err).Warn("Unsubscribe: unable to update subscriber's status.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to process the request, please try again.",
-		})
+		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "You have successfully unsusbcribed.",
-	})
+	c.Redirect(http.StatusPermanentRedirect, os.Getenv("APP_URL")+"/unsubscribe-success.html")
 }
