@@ -32,6 +32,7 @@ type Campaign struct {
 	Status       string            `json:"status"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
+	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
 	Errors       map[string]string `json:"-" sql:"-"`
 }
 
@@ -65,10 +66,6 @@ var ErrCampaignNameEmpty = errors.New("the campaign name cannot be empty")
 // in case of any errors.
 func (c *Campaign) Validate() bool {
 	c.Errors = make(map[string]string)
-
-	if valid.Trim(c.Name, "") == "" {
-		c.Errors["name"] = ErrCampaignNameEmpty.Error()
-	}
 
 	res, err := valid.ValidateStruct(c)
 	if err != nil || !res {
