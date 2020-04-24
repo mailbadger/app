@@ -41,7 +41,8 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "created_at"    datetime,
   "updated_at"    datetime,
   "scheduled_at"  datetime DEFAULT NULL,
-  "completed_at"  datetime DEFAULT NULL
+  "completed_at"  datetime DEFAULT NULL,
+  "deleted_at"    datetime DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);

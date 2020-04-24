@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `updated_at`    datetime(6) NOT NULL,
   `scheduled_at`  datetime(6) DEFAULT NULL,
   `completed_at`  datetime(6) DEFAULT NULL,
+  `deleted_at`    datetime(6) DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

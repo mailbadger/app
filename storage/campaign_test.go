@@ -67,7 +67,7 @@ func TestCampaign(t *testing.T) {
 	//Test campaign validation when name and subject are invalid
 	campaign.Name = ""
 	campaign.Validate()
-	assert.Equal(t, campaign.Errors["name"], entities.ErrCampaignNameEmpty.Error())
+	assert.Equal(t, campaign.Errors["message"], "name: non zero value required")
 
 	//Test get campaigns
 	p := NewPaginationCursor("/api/campaigns", 13)
