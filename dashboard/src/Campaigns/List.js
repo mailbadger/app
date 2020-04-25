@@ -21,6 +21,7 @@ import ButtonWithLoader from "../ui/ButtonWithLoader";
 import PlaceholderTable from "../ui/PlaceholderTable";
 import Modal from "../ui/Modal";
 import Badge from "../ui/Badge";
+import CreateCampaign from "./Create";
 
 const Row = ({ campaign, setShowDelete }) => {
   const d = parseISO(campaign.created_at);
@@ -168,6 +169,7 @@ DeleteForm.propTypes = {
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
+  const [showCreate, openCreateModal] = useState(false);
   const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
 
   const [state, callApi] = useApi(
@@ -217,6 +219,18 @@ const List = () => {
           }
         />
       )}
+      {showCreate && (
+        <Modal
+          title={`Create campaign`}
+          hideModal={() => openCreateModal(false)}
+          form={
+            <CreateCampaign
+              callApi={callApi}
+              hideModal={() => openCreateModal(false)}
+            />
+          }
+        />
+      )}
       <Box gridArea="nav" direction="row">
         <Box>
           <Heading level="2" margin={{ bottom: "xsmall" }}>
@@ -230,7 +244,7 @@ const List = () => {
             label="Create new"
             icon={<Add />}
             reverse
-            onClick={() => console.log("new campaign!")}
+            onClick={() => openCreateModal(true)}
           />
         </Box>
       </Box>

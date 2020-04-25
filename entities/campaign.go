@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"errors"
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
@@ -27,7 +26,7 @@ const (
 type Campaign struct {
 	Model
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
-	Name         string            `json:"name" gorm:"not null" valid:"alphanum,required,stringlength(1|191)"`
+	Name         string            `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
 	TemplateName string            `json:"template_name" valid:"required"`
 	Status       string            `json:"status"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
@@ -58,9 +57,6 @@ type SendCampaignParams struct {
 	Campaign               `json:"campaign"`
 	SesKeys                `json:"ses_keys"`
 }
-
-// ErrCampaignNameEmpty indicates an empty campaign name error used in validation process.
-var ErrCampaignNameEmpty = errors.New("the campaign name cannot be empty")
 
 // Validate validates the campaign properties and populates the Errors map
 // in case of any errors.
