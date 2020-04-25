@@ -146,7 +146,6 @@ const List = () => {
     {
       next_token: "",
       collection: [],
-      init: true,
     }
   );
 
