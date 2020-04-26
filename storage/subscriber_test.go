@@ -55,6 +55,17 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, m["foo"], "bar")
 
+	//Test get subs by list id
+	p := NewPaginationCursor(fmt.Sprintf("/api/segments/%d/subscribers", l.ID), 10)
+	err = store.GetSubscribersBySegmentID(l.ID, 1, p)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, p.Collection)
+
+	var timestamp time.Time
+	subs, err := store.GetDistinctSubscribersBySegmentIDs([]int64{l.ID}, 1, false, true, timestamp, 0, 10)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(subs))
+
 	//Test get subscriber by email
 	s, err = store.GetSubscriberByEmail("john@example.com", 1)
 	assert.Nil(t, err)
@@ -78,28 +89,17 @@ func TestSubscriber(t *testing.T) {
 	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
 
 	//Test get subs
-	p := NewPaginationCursor("/api/subcribers", 10)
+	p = NewPaginationCursor("/api/subcribers", 10)
 	err = store.GetSubscribers(1, p)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
 	//Test get subs by ids
-	subs, err := store.GetSubscribersByIDs([]int64{1}, 1)
+	subs, err = store.GetSubscribersByIDs([]int64{1}, 1)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, subs)
 
-	//Test get subs by list id
-
-	p = NewPaginationCursor(fmt.Sprintf("/api/segments/%d/subscribers", l.ID), 10)
-	err = store.GetSubscribersBySegmentID(l.ID, 1, p)
-	assert.Nil(t, err)
-	assert.NotEmpty(t, p.Collection)
-
-	var timestamp time.Time
-	subs, err = store.GetDistinctSubscribersBySegmentIDs([]int64{l.ID}, 1, false, true, timestamp, 0, 10)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(subs))
-
+	//Test delete subscriber
 	err = store.DeleteSubscriber(1, 1)
 	assert.Nil(t, err)
 }
