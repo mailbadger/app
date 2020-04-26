@@ -145,45 +145,79 @@ func PostSubscriber(c *gin.Context) {
 }
 
 func PutSubscriber(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).ID)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Subscriber not found",
-			})
-			return
-		}
-
-		s.Name = strings.TrimSpace(c.PostForm("name"))
-		s.Email = strings.TrimSpace(c.PostForm("email"))
-
-		if !s.Validate() {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid data",
-				"errors":  s.Errors,
-			})
-			return
-		}
-
-		if err = storage.UpdateSubscriber(c, s); err != nil {
-			logger.From(c).
-				WithError(err).
-				WithField("subscriber_id", id).
-				Warn("Unable to update subscriber.")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Unable to update subscriber.",
-			})
-			return
-		}
-
-		c.Status(http.StatusNoContent)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
 		return
-
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
-	})
+	s, err := storage.GetSubscriber(c, id, middleware.GetUser(c).ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Subscriber not found",
+		})
+		return
+	}
+
+	s.Name = strings.TrimSpace(c.PostForm("name"))
+	s.Metadata = c.PostFormMap("metadata")
+
+	segments := &segmentsParam{}
+	err = c.Bind(segments)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors": map[string]string{
+				"segments": "The segments array is in an invalid format.",
+			},
+		})
+		return
+	}
+
+	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors": map[string]string{
+				"segments": "Unable to find the specified segments.",
+			},
+		})
+		return
+	}
+
+	s.Segments = segs
+
+	if !s.Validate() {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors":  s.Errors,
+		})
+		return
+	}
+
+	metaJSON, err := json.Marshal(s.Metadata)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to create subscriber, invalid metadata.",
+		})
+		return
+	}
+	s.MetaJSON = metaJSON
+
+	if err = storage.UpdateSubscriber(c, s); err != nil {
+		logger.From(c).
+			WithError(err).
+			WithField("subscriber_id", id).
+			Warn("Unable to update subscriber.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to update subscriber.",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func DeleteSubscriber(c *gin.Context) {

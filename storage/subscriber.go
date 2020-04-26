@@ -56,7 +56,7 @@ func (db *store) GetTotalSubscribersBySegment(segmentID, userID int64) (int64, e
 // GetSubscriber returns the subscriber by the given id and user id
 func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(s).Error
+	err := db.Preload("Segments").Where("user_id = ? and id = ?", userID, id).Find(s).Error
 	return s, err
 }
 
@@ -121,7 +121,24 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 
 // UpdateSubscriber edits an existing subscriber in the database.
 func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
-	return db.Where("id = ? and user_id = ?", s.ID, s.UserID).Save(s).Error
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(s).Association("Segments").Replace(s.Segments).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("id = ? and user_id = ?", s.ID, s.UserID).Save(s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 // DeactivateSubscriber de-activates a subscriber by the given user and email.

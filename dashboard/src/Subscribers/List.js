@@ -15,14 +15,14 @@ import {
 } from "grommet";
 
 import useApi from "../hooks/useApi";
-import history from "../history";
 import StyledTable from "../ui/StyledTable";
 import PlaceholderTable from "../ui/PlaceholderTable";
 import Modal from "../ui/Modal";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
+import EditSubscriber from "./Edit";
 
-const Row = ({ subscriber, setShowDelete }) => {
+const Row = ({ subscriber, setShowDelete, setShowEdit }) => {
   const ca = parseISO(subscriber.created_at);
   const ua = parseISO(subscriber.updated_at);
   return (
@@ -46,12 +46,15 @@ const Row = ({ subscriber, setShowDelete }) => {
             (function () {
               switch (option) {
                 case "Edit":
-                  history.push(`/dashboard/subscribers/${subscriber.id}/edit`);
+                  setShowEdit({
+                    show: true,
+                    id: subscriber.id,
+                  });
                   break;
                 case "Delete":
                   setShowDelete({
                     show: true,
-                    name: subscriber.email,
+                    email: subscriber.email,
                     id: subscriber.id,
                   });
                   break;
@@ -74,6 +77,7 @@ Row.propTypes = {
     updated_at: PropTypes.string,
   }),
   setShowDelete: PropTypes.func,
+  setShowEdit: PropTypes.func,
 };
 
 const Header = () => (
@@ -95,12 +99,17 @@ const Header = () => (
   </TableHeader>
 );
 
-const SubscriberTable = React.memo(({ list, setShowDelete }) => (
+const SubscriberTable = React.memo(({ list, setShowDelete, setShowEdit }) => (
   <StyledTable>
     <Header />
     <TableBody>
       {list.map((s) => (
-        <Row subscriber={s} key={s.id} setShowDelete={setShowDelete} />
+        <Row
+          subscriber={s}
+          key={s.id}
+          setShowDelete={setShowDelete}
+          setShowEdit={setShowEdit}
+        />
       ))}
     </TableBody>
   </StyledTable>
@@ -110,12 +119,20 @@ SubscriberTable.displayName = "SubscriberTable";
 SubscriberTable.propTypes = {
   list: PropTypes.array,
   setShowDelete: PropTypes.func,
+  setShowEdit: PropTypes.func,
 };
 
 const List = () => {
-  const [showDelete, setShowDelete] = useState({ show: false, name: "" });
+  const [showDelete, setShowDelete] = useState({
+    show: false,
+    email: "",
+    id: "",
+  });
+  const [showEdit, setShowEdit] = useState({ show: false, id: "" });
   const [showCreate, openCreateModal] = useState(false);
-  const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
+  const hideDeleteModal = () =>
+    setShowDelete({ show: false, email: "", id: "" });
+  const hideEditModal = () => setShowEdit({ show: false, id: "" });
 
   const [state, callApi] = useApi(
     {
@@ -136,6 +153,7 @@ const List = () => {
         isLoading={state.isLoading}
         list={state.data.collection}
         setShowDelete={setShowDelete}
+        setShowEdit={setShowEdit}
       />
     );
   }
@@ -154,12 +172,12 @@ const List = () => {
       {showDelete.show && (
         <Modal
           title={`Delete subscriber ${showDelete.email} ?`}
-          hideModal={hideModal}
+          hideModal={hideDeleteModal}
           form={
             <DeleteSubscriber
               id={showDelete.id}
               callApi={callApi}
-              hideModal={hideModal}
+              hideModal={hideDeleteModal}
             />
           }
         />
@@ -172,6 +190,19 @@ const List = () => {
             <CreateSubscriber
               callApi={callApi}
               hideModal={() => openCreateModal(false)}
+            />
+          }
+        />
+      )}
+      {showEdit.show && (
+        <Modal
+          title={`Edit subscriber`}
+          hideModal={hideEditModal}
+          form={
+            <EditSubscriber
+              id={showEdit.id}
+              callApi={callApi}
+              hideModal={hideEditModal}
             />
           }
         />
