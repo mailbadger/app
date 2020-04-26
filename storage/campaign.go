@@ -9,6 +9,13 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Campaign{})
 	p.SetResource("campaigns")
 
+	query := db.Table(p.Resource).
+		Where("user_id = ?", userID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
+
 	return db.Paginate(p, userID)
 }
 
