@@ -33,17 +33,17 @@ type Links struct {
 
 // PaginationCursor represents the paginated results by the given model.
 type PaginationCursor struct {
-	Scopes []func(*gorm.DB) *gorm.DB `json:"-"`
-
-	StartingAfter int64       `json:"-"`
-	EndingBefore  int64       `json:"-"`
-	Path          string      `json:"-"`
-	Resource      string      `json:"-"`
-	Direction     Direction   `json:"-"`
-	PerPage       int64       `json:"per_page"`
-	Total         int64       `json:"total"`
-	Links         Links       `json:"links"`
-	Collection    interface{} `json:"collection"`
+	Scopes        []func(*gorm.DB) *gorm.DB `json:"-"`
+	Query         *gorm.DB                  `json:"-"`
+	StartingAfter int64                     `json:"-"`
+	EndingBefore  int64                     `json:"-"`
+	Path          string                    `json:"-"`
+	Resource      string                    `json:"-"`
+	Direction     Direction                 `json:"-"`
+	PerPage       int64                     `json:"per_page"`
+	Total         int64                     `json:"total"`
+	Links         Links                     `json:"links"`
+	Collection    interface{}               `json:"collection"`
 }
 
 // NewPaginationCursor creates new PaginationCursor object.
@@ -93,6 +93,11 @@ func (c *PaginationCursor) SetScopes(scopes []func(*gorm.DB) *gorm.DB) {
 	c.Scopes = scopes
 }
 
+// SetQuery sets the main query.
+func (c *PaginationCursor) SetQuery(query *gorm.DB) {
+	c.Query = query
+}
+
 // SetResource sets the pagination resource.
 func (c *PaginationCursor) SetResource(r string) {
 	c.Resource = r
@@ -126,19 +131,13 @@ func (c *PaginationCursor) SetPerPage(perPage int64) {
 func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 	var last *entities.Model
 
-	query := db.Table(p.Resource).
-		Scopes(p.Scopes...).
-		Where("user_id = ?", userID).
-		Order("created_at desc, id desc").
-		Limit(p.PerPage)
-
 	switch p.Direction {
 	case Backward:
 		m, err := db.GetOne(p.EndingBefore, userID, p.Resource, p.Scopes...)
 		if err != nil {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
-		query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.id", p.Resource),
+		p.Query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.id", p.Resource),
 			db.DB.
 				Table(p.Resource).
 				Select("id").
@@ -161,7 +160,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
 
-		query.Where(`(created_at < ? OR (created_at = ? AND id < ?)) AND created_at < ?`,
+		p.Query.Where(`(created_at < ? OR (created_at = ? AND id < ?)) AND created_at < ?`,
 			m.CreatedAt,
 			m.CreatedAt,
 			m.ID,
@@ -176,7 +175,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			return fmt.Errorf("paginate: get first: %w", err)
 		}
 	case Start:
-		query.Find(p.Collection)
+		p.Query.Find(p.Collection)
 	}
 
 	total, err := db.GetTotal(userID, p.Resource, p.Scopes...)

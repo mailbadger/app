@@ -6,8 +6,21 @@ import (
 
 // GetSegments fetches lists by user id, and populates the pagination obj
 func (db *store) GetSegments(userID int64, p *PaginationCursor) error {
-	p.SetCollection(&[]entities.Segment{})
+	p.SetCollection(&[]entities.SegmentWithTotalSubs{})
 	p.SetResource("segments")
+
+	query := db.Table(p.Resource).
+		Select("segments.*, (?) as total_subscribers",
+			db.Select("count(*)").
+				Table("subscribers_segments").
+				Where("segment_id = segments.id").
+				QueryExpr(),
+		).
+		Where("user_id = ?", userID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
 
 	return db.Paginate(p, userID)
 }

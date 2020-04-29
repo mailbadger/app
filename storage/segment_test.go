@@ -53,7 +53,7 @@ func TestSegment(t *testing.T) {
 	p := NewPaginationCursor("/api/segments", 10)
 	err = store.GetSegments(1, p)
 	assert.Nil(t, err)
-	col := p.Collection.(*[]entities.Segment)
+	col := p.Collection.(*[]entities.SegmentWithTotalSubs)
 	assert.NotNil(t, col)
 	assert.NotEmpty(t, *col)
 

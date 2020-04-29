@@ -36,6 +36,9 @@ const Row = ({ segment, setShowDelete }) => {
       <TableCell scope="row" size="xlarge">
         <strong>{segment.name}</strong>
       </TableCell>
+      <TableCell scope="row" size="xlarge">
+        <strong>{segment.total_subscribers}</strong>
+      </TableCell>
       <TableCell scope="row" size="medium">
         {formatRelative(ca, new Date())}
       </TableCell>
@@ -76,6 +79,7 @@ Row.propTypes = {
   segment: PropTypes.shape({
     name: PropTypes.string,
     id: PropTypes.number,
+    total_subscribers: PropTypes.number,
     created_at: PropTypes.string,
     updated_at: PropTypes.string,
   }),
@@ -87,6 +91,9 @@ const Header = () => (
     <TableRow>
       <TableCell scope="col" border="bottom" size="small">
         <strong>Name</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="small">
+        <strong>Total Subscribers</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="small">
         <strong>Created At</strong>

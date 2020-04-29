@@ -15,6 +15,16 @@ type Segment struct {
 	Errors      map[string]string `json:"-" sql:"-"`
 }
 
+// SegmentWithTotalSubs represents the segment entity with
+// extra information regarding the total count of subscribers.
+// this entity is needed because we run a custom query for the paginated
+// set of results, which differs from the rest of the CRUD methods where
+// 'total_subscribers' column is not present.
+type SegmentWithTotalSubs struct {
+	Segment
+	TotalSubscribers int64 `json:"total_subscribers" gorm:"column:total_subscribers"`
+}
+
 // Validate validates the list properties and populates the Errors map
 // in case of any errors.
 func (l *Segment) Validate() bool {
