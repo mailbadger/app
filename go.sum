@@ -63,6 +63,8 @@ github.com/aws/aws-sdk-go v1.30.12 h1:KrjyosZvkpJjcwMk0RNxMZewQ47v7+ZkbQDXjWsJMs
 github.com/aws/aws-sdk-go v1.30.12/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/aws/aws-sdk-go v1.30.13 h1:fBDYaJzInlOHpoKFaTEze5MvZ/pw7mhYkzDE8HAmD74=
 github.com/aws/aws-sdk-go v1.30.13/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
+github.com/aws/aws-sdk-go v1.30.16 h1:1eabOZiVGl+XB02/VG9NpR+3fngaNc74pgb5RmyzgLY=
+github.com/aws/aws-sdk-go v1.30.16/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff/go.mod h1:+RTT1BOk5P97fT2CiHkbFQwkK3mjsFAP6zCYV2aXtjw=
 github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668/go.mod h1:H0wQNHz2YrLsuXOZozoeDmnHXkNCRmMW0gwFWDfEZDA=
