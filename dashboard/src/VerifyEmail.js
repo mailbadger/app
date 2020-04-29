@@ -21,7 +21,7 @@ const VerifyEmail = (props) => {
     };
 
     callApi();
-  }, []);
+  }, [params]);
 
   if (data.message === "") {
     return <div>Loading...</div>;

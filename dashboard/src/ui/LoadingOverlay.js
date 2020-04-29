@@ -3,7 +3,7 @@ import { Box } from "grommet";
 import BarLoader from "./BarLoader";
 
 const LoadingOverlay = () => (
-  <Box margin="20%" alignSelf="center" animation="fadeOut">
+  <Box margin="20%" alignSelf="center">
     <BarLoader />
   </Box>
 );

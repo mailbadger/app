@@ -162,7 +162,7 @@ const List = () => {
     <Grid
       rows={["fill", "fill"]}
       columns={["1fr", "1fr"]}
-      gap="medium"
+      gap="small"
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
@@ -208,12 +208,10 @@ const List = () => {
         />
       )}
       <Box gridArea="nav" direction="row">
-        <Box>
-          <Heading level="2" margin={{ bottom: "xsmall" }}>
-            Subscribers
-          </Heading>
+        <Box alignSelf="center" margin={{ right: "small" }}>
+          <Heading level="2">Subscribers</Heading>
         </Box>
-        <Box margin={{ left: "medium", top: "medium" }}>
+        <Box alignSelf="center">
           <Button
             primary
             color="status-ok"

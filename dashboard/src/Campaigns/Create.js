@@ -30,6 +30,7 @@ const CreateForm = ({
     collection: [],
     url: "/api/templates",
   });
+
   const callApi = async () => {
     const res = await axios(options.url);
     let url = "";

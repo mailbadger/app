@@ -50,12 +50,12 @@ const Row = ({ segment, setShowDelete }) => {
           alignSelf="center"
           plain
           icon={<More />}
-          options={["Edit", "Delete"]}
+          options={["View", "Delete"]}
           onChange={({ option }) => {
             (function () {
               switch (option) {
-                case "Edit":
-                  history.push(`/dashboard/segments/${segment.id}/edit`);
+                case "View":
+                  history.push(`/dashboard/segments/${segment.id}`);
                   break;
                 case "Delete":
                   setShowDelete({
@@ -304,7 +304,7 @@ const List = () => {
     <Grid
       rows={["fill", "fill"]}
       columns={["1fr", "1fr"]}
-      gap="medium"
+      gap="small"
       margin="medium"
       areas={[
         { name: "nav", start: [0, 0], end: [0, 1] },
@@ -337,12 +337,10 @@ const List = () => {
         />
       )}
       <Box gridArea="nav" direction="row">
-        <Box>
-          <Heading level="2" margin={{ bottom: "xsmall" }}>
-            Segments
-          </Heading>
+        <Box margin={{ right: "small" }} alignSelf="center">
+          <Heading level="2">Segments</Heading>
         </Box>
-        <Box margin={{ left: "medium", top: "medium" }}>
+        <Box alignSelf="center">
           <Button
             primary
             color="status-ok"
@@ -358,7 +356,7 @@ const List = () => {
           {table}
 
           {!state.isLoading && state.data.collection.length === 0 ? (
-            <Box align="center" margin={{ top: "large" }}>
+            <Box align="center" margin={{ top: "small" }}>
               <Heading level="2">Create your first segment.</Heading>
             </Box>
           ) : null}

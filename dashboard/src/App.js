@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { Router, Route, Switch } from "react-router-dom";
 import { Box, Grommet } from "grommet";
+import { grommet } from "grommet/themes";
+import { deepMerge } from "grommet/utils";
 
 import { AuthProvider } from "./Auth/context";
 import Landing from "./Landing";
@@ -10,7 +12,7 @@ import VerifyEmail from "./VerifyEmail";
 import ProtectedRoute from "./ProtectedRoute";
 import history from "./history";
 
-const theme = {
+const theme = deepMerge(grommet, {
   global: {
     font: {
       family:
@@ -39,8 +41,6 @@ const theme = {
     label: {
       color: "#ACACAC",
       size: "small",
-      margin: { vertical: "0", top: "small", horizontal: "0" },
-      weight: 300,
     },
     border: false,
     borderColor: "#CACACA",
@@ -50,10 +50,6 @@ const theme = {
     border: {
       radius: "5px",
       color: "#6650AA",
-    },
-    padding: {
-      vertical: "7px",
-      horizontal: "24px",
     },
     primary: {
       color: "#6650AA",
@@ -65,7 +61,7 @@ const theme = {
     },
     color: "#6650AA",
   },
-};
+});
 
 class App extends Component {
   render() {
