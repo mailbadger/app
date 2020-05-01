@@ -1,55 +1,11 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Grid, Box, Heading, Button, ThemeContext } from "grommet";
-import { UserAdd, SubtractCircle, Download, Edit } from "grommet-icons";
+import { Grid, Box, Heading, Button } from "grommet";
+import { Edit } from "grommet-icons";
 
 import { useApi } from "../hooks";
 import { LoadingOverlay, Modal } from "../ui";
 import EditSegment from "./Edit";
-
-const ActionButtons = () => (
-  <ThemeContext.Extend
-    value={{
-      button: {
-        border: {
-          radius: "18px",
-        },
-        padding: {
-          vertical: "2px",
-          horizontal: "12px",
-        },
-      },
-      text: {
-        medium: {
-          size: "14px",
-        },
-      },
-    }}
-  >
-    <Box margin={{ right: "small" }}>
-      <Button
-        size="small"
-        gap="xsmall"
-        label="Import subscribers"
-        icon={<UserAdd size="20px" />}
-      />
-    </Box>
-    <Box margin={{ right: "small" }}>
-      <Button
-        gap="xsmall"
-        label="Remove subscribers"
-        icon={<SubtractCircle size="20px" />}
-      />
-    </Box>
-    <Box margin={{ right: "small" }}>
-      <Button
-        gap="xsmall"
-        label="Export segment"
-        icon={<Download size="20px" />}
-      />
-    </Box>
-  </ThemeContext.Extend>
-);
 
 const Details = ({ match }) => {
   const [segment, setSegment] = useState();
@@ -81,13 +37,12 @@ const Details = ({ match }) => {
 
   return (
     <Grid
-      rows={["1fr", "1fr", "1fr"]}
+      rows={["1fr", "1fr"]}
       columns={["fill"]}
       margin="medium"
       areas={[
-        { name: "title", start: [0, 0], end: [0, 2] },
-        { name: "actions", start: [0, 1], end: [0, 1] },
-        { name: "main", start: [0, 2], end: [0, 2] },
+        { name: "title", start: [0, 0], end: [0, 1] },
+        { name: "main", start: [0, 1], end: [0, 1] },
       ]}
     >
       {segment && (
@@ -115,9 +70,6 @@ const Details = ({ match }) => {
               icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
               onClick={() => setShowEdit(true)}
             />
-          </Box>
-          <Box gridArea="actions" direction="row" align="start">
-            <ActionButtons />
           </Box>
 
           <Box gridArea="main">
