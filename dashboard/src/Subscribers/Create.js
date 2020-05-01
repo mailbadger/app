@@ -8,8 +8,8 @@ import { Box, Button, Select, FormField, TextInput, Text } from "grommet";
 
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import useApi from "../hooks/useApi";
+import { ButtonWithLoader } from "../ui";
+import { useApi } from "../hooks";
 
 const subscrValidation = object().shape({
   email: string().email().required("Please enter a subscriber email."),

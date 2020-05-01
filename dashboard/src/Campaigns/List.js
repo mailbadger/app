@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import { mainInstance as axios } from "../axios";
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import {
   Grid,
   TableHeader,
@@ -16,11 +16,13 @@ import {
   Select,
 } from "grommet";
 import history from "../history";
-import StyledTable from "../ui/StyledTable";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import PlaceholderTable from "../ui/PlaceholderTable";
-import Modal from "../ui/Modal";
-import Badge from "../ui/Badge";
+import {
+  StyledTable,
+  ButtonWithLoader,
+  PlaceholderTable,
+  Modal,
+  Badge,
+} from "../ui";
 import CreateCampaign from "./Create";
 
 const Row = ({ campaign, setShowDelete }) => {

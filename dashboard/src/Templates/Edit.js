@@ -6,11 +6,9 @@ import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
 import qs from "qs";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import StyledTextInput from "../ui/StyledTextInput";
-import StyledSpinner from "../ui/StyledSpinner";
+import { ButtonWithLoader, StyledTextInput, StyledSpinner } from "../ui";
 import history from "../history";
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
 import { FormPropTypes } from "../PropTypes";
 

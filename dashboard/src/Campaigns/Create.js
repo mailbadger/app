@@ -7,8 +7,8 @@ import { Box, Button, Select, FormField, TextInput } from "grommet";
 
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import useApi from "../hooks/useApi";
+import { ButtonWithLoader } from "../ui";
+import { useApi } from "../hooks";
 
 const campaignValidation = object().shape({
   name: string()

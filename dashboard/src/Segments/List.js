@@ -7,7 +7,7 @@ import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import qs from "qs";
 
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import {
   Grid,
   TableHeader,
@@ -22,10 +22,7 @@ import {
   TextInput,
 } from "grommet";
 import history from "../history";
-import StyledTable from "../ui/StyledTable";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import PlaceholderTable from "../ui/PlaceholderTable";
-import Modal from "../ui/Modal";
+import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 
 const Row = ({ segment, setShowDelete }) => {
@@ -126,7 +123,9 @@ SegmentTable.propTypes = {
 };
 
 const segmentValidation = object().shape({
-  name: string().required("Please enter a segment name."),
+  name: string()
+    .required("Please enter a segment name.")
+    .max(191, "The name must not exceed 191 characters."),
 });
 
 const CreateForm = ({

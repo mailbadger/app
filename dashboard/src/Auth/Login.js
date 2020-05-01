@@ -10,8 +10,7 @@ import qs from "qs";
 
 import SocialButtons from "./SocialButtons";
 import { socialAuthEnabled } from "../Auth";
-import StyledTextInput from "../ui/StyledTextInput";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { StyledTextInput, ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (

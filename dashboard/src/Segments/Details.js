@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Grid, Box, Heading, Button, ThemeContext } from "grommet";
 import { UserAdd, SubtractCircle, Download, Edit } from "grommet-icons";
 
-import useApi from "../hooks/useApi";
-import LoadingOverlay from "../ui/LoadingOverlay";
+import { useApi } from "../hooks";
+import { LoadingOverlay, Modal } from "../ui";
+import EditSegment from "./Edit";
 
 const ActionButtons = () => (
   <ThemeContext.Extend
@@ -51,9 +52,20 @@ const ActionButtons = () => (
 );
 
 const Details = ({ match }) => {
+  const [segment, setSegment] = useState();
+  const [showEdit, setShowEdit] = useState(false);
+
   const [state] = useApi({
     url: `/api/segments/${match.params.id}`,
   });
+
+  useEffect(() => {
+    if (state.isLoading || state.isError) {
+      return;
+    }
+
+    setSegment(state.data);
+  }, [state]);
 
   if (state.isLoading) {
     return <LoadingOverlay />;
@@ -78,16 +90,30 @@ const Details = ({ match }) => {
         { name: "main", start: [0, 2], end: [0, 2] },
       ]}
     >
-      {!state.isLoading && state.data && (
+      {segment && (
         <>
+          {showEdit && (
+            <Modal
+              title={`Edit segment`}
+              hideModal={() => setShowEdit(false)}
+              form={
+                <EditSegment
+                  segment={segment}
+                  setSegment={setSegment}
+                  hideModal={() => setShowEdit(false)}
+                />
+              }
+            />
+          )}
           <Box gridArea="title" direction="row">
             <Heading level="2" alignSelf="center">
-              {state.data.name}
+              {segment.name}
             </Heading>
             <Button
               a11yTitle="edit segment name"
               alignSelf="center"
               icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
+              onClick={() => setShowEdit(true)}
             />
           </Box>
           <Box gridArea="actions" direction="row" align="start">

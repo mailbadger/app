@@ -15,10 +15,9 @@ import {
 } from "grommet";
 
 import { mainInstance as axios } from "../axios";
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import StyledSpinner from "../ui/StyledSpinner";
+import { ButtonWithLoader, StyledSpinner } from "../ui";
 
 const subscrValidation = object().shape({
   name: string().max(191, "The name must not exceed 191 characters."),

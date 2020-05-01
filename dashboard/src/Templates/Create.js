@@ -13,7 +13,7 @@ import "codemirror/mode/javascript/javascript";
 
 import { NotificationsContext } from "../Notifications/context";
 import history from "../history";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
 
 const initialHtml = `<!DOCTYPE html>

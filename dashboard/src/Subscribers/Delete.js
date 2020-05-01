@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Box, Button } from "grommet";
 
 import { mainInstance as axios } from "../axios";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { ButtonWithLoader } from "../ui";
 
 const DeleteSubscriber = ({ id, callApi, hideModal }) => {
   const deleteSubscriber = async (id) => {

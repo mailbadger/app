@@ -14,10 +14,8 @@ import {
   Select,
 } from "grommet";
 
-import useApi from "../hooks/useApi";
-import StyledTable from "../ui/StyledTable";
-import PlaceholderTable from "../ui/PlaceholderTable";
-import Modal from "../ui/Modal";
+import { useApi } from "../hooks";
+import { StyledTable, PlaceholderTable, Modal } from "../ui";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
