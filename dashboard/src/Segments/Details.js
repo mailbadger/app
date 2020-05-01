@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Grid, Box, Heading, Button, ThemeContext } from "grommet";
-import { UserAdd, SubtractCircle, Download } from "grommet-icons";
+import { UserAdd, SubtractCircle, Download, Edit } from "grommet-icons";
 
 import useApi from "../hooks/useApi";
 import LoadingOverlay from "../ui/LoadingOverlay";
@@ -80,8 +80,15 @@ const Details = ({ match }) => {
     >
       {!state.isLoading && state.data && (
         <>
-          <Box gridArea="title">
-            <Heading level="2">{state.data.name}</Heading>
+          <Box gridArea="title" direction="row">
+            <Heading level="2" alignSelf="center">
+              {state.data.name}
+            </Heading>
+            <Button
+              a11yTitle="edit segment name"
+              alignSelf="center"
+              icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
+            />
           </Box>
           <Box gridArea="actions" direction="row" align="start">
             <ActionButtons />

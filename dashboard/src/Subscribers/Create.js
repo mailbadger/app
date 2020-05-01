@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
@@ -9,6 +9,7 @@ import { Box, Button, Select, FormField, TextInput, Text } from "grommet";
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
+import useApi from "../hooks/useApi";
 
 const subscrValidation = object().shape({
   email: string().email().required("Please enter a subscriber email."),
@@ -26,6 +27,15 @@ const subscrValidation = object().shape({
   ),
 });
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "append":
+      return [...state, ...action.payload];
+    default:
+      throw new Error("invalid action type.");
+  }
+};
+
 const CreateForm = ({
   handleSubmit,
   handleChange,
@@ -35,30 +45,42 @@ const CreateForm = ({
   setFieldValue,
 }) => {
   const [selected, setSelected] = useState("");
-  const [options, setOptions] = useState({
-    collection: [],
-    url: "/api/segments?per_page=40",
-  });
-  const callApi = async () => {
-    const res = await axios(options.url);
-    let url = "";
-    if (res.data.links.next) {
-      url = res.data.links.next;
+
+  const [segments, callApi] = useApi(
+    {
+      url: `/api/segments?per_page=40`,
+    },
+    {
+      collection: [],
+      links: {
+        next: null,
+      },
     }
-    setOptions({
-      collection: [...options.collection, ...res.data.collection],
-      url: url,
-    });
-  };
+  );
+
+  const [options, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
-    callApi();
-  }, []);
+    dispatch({ type: "append", payload: segments.data.collection });
+  }, [segments.data.collection]);
 
   const onMore = () => {
-    if (options.url) {
-      callApi();
+    if (segments.isError || segments.isLoading) {
+      return;
     }
+
+    let url = "";
+    if (segments && segments.data && segments.data.links) {
+      url = segments.data.links.next;
+    }
+
+    if (!url) {
+      return;
+    }
+
+    callApi({
+      url: url,
+    });
   };
 
   const onChange = ({ value: nextSelected }) => {
@@ -98,7 +120,7 @@ const CreateForm = ({
               value={selected}
               labelKey="name"
               valueKey="id"
-              options={options.collection}
+              options={options}
               dropHeight="medium"
               onMore={onMore}
               onChange={onChange}

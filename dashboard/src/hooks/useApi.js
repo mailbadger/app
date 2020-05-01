@@ -53,7 +53,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
         }
       } catch (error) {
         if (!didCancel) {
-          dispatch({ type: "REQUEST_FAILURE", error, payload: initialData });
+          dispatch({ type: "REQUEST_FAILURE", error });
         }
       }
     };

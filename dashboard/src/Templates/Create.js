@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import { FormField, Box, TextInput, Heading } from "grommet";
 import { Formik, ErrorMessage } from "formik";
@@ -102,6 +102,7 @@ Form.propTypes = FormPropTypes;
 
 const CreateTemplateForm = () => {
   const [html, setHtml] = useState(initialHtml);
+  const [success, setSuccess] = useState(false);
   const { createNotification } = useContext(NotificationsContext);
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -117,7 +118,7 @@ const CreateTemplateForm = () => {
         );
         createNotification("Template has been created successfully.");
 
-        history.push(`/dashboard/templates`);
+        setSuccess(true);
       } catch (error) {
         if (error.response) {
           const { message, errors } = error.response.data;
@@ -140,6 +141,12 @@ const CreateTemplateForm = () => {
     return;
   };
 
+  useEffect(() => {
+    if (success) {
+      history.push("/dashboard/templates");
+    }
+  }, [success]);
+
   return (
     <Box
       direction="column"
@@ -149,7 +156,7 @@ const CreateTemplateForm = () => {
       animation="fadeIn"
     >
       <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
-        <Heading size={3}>Create Template</Heading>
+        <Heading level="2">Create Template</Heading>
       </Box>
       <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
         <Formik

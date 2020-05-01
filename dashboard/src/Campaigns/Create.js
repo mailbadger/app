@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
@@ -8,6 +8,7 @@ import { Box, Button, Select, FormField, TextInput } from "grommet";
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
 import ButtonWithLoader from "../ui/ButtonWithLoader";
+import useApi from "../hooks/useApi";
 
 const campaignValidation = object().shape({
   name: string()
@@ -18,6 +19,15 @@ const campaignValidation = object().shape({
     .max(191, "The template name must not exceed 191 characters."),
 });
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "append":
+      return [...state, ...action.payload];
+    default:
+      throw new Error("invalid action type.");
+  }
+};
+
 const CreateForm = ({
   handleSubmit,
   handleChange,
@@ -26,34 +36,39 @@ const CreateForm = ({
   setFieldValue,
 }) => {
   const [selected, setSelected] = useState("");
-  const [options, setOptions] = useState({
-    collection: [],
-    url: "/api/templates",
-  });
-
-  const callApi = async () => {
-    const res = await axios(options.url);
-    let url = "";
-    if (res.data.next_token) {
-      url = `/api/templates?next_token=${encodeURIComponent(
-        res.data.next_token
-      )}`;
+  const [templates, callApi] = useApi(
+    {
+      url: `/api/templates`,
+    },
+    {
+      collection: [],
+      next_token: "",
     }
+  );
 
-    setOptions({
-      collection: [...options.collection, ...res.data.collection],
-      url: url,
-    });
-  };
+  const [options, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
-    callApi();
-  }, []);
+    dispatch({ type: "append", payload: templates.data.collection });
+  }, [templates.data.collection]);
 
   const onMore = () => {
-    if (options.url) {
-      callApi();
+    if (templates.isError || templates.isLoading) {
+      return;
     }
+
+    let next_token = "";
+    if (templates && templates.data) {
+      next_token = templates.data.next_token;
+    }
+
+    if (!next_token) {
+      return;
+    }
+
+    callApi({
+      url: `/api/templates?next_token=${encodeURIComponent(next_token)}`,
+    });
   };
 
   const onChange = ({ value: nextSelected }) => {
@@ -83,7 +98,7 @@ const CreateForm = ({
               value={selected}
               labelKey="name"
               valueKey="name"
-              options={options.collection}
+              options={options}
               dropHeight="medium"
               onMore={onMore}
               onChange={onChange}
