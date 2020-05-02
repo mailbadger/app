@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
@@ -15,10 +15,9 @@ import {
 } from "grommet";
 
 import { mainInstance as axios } from "../axios";
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import StyledSpinner from "../ui/StyledSpinner";
+import { ButtonWithLoader, StyledSpinner } from "../ui";
 
 const subscrValidation = object().shape({
   name: string().max(191, "The name must not exceed 191 characters."),
@@ -44,47 +43,70 @@ const EditForm = ({
   setFieldValue,
 }) => {
   const [selected, setSelected] = useState(values.segments);
-  const [options, setOptions] = useState({
-    collection: values.segments,
-    url: "/api/segments?per_page=40",
-  });
-  const callApi = async () => {
-    const res = await axios(options.url);
-    let url = "";
-    if (res.data.links.next) {
-      url = res.data.links.next;
+  const [segments, callApi] = useApi(
+    {
+      url: `/api/segments?per_page=40`,
+    },
+    {
+      collection: [],
+      links: {
+        next: null,
+      },
     }
+  );
 
-    // filter out the preselected segments to avoid duplicate items
+  const reducer = (segments) => (state, action) => {
     let col = [];
-    for (let i = 0; i < res.data.collection.length; i++) {
-      let found = false;
-      for (let j = 0; j < values.segments.length; j++) {
-        if (values.segments[j].id === res.data.collection[i].id) {
-          found = true;
-          break;
+
+    switch (action.type) {
+      case "append":
+        // filter out the preselected segments to avoid duplicate items
+        for (let i = 0; i < action.payload.length; i++) {
+          let found = false;
+          for (let j = 0; j < segments.length; j++) {
+            if (segments[j].id === action.payload[i].id) {
+              found = true;
+              break;
+            }
+          }
+
+          if (!found) {
+            col.push(action.payload[i]);
+          }
         }
-      }
 
-      if (!found) {
-        col.push(res.data.collection[i]);
-      }
+        return [...state, ...col];
+      default:
+        throw new Error("invalid action type.");
     }
-
-    setOptions({
-      collection: [...options.collection, ...col],
-      url: url,
-    });
   };
 
+  const [options, dispatch] = useReducer(
+    reducer(values.segments),
+    values.segments
+  );
+
   useEffect(() => {
-    callApi();
-  }, []);
+    dispatch({ type: "append", payload: segments.data.collection });
+  }, [segments.data.collection]);
 
   const onMore = () => {
-    if (options.url) {
-      callApi();
+    if (segments.isError || segments.isLoading) {
+      return;
     }
+
+    let url = "";
+    if (segments && segments.data && segments.data.links) {
+      url = segments.data.links.next;
+    }
+
+    if (!url) {
+      return;
+    }
+
+    callApi({
+      url: url,
+    });
   };
 
   const onChange = ({ value: nextSelected }) => {
@@ -117,7 +139,7 @@ const EditForm = ({
               value={selected}
               labelKey="name"
               valueKey="id"
-              options={options.collection}
+              options={options}
               dropHeight="medium"
               onMore={onMore}
               onChange={onChange}

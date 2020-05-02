@@ -7,7 +7,7 @@ import List from "./List";
 import CreateTemplateForm from "./Create";
 import EditTemplateForm from "./Edit";
 import { SesKeysProvider, SesKeysConsumer } from "../Settings/SesKeysContext";
-import BarLoader from "../ui/BarLoader";
+import { BarLoader } from "../ui";
 import history from "../history";
 
 const Templates = () => (

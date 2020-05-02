@@ -17,11 +17,9 @@ import qs from "qs";
 
 import { NotificationsContext } from "../Notifications/context";
 import regions from "../regions/regions.json";
-import useApi from "../hooks/useApi";
-import useInterval from "../hooks/useInterval";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { useApi, useInterval } from "../hooks";
+import { ButtonWithLoader, StyledSpinner } from "../ui";
 import { FormPropTypes } from "../PropTypes";
-import StyledSpinner from "../ui/StyledSpinner";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),

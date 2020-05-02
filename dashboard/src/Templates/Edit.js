@@ -6,11 +6,9 @@ import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
 import qs from "qs";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
-import StyledTextInput from "../ui/StyledTextInput";
-import StyledSpinner from "../ui/StyledSpinner";
+import { ButtonWithLoader, StyledTextInput, StyledSpinner } from "../ui";
 import history from "../history";
-import useApi from "../hooks/useApi";
+import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
 import { FormPropTypes } from "../PropTypes";
 
@@ -79,6 +77,8 @@ Form.propTypes = FormPropTypes;
 
 const EditTemplateForm = ({ match }) => {
   const [html, setHtml] = useState();
+  const [success, setSuccess] = useState(false);
+
   const [state] = useApi({
     url: `/api/templates/${match.params.id}`,
   });
@@ -97,8 +97,7 @@ const EditTemplateForm = ({ match }) => {
         );
 
         createNotification("Template has been updated successfully.");
-
-        history.push(`/dashboard/templates`);
+        setSuccess(true);
       } catch (error) {
         if (error.response) {
           setErrors(error.response.data);
@@ -118,6 +117,12 @@ const EditTemplateForm = ({ match }) => {
     //done submitting, set submitting to false
     setSubmitting(false);
   };
+
+  useEffect(() => {
+    if (success) {
+      history.push("/dashboard/templates");
+    }
+  }, [success]);
 
   useEffect(() => {
     if (!state.isLoading && state.data) {
@@ -152,7 +157,7 @@ const EditTemplateForm = ({ match }) => {
       {!state.isLoading && state.data && (
         <>
           <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
-            <Heading size={3}>Edit Template</Heading>
+            <Heading level="2">Edit Template</Heading>
           </Box>
           <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
             <Formik

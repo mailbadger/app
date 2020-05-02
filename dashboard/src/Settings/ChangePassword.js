@@ -7,7 +7,7 @@ import qs from "qs";
 
 import { NotificationsContext } from "../Notifications/context";
 import equalTo from "../utils/equalTo";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);

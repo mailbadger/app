@@ -12,8 +12,7 @@ import qs from "qs";
 import equalTo from "../utils/equalTo";
 import { socialAuthEnabled } from "../Auth";
 import SocialButtons from "./SocialButtons";
-import StyledTextInput from "../ui/StyledTextInput";
-import ButtonWithLoader from "../ui/ButtonWithLoader";
+import { StyledTextInput, ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
 
 addMethod(string, "equalTo", equalTo);
