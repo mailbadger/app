@@ -1,7 +1,16 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
-import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
+import {
+  More,
+  Add,
+  UserAdd,
+  Upload,
+  SubtractCircle,
+  FormPreviousLink,
+  FormNextLink,
+  Action,
+} from "grommet-icons";
 import {
   Grid,
   TableHeader,
@@ -12,6 +21,7 @@ import {
   Button,
   Heading,
   Select,
+  ThemeContext,
 } from "grommet";
 
 import { useApi } from "../hooks";
@@ -120,6 +130,47 @@ SubscriberTable.propTypes = {
   setShowEdit: PropTypes.func,
 };
 
+const ActionButtons = () => (
+  <ThemeContext.Extend
+    value={{
+      button: {
+        border: {
+          radius: 0,
+          color: "dark-1",
+          width: "2px",
+        },
+        padding: {
+          vertical: "2px",
+          horizontal: "5px",
+        },
+      },
+      text: {
+        medium: {
+          size: "14px",
+        },
+      },
+    }}
+  >
+    <Button
+      hoverIndicator="light-3"
+      margin={{ right: "small" }}
+      icon={<UserAdd size="20px" />}
+      label="Import from file"
+    />
+    <Button
+      hoverIndicator="light-3"
+      margin={{ right: "small" }}
+      icon={<SubtractCircle size="20px" />}
+      label="Delete from file"
+    />
+    <Button
+      hoverIndicator="light-3"
+      icon={<Upload size="20px" />}
+      label="Export"
+    />
+  </ThemeContext.Extend>
+);
+
 const List = () => {
   const [showDelete, setShowDelete] = useState({
     show: false,
@@ -163,7 +214,7 @@ const List = () => {
       gap="small"
       margin="medium"
       areas={[
-        { name: "nav", start: [0, 0], end: [0, 1] },
+        { name: "nav", start: [0, 0], end: [1, 1] },
         { name: "main", start: [0, 1], end: [1, 1] },
       ]}
     >
@@ -218,6 +269,9 @@ const List = () => {
             reverse
             onClick={() => openCreateModal(true)}
           />
+        </Box>
+        <Box margin={{ left: "auto" }} alignSelf="center" direction="row">
+          <ActionButtons />
         </Box>
       </Box>
       <Box gridArea="main">
