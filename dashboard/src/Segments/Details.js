@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Grid, Box, Heading, Button } from "grommet";
-import { Edit } from "grommet-icons";
+import { Grid, Box, Heading } from "grommet";
+import { Edit, Trash } from "grommet-icons";
 
 import { useApi } from "../hooks";
-import { LoadingOverlay, Modal } from "../ui";
+import { LoadingOverlay, Modal, SecondaryButton } from "../ui";
 import EditSegment from "./Edit";
+import DeleteSegment from "./Delete";
+import history from "../history";
 
 const Details = ({ match }) => {
   const [segment, setSegment] = useState();
   const [showEdit, setShowEdit] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   const [state] = useApi({
     url: `/api/segments/${match.params.id}`,
@@ -60,21 +63,43 @@ const Details = ({ match }) => {
               }
             />
           )}
+          {showDelete && (
+            <Modal
+              title={`Delete segment ${segment.name} ?`}
+              hideModal={() => setShowDelete(false)}
+              form={
+                <DeleteSegment
+                  id={segment.id}
+                  onSuccess={() => history.replace("/dashboard/segments")}
+                  onCancel={() => setShowDelete(false)}
+                />
+              }
+            />
+          )}
           <Box gridArea="title" direction="row">
             <Heading level="2" alignSelf="center">
               {segment.name}
             </Heading>
-            <Button
-              a11yTitle="edit segment name"
-              alignSelf="center"
-              icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
-              onClick={() => setShowEdit(true)}
-            />
+            <Box direction="row" margin={{ left: "auto" }}>
+              <SecondaryButton
+                margin={{ right: "small" }}
+                a11yTitle="edit segment name"
+                alignSelf="center"
+                icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
+                label="Edit"
+                onClick={() => setShowEdit(true)}
+              />
+              <SecondaryButton
+                a11yTitle="delete segment"
+                alignSelf="center"
+                icon={<Trash a11yTitle="delete segment" color="dark-1" />}
+                label="Delete"
+                onClick={() => setShowDelete(true)}
+              />
+            </Box>
           </Box>
 
-          <Box gridArea="main">
-            <Heading level="2">Main</Heading>
-          </Box>
+          <Box gridArea="main"></Box>
         </>
       )}
     </Grid>

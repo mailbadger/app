@@ -74,7 +74,7 @@ const Form = ({
 Form.propTypes = FormPropTypes;
 
 const SesKey = ({ sesKey, setShowDelete }) => (
-  <Box direction="column" margin={{ top: "small" }}>
+  <Box direction="column">
     <Box direction="row">
       <Box margin={{ right: "small" }}>
         <strong>Region:</strong>
@@ -123,7 +123,7 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
             <ButtonWithLoader
               primary
               label="Delete"
-              color="#FF4040"
+              color="status-critical"
               disabled={isSubmitting}
               onClick={async () => {
                 setSubmitting(true);
@@ -226,16 +226,17 @@ const AddSesKeysForm = () => {
 
   return (
     <Box
-      pad="large"
-      alignSelf="start"
-      background="#ffffff"
-      elevation="medium"
+      round
+      pad="medium"
+      alignSelf="center"
+      background="white"
       animation="fadeIn"
+      margin={{ bottom: "medium" }}
     >
       {showDelete && (
         <DeleteLayer setShowDelete={setShowDelete} callApi={callApi} />
       )}
-      <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
+      <Heading level="4" color="brand">
         Amazon SES Keys
       </Heading>
       {body}

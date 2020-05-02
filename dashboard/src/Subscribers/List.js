@@ -9,7 +9,6 @@ import {
   SubtractCircle,
   FormPreviousLink,
   FormNextLink,
-  Action,
 } from "grommet-icons";
 import {
   Grid,
@@ -21,11 +20,10 @@ import {
   Button,
   Heading,
   Select,
-  ThemeContext,
 } from "grommet";
 
 import { useApi } from "../hooks";
-import { StyledTable, PlaceholderTable, Modal } from "../ui";
+import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
@@ -131,44 +129,19 @@ SubscriberTable.propTypes = {
 };
 
 const ActionButtons = () => (
-  <ThemeContext.Extend
-    value={{
-      button: {
-        border: {
-          radius: 0,
-          color: "dark-1",
-          width: "2px",
-        },
-        padding: {
-          vertical: "2px",
-          horizontal: "5px",
-        },
-      },
-      text: {
-        medium: {
-          size: "14px",
-        },
-      },
-    }}
-  >
-    <Button
-      hoverIndicator="light-3"
+  <>
+    <SecondaryButton
       margin={{ right: "small" }}
       icon={<UserAdd size="20px" />}
       label="Import from file"
     />
-    <Button
-      hoverIndicator="light-3"
+    <SecondaryButton
       margin={{ right: "small" }}
       icon={<SubtractCircle size="20px" />}
       label="Delete from file"
     />
-    <Button
-      hoverIndicator="light-3"
-      icon={<Upload size="20px" />}
-      label="Export"
-    />
-  </ThemeContext.Extend>
+    <SecondaryButton icon={<Upload size="20px" />} label="Export" />
+  </>
 );
 
 const List = () => {

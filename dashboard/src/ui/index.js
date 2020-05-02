@@ -9,6 +9,8 @@ import PlaceholderTable from "./PlaceholderTable";
 import StyledSpinner from "./StyledSpinner";
 import StyledTable from "./StyledTable";
 import StyledTextInput from "./StyledTextInput";
+import SecondaryButton from "./SecondaryButton";
+import AnchorLink from "./AnchorLink";
 
 export {
   Badge,
@@ -22,4 +24,6 @@ export {
   StyledSpinner,
   StyledTable,
   StyledTextInput,
+  SecondaryButton,
+  AnchorLink,
 };

@@ -21,7 +21,7 @@ const theme = deepMerge(grommet, {
       height: "20px",
     },
     colors: {
-      background: "#E3E8EE",
+      background: "light-3",
       brand: "#6650AA",
     },
   },

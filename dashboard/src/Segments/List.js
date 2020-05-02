@@ -24,6 +24,7 @@ import {
 import history from "../history";
 import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
+import DeleteSegment from "./Delete";
 
 const Row = ({ segment, setShowDelete }) => {
   const ca = parseISO(segment.created_at);
@@ -315,10 +316,13 @@ const List = () => {
           title={`Delete segment ${showDelete.name} ?`}
           hideModal={hideModal}
           form={
-            <DeleteForm
+            <DeleteSegment
               id={showDelete.id}
-              callApi={callApi}
-              hideModal={hideModal}
+              onSuccess={async () => {
+                await callApi({ url: "/api/segments" });
+                hideModal();
+              }}
+              onCancel={hideModal}
             />
           }
         />

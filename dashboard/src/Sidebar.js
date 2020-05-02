@@ -1,24 +1,24 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import PropTypes from "prop-types";
 import {
   FormClose,
-  Logout,
-  UserSettings,
+  Configure,
   Group,
   List,
   Send,
-  Template
+  Template,
 } from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
 import { NavLink } from "react-router-dom";
+import { AnchorLink } from "./ui";
 
-const StyledNavLink = props => (
+const StyledNavLink = (props) => (
   <NavLink
     style={{
       textDecoration: "none",
       marginLeft: "10px",
       color: "#AA9AD4",
-      textTransform: "uppercase"
+      textTransform: "uppercase",
     }}
     {...props}
   >
@@ -27,115 +27,69 @@ const StyledNavLink = props => (
 );
 
 StyledNavLink.propTypes = {
-  children: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
+  children: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
 };
 
-const NavLinks = () => (
-  <Fragment>
-    <Box margin={{ top: "small" }}>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{ borderBottom: "1px solid #53418B" }}
-      >
-        <Group size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <StyledNavLink to="/dashboard/subscribers">Subscribers</StyledNavLink>
-      </Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{
-          borderBottom: "1px solid #53418B",
-          borderTop: "1px solid #7058BA"
-        }}
-      >
-        <List size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <StyledNavLink to="/dashboard/segments">Segments</StyledNavLink>
-      </Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{
-          borderBottom: "1px solid #53418B",
-          borderTop: "1px solid #7058BA"
-        }}
-      >
-        <Send size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <StyledNavLink to="/dashboard/campaigns">Campaigns</StyledNavLink>
-      </Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{
-          borderBottom: "1px solid #53418B",
-          borderTop: "1px solid #7058BA"
-        }}
-      >
-        <Template
-          size="medium"
-          color="#AA9AD4"
-          style={{ marginLeft: "10px" }}
-        />
-        <StyledNavLink to="/dashboard/templates">Templates</StyledNavLink>
-      </Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{ borderTop: "1px solid #7058BA" }}
-      />
-    </Box>
-    <Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{ borderBottom: "1px solid #53418B" }}
-      />
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{
-          borderBottom: "1px solid #53418B",
-          borderTop: "1px solid #7058BA"
-        }}
-      >
-        <UserSettings
-          size="medium"
-          color="#AA9AD4"
-          style={{ marginLeft: "10px" }}
-        />
-        <StyledNavLink to="/dashboard/settings">Settings</StyledNavLink>
-      </Box>
-      <Box
-        pad="xsmall"
-        direction="row"
-        style={{
-          borderBottom: "1px solid #53418B",
-          borderTop: "1px solid #7058BA"
-        }}
-      >
-        <Logout size="medium" color="#AA9AD4" style={{ marginLeft: "10px" }} />
-        <StyledNavLink to="/logout">Logout</StyledNavLink>
-      </Box>
-    </Box>
-  </Fragment>
-);
+const links = [
+  {
+    to: "/dashboard/subscribers",
+    label: "Subscribers",
+    icon: <Group size="medium" />,
+  },
+  {
+    to: "/dashboard/segments",
+    label: "Segments",
+    icon: <List size="medium" />,
+  },
+  {
+    to: "/dashboard/campaigns",
+    label: "Campaigns",
+    icon: <Send size="medium" />,
+  },
+  {
+    to: "/dashboard/templates",
+    label: "Templates",
+    icon: <Template size="medium" />,
+  },
+  {
+    to: "/dashboard/settings",
+    label: "Settings",
+    icon: <Configure size="medium" />,
+  },
+];
 
-const Sidebar = props => {
+const NavLinks = () => {
+  const [active, setActive] = useState();
+
+  return (
+    <Fragment>
+      <Box margin={{ top: "small" }} pad="large">
+        {links.map((link) => (
+          <Box pad="xsmall" direction="row" key={link.label}>
+            <AnchorLink
+              to={link.to}
+              size="medium"
+              pad={{ horizontal: "medium", vertical: "medium" }}
+              icon={link.icon}
+              label={link.label}
+              active={active === link.label}
+              onClick={() => setActive(link.label)}
+            />
+          </Box>
+        ))}
+      </Box>
+    </Fragment>
+  );
+};
+
+const Sidebar = (props) => {
   const { showSidebar, size, closeSidebar } = props;
 
   return (
     <Fragment>
       {!showSidebar || size !== "small" ? (
         <Collapsible direction="horizontal" open={showSidebar}>
-          <Box
-            flex
-            width="18em"
-            elevation="small"
-            direction="column"
-            justify="between"
-            background="brand"
-            style={{ position: "", minHeight: "100vh" }}
-          >
+          <Box flex width="18em" direction="column" justify="between">
             <NavLinks />
           </Box>
         </Collapsible>
@@ -162,7 +116,7 @@ const Sidebar = props => {
 Sidebar.propTypes = {
   showSidebar: PropTypes.bool,
   size: PropTypes.string,
-  closeSidebar: PropTypes.func
+  closeSidebar: PropTypes.func,
 };
 
 export default Sidebar;
