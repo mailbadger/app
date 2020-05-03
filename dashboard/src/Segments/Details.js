@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Grid, Box, Heading } from "grommet";
+import { Grid, Box, Heading, Text, Meter } from "grommet";
 import { Edit, Trash } from "grommet-icons";
 
 import { useApi } from "../hooks";
@@ -40,13 +40,14 @@ const Details = ({ match }) => {
 
   return (
     <Grid
-      rows={["1fr", "1fr"]}
-      columns={["small", "large", "xsmall"]}
+      rows={["1fr", "1fr", "1fr"]}
+      columns={["6fr", "18fr", "1fr"]}
       margin="medium"
       gap="small"
       areas={[
-        ["title", "title", "gap"],
-        ["main", "main", "main"],
+        ["title", "title"],
+        ["info", "main"],
+        ["info", "main"],
       ]}
     >
       {segment && (
@@ -99,7 +100,36 @@ const Details = ({ match }) => {
               />
             </Box>
           </Box>
-
+          <Box gridArea="info" direction="column">
+            <Box
+              alignSelf="start"
+              round={{ corner: "top", size: "small" }}
+              background="light-1"
+              pad={{ vertical: "small", right: "large" }}
+            >
+              <Text margin={{ left: "small" }} size="large">
+                <strong>Subscribers</strong>
+              </Text>
+              <Text size="large" margin={{ top: "small", left: "small" }}>
+                <strong>24</strong>
+              </Text>
+              <Meter
+                round
+                margin={{ top: "small", left: "small" }}
+                values={[
+                  {
+                    color: "brand",
+                    value: 60,
+                    label: "subscribers meter",
+                  },
+                ]}
+                aria-label="subscribers meter"
+              />
+            </Box>
+            <Box margin="small">
+              <Text>out of 100 total</Text>
+            </Box>
+          </Box>
           <Box gridArea="main"></Box>
         </>
       )}
