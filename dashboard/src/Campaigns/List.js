@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, memo } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
@@ -22,10 +22,13 @@ import {
   PlaceholderTable,
   Modal,
   Badge,
+  Notice,
+  BarLoader,
 } from "../ui";
 import CreateCampaign from "./Create";
+import { SesKeysContext } from "../Settings/SesKeysContext";
 
-const Row = ({ campaign, setShowDelete }) => {
+const Row = memo(({ campaign, setShowDelete, hasSesKeys }) => {
   const d = parseISO(campaign.created_at);
   const statusColors = {
     draft: "#CCCCCC",
@@ -33,6 +36,12 @@ const Row = ({ campaign, setShowDelete }) => {
     sent: "#00C781",
     scheduled: "#FFCA58",
   };
+
+  let opts = ["Delete"];
+  if (hasSesKeys) {
+    opts.unshift("Edit");
+  }
+
   return (
     <TableRow>
       <TableCell scope="row" size="xxsmall">
@@ -52,7 +61,7 @@ const Row = ({ campaign, setShowDelete }) => {
           alignSelf="center"
           plain
           icon={<More />}
-          options={["Edit", "Delete"]}
+          options={opts}
           onChange={({ option }) => {
             (function () {
               switch (option) {
@@ -75,7 +84,7 @@ const Row = ({ campaign, setShowDelete }) => {
       </TableCell>
     </TableRow>
   );
-};
+});
 
 Row.propTypes = {
   campaign: PropTypes.shape({
@@ -86,9 +95,12 @@ Row.propTypes = {
     created_at: PropTypes.string,
   }),
   setShowDelete: PropTypes.func,
+  hasSesKeys: PropTypes.bool,
 };
 
-const Header = () => (
+Row.displayName = "Row";
+
+const Header = memo(() => (
   <TableHeader>
     <TableRow>
       <TableCell scope="col" border="bottom" size="xxsmall">
@@ -114,14 +126,21 @@ const Header = () => (
       </TableCell>
     </TableRow>
   </TableHeader>
-);
+));
 
-const CampaignsTable = React.memo(({ list, setShowDelete }) => (
+Header.displayName = "Header";
+
+const CampaignsTable = memo(({ list, setShowDelete, hasSesKeys }) => (
   <StyledTable>
     <Header />
     <TableBody>
       {list.map((c) => (
-        <Row campaign={c} key={c.id} setShowDelete={setShowDelete} />
+        <Row
+          campaign={c}
+          key={c.id}
+          setShowDelete={setShowDelete}
+          hasSesKeys={hasSesKeys}
+        />
       ))}
     </TableBody>
   </StyledTable>
@@ -131,6 +150,7 @@ CampaignsTable.displayName = "CampaignsTable";
 CampaignsTable.propTypes = {
   list: PropTypes.array,
   setShowDelete: PropTypes.func,
+  hasSesKeys: PropTypes.bool,
 };
 
 const DeleteForm = ({ id, callApi, hideModal }) => {
@@ -173,6 +193,11 @@ const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
   const [showCreate, openCreateModal] = useState(false);
   const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
+  const { keys, isLoading: keysLoading, error: keysError } = useContext(
+    SesKeysContext
+  );
+
+  const hasSesKeys = !keysLoading && !keysError && keys !== null;
 
   const [state, callApi] = useApi(
     {
@@ -184,15 +209,47 @@ const List = () => {
     }
   );
 
+  const hasCampaigns =
+    !state.isLoading && !state.isError && state.data.collection.length > 0;
+
+  if (keysLoading) {
+    return (
+      <Box alignSelf="center" margin="20%">
+        <BarLoader size={15} />
+      </Box>
+    );
+  }
+
+  if (!hasSesKeys && !hasCampaigns) {
+    return (
+      <Box>
+        <Box align="center" margin={{ top: "large" }}>
+          <Heading level="2">Please provide your AWS SES keys first.</Heading>
+        </Box>
+        <Box align="center" margin={{ top: "medium" }}>
+          <Button
+            primary
+            color="status-ok"
+            label="Add SES Keys"
+            icon={<Add />}
+            reverse
+            onClick={() => history.push("/dashboard/settings")}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
   let table = null;
-  if (state.isLoading) {
+  if (state.isLoading || keysLoading) {
     table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
-  } else if (state.data.collection.length > 0) {
+  } else if (hasCampaigns) {
     table = (
       <CampaignsTable
         isLoading={state.isLoading}
         list={state.data.collection}
         setShowDelete={setShowDelete}
+        hasSesKeys={hasSesKeys}
       />
     );
   }
@@ -200,12 +257,12 @@ const List = () => {
   return (
     <Grid
       rows={["fill", "fill"]}
-      columns={["1fr", "1fr"]}
+      columns={["small", "large", "xsmall"]}
       gap="small"
       margin="medium"
       areas={[
-        { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] },
+        ["nav", "nav", "nav"],
+        ["main", "main", "main"],
       ]}
     >
       {showDelete.show && (
@@ -244,21 +301,36 @@ const List = () => {
             label="Create new"
             icon={<Add />}
             reverse
-            onClick={() => openCreateModal(true)}
+            onClick={() => {
+              if (hasSesKeys) {
+                openCreateModal(true);
+              }
+            }}
+            disabled={!hasSesKeys}
           />
         </Box>
+        {!hasSesKeys && hasCampaigns && (
+          <Box margin={{ left: "auto" }} alignSelf="center">
+            <Notice
+              message="Set your SES keys to create or edit campaigns."
+              status="status-warning"
+            />
+          </Box>
+        )}
       </Box>
       <Box gridArea="main">
         <Box animation="fadeIn">
           {table}
 
-          {!state.isLoading && state.data.collection.length === 0 ? (
-            <Box align="center" margin={{ top: "large" }}>
-              <Heading level="2">Create your first campaign.</Heading>
-            </Box>
-          ) : null}
+          {!state.isLoading &&
+            !state.isError &&
+            state.data.collection.length === 0 && (
+              <Box align="center" margin={{ top: "large" }}>
+                <Heading level="2">Create your first campaign.</Heading>
+              </Box>
+            )}
         </Box>
-        {!state.isLoading && state.data.collection.length > 0 ? (
+        {hasCampaigns ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
               <Button

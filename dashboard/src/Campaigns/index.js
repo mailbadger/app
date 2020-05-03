@@ -3,10 +3,13 @@ import { Switch } from "react-router-dom";
 
 import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
+import { SesKeysProvider } from "../Settings/SesKeysContext";
 
 const Segments = () => (
   <Switch>
-    <ProtectedRoute exact path="/dashboard/campaigns" component={List} />
+    <SesKeysProvider>
+      <ProtectedRoute exact path="/dashboard/campaigns" component={List} />
+    </SesKeysProvider>
   </Switch>
 );
 

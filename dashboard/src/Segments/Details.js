@@ -41,11 +41,12 @@ const Details = ({ match }) => {
   return (
     <Grid
       rows={["1fr", "1fr"]}
-      columns={["fill"]}
+      columns={["small", "large", "xsmall"]}
       margin="medium"
+      gap="small"
       areas={[
-        { name: "title", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [0, 1] },
+        ["title", "title", "gap"],
+        ["main", "main", "main"],
       ]}
     >
       {segment && (

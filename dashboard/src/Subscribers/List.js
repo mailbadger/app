@@ -183,12 +183,12 @@ const List = () => {
   return (
     <Grid
       rows={["fill", "fill"]}
-      columns={["1fr", "1fr"]}
+      columns={["small", "large", "xsmall"]}
       gap="small"
       margin="medium"
       areas={[
-        { name: "nav", start: [0, 0], end: [1, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] },
+        ["nav", "nav", "nav"],
+        ["main", "main", "main"],
       ]}
     >
       {showDelete.show && (
