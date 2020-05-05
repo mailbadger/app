@@ -9,7 +9,7 @@ import {
   Template,
 } from "grommet-icons";
 import { Box, Button, Collapsible, Layer } from "grommet";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { AnchorLink } from "./ui";
 
 const StyledNavLink = (props) => (
@@ -59,6 +59,7 @@ const links = [
 ];
 
 const NavLinks = () => {
+  let location = useLocation();
   const [active, setActive] = useState();
 
   return (
@@ -72,7 +73,9 @@ const NavLinks = () => {
               pad={{ horizontal: "medium", vertical: "medium" }}
               icon={link.icon}
               label={link.label}
-              active={active === link.label}
+              active={
+                active === link.label || location.pathname.startsWith(link.to)
+              }
               onClick={() => setActive(link.label)}
             />
           </Box>
