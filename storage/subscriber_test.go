@@ -66,6 +66,11 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(subs))
 
+	//Test get total subs in segment
+	totalInSeg, err := store.GetTotalSubscribersBySegment(l.ID, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, totalInSeg, int64(1))
+
 	//Test get subscriber by email
 	s, err = store.GetSubscriberByEmail("john@example.com", 1)
 	assert.Nil(t, err)
@@ -98,6 +103,11 @@ func TestSubscriber(t *testing.T) {
 	subs, err = store.GetSubscribersByIDs([]int64{1}, 1)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, subs)
+
+	//Test get total subs
+	total, err := store.GetTotalSubscribers(1)
+	assert.Nil(t, err)
+	assert.Equal(t, total, int64(1))
 
 	//Test delete subscriber
 	err = store.DeleteSubscriber(1, 1)
