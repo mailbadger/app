@@ -202,6 +202,7 @@ func New() http.Handler {
 			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
 			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers)
 			segments.DELETE("/:id/subscribers", actions.DetachSegmentSubscribers)
+			segments.DELETE("/:id/subscribers/:sub_id", actions.DetachSubscriber)
 		}
 
 		subscribers := authorized.Group("/subscribers")

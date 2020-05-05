@@ -1,12 +1,9 @@
 import React from "react";
 import { Box, Button, Layer, Text } from "grommet";
-import { FormClose, StatusGood } from "grommet-icons";
+import { FormClose } from "grommet-icons";
 
 import { NotificationConsumer } from "./context";
-
-const StatusIcon = {
-  "status-ok": <StatusGood />
-};
+import { StatusIcons } from "../ui";
 
 const Notification = () => (
   <NotificationConsumer>
@@ -31,7 +28,7 @@ const Notification = () => (
             background={status}
           >
             <Box align="center" direction="row" gap="xsmall">
-              {StatusIcon[status]}
+              {StatusIcons[status]}
               <Text>{message}</Text>
             </Box>
             <Button icon={<FormClose />} onClick={close} plain />

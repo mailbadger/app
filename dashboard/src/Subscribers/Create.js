@@ -61,8 +61,14 @@ const CreateForm = ({
   const [options, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
-    dispatch({ type: "append", payload: segments.data.collection });
-  }, [segments.data.collection]);
+    if (segments.isError || segments.isLoading) {
+      return;
+    }
+
+    if (segments && segments.data) {
+      dispatch({ type: "append", payload: segments.data.collection });
+    }
+  }, [segments]);
 
   const onMore = () => {
     if (segments.isError || segments.isLoading) {

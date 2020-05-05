@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
-import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
+import {
+  More,
+  Add,
+  UserAdd,
+  Upload,
+  SubtractCircle,
+  FormPreviousLink,
+  FormNextLink,
+} from "grommet-icons";
 import {
   Grid,
   TableHeader,
@@ -15,12 +23,12 @@ import {
 } from "grommet";
 
 import { useApi } from "../hooks";
-import { StyledTable, PlaceholderTable, Modal } from "../ui";
+import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
 
-const Row = ({ subscriber, setShowDelete, setShowEdit }) => {
+export const Row = ({ subscriber, actions }) => {
   const ca = parseISO(subscriber.created_at);
   const ua = parseISO(subscriber.updated_at);
   return (
@@ -34,34 +42,8 @@ const Row = ({ subscriber, setShowDelete, setShowEdit }) => {
       <TableCell scope="row" size="medium">
         {formatRelative(ua, new Date())}
       </TableCell>
-      <TableCell scope="row" size="xxsmall" align="end">
-        <Select
-          alignSelf="center"
-          plain
-          icon={<More />}
-          options={["Edit", "Delete"]}
-          onChange={({ option }) => {
-            (function () {
-              switch (option) {
-                case "Edit":
-                  setShowEdit({
-                    show: true,
-                    id: subscriber.id,
-                  });
-                  break;
-                case "Delete":
-                  setShowDelete({
-                    show: true,
-                    email: subscriber.email,
-                    id: subscriber.id,
-                  });
-                  break;
-                default:
-                  return null;
-              }
-            })();
-          }}
-        />
+      <TableCell scope="row" size="xsmall" align="end">
+        {actions}
       </TableCell>
     </TableRow>
   );
@@ -74,17 +56,16 @@ Row.propTypes = {
     created_at: PropTypes.string,
     updated_at: PropTypes.string,
   }),
-  setShowDelete: PropTypes.func,
-  setShowEdit: PropTypes.func,
+  actions: PropTypes.element,
 };
 
-const Header = () => (
+export const Header = () => (
   <TableHeader>
     <TableRow>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="medium">
         <strong>Email</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="medium">
         <strong>Created At</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="small">
@@ -97,17 +78,12 @@ const Header = () => (
   </TableHeader>
 );
 
-const SubscriberTable = React.memo(({ list, setShowDelete, setShowEdit }) => (
+export const SubscriberTable = React.memo(({ list, actions }) => (
   <StyledTable>
     <Header />
     <TableBody>
       {list.map((s) => (
-        <Row
-          subscriber={s}
-          key={s.id}
-          setShowDelete={setShowDelete}
-          setShowEdit={setShowEdit}
-        />
+        <Row subscriber={s} key={s.id} actions={actions(s)} />
       ))}
     </TableBody>
   </StyledTable>
@@ -116,9 +92,54 @@ const SubscriberTable = React.memo(({ list, setShowDelete, setShowEdit }) => (
 SubscriberTable.displayName = "SubscriberTable";
 SubscriberTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func,
-  setShowEdit: PropTypes.func,
+  actions: PropTypes.func,
 };
+
+const rowActions = (setShowEdit, setShowDelete) => (subscriber) => (
+  <Select
+    alignSelf="center"
+    plain
+    icon={<More />}
+    options={["Edit", "Delete"]}
+    onChange={({ option }) => {
+      (function () {
+        switch (option) {
+          case "Edit":
+            setShowEdit({
+              show: true,
+              id: subscriber.id,
+            });
+            break;
+          case "Delete":
+            setShowDelete({
+              show: true,
+              email: subscriber.email,
+              id: subscriber.id,
+            });
+            break;
+          default:
+            return null;
+        }
+      })();
+    }}
+  />
+);
+
+const ActionButtons = () => (
+  <>
+    <SecondaryButton
+      margin={{ right: "small" }}
+      icon={<UserAdd size="20px" />}
+      label="Import from file"
+    />
+    <SecondaryButton
+      margin={{ right: "small" }}
+      icon={<SubtractCircle size="20px" />}
+      label="Delete from file"
+    />
+    <SecondaryButton icon={<Upload size="20px" />} label="Export" />
+  </>
+);
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({
@@ -150,8 +171,7 @@ const List = () => {
       <SubscriberTable
         isLoading={state.isLoading}
         list={state.data.collection}
-        setShowDelete={setShowDelete}
-        setShowEdit={setShowEdit}
+        actions={rowActions(setShowEdit, setShowDelete)}
       />
     );
   }
@@ -159,12 +179,12 @@ const List = () => {
   return (
     <Grid
       rows={["fill", "fill"]}
-      columns={["1fr", "1fr"]}
+      columns={["small", "large", "xsmall"]}
       gap="small"
       margin="medium"
       areas={[
-        { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] },
+        ["nav", "nav", "nav"],
+        ["main", "main", "main"],
       ]}
     >
       {showDelete.show && (
@@ -218,6 +238,9 @@ const List = () => {
             reverse
             onClick={() => openCreateModal(true)}
           />
+        </Box>
+        <Box margin={{ left: "auto" }} alignSelf="center" direction="row">
+          <ActionButtons />
         </Box>
       </Box>
       <Box gridArea="main">

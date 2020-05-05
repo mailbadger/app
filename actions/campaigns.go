@@ -17,6 +17,7 @@ import (
 	"github.com/news-maily/app/queue"
 	"github.com/news-maily/app/routes/middleware"
 	"github.com/news-maily/app/storage"
+	"github.com/news-maily/app/storage/templates"
 	"github.com/sirupsen/logrus"
 )
 
@@ -92,10 +93,29 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	store, err := templates.NewSesTemplateStore(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable to create SES template store.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
+		})
+		return
+	}
+
 	lists, err := storage.GetSegmentsByIDs(c, u.ID, params.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Subscriber lists are not found.",
+		})
+		return
+	}
+
+	_, err = store.GetTemplate(&ses.GetTemplateInput{
+		TemplateName: aws.String(campaign.TemplateName),
+	})
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Template not found. Unable to send campaign.",
 		})
 		return
 	}

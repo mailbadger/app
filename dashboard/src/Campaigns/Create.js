@@ -49,8 +49,14 @@ const CreateForm = ({
   const [options, dispatch] = useReducer(reducer, []);
 
   useEffect(() => {
-    dispatch({ type: "append", payload: templates.data.collection });
-  }, [templates.data.collection]);
+    if (templates.isError || templates.isLoading) {
+      return;
+    }
+
+    if (templates && templates.data) {
+      dispatch({ type: "append", payload: templates.data.collection });
+    }
+  }, [templates]);
 
   const onMore = () => {
     if (templates.isError || templates.isLoading) {

@@ -24,6 +24,7 @@ import {
 import history from "../history";
 import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
+import DeleteSegment from "./Delete";
 
 const Row = ({ segment, setShowDelete }) => {
   const ca = parseISO(segment.created_at);
@@ -34,7 +35,7 @@ const Row = ({ segment, setShowDelete }) => {
         <strong>{segment.name}</strong>
       </TableCell>
       <TableCell scope="row" size="xlarge">
-        <strong>{segment.total_subscribers}</strong>
+        <strong>{segment.subscribers_in_segment}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
         {formatRelative(ca, new Date())}
@@ -42,7 +43,7 @@ const Row = ({ segment, setShowDelete }) => {
       <TableCell scope="row" size="medium">
         {formatRelative(ua, new Date())}
       </TableCell>
-      <TableCell scope="row" size="xxsmall" align="end">
+      <TableCell scope="row" size="xsmall" align="end">
         <Select
           alignSelf="center"
           plain
@@ -76,7 +77,7 @@ Row.propTypes = {
   segment: PropTypes.shape({
     name: PropTypes.string,
     id: PropTypes.number,
-    total_subscribers: PropTypes.number,
+    subscribers_in_segment: PropTypes.number,
     created_at: PropTypes.string,
     updated_at: PropTypes.string,
   }),
@@ -288,7 +289,9 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={8} />;
+    table = (
+      <PlaceholderTable width="100%" header={Header} numCols={4} numRows={8} />
+    );
   } else if (state.data.collection.length > 0) {
     table = (
       <SegmentTable
@@ -302,12 +305,12 @@ const List = () => {
   return (
     <Grid
       rows={["fill", "fill"]}
-      columns={["1fr", "1fr"]}
+      columns={["small", "large", "xsmall"]}
       gap="small"
       margin="medium"
       areas={[
-        { name: "nav", start: [0, 0], end: [0, 1] },
-        { name: "main", start: [0, 1], end: [1, 1] },
+        ["nav", "nav", "nav"],
+        ["main", "main", "main"],
       ]}
     >
       {showDelete.show && (
@@ -315,10 +318,13 @@ const List = () => {
           title={`Delete segment ${showDelete.name} ?`}
           hideModal={hideModal}
           form={
-            <DeleteForm
+            <DeleteSegment
               id={showDelete.id}
-              callApi={callApi}
-              hideModal={hideModal}
+              onSuccess={async () => {
+                await callApi({ url: "/api/segments" });
+                hideModal();
+              }}
+              onCancel={hideModal}
             />
           }
         />

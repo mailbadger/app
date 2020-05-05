@@ -24,47 +24,59 @@ const changePassValidation = object().shape({
 
 const Form = ({ handleSubmit, handleChange, isSubmitting }) => (
   <Box
-    pad="large"
-    alignSelf="start"
-    background="#ffffff"
-    elevation="medium"
+    round={{
+      corner: "bottom",
+    }}
+    pad="medium"
+    alignSelf="stretch"
+    background="white"
     animation="fadeIn"
+    margin={{ bottom: "medium" }}
   >
-    <Heading level="4" color="#564392" style={{ marginTop: "0px" }}>
-      Change password
-    </Heading>
-    <Box width="medium">
-      <form onSubmit={handleSubmit}>
-        <FormField label="Old password" htmlFor="password">
-          <TextInput name="password" type="password" onChange={handleChange} />
-          <ErrorMessage name="password" />
-        </FormField>
-        <FormField label="New password" htmlFor="new_password">
-          <TextInput
-            name="new_password"
-            type="password"
-            onChange={handleChange}
-          />
-          <ErrorMessage name="new_password" />
-        </FormField>
-        <FormField label="Confirm new password" htmlFor="new_password_confirm">
-          <TextInput
-            name="new_password_confirm"
-            type="password"
-            onChange={handleChange}
-          />
-          <ErrorMessage name="new_password_confirm" />
-        </FormField>
+    <Box alignSelf="center">
+      <Heading level="4" color="#564392">
+        Change password
+      </Heading>
+      <Box width="medium">
+        <form onSubmit={handleSubmit}>
+          <FormField label="Old password" htmlFor="password">
+            <TextInput
+              name="password"
+              type="password"
+              onChange={handleChange}
+            />
+            <ErrorMessage name="password" />
+          </FormField>
+          <FormField label="New password" htmlFor="new_password">
+            <TextInput
+              name="new_password"
+              type="password"
+              onChange={handleChange}
+            />
+            <ErrorMessage name="new_password" />
+          </FormField>
+          <FormField
+            label="Confirm new password"
+            htmlFor="new_password_confirm"
+          >
+            <TextInput
+              name="new_password_confirm"
+              type="password"
+              onChange={handleChange}
+            />
+            <ErrorMessage name="new_password_confirm" />
+          </FormField>
 
-        <Box margin={{ top: "medium" }}>
-          <ButtonWithLoader
-            type="submit"
-            primary
-            disabled={isSubmitting}
-            label="Update password"
-          />
-        </Box>
-      </form>
+          <Box margin={{ top: "medium" }}>
+            <ButtonWithLoader
+              type="submit"
+              primary
+              disabled={isSubmitting}
+              label="Update password"
+            />
+          </Box>
+        </form>
+      </Box>
     </Box>
   </Box>
 );
