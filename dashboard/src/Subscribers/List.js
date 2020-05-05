@@ -28,7 +28,7 @@ import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
 
-const Row = ({ subscriber, setShowDelete, setShowEdit }) => {
+export const Row = ({ subscriber, actions }) => {
   const ca = parseISO(subscriber.created_at);
   const ua = parseISO(subscriber.updated_at);
   return (
@@ -42,34 +42,8 @@ const Row = ({ subscriber, setShowDelete, setShowEdit }) => {
       <TableCell scope="row" size="medium">
         {formatRelative(ua, new Date())}
       </TableCell>
-      <TableCell scope="row" size="xxsmall" align="end">
-        <Select
-          alignSelf="center"
-          plain
-          icon={<More />}
-          options={["Edit", "Delete"]}
-          onChange={({ option }) => {
-            (function () {
-              switch (option) {
-                case "Edit":
-                  setShowEdit({
-                    show: true,
-                    id: subscriber.id,
-                  });
-                  break;
-                case "Delete":
-                  setShowDelete({
-                    show: true,
-                    email: subscriber.email,
-                    id: subscriber.id,
-                  });
-                  break;
-                default:
-                  return null;
-              }
-            })();
-          }}
-        />
+      <TableCell scope="row" size="xsmall" align="end">
+        {actions}
       </TableCell>
     </TableRow>
   );
@@ -82,17 +56,16 @@ Row.propTypes = {
     created_at: PropTypes.string,
     updated_at: PropTypes.string,
   }),
-  setShowDelete: PropTypes.func,
-  setShowEdit: PropTypes.func,
+  actions: PropTypes.element,
 };
 
-const Header = () => (
+export const Header = () => (
   <TableHeader>
     <TableRow>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="medium">
         <strong>Email</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
+      <TableCell scope="col" border="bottom" size="medium">
         <strong>Created At</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="small">
@@ -105,17 +78,12 @@ const Header = () => (
   </TableHeader>
 );
 
-const SubscriberTable = React.memo(({ list, setShowDelete, setShowEdit }) => (
+export const SubscriberTable = React.memo(({ list, actions }) => (
   <StyledTable>
     <Header />
     <TableBody>
       {list.map((s) => (
-        <Row
-          subscriber={s}
-          key={s.id}
-          setShowDelete={setShowDelete}
-          setShowEdit={setShowEdit}
-        />
+        <Row subscriber={s} key={s.id} actions={actions(s)} />
       ))}
     </TableBody>
   </StyledTable>
@@ -124,9 +92,38 @@ const SubscriberTable = React.memo(({ list, setShowDelete, setShowEdit }) => (
 SubscriberTable.displayName = "SubscriberTable";
 SubscriberTable.propTypes = {
   list: PropTypes.array,
-  setShowDelete: PropTypes.func,
-  setShowEdit: PropTypes.func,
+  actions: PropTypes.func,
 };
+
+const rowActions = (setShowEdit, setShowDelete) => (subscriber) => (
+  <Select
+    alignSelf="center"
+    plain
+    icon={<More />}
+    options={["Edit", "Delete"]}
+    onChange={({ option }) => {
+      (function () {
+        switch (option) {
+          case "Edit":
+            setShowEdit({
+              show: true,
+              id: subscriber.id,
+            });
+            break;
+          case "Delete":
+            setShowDelete({
+              show: true,
+              email: subscriber.email,
+              id: subscriber.id,
+            });
+            break;
+          default:
+            return null;
+        }
+      })();
+    }}
+  />
+);
 
 const ActionButtons = () => (
   <>
@@ -174,8 +171,7 @@ const List = () => {
       <SubscriberTable
         isLoading={state.isLoading}
         list={state.data.collection}
-        setShowDelete={setShowDelete}
-        setShowEdit={setShowEdit}
+        actions={rowActions(setShowEdit, setShowDelete)}
       />
     );
   }

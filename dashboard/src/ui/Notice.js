@@ -15,7 +15,7 @@ const Notice = ({ message, status }) => {
     <Box
       border={{
         side: "all",
-        size: "medium",
+        size: "small",
         color: "dark-2",
       }}
       align="center"

@@ -52,14 +52,14 @@ func BelongsToSegment(segID int64) func(*gorm.DB) *gorm.DB {
 	}
 }
 
-// GetTotalSubscribers fetches the total count by user id
+// GetTotalSubscribers fetches the total count by user id.
 func (db *store) GetTotalSubscribers(userID int64) (int64, error) {
 	var count int64
 	err := db.Model(entities.Subscriber{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
 }
 
-// GetTotalSubscribers fetches the total count by user id
+// GetTotalSubscribersBySegment fetches the total count by user and segment id.
 func (db *store) GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error) {
 	var seg = entities.Segment{Model: entities.Model{ID: segmentID}}
 

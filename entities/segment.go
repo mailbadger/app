@@ -19,10 +19,11 @@ type Segment struct {
 // extra information regarding the total count of subscribers.
 // this entity is needed because we run a custom query for the paginated
 // set of results, which differs from the rest of the CRUD methods where
-// 'total_subscribers' column is not present.
+// 'subscribers_in_segment' column is not present.
 type SegmentWithTotalSubs struct {
 	Segment
-	TotalSubscribers int64 `json:"total_subscribers" gorm:"column:total_subscribers"`
+	SubscribersInSeg int64  `json:"subscribers_in_segment" gorm:"column:subscribers_in_segment"`
+	TotalSubscribers *int64 `json:"total_subscribers,omitempty" sql:"-"`
 }
 
 // Validate validates the list properties and populates the Errors map

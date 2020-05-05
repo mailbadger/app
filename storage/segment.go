@@ -10,7 +10,7 @@ func (db *store) GetSegments(userID int64, p *PaginationCursor) error {
 	p.SetResource("segments")
 
 	query := db.Table(p.Resource).
-		Select("segments.*, (?) as total_subscribers",
+		Select("segments.*, (?) as subscribers_in_segment",
 			db.Select("count(*)").
 				Table("subscribers_segments").
 				Where("segment_id = segments.id").

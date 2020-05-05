@@ -44,19 +44,19 @@ const Row = memo(({ campaign, setShowDelete, hasSesKeys }) => {
 
   return (
     <TableRow>
-      <TableCell scope="row" size="xxsmall">
+      <TableCell scope="row" size="large">
         <strong>{campaign.name}</strong>
       </TableCell>
-      <TableCell scope="row" size="xxsmall">
+      <TableCell scope="row" size="large">
         <Badge color={statusColors[campaign.status]}>{campaign.status}</Badge>
       </TableCell>
-      <TableCell scope="row" size="xxsmall">
+      <TableCell scope="row" size="large">
         {campaign.template_name}
       </TableCell>
-      <TableCell scope="row" size="xxsmall">
+      <TableCell scope="row" size="large">
         {formatRelative(d, new Date())}
       </TableCell>
-      <TableCell scope="row" size="xxsmall" align="end">
+      <TableCell scope="row" size="xsmall" align="end">
         <Select
           alignSelf="center"
           plain
@@ -312,7 +312,7 @@ const List = () => {
         {!hasSesKeys && hasCampaigns && (
           <Box margin={{ left: "auto" }} alignSelf="center">
             <Notice
-              message="Set your SES keys to create or edit campaigns."
+              message="Set your SES keys in order to send, create or edit campaigns."
               status="status-warning"
             />
           </Box>

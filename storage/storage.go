@@ -59,6 +59,8 @@ type Storage interface {
 	UpdateSubscriber(*entities.Subscriber) error
 	DeactivateSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
+	GetTotalSubscribers(int64) (int64, error)
+	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 
 	GetAPIKeys(userID int64) []*entities.APIKey
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -284,6 +286,16 @@ func DeactivateSubscriber(c context.Context, userID int64, email string) error {
 // DeleteSubscriber deletes a Subscriber entity by the given id.
 func DeleteSubscriber(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteSubscriber(id, userID)
+}
+
+// GetTotalSubscribers fetches the total count by user id.
+func GetTotalSubscribers(c context.Context, userID int64) (int64, error) {
+	return GetFromContext(c).GetTotalSubscribers(userID)
+}
+
+// GetTotalSubscribersBySegment fetches the total count by user and segment id.
+func GetTotalSubscribersBySegment(c context.Context, segmentID, userID int64) (int64, error) {
+	return GetFromContext(c).GetTotalSubscribersBySegment(segmentID, userID)
 }
 
 // GetAPIKeys returns a list of APIKey entities.

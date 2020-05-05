@@ -17,6 +17,10 @@ type subs struct {
 	Ids []int64 `form:"ids[]"`
 }
 
+type expandParams struct {
+	Expand []string `form:"expand"`
+}
+
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
@@ -49,21 +53,47 @@ func GetSegments(c *gin.Context) {
 }
 
 func GetSegment(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if l, err := storage.GetSegment(c, id, middleware.GetUser(c).ID); err == nil {
-			c.JSON(http.StatusOK, l)
-			return
-		}
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+	}
 
+	userID := middleware.GetUser(c).ID
+
+	s, err := storage.GetSegment(c, id, userID)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Segment not found",
+			"message": "Segment not found.",
 		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
+	totalSubs, err := storage.GetTotalSubscribers(c, userID)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to fetch total subscribers.")
+	}
+
+	subsInSeg, err := storage.GetTotalSubscribersBySegment(c, s.ID, userID)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to fetch total subscribers in segment.")
+	}
+
+	c.JSON(http.StatusOK, &entities.SegmentWithTotalSubs{
+		Segment:          *s,
+		TotalSubscribers: &totalSubs,
+		SubscribersInSeg: subsInSeg,
 	})
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 func PostSegment(c *gin.Context) {
@@ -326,4 +356,52 @@ func DetachSegmentSubscribers(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
 	})
+}
+
+func DetachSubscriber(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+	}
+
+	subID, err := strconv.ParseInt(c.Param("sub_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Subscriber id must be an integer",
+		})
+	}
+
+	user := middleware.GetUser(c)
+	l, err := storage.GetSegment(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Segment not found",
+		})
+		return
+	}
+
+	s, err := storage.GetSubscriber(c, subID, user.ID)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{"subscriber_id": subID, "segment_id": id}).WithError(err).
+			Warn("Unable to find subscriber by id.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to remove subscriber from the segment, the subscriber does not exist.",
+		})
+		return
+	}
+
+	l.Subscribers = []entities.Subscriber{*s}
+
+	if err = storage.DetachSubscribers(c, l); err != nil {
+		logger.From(c).WithFields(logrus.Fields{"subscriber_id": subID, "segment_id": id}).WithError(err).
+			Warn("Unable to remove subscriber from segment.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to remove subscriber from the segment.",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
