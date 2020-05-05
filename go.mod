@@ -21,7 +21,7 @@ require (
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/gorm v1.9.12
-	github.com/lib/pq v1.4.0
+	github.com/lib/pq v1.5.1
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
