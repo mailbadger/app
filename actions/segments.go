@@ -17,10 +17,6 @@ type subs struct {
 	Ids []int64 `form:"ids[]"`
 }
 
-type expandParams struct {
-	Expand []string `form:"expand"`
-}
-
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
@@ -85,15 +81,6 @@ func GetSegment(c *gin.Context) {
 		TotalSubscribers: &totalSubs,
 		SubscribersInSeg: subsInSeg,
 	})
-}
-
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }
 
 func PostSegment(c *gin.Context) {
