@@ -87,6 +87,10 @@ const EditForm = ({
   );
 
   useEffect(() => {
+    if (segments.isError || segments.isLoading) {
+      return;
+    }
+
     dispatch({ type: "append", payload: segments.data.collection });
   }, [segments.data.collection]);
 
