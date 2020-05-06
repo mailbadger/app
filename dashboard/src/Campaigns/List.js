@@ -26,9 +26,10 @@ import {
   BarLoader,
 } from "../ui";
 import CreateCampaign from "./Create";
+import EditCampaign from "./Edit";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
-const Row = memo(({ campaign, setShowDelete, hasSesKeys }) => {
+const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
   const d = parseISO(campaign.created_at);
   const statusColors = {
     draft: "#CCCCCC",
@@ -66,7 +67,10 @@ const Row = memo(({ campaign, setShowDelete, hasSesKeys }) => {
             (function () {
               switch (option) {
                 case "Edit":
-                  history.push(`/dashboard/campaigns/${campaign.id}/edit`);
+                  setShowEdit({
+                    show: true,
+                    id: campaign.id,
+                  });
                   break;
                 case "Delete":
                   setShowDelete({
@@ -95,6 +99,7 @@ Row.propTypes = {
     created_at: PropTypes.string,
   }),
   setShowDelete: PropTypes.func,
+  setShowEdit: PropTypes.func,
   hasSesKeys: PropTypes.bool,
 };
 
@@ -130,26 +135,30 @@ const Header = memo(() => (
 
 Header.displayName = "Header";
 
-const CampaignsTable = memo(({ list, setShowDelete, hasSesKeys }) => (
-  <StyledTable>
-    <Header />
-    <TableBody>
-      {list.map((c) => (
-        <Row
-          campaign={c}
-          key={c.id}
-          setShowDelete={setShowDelete}
-          hasSesKeys={hasSesKeys}
-        />
-      ))}
-    </TableBody>
-  </StyledTable>
-));
+const CampaignsTable = memo(
+  ({ list, setShowDelete, hasSesKeys, setShowEdit }) => (
+    <StyledTable>
+      <Header />
+      <TableBody>
+        {list.map((c) => (
+          <Row
+            campaign={c}
+            key={c.id}
+            setShowDelete={setShowDelete}
+            setShowEdit={setShowEdit}
+            hasSesKeys={hasSesKeys}
+          />
+        ))}
+      </TableBody>
+    </StyledTable>
+  )
+);
 
 CampaignsTable.displayName = "CampaignsTable";
 CampaignsTable.propTypes = {
   list: PropTypes.array,
   setShowDelete: PropTypes.func,
+  setShowEdit: PropTypes.func,
   hasSesKeys: PropTypes.bool,
 };
 
@@ -190,9 +199,15 @@ DeleteForm.propTypes = {
 };
 
 const List = () => {
-  const [showDelete, setShowDelete] = useState({ show: false, name: "" });
+  const [showDelete, setShowDelete] = useState({
+    show: false,
+    name: "",
+    id: "",
+  });
+  const [showEdit, setShowEdit] = useState({ show: false, id: "" });
   const [showCreate, openCreateModal] = useState(false);
   const hideModal = () => setShowDelete({ show: false, name: "", id: "" });
+  const hideEditModal = () => setShowEdit({ show: false, id: "" });
   const { keys, isLoading: keysLoading, error: keysError } = useContext(
     SesKeysContext
   );
@@ -249,6 +264,7 @@ const List = () => {
         isLoading={state.isLoading}
         list={state.data.collection}
         setShowDelete={setShowDelete}
+        setShowEdit={setShowEdit}
         hasSesKeys={hasSesKeys}
       />
     );
@@ -286,6 +302,19 @@ const List = () => {
             <CreateCampaign
               callApi={callApi}
               hideModal={() => openCreateModal(false)}
+            />
+          }
+        />
+      )}
+      {showEdit.show && (
+        <Modal
+          title={`Edit campaign`}
+          hideModal={hideEditModal}
+          form={
+            <EditCampaign
+              id={showEdit.id}
+              callApi={callApi}
+              hideModal={hideEditModal}
             />
           }
         />
