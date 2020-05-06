@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Grid, Box, Heading, Text, Meter, Button, Paragraph } from "grommet";
+import { Grid, Box, Heading, Text, Meter, Button } from "grommet";
 import {
   Edit,
   Trash,

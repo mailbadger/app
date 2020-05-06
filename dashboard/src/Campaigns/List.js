@@ -105,7 +105,7 @@ Row.propTypes = {
 
 Row.displayName = "Row";
 
-const Header = memo(() => (
+const Header = () => (
   <TableHeader>
     <TableRow>
       <TableCell scope="col" border="bottom" size="xxsmall">
@@ -131,7 +131,7 @@ const Header = memo(() => (
       </TableCell>
     </TableRow>
   </TableHeader>
-));
+);
 
 Header.displayName = "Header";
 

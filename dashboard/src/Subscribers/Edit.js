@@ -92,7 +92,7 @@ const EditForm = ({
     }
 
     dispatch({ type: "append", payload: segments.data.collection });
-  }, [segments.data.collection]);
+  }, [segments]);
 
   const onMore = () => {
     if (segments.isError || segments.isLoading) {

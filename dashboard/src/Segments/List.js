@@ -22,7 +22,13 @@ import {
   TextInput,
 } from "grommet";
 import history from "../history";
-import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
+import {
+  StyledTable,
+  ButtonWithLoader,
+  PlaceholderTable,
+  Modal,
+  AnchorLink,
+} from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 import DeleteSegment from "./Delete";
 
@@ -32,7 +38,12 @@ const Row = ({ segment, setShowDelete }) => {
   return (
     <TableRow>
       <TableCell scope="row" size="xlarge">
-        <strong>{segment.name}</strong>
+        <AnchorLink
+          size="small"
+          fontWeight="bold"
+          to={`/dashboard/segments/${segment.id}`}
+          label={segment.name}
+        />
       </TableCell>
       <TableCell scope="row" size="xlarge">
         <strong>{segment.subscribers_in_segment}</strong>

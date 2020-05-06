@@ -8,27 +8,9 @@ import {
   Send,
   Template,
 } from "grommet-icons";
+import { useLocation } from "react-router-dom";
 import { Box, Button, Collapsible, Layer } from "grommet";
-import { NavLink, useLocation } from "react-router-dom";
 import { AnchorLink } from "./ui";
-
-const StyledNavLink = (props) => (
-  <NavLink
-    style={{
-      textDecoration: "none",
-      marginLeft: "10px",
-      color: "#AA9AD4",
-      textTransform: "uppercase",
-    }}
-    {...props}
-  >
-    {props.children}
-  </NavLink>
-);
-
-StyledNavLink.propTypes = {
-  children: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
-};
 
 const links = [
   {
@@ -70,7 +52,6 @@ const NavLinks = () => {
             <AnchorLink
               to={link.to}
               size="medium"
-              pad={{ horizontal: "medium", vertical: "medium" }}
               icon={link.icon}
               label={link.label}
               active={
