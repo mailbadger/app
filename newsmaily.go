@@ -36,8 +36,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/routes"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/routes"
+	"github.com/mailbadger/app/utils"
 	"github.com/sirupsen/logrus"
 )
 

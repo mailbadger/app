@@ -9,11 +9,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/news-maily/app/consumers"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/storage"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/consumers"
+	"github.com/mailbadger/app/emails"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/utils"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 )

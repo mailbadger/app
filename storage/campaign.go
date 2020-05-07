@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj

@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/logger"
+	"github.com/mailbadger/app/logger"
 	"github.com/sirupsen/logrus"
 )
 

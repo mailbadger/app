@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 func (db *store) CreateBounce(b *entities.Bounce) error {

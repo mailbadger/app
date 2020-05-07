@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 const key = "storage"

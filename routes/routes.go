@@ -17,9 +17,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	adapter "github.com/gwatts/gin-adapter"
-	"github.com/news-maily/app/actions"
-	"github.com/news-maily/app/routes/middleware"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/actions"
+	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/secure"
 )

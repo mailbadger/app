@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/logger"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/emails"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/storage"
 	sns "github.com/robbiet480/go.sns"
 	"github.com/sirupsen/logrus"
 )

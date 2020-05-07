@@ -3,7 +3,7 @@ package storage
 import (
 	"time"
 
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 // GetToken returns the one-time token by the given token string.

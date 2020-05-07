@@ -2,7 +2,7 @@ package storage
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 //CreateUser creates a new user

@@ -9,8 +9,8 @@ import (
 	"github.com/gin-contrib/sessions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -1,4 +1,4 @@
-module github.com/news-maily/app
+module github.com/mailbadger/app
 
 go 1.14
 

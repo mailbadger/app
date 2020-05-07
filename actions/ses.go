@@ -10,12 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/events"
-	"github.com/news-maily/app/logger"
-	"github.com/news-maily/app/routes/middleware"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/emails"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/events"
+	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/storage"
 )
 
 func GetSESKeys(c *gin.Context) {

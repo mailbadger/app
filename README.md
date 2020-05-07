@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/news-maily/app)](https://goreportcard.com/report/github.com/news-maily/app)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mailbadger/app)](https://goreportcard.com/report/github.com/mailbadger/app)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/news-maily/app)
 [![codecov](https://codecov.io/gh/news-maily/app/branch/master/graph/badge.svg)](https://codecov.io/gh/news-maily/app)
 

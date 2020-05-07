@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/queue"
+	"github.com/mailbadger/app/queue"
 	"github.com/sirupsen/logrus"
 )
 

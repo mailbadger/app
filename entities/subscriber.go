@@ -10,7 +10,7 @@ import (
 	"time"
 
 	valid "github.com/asaskevich/govalidator"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/utils"
 )
 
 // Subscriber represents the subscriber entity

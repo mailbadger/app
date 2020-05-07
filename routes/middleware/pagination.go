@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/storage"
 )
 
 // PaginateWithCursor is a middleware that populates the cursor pagination object and sets it to the context.

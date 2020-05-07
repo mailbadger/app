@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/news-maily/app/entities"
+import "github.com/mailbadger/app/entities"
 
 func (db *store) CreateSendBulkLog(l *entities.SendBulkLog) error {
 	return db.Create(l).Error
