@@ -1,7 +1,7 @@
 package main
 
 /*
-news-maily - Open-Source Newsletter Mail System
+mailbadger - Open-Source Newsletter Mail System
 
 The MIT License (MIT)
 

@@ -29,4 +29,4 @@ build_static:
 	cd dashboard; rm -rf build && yarn && yarn build
 
 image:
-	docker build -t news-maily/app:latest .
+	docker build -t mailbadger/app:latest .
