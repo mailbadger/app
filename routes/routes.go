@@ -214,11 +214,12 @@ func New() http.Handler {
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 		}
 
-		sesKeys := authorized.Group(("/ses-keys"))
+		ses := authorized.Group(("/ses"))
 		{
-			sesKeys.GET("", actions.GetSESKeys)
-			sesKeys.POST("", actions.PostSESKeys)
-			sesKeys.DELETE("", actions.DeleteSESKeys)
+			ses.GET("/keys", actions.GetSESKeys)
+			ses.POST("/keys", actions.PostSESKeys)
+			ses.DELETE("/keys", actions.DeleteSESKeys)
+			ses.GET("/quota", actions.GetSESQuota)
 		}
 	}
 

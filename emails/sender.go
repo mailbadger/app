@@ -14,6 +14,7 @@ type Sender interface {
 	DescribeConfigurationSet(input *ses.DescribeConfigurationSetInput) (*ses.DescribeConfigurationSetOutput, error)
 	CreateConfigurationSetEventDestination(input *ses.CreateConfigurationSetEventDestinationInput) (*ses.CreateConfigurationSetEventDestinationOutput, error)
 	DeleteConfigurationSet(input *ses.DeleteConfigurationSetInput) (*ses.DeleteConfigurationSetOutput, error)
+	GetSendQuota(input *ses.GetSendQuotaInput) (*ses.GetSendQuotaOutput, error)
 }
 
 type senderImpl struct {
