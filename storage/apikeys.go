@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 // GetAPIKeys fetches api keys by user id.

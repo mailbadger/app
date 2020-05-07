@@ -8,6 +8,7 @@ import {
   TextInput,
   Select,
   Heading,
+  Text,
 } from "grommet";
 import { Trash } from "grommet-icons";
 import { Formik, ErrorMessage } from "formik";
@@ -73,25 +74,81 @@ const Form = ({
 
 Form.propTypes = FormPropTypes;
 
-const SesKey = ({ sesKey, setShowDelete }) => (
-  <Box direction="column">
-    <Box direction="row">
-      <Box margin={{ right: "small" }}>
-        <strong>Region:</strong>
+const SesKey = ({ sesKey, setShowDelete }) => {
+  const [quota] = useApi({
+    url: "/api/ses/quota",
+  });
+
+  return (
+    <Box direction="column">
+      <Box direction="row">
+        <Text weight="bold" margin={{ right: "small" }}>
+          Region:
+        </Text>
+        <Text>{sesKey.region}</Text>
       </Box>
-      <Box>{sesKey.region}</Box>
+      <Box direction="row">
+        <Text alignSelf="center" weight="bold" margin={{ right: "small" }}>
+          Access key:
+        </Text>
+        <Text alignSelf="center" margin={{ right: "small" }}>
+          {sesKey.access_key}
+        </Text>
+        <Button
+          alignSelf="center"
+          hoverIndicator
+          plain
+          onClick={() => setShowDelete(true)}
+        >
+          <Box pad="small" direction="row" align="center" gap="xsmall">
+            <Trash />
+          </Box>
+        </Button>
+      </Box>
+      {!quota.isLoading && quota.data && (
+        <>
+          <Heading level="4" color="brand">
+            Sending Quota
+          </Heading>
+          <Box pad={{ right: "small" }}>
+            <Box direction="row">
+              <Text weight="bold" margin={{ right: "small" }}>
+                Send rate:
+              </Text>
+              <Text margin={{ left: "auto" }}>
+                {quota.data.max_send_rate} per sec
+              </Text>
+            </Box>
+            <Box direction="row">
+              <Text weight="bold" margin={{ right: "small" }}>
+                Daily quota:
+              </Text>
+              <Text margin={{ left: "auto" }}>
+                {quota.data.max_24_hour_send}
+              </Text>
+            </Box>
+            <Box direction="row">
+              <Text weight="bold" margin={{ right: "small" }}>
+                Sent in the last 24h:
+              </Text>
+              <Text margin={{ left: "auto" }}>
+                {quota.data.sent_last_24_hours}
+              </Text>
+            </Box>
+            <Box direction="row">
+              <Text weight="bold" margin={{ right: "small" }}>
+                Sends left:
+              </Text>
+              <Text margin={{ left: "auto" }}>
+                {quota.data.max_24_hour_send - quota.data.sent_last_24_hours}
+              </Text>
+            </Box>
+          </Box>
+        </>
+      )}
     </Box>
-    <Box direction="row">
-      <Box margin={{ right: "small" }}>
-        <strong>Access key:</strong>
-      </Box>
-      <Box margin={{ right: "small" }}>{sesKey.access_key}</Box>
-      <Box>
-        <Button plain icon={<Trash />} onClick={() => setShowDelete(true)} />
-      </Box>
-    </Box>
-  </Box>
-);
+  );
+};
 
 SesKey.propTypes = {
   setShowDelete: PropTypes.func,
@@ -102,7 +159,7 @@ SesKey.propTypes = {
 };
 
 const deleteKeys = async () => {
-  await axios.delete(`/api/ses-keys`);
+  await axios.delete(`/api/ses/keys`);
 };
 
 const DeleteLayer = ({ setShowDelete, callApi }) => {
@@ -128,7 +185,7 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
               onClick={async () => {
                 setSubmitting(true);
                 await deleteKeys();
-                await callApi({ url: "/api/ses-keys" });
+                await callApi({ url: "/api/ses/keys" });
                 setSubmitting(false);
                 hideModal();
               }}
@@ -148,14 +205,14 @@ DeleteLayer.propTypes = {
 const AddSesKeysForm = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [state, callApi] = useApi({
-    url: `/api/ses-keys`,
+    url: `/api/ses/keys`,
   });
   const { createNotification } = useContext(NotificationsContext);
   const [retries, setRetries] = useState(-1);
 
   useInterval(
     async () => {
-      await callApi({ url: `/api/ses-keys` });
+      await callApi({ url: `/api/ses/keys` });
       setRetries(retries - 1);
     },
     retries > 0 ? 1000 : null
@@ -165,7 +222,7 @@ const AddSesKeysForm = () => {
     const addKeys = async () => {
       try {
         await axios.post(
-          "/api/ses-keys",
+          "/api/ses/keys",
           qs.stringify({
             access_key: values.access_key,
             secret_key: values.secret_key,

@@ -10,12 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/emails"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/events"
-	"github.com/news-maily/app/logger"
-	"github.com/news-maily/app/routes/middleware"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/emails"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/events"
+	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/storage"
 )
 
 func GetSESKeys(c *gin.Context) {
@@ -251,4 +251,40 @@ func DeleteSESKeys(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func GetSESQuota(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	keys, err := storage.GetSesKeys(c, u.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "AWS Ses keys not set.",
+		})
+		return
+	}
+
+	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "SES keys are incorrect.",
+		})
+		return
+	}
+
+	res, err := sender.GetSendQuota(&ses.GetSendQuotaInput{})
+	if err != nil {
+		logger.From(c).WithError(err).Warn("Unable to fetch send quota.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to fetch send quota.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entities.SendQuota{
+		Max24HourSend:   *res.Max24HourSend,
+		MaxSendRate:     *res.MaxSendRate,
+		SentLast24Hours: *res.SentLast24Hours,
+	})
 }

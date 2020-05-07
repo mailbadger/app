@@ -8,7 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 	"github.com/stretchr/testify/assert"
 )
 

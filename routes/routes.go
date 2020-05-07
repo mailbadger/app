@@ -17,9 +17,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	adapter "github.com/gwatts/gin-adapter"
-	"github.com/news-maily/app/actions"
-	"github.com/news-maily/app/routes/middleware"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/actions"
+	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/secure"
 )
@@ -214,11 +214,12 @@ func New() http.Handler {
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 		}
 
-		sesKeys := authorized.Group(("/ses-keys"))
+		ses := authorized.Group(("/ses"))
 		{
-			sesKeys.GET("", actions.GetSESKeys)
-			sesKeys.POST("", actions.PostSESKeys)
-			sesKeys.DELETE("", actions.DeleteSESKeys)
+			ses.GET("/keys", actions.GetSESKeys)
+			ses.POST("/keys", actions.PostSESKeys)
+			ses.DELETE("/keys", actions.DeleteSESKeys)
+			ses.GET("/quota", actions.GetSESQuota)
 		}
 	}
 

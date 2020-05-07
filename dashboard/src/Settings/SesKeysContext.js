@@ -27,7 +27,7 @@ class SesKeysProvider extends Component {
     const callApi = async () => {
       try {
         this.setState({ isLoading: true, error: null });
-        const result = await axios.get("/api/ses-keys");
+        const result = await axios.get("/api/ses/keys");
         this.setState({
           error: null,
           isLoading: false,

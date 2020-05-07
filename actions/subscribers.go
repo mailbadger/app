@@ -10,10 +10,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/entities"
-	"github.com/news-maily/app/logger"
-	"github.com/news-maily/app/routes/middleware"
-	"github.com/news-maily/app/storage"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/storage"
 	"github.com/sirupsen/logrus"
 )
 

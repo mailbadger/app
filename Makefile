@@ -12,7 +12,7 @@ PACKAGES = $(shell go list ./... | grep -v /vendor/)
 gen: gen_migrations
 
 gen_migrations:
-	go generate github.com/news-maily/app/storage/migrations
+	go generate github.com/mailbadger/app/storage/migrations
 
 test: 
 	go test -cover $(PACKAGES)
@@ -29,4 +29,4 @@ build_static:
 	cd dashboard; rm -rf build && yarn && yarn build
 
 image:
-	docker build -t news-maily/app:latest .
+	docker build -t mailbadger/app:latest .

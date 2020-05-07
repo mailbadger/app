@@ -1,7 +1,7 @@
 package main
 
 /*
-news-maily - Open-Source Newsletter Mail System
+mailbadger - Open-Source Newsletter Mail System
 
 The MIT License (MIT)
 
@@ -36,8 +36,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/news-maily/app/routes"
-	"github.com/news-maily/app/utils"
+	"github.com/mailbadger/app/routes"
+	"github.com/mailbadger/app/utils"
 	"github.com/sirupsen/logrus"
 )
 

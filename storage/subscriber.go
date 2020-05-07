@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/news-maily/app/entities"
+	"github.com/mailbadger/app/entities"
 )
 
 // GetSubscribers fetches subscribers by user id, and populates the pagination obj
