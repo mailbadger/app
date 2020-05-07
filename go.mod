@@ -12,6 +12,7 @@ require (
 	github.com/gin-gonic/contrib v0.0.0-20190302003538-54ff787f7c73
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
+	github.com/go-playground/locales v0.13.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/packd v0.0.0-20181212173646-eca3b8fd6687 // indirect
 	github.com/gobuffalo/packr/v2 v2.0.0-rc.12 // indirect
