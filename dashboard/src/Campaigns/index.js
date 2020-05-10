@@ -3,14 +3,11 @@ import { Switch } from "react-router-dom";
 
 import ProtectedRoute from "../ProtectedRoute";
 import List from "./List";
-import { SesKeysProvider } from "../Settings/SesKeysContext";
 
-const Segments = () => (
+const Campaigns = () => (
   <Switch>
-    <SesKeysProvider>
-      <ProtectedRoute exact path="/dashboard/campaigns" component={List} />
-    </SesKeysProvider>
+    <ProtectedRoute exact path="/dashboard/campaigns" component={List} />
   </Switch>
 );
 
-export default Segments;
+export default Campaigns;

@@ -11,7 +11,6 @@ import {
   FormNextLink,
 } from "grommet-icons";
 import {
-  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -33,7 +32,7 @@ export const Row = ({ subscriber, actions }) => {
   const ua = parseISO(subscriber.updated_at);
   return (
     <TableRow>
-      <TableCell scope="row" size="xlarge">
+      <TableCell scope="row" size="medium">
         <strong>{subscriber.email}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
@@ -177,16 +176,7 @@ const List = () => {
   }
 
   return (
-    <Grid
-      rows={["fill", "fill"]}
-      columns={["small", "large", "xsmall"]}
-      gap="small"
-      margin="medium"
-      areas={[
-        ["nav", "nav", "nav"],
-        ["main", "main", "main"],
-      ]}
-    >
+    <>
       {showDelete.show && (
         <Modal
           title={`Delete subscriber ${showDelete.email} ?`}
@@ -283,7 +273,7 @@ const List = () => {
           </Box>
         ) : null}
       </Box>
-    </Grid>
+    </>
   );
 };
 

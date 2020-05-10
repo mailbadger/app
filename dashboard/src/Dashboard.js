@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { useContext, useState } from "react";
 import { Box, ResponsiveContext } from "grommet";
 
 import Notification from "./Notifications";
@@ -10,14 +10,36 @@ import Templates from "./Templates";
 import Segments from "./Segments";
 import Campaigns from "./Campaigns";
 import Settings from "./Settings";
+import { SesKeysProvider } from "./Settings/SesKeysContext";
 
 const Routes = React.memo(() => (
   <Box flex align="stretch" justify="start">
     <ProtectedRoute path="/dashboard/subscribers" component={Subscribers} />
     <ProtectedRoute path="/dashboard/segments" component={Segments} />
-    <ProtectedRoute path="/dashboard/templates" component={Templates} />
-    <ProtectedRoute path="/dashboard/campaigns" component={Campaigns} />
-    <ProtectedRoute path="/dashboard/settings" component={Settings} />
+    <ProtectedRoute
+      path="/dashboard/templates"
+      component={() => (
+        <SesKeysProvider>
+          <Templates />
+        </SesKeysProvider>
+      )}
+    />
+    <ProtectedRoute
+      path="/dashboard/campaigns"
+      component={() => (
+        <SesKeysProvider>
+          <Campaigns />
+        </SesKeysProvider>
+      )}
+    />
+    <ProtectedRoute
+      path="/dashboard/settings"
+      component={() => (
+        <SesKeysProvider>
+          <Settings />
+        </SesKeysProvider>
+      )}
+    />
   </Box>
 ));
 
@@ -25,30 +47,25 @@ Routes.displayName = "Routes";
 
 const Dashboard = () => {
   const [showSidebar, setSidebar] = useState(true);
+  const size = useContext(ResponsiveContext);
 
   return (
-    <ResponsiveContext.Consumer>
-      {(size) => (
-        <Fragment>
-          <Box
-            direction="row"
-            flex
-            animation="fadeIn"
-            overflow={{ horizontal: "hidden" }}
-          >
-            <Sidebar
-              showSidebar={showSidebar}
-              size={size}
-              closeSidebar={() => setSidebar(false)}
-            />
-            <NotificationsProvider>
-              <Routes />
-              <Notification />
-            </NotificationsProvider>
-          </Box>
-        </Fragment>
-      )}
-    </ResponsiveContext.Consumer>
+    <Box
+      direction="row"
+      flex
+      animation="fadeIn"
+      overflow={{ horizontal: "hidden" }}
+    >
+      <Sidebar
+        showSidebar={showSidebar}
+        size={size}
+        closeSidebar={() => setSidebar(false)}
+      />
+      <NotificationsProvider>
+        <Routes />
+        <Notification />
+      </NotificationsProvider>
+    </Box>
   );
 };
 
