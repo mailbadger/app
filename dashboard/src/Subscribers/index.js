@@ -3,6 +3,7 @@ import { Switch } from "react-router-dom";
 
 import ProtectedRoute from "../ProtectedRoute";
 import List, { Row, Header, SubscriberTable } from "./List";
+import Import from "./Import";
 import { ListGrid } from "../ui";
 
 const Subscribers = () => {
@@ -16,6 +17,11 @@ const Subscribers = () => {
             <List />
           </ListGrid>
         )}
+      />
+      <ProtectedRoute
+        exact
+        path="/dashboard/subscribers/import"
+        component={Import}
       />
     </Switch>
   );

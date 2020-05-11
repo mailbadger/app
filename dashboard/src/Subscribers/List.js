@@ -5,7 +5,7 @@ import {
   More,
   Add,
   UserAdd,
-  Upload,
+  Download,
   SubtractCircle,
   FormPreviousLink,
   FormNextLink,
@@ -21,6 +21,7 @@ import {
   Select,
 } from "grommet";
 
+import history from "../history";
 import { useApi } from "../hooks";
 import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
 import CreateSubscriber from "./Create";
@@ -130,13 +131,14 @@ const ActionButtons = () => (
       margin={{ right: "small" }}
       icon={<UserAdd size="20px" />}
       label="Import from file"
+      onClick={() => history.push("/dashboard/subscribers/import")}
     />
     <SecondaryButton
       margin={{ right: "small" }}
       icon={<SubtractCircle size="20px" />}
       label="Delete from file"
     />
-    <SecondaryButton icon={<Upload size="20px" />} label="Export" />
+    <SecondaryButton icon={<Download size="20px" />} label="Export" />
   </>
 );
 
