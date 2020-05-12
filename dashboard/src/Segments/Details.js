@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
-import { Grid, Box, Heading, Text, Meter, Button } from "grommet";
+import {
+  Grid,
+  Box,
+  Heading,
+  Text,
+  Meter,
+  Button,
+  ResponsiveContext,
+} from "grommet";
 import {
   Edit,
   Trash,
@@ -21,6 +29,43 @@ import DeleteSegment from "./Delete";
 import RemoveSubscriber from "./RemoveSubscriber";
 import history from "../history";
 import { Table, Header } from "../Subscribers";
+
+const ResponsiveGrid = React.memo(({ children }) => {
+  const size = useContext(ResponsiveContext);
+
+  let cols = ["small", "small", "large", "xsmall"];
+  let areas = [
+    [".", "title", "title", "title"],
+    [".", "info", "main", "main"],
+    [".", "info", "main", "main"],
+  ];
+
+  if (size === "medium") {
+    cols = ["264px", "600px", "xsmall"];
+    areas = [
+      ["title", "title", "title"],
+      ["info", "main", "main"],
+      ["info", "main", "main"],
+    ];
+  }
+
+  return (
+    <Grid
+      rows={["xsmall", "1fr", "1fr"]}
+      columns={cols}
+      margin="medium"
+      gap="small"
+      areas={areas}
+    >
+      {children}
+    </Grid>
+  );
+});
+
+ResponsiveGrid.displayName = "ResponsiveGrid";
+ResponsiveGrid.propTypes = {
+  children: PropTypes.element.isRequired,
+};
 
 const SubscribersInfoBox = React.memo(({ totalInSegment, total }) => (
   <>
@@ -127,17 +172,7 @@ const Details = ({ match }) => {
   }
 
   return (
-    <Grid
-      rows={["xsmall", "1fr", "1fr"]}
-      columns={["260px", "700px", "xsmall"]}
-      margin="medium"
-      gap="small"
-      areas={[
-        ["title", "title", "title"],
-        ["info", "main", "main"],
-        ["info", "main", "main"],
-      ]}
-    >
+    <ResponsiveGrid>
       {segment && (
         <>
           {showEdit && (
@@ -264,7 +299,7 @@ const Details = ({ match }) => {
           </Box>
         </>
       )}
-    </Grid>
+    </ResponsiveGrid>
   );
 };
 

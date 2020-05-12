@@ -9,7 +9,6 @@ import qs from "qs";
 
 import { useApi } from "../hooks";
 import {
-  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -314,16 +313,7 @@ const List = () => {
   }
 
   return (
-    <Grid
-      rows={["fill", "fill"]}
-      columns={["small", "large", "xsmall"]}
-      gap="small"
-      margin="medium"
-      areas={[
-        ["nav", "nav", "nav"],
-        ["main", "main", "main"],
-      ]}
-    >
+    <>
       {showDelete.show && (
         <Modal
           title={`Delete segment ${showDelete.name} ?`}
@@ -407,7 +397,7 @@ const List = () => {
           </Box>
         ) : null}
       </Box>
-    </Grid>
+    </>
   );
 };
 

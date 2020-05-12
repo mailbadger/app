@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField, Box, TextInput, Heading } from "grommet";
+import { FormField, Box, TextInput, Heading, ResponsiveContext } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
@@ -104,6 +104,12 @@ const CreateTemplateForm = () => {
   const [html, setHtml] = useState(initialHtml);
   const [success, setSuccess] = useState(false);
   const { createNotification } = useContext(NotificationsContext);
+  const size = useContext(ResponsiveContext);
+
+  let width = "100%";
+  if (size === "large") {
+    width = "60%";
+  }
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
@@ -148,17 +154,17 @@ const CreateTemplateForm = () => {
   }, [success]);
 
   return (
-    <Box
-      direction="column"
-      margin="medium"
-      background="#ffffff"
-      elevation="medium"
-      animation="fadeIn"
-    >
+    <Box direction="column" margin="medium" animation="fadeIn">
       <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
         <Heading level="2">Create Template</Heading>
       </Box>
-      <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
+      <Box
+        round
+        background="white"
+        pad="medium"
+        width={width}
+        alignSelf="start"
+      >
         <Formik
           onSubmit={handleSubmit}
           validationSchema={templateValidation}

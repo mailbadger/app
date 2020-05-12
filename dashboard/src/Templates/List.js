@@ -5,7 +5,6 @@ import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import {
-  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -148,7 +147,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={5} />;
+    table = <PlaceholderTable header={Header} numCols={4} numRows={5} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <TemplateTable
@@ -160,16 +159,7 @@ const List = () => {
   }
 
   return (
-    <Grid
-      rows={["fill", "fill"]}
-      columns={["small", "large", "xsmall"]}
-      gap="small"
-      margin="medium"
-      areas={[
-        ["nav", "nav", "nav"],
-        ["main", "main", "main"],
-      ]}
-    >
+    <>
       {showDelete.show && (
         <Modal
           title={`Delete template ${showDelete.name} ?`}
@@ -255,7 +245,7 @@ const List = () => {
           </Box>
         ) : null}
       </Box>
-    </Grid>
+    </>
   );
 };
 

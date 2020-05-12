@@ -3,12 +3,13 @@ package actions
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/jinzhu/gorm"
 
 	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
@@ -39,7 +40,7 @@ func PostAuthenticate(c *gin.Context) {
 
 	user, err := storage.GetActiveUserByUsername(c, username)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
+		if !gorm.IsRecordNotFoundError(err) {
 			logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
 		}
 
@@ -576,7 +577,7 @@ func PostLogout(c *gin.Context) {
 func completeCallback(c *gin.Context, email, source, host string) {
 	u, err := storage.GetUserByUsername(c, email)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
+		if !gorm.IsRecordNotFoundError(err) {
 			logger.From(c).WithError(err).Error("Social auth callback: unable to fetch user by username.")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return

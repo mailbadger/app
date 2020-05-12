@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"net/http"
@@ -9,10 +10,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/mailbadger/app/services/importer"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
+	awss3 "github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
 	"github.com/sirupsen/logrus"
 )
@@ -319,4 +324,69 @@ func PostUnsubscribe(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusPermanentRedirect, os.Getenv("APP_URL")+"/unsubscribe-success.html")
+}
+
+func ImportSubscribers(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	segments := &segmentsParam{}
+	err := c.Bind(segments)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid data",
+			"errors": map[string]string{
+				"segments": "The segments array is in an invalid format.",
+			},
+		})
+		return
+	}
+
+	var segs []entities.Segment
+	if len(segments.Ids) > 0 {
+		segs, err = storage.GetSegmentsByIDs(c, u.ID, segments.Ids)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Invalid data",
+				"errors": map[string]string{
+					"segments": "Unable to find the specified segments.",
+				},
+			})
+			return
+		}
+	}
+
+	filename := strings.TrimSpace(c.PostForm("filename"))
+	if filename == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "The filename must not be empty.",
+		})
+	}
+
+	client, err := awss3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
+		imp := importer.NewS3SubscribersImporter(client)
+		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
+		if err != nil {
+			logger.From(ctx).WithFields(logrus.Fields{
+				"filename": filename,
+				"segments": segs,
+			}).WithError(err).Warn("Unable to import subscribers.")
+		}
+	}(c, client, filename, u.ID, segs)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
+	})
 }

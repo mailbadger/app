@@ -135,7 +135,7 @@ func New() http.Handler {
 	handler.Static("/static", appDir+"/static")
 
 	//rate limiter
-	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt := tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
 	lmt.SetMessageContentType("application/json; charset=utf-8")
 	// Guest routes
@@ -212,6 +212,7 @@ func New() http.Handler {
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
+			subscribers.POST("/import", actions.ImportSubscribers)
 		}
 
 		ses := authorized.Group(("/ses"))
@@ -220,6 +221,11 @@ func New() http.Handler {
 			ses.POST("/keys", actions.PostSESKeys)
 			ses.DELETE("/keys", actions.DeleteSESKeys)
 			ses.GET("/quota", actions.GetSESQuota)
+		}
+
+		s3 := authorized.Group("/s3")
+		{
+			s3.POST("/sign", actions.GetSignedURL)
 		}
 	}
 

@@ -13,6 +13,7 @@ import SecondaryButton from "./SecondaryButton";
 import AnchorLink from "./AnchorLink";
 import StatusIcons from "./StatusIcons";
 import Notice from "./Notice";
+import ListGrid from "./ListGrid";
 
 export {
   Badge,
@@ -30,4 +31,5 @@ export {
   AnchorLink,
   StatusIcons,
   Notice,
+  ListGrid,
 };

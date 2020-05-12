@@ -5,7 +5,6 @@ import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import {
-  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -24,6 +23,7 @@ import {
   Badge,
   Notice,
   BarLoader,
+  ListGrid,
 } from "../ui";
 import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
@@ -229,7 +229,7 @@ const List = () => {
 
   if (keysLoading) {
     return (
-      <Box alignSelf="center" margin="20%">
+      <Box gridArea="nav" alignContent="center" margin="20%">
         <BarLoader size={15} />
       </Box>
     );
@@ -271,16 +271,7 @@ const List = () => {
   }
 
   return (
-    <Grid
-      rows={["fill", "fill"]}
-      columns={["small", "large", "xsmall"]}
-      gap="small"
-      margin="medium"
-      areas={[
-        ["nav", "nav", "nav"],
-        ["main", "main", "main"],
-      ]}
-    >
+    <ListGrid>
       {showDelete.show && (
         <Modal
           title={`Delete campaign ${showDelete.name} ?`}
@@ -389,7 +380,7 @@ const List = () => {
           </Box>
         ) : null}
       </Box>
-    </Grid>
+    </ListGrid>
   );
 };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import { Controlled as CodeMirror } from "react-codemirror2";
-import { FormField, Box, Heading } from "grommet";
+import { FormField, Box, Heading, ResponsiveContext } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
@@ -84,6 +84,12 @@ const EditTemplateForm = ({ match }) => {
   });
 
   const { createNotification } = useContext(NotificationsContext);
+  const size = useContext(ResponsiveContext);
+
+  let width = "100%";
+  if (size === "large") {
+    width = "60%";
+  }
 
   const handleSubmit = (id) => async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
@@ -147,19 +153,13 @@ const EditTemplateForm = ({ match }) => {
   }
 
   return (
-    <Box
-      direction="column"
-      margin="medium"
-      background="#ffffff"
-      elevation="medium"
-      animation="fadeIn"
-    >
+    <Box direction="column" margin="medium" animation="fadeIn">
       {!state.isLoading && state.data && (
         <>
           <Box pad={{ left: "medium" }} margin={{ bottom: "small" }}>
             <Heading level="2">Edit Template</Heading>
           </Box>
-          <Box pad={{ left: "medium", right: "medium", bottom: "medium" }} fill>
+          <Box background="white" pad="medium" width={width} alignSelf="start">
             <Formik
               onSubmit={handleSubmit(match.params.id)}
               validationSchema={templateValidation}

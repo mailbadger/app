@@ -5,13 +5,12 @@ import {
   More,
   Add,
   UserAdd,
-  Upload,
+  Download,
   SubtractCircle,
   FormPreviousLink,
   FormNextLink,
 } from "grommet-icons";
 import {
-  Grid,
   TableHeader,
   TableBody,
   TableRow,
@@ -22,6 +21,7 @@ import {
   Select,
 } from "grommet";
 
+import history from "../history";
 import { useApi } from "../hooks";
 import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
 import CreateSubscriber from "./Create";
@@ -33,7 +33,7 @@ export const Row = ({ subscriber, actions }) => {
   const ua = parseISO(subscriber.updated_at);
   return (
     <TableRow>
-      <TableCell scope="row" size="xlarge">
+      <TableCell scope="row" size="medium">
         <strong>{subscriber.email}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
@@ -131,13 +131,14 @@ const ActionButtons = () => (
       margin={{ right: "small" }}
       icon={<UserAdd size="20px" />}
       label="Import from file"
+      onClick={() => history.push("/dashboard/subscribers/import")}
     />
     <SecondaryButton
       margin={{ right: "small" }}
       icon={<SubtractCircle size="20px" />}
       label="Delete from file"
     />
-    <SecondaryButton icon={<Upload size="20px" />} label="Export" />
+    <SecondaryButton icon={<Download size="20px" />} label="Export" />
   </>
 );
 
@@ -165,7 +166,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
+    table = <PlaceholderTable header={Header} numCols={3} numRows={10} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <SubscriberTable
@@ -177,16 +178,7 @@ const List = () => {
   }
 
   return (
-    <Grid
-      rows={["fill", "fill"]}
-      columns={["small", "large", "xsmall"]}
-      gap="small"
-      margin="medium"
-      areas={[
-        ["nav", "nav", "nav"],
-        ["main", "main", "main"],
-      ]}
-    >
+    <>
       {showDelete.show && (
         <Modal
           title={`Delete subscriber ${showDelete.email} ?`}
@@ -283,7 +275,7 @@ const List = () => {
           </Box>
         ) : null}
       </Box>
-    </Grid>
+    </>
   );
 };
 
