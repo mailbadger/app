@@ -166,7 +166,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
+    table = <PlaceholderTable header={Header} numCols={3} numRows={10} />;
   } else if (state.data.collection.length > 0) {
     table = (
       <SubscriberTable

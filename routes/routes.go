@@ -212,6 +212,7 @@ func New() http.Handler {
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
+			subscribers.POST("/import", actions.ImportSubscribers)
 		}
 
 		ses := authorized.Group(("/ses"))
@@ -220,6 +221,11 @@ func New() http.Handler {
 			ses.POST("/keys", actions.PostSESKeys)
 			ses.DELETE("/keys", actions.DeleteSESKeys)
 			ses.GET("/quota", actions.GetSESQuota)
+		}
+
+		s3 := authorized.Group("/s3")
+		{
+			s3.POST("/sign", actions.GetSignedURL)
 		}
 	}
 

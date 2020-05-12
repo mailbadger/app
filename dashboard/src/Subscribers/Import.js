@@ -1,5 +1,5 @@
-import React, { useEffect, useContext } from "react";
-import { Box, Heading, Markdown } from "grommet";
+import React, { useState, useEffect, useContext, useReducer } from "react";
+import { Box, Heading, Markdown, Select, Text } from "grommet";
 import Uppy from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import { DragDrop, StatusBar } from "@uppy/react";
@@ -10,6 +10,7 @@ import "@uppy/drag-drop/dist/style.css";
 import "@uppy/status-bar/dist/style.css";
 
 import { mainInstance as axios } from "../axios";
+import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
 
 const Content = `
@@ -29,6 +30,62 @@ jane@example.com | Jane Doe | fizz | buzz | ...
 
 const ImportSubscribers = () => {
   const { createNotification } = useContext(NotificationsContext);
+  const [selected, setSelected] = useState([]);
+  const [segments, callApi] = useApi(
+    {
+      url: `/api/segments?per_page=40`,
+    },
+    {
+      collection: [],
+      links: {
+        next: null,
+      },
+    }
+  );
+
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case "append":
+        return [...state, ...action.payload];
+      default:
+        throw new Error("invalid action type.");
+    }
+  };
+
+  const [options, dispatch] = useReducer(reducer, []);
+
+  useEffect(() => {
+    if (segments.isError || segments.isLoading) {
+      return;
+    }
+
+    if (segments && segments.data) {
+      dispatch({ type: "append", payload: segments.data.collection });
+    }
+  }, [segments]);
+
+  const onMore = () => {
+    if (segments.isError || segments.isLoading) {
+      return;
+    }
+
+    let url = "";
+    if (segments && segments.data && segments.data.links) {
+      url = segments.data.links.next;
+    }
+
+    if (!url) {
+      return;
+    }
+
+    callApi({
+      url: url,
+    });
+  };
+
+  const onChange = ({ value: nextSelected }) => {
+    setSelected(nextSelected);
+  };
 
   const uppy = Uppy({
     restrictions: {
@@ -64,9 +121,13 @@ const ImportSubscribers = () => {
     try {
       const res = await axios.post(
         "/api/subscribers/import",
-        qs.stringify({
-          filename: file.name,
-        })
+        qs.stringify(
+          {
+            filename: file.name,
+            segments: selected.map((s) => s.id),
+          },
+          { arrayFormat: "brackets" }
+        )
       );
 
       createNotification(res.data.message, "status-ok");
@@ -95,6 +156,21 @@ const ImportSubscribers = () => {
       </Box>
       <Box round background="white" pad="medium" width="50%" alignSelf="start">
         <Markdown>{Content}</Markdown>
+        <Box margin={{ top: "medium" }}>
+          <Text margin={{ bottom: "small" }}>Add to segments (optional)</Text>
+          <Select
+            multiple
+            closeOnChange={false}
+            placeholder="select segments..."
+            value={selected}
+            labelKey="name"
+            valueKey="id"
+            options={options}
+            dropHeight="medium"
+            onMore={onMore}
+            onChange={onChange}
+          />
+        </Box>
         <Box margin={{ top: "large" }}>
           <DragDrop
             width="100%"
