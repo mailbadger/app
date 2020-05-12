@@ -36,7 +36,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	filename string,
 	userID int64,
 	segments []entities.Segment,
-) error {
+) (err error) {
 	res, err := i.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
@@ -44,7 +44,11 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	if err != nil {
 		return fmt.Errorf("importer: get object: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
 
 	reader := csv.NewReader(res.Body)
 	header, err := reader.Read()
