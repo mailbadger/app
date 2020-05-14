@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20180720115003-f9ffefc3facf
-	github.com/aws/aws-sdk-go v1.30.25
+	github.com/aws/aws-sdk-go v1.30.27
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -27,7 +27,6 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
-	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.5.1
