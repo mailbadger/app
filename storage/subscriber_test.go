@@ -43,6 +43,18 @@ func TestSubscriber(t *testing.T) {
 	err = store.CreateSubscriber(s)
 	assert.Nil(t, err)
 
+	s2 := &entities.Subscriber{
+		Name:        "foo 2",
+		Email:       "john+1@example.com",
+		UserID:      1,
+		MetaJSON:    []byte(`{"foo":"bar"}`),
+		Blacklisted: false,
+		Active:      true,
+	}
+
+	err = store.CreateSubscriber(s2)
+	assert.Nil(t, err)
+
 	//Test get subscriber
 	s, err = store.GetSubscriber(s.ID, 1)
 	assert.Nil(t, err)
@@ -107,9 +119,12 @@ func TestSubscriber(t *testing.T) {
 	//Test get total subs
 	total, err := store.GetTotalSubscribers(1)
 	assert.Nil(t, err)
-	assert.Equal(t, total, int64(1))
+	assert.Equal(t, total, int64(2))
 
 	//Test delete subscriber
+	err = store.DeleteSubscriberByEmail(s2.Email, 1)
+	assert.Nil(t, err)
+
 	err = store.DeleteSubscriber(1, 1)
 	assert.Nil(t, err)
 }

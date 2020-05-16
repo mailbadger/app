@@ -137,6 +137,7 @@ const ActionButtons = () => (
       margin={{ right: "small" }}
       icon={<SubtractCircle size="20px" />}
       label="Delete from file"
+      onClick={() => history.push("/dashboard/subscribers/bulk-delete")}
     />
     <SecondaryButton icon={<Download size="20px" />} label="Export" />
   </>

@@ -19,13 +19,20 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
+const ActionImport = "import"
+
 type SubscribersImporter interface {
-	ImportSubscribersFromFile(ctx context.Context, userID int64, segments []entities.Segment) error
+	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
 }
 
 type s3Importer struct {
 	client s3iface.S3API
 }
+
+var (
+	ErrInvalidColumnsNum = errors.New("importer: invalid number of columns")
+	ErrInvalidFormat     = errors.New("importer: csv file not formatted properly")
+)
 
 func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
 	return &s3Importer{client}
@@ -60,11 +67,11 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	}
 
 	if len(header) < 2 {
-		return errors.New("importer: invalid number of columns")
+		return ErrInvalidColumnsNum
 	}
 
 	if strings.ToLower(header[0]) != "email" || strings.ToLower(header[1]) != "name" {
-		return errors.New("importer: csv file not formatted properly")
+		return ErrInvalidFormat
 	}
 
 	for {
@@ -78,8 +85,8 @@ func (i *s3Importer) ImportSubscribersFromFile(
 		if len(line) < 2 {
 			continue
 		}
-		email := line[0]
-		name := line[1]
+		email := strings.TrimSpace(line[0])
+		name := strings.TrimSpace(line[1])
 
 		_, err = storage.GetSubscriberByEmail(ctx, email, userID)
 		if err == nil {

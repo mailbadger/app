@@ -10,14 +10,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/mailbadger/app/services/importer"
+	"github.com/mailbadger/app/services/subscribers/bulkremover"
 
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
 	"github.com/sirupsen/logrus"
 )
@@ -388,5 +389,43 @@ func ImportSubscribers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
+	})
+}
+
+func BulkRemoveSubscribers(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	filename := strings.TrimSpace(c.PostForm("filename"))
+	if filename == "" {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "The filename must not be empty.",
+		})
+	}
+
+	client, err := awss3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Remove subs: unable to create s3 client.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
+		svc := bulkremover.NewS3SubscribersBulkRemover(client)
+		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
+		if err != nil {
+			logger.From(ctx).WithFields(logrus.Fields{
+				"filename": filename,
+			}).WithError(err).Warn("Unable to remove subscribers.")
+		}
+	}(c, client, filename, u.ID)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "We will begin processing the file shortly.",
 	})
 }

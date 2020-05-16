@@ -188,3 +188,30 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 
 	return tx.Commit().Error
 }
+
+// DeleteSubscriberByEmail deletes an existing subscriber by email from the database along with all his metadata.
+func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
+	s, err := db.GetSubscriberByEmail(email, userID)
+	if err != nil {
+		return err
+	}
+
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}

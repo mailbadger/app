@@ -59,6 +59,7 @@ type Storage interface {
 	UpdateSubscriber(*entities.Subscriber) error
 	DeactivateSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
+	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 
@@ -286,6 +287,11 @@ func DeactivateSubscriber(c context.Context, userID int64, email string) error {
 // DeleteSubscriber deletes a Subscriber entity by the given id.
 func DeleteSubscriber(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteSubscriber(id, userID)
+}
+
+// DeleteSubscriberByEmail deletes a Subscriber entity by the given email.
+func DeleteSubscriberByEmail(c context.Context, email string, userID int64) error {
+	return GetFromContext(c).DeleteSubscriberByEmail(email, userID)
 }
 
 // GetTotalSubscribers fetches the total count by user id.
