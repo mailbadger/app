@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,9 +18,16 @@ import (
 func GetSignedURL(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	filename := c.PostForm("filename")
-	contentType := c.PostForm("contentType")
-	action := c.PostForm("action")
+	filename := strings.TrimSpace(c.PostForm("filename"))
+	contentType := strings.TrimSpace(c.PostForm("contentType"))
+	action := strings.ToLower(strings.TrimSpace(c.PostForm("action")))
+
+	if action != "import" && action != "export" && action != "remove" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to sign url. Invalid action.",
+		})
+		return
+	}
 
 	client, err := s3.NewS3Client(
 		os.Getenv("AWS_S3_ACCESS_KEY"),
