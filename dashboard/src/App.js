@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Router, Route, Switch } from "react-router-dom";
 import { ErrorBoundary } from "react-error-boundary";
-import { Box, Grommet, Heading, Paragraph, Text } from "grommet";
+import { Box, Grommet, Heading, Paragraph } from "grommet";
 import { grommet } from "grommet/themes";
 import { deepMerge } from "grommet/utils";
 

@@ -48,7 +48,7 @@ Routes.displayName = "Routes";
 const Dashboard = () => {
   const [showSidebar, setSidebar] = useState(true);
   const size = useContext(ResponsiveContext);
-  throw new Error("Boom");
+
   return (
     <Box
       direction="row"
