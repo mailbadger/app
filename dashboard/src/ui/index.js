@@ -14,6 +14,7 @@ import AnchorLink from "./AnchorLink";
 import StatusIcons from "./StatusIcons";
 import Notice from "./Notice";
 import ListGrid from "./ListGrid";
+import Emoji from "./Emoji";
 
 export {
   Badge,
@@ -32,4 +33,5 @@ export {
   StatusIcons,
   Notice,
   ListGrid,
+  Emoji,
 };

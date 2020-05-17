@@ -1,9 +1,12 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Router, Route, Switch } from "react-router-dom";
-import { Box, Grommet } from "grommet";
+import { ErrorBoundary } from "react-error-boundary";
+import { Box, Grommet, Heading, Paragraph, Text } from "grommet";
 import { grommet } from "grommet/themes";
 import { deepMerge } from "grommet/utils";
 
+import { Emoji } from "./ui";
 import { AuthProvider } from "./Auth/context";
 import Landing from "./Landing";
 import Dashboard from "./Dashboard";
@@ -63,6 +66,36 @@ const theme = deepMerge(grommet, {
   },
 });
 
+const ErrorFallback = ({ error }) => (
+  <Box align="center" margin={{ top: "10%" }}>
+    <Heading level="2">
+      Sorry, something went wrong <Emoji label="frowny-face" symbol="😣" />
+    </Heading>
+    <Box align="start">
+      <Paragraph>
+        You can open up an issue&nbsp;
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://github.com/mailbadger/app/issues/new?assignees=&labels=&template=bug_report.md&title="
+        >
+          here.
+        </a>
+        &nbsp;In the meantime, try and reload the page.
+      </Paragraph>
+      <Paragraph>
+        <strong>Error:</strong> {error.message}
+      </Paragraph>
+    </Box>
+  </Box>
+);
+
+ErrorFallback.propTypes = {
+  error: PropTypes.shape({
+    message: PropTypes.string,
+  }),
+};
+
 class App extends Component {
   render() {
     return (
@@ -70,12 +103,14 @@ class App extends Component {
         <Router history={history}>
           <AuthProvider>
             <Box flex background="background">
-              <Switch>
-                <ProtectedRoute path="/dashboard" component={Dashboard} />
-                <Route path="/logout" component={Logout} />
-                <Route path="/verify-email/:token" component={VerifyEmail} />
-                <Route path="/" component={Landing} />
-              </Switch>
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <Switch>
+                  <ProtectedRoute path="/dashboard" component={Dashboard} />
+                  <Route path="/logout" component={Logout} />
+                  <Route path="/verify-email/:token" component={VerifyEmail} />
+                  <Route path="/" component={Landing} />
+                </Switch>
+              </ErrorBoundary>
             </Box>
           </AuthProvider>
         </Router>
