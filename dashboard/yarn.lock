@@ -9907,10 +9907,10 @@ react-dom@^16.13.1:
     prop-types "^15.6.2"
     scheduler "^0.19.1"
 
-react-error-boundary@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-2.2.2.tgz#ed2c2f0770edb3223d71ffc18ac29546ebae903b"
-  integrity sha512-P6gKUS1eTTYIWJKyjhIH5MZzgXbI5lrAL0BkIMpHZaaen+ZPaEfZrdnnXILUqDFzI+WwIPDesyzQvhRbxuvjcg==
+react-error-boundary@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-2.2.3.tgz#34c8238012d3b4148cec47a1b3cec669d5206578"
+  integrity sha512-Jiaiu6CJ4ho3sMCVI7gg+O/JB5vlFFZGwlnpFBTCOSyheYRTzz+FhBMo7tfnCTB/ZR0LaMzAPGbZGrEzAOd0eg==
   dependencies:
     "@babel/runtime" "^7.9.6"
 
