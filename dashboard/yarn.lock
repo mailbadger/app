@@ -2262,13 +2262,14 @@
   dependencies:
     namespace-emitter "^2.0.1"
 
-"@uppy/core@^1.10.4":
-  version "1.10.4"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.10.4.tgz#d2899445c7681a2d9e211a0756214c0969f866ae"
-  integrity sha512-mORSXL4JyXHGo98u6u0sMzv3wtdI5jjHsqyThQAXx3LvctWE0EBrxE7vJqrXue2z/m9lovsZVhuzP2L7Qkuebg==
+"@uppy/core@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.11.0.tgz#14340a19f15d4ddde03dac102851ed97cb04dc77"
+  integrity sha512-m65bX2M7iYBMEp3QYCetYVVOS1XpTg2CSW+9gF84kf9MKyHuIYmMNDPZ0Z6L7TfbtM+9e6kBZvzqeRlkLUhhYw==
   dependencies:
+    "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/store-default" "^1.2.1"
-    "@uppy/utils" "^2.4.4"
+    "@uppy/utils" "^3.1.0"
     cuid "^2.1.1"
     lodash.throttle "^4.1.1"
     mime-match "^1.0.2"
