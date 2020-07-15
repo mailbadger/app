@@ -10,7 +10,7 @@
     "codemirror": "^5.53.2",
     "date-fns": "^2.14.0",
     "es6-promise": "^4.2.8",
-    "formik": "^2.1.4",
+    "formik": "^2.1.5",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
     "history": "^4.10.1",
