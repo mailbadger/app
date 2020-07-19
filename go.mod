@@ -29,7 +29,7 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rubenv/sql-migrate v0.0.0-20191116071645-ce2300be8dc8
 	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/unrolled/secure v1.0.8
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
