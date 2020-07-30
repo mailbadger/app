@@ -2264,13 +2264,14 @@
     "@uppy/utils" "^3.2.0"
     namespace-emitter "^2.0.1"
 
-"@uppy/core@^1.10.4":
-  version "1.10.4"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.10.4.tgz#d2899445c7681a2d9e211a0756214c0969f866ae"
-  integrity sha512-mORSXL4JyXHGo98u6u0sMzv3wtdI5jjHsqyThQAXx3LvctWE0EBrxE7vJqrXue2z/m9lovsZVhuzP2L7Qkuebg==
+"@uppy/core@^1.12.1":
+  version "1.12.1"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.12.1.tgz#e212b5a4fde8d91782a6be044f011d3e16242fbc"
+  integrity sha512-IQVGn4eY8YlbLQPTFB7CDkRv4HKsvZC7hmM8nIG8fk9Ldeo11zLeLpwrqdDZyiE4XSZzMTAAjJ8+ihp1+ZP+Rw==
   dependencies:
-    "@uppy/store-default" "^1.2.1"
-    "@uppy/utils" "^2.4.4"
+    "@transloadit/prettier-bytes" "0.0.7"
+    "@uppy/store-default" "^1.2.2"
+    "@uppy/utils" "^3.2.1"
     cuid "^2.1.1"
     lodash.throttle "^4.1.1"
     mime-match "^1.0.2"
@@ -2354,10 +2355,10 @@
     lodash.throttle "^4.1.1"
     preact "8.2.9"
 
-"@uppy/store-default@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-1.2.1.tgz#4f6f1815292388bc2fd6da2655a3ae1133598d5c"
-  integrity sha512-B7iKa9CMLTPgSu1lHQX+Z82NgxoBrzWfZg9WbZnvoJRHnoiwu8A3EFXPLq0OEslvJndBD4xPgUms0BPt4WbnWw==
+"@uppy/store-default@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-1.2.2.tgz#b16595bda3b98870c01c84e4cccee63f3164b83b"
+  integrity sha512-sxH7e/BVFtuRC+H3NBjcg5yPQdKbS98GqizqPtQD0GTJMO1Afnm2jdp2rq23PSLIVpWbRvoIwGqPKaVXAJ7JJQ==
 
 "@uppy/thumbnail-generator@^1.6.2":
   version "1.6.2"
@@ -2368,17 +2369,10 @@
     exifr "^5.0.2"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^2.4.4":
-  version "2.4.4"
-  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-2.4.4.tgz#29520cdfaf926af58828a9c141cb7b0fa43f8bc4"
-  integrity sha512-7A0uwK5Rf8XcKqlpNUZ5L5LmkHT5c0/UWjDJGwmzeCxp2lECgzsMC+4vgA6kT4sFzPFbLtUtxHi7ecFwow3NQQ==
-  dependencies:
-    lodash.throttle "^4.1.1"
-
-"@uppy/utils@^3.1.0", "@uppy/utils@^3.2.0":
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.0.tgz#13e90c886381b31038c8fd2bb901dc1006a35272"
-  integrity sha512-Ta+7mKoq6lW6JIesE4YJIeDRv0AxFKPEMJI4SoIW88/9D1hGTsx+G7SdVICBi9I3ttEDBW+WDjmN2BA/9ZaTjg==
+"@uppy/utils@^3.1.0", "@uppy/utils@^3.2.0", "@uppy/utils@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.1.tgz#7c907c2e3bdbd09b230b6eed4a8707848c32ea04"
+  integrity sha512-7epyNA7gfPz+xdjhsiyK4XZEbR3sKuomGL/9fqRqTWZ8izWi53uUhRHa7x1utfQ0b+2wqAJy0Wc7fZIWt7Vsbw==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     lodash.throttle "^4.1.1"
