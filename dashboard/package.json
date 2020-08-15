@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "@uppy/aws-s3": "^1.6.9",
-    "@uppy/core": "^1.12.2",
-    "@uppy/react": "^1.8.1",
+    "@uppy/core": "^1.13.0",
+    "@uppy/react": "^1.10.4",
     "axios": "^0.19.2",
     "codemirror": "^5.53.2",
     "date-fns": "^2.15.0",
@@ -26,7 +26,7 @@
     "react-scripts": "3.4.1",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.2.0",
-    "yup": "^0.29.1"
+    "yup": "^0.29.3"
   },
   "scripts": {
     "start": "react-scripts start",
