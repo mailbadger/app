@@ -2244,24 +2244,24 @@
     semver "^6.3.0"
     tsutils "^3.17.1"
 
-"@uppy/aws-s3@^1.6.7":
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/@uppy/aws-s3/-/aws-s3-1.6.7.tgz#be1b566bc9246cf21d425410b6e8ce8dca4af497"
-  integrity sha512-c2hCKrXHi/7AI8KTYsrDLHNRTrZx8ksx8dzcIWjaKOdZ01FzzaKqp3WT1VABpcXuTenhSHog0FlQHffNKWIpig==
+"@uppy/aws-s3@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@uppy/aws-s3/-/aws-s3-1.6.9.tgz#3e8284714102e008a66fceb134b19542c08b3395"
+  integrity sha512-IC+JBjlAtQftN4PSc4oF7arKcz+Ac1MqEr1KUYJe4Btfs0GvibRqg43TIJ0o388PcWHp30V8y/9iHDuXVOg9Eg==
   dependencies:
-    "@uppy/companion-client" "^1.5.1"
-    "@uppy/utils" "^3.2.0"
-    "@uppy/xhr-upload" "^1.6.1"
+    "@uppy/companion-client" "^1.5.3"
+    "@uppy/utils" "^3.2.2"
+    "@uppy/xhr-upload" "^1.6.3"
     cuid "^2.1.1"
     qs-stringify "^1.1.0"
     url-parse "^1.4.7"
 
-"@uppy/companion-client@^1.5.1":
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/@uppy/companion-client/-/companion-client-1.5.1.tgz#88a9b55f8c813eac169c6d1c196d7d2d10985f89"
-  integrity sha512-dAt8CnuWmNRJKIoUsRbk4kjpe5tcsPaZfa0mmdd9TPUp5z548Ni895dkBzWhLmV/JSkRViJ7NNxtWXuyxBeEqQ==
+"@uppy/companion-client@^1.5.3":
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/@uppy/companion-client/-/companion-client-1.5.3.tgz#bae47802494d3d91aa14f2bc88680cabba5edf41"
+  integrity sha512-VN1JssHZiOjleJcoTyubTvGua3R6P9ENkqKlCt9dPKabGn9diNQ4EZebZlAvUD5hz+zBuzvNyAwgC7xbqZlyMw==
   dependencies:
-    "@uppy/utils" "^3.2.0"
+    "@uppy/utils" "^3.2.2"
     namespace-emitter "^2.0.1"
 
 "@uppy/core@^1.13.0":
@@ -2377,13 +2377,13 @@
     abortcontroller-polyfill "^1.4.0"
     lodash.throttle "^4.1.1"
 
-"@uppy/xhr-upload@^1.6.1":
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/@uppy/xhr-upload/-/xhr-upload-1.6.1.tgz#34b75a3ba4f50e83ecf790832bf7d30931995e3a"
-  integrity sha512-47+Unbp5uX6lQsPrq3ho9vaTFFyEHj7r+ikX40K1Uzl7Vt87EY3gZQdfdaZIfpUTqwsAyUYOKJADmgO/TVqU8A==
+"@uppy/xhr-upload@^1.6.3":
+  version "1.6.3"
+  resolved "https://registry.yarnpkg.com/@uppy/xhr-upload/-/xhr-upload-1.6.3.tgz#0d6a2a33b4706638c3f0a7f1c4aaa19a16e6ded3"
+  integrity sha512-IgR8FiwWOoFgh6IDNS+dDgU1dFVYCq0MJ70wikaOwYLfpziWFx+QJn41vfA7Q0+S4pMrIvnGMkqY4Qc8RLCEDQ==
   dependencies:
-    "@uppy/companion-client" "^1.5.1"
-    "@uppy/utils" "^3.2.0"
+    "@uppy/companion-client" "^1.5.3"
+    "@uppy/utils" "^3.2.2"
     cuid "^2.1.1"
 
 "@webassemblyjs/ast@1.8.5":
