@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@uppy/aws-s3": "^1.6.7",
-    "@uppy/core": "^1.10.4",
-    "@uppy/react": "^1.8.1",
+    "@uppy/aws-s3": "^1.6.9",
+    "@uppy/core": "^1.13.0",
+    "@uppy/react": "^1.10.4",
     "axios": "^0.19.2",
     "codemirror": "^5.53.2",
-    "date-fns": "^2.14.0",
+    "date-fns": "^2.15.0",
     "es6-promise": "^4.2.8",
     "formik": "^2.1.5",
     "grommet": "^2.10.0",
@@ -20,13 +20,13 @@
     "react-codemirror2": "^7.2.1",
     "react-content-loader": "^5.0.4",
     "react-dom": "^16.13.1",
-    "react-error-boundary": "^2.2.3",
+    "react-error-boundary": "^2.3.1",
     "react-google-recaptcha": "^2.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.2.0",
-    "yup": "^0.29.1"
+    "yup": "^0.29.3"
   },
   "scripts": {
     "start": "react-scripts start",
