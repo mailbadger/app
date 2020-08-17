@@ -135,7 +135,7 @@ const CreateForm = ({
           <FieldArray
             name="metadata"
             render={(arrayHelpers) => (
-              <Box flex={true} overflow="auto" style={{ maxHeight: "200px" }}>
+              <Box>
                 <Button
                   margin={{ top: "small", bottom: "small" }}
                   alignSelf="start"
@@ -147,42 +147,44 @@ const CreateForm = ({
                     <Add />
                   </Box>
                 </Button>
-                {values.metadata && values.metadata.length > 0
-                  ? values.metadata.map((m, i) => (
-                      <Box key={i} direction="row" style={{ flexShrink: 0 }}>
-                        <FormField htmlFor={`metadata[${i}].key`} label="Key">
-                          <TextInput
-                            name={`metadata[${i}].key`}
-                            onChange={handleChange}
-                            value={m.key}
-                          />
-                          <ErrorMessage name={`metadata[${i}].key`} />
-                        </FormField>
-                        <FormField
-                          margin={{ left: "small" }}
-                          htmlFor={`metadata[${i}].val`}
-                          label="Value"
-                        >
-                          <TextInput
-                            name={`metadata[${i}].val`}
-                            onChange={handleChange}
-                            value={m.val}
-                          />
-                          <ErrorMessage name={`metadata[${i}].val`} />
-                        </FormField>
-                        <Button
-                          margin={{ left: "small" }}
-                          alignSelf="end"
-                          hoverIndicator="light-1"
-                          onClick={() => arrayHelpers.remove(i)}
-                        >
-                          <Box pad="small" direction="row" align="center">
-                            <Trash />
-                          </Box>
-                        </Button>
-                      </Box>
-                    ))
-                  : null}
+                <Box flex={true} overflow="auto" style={{ maxHeight: "200px" }}>
+                  {values.metadata && values.metadata.length > 0
+                    ? values.metadata.map((m, i) => (
+                        <Box key={i} direction="row" style={{ flexShrink: 0 }}>
+                          <FormField htmlFor={`metadata[${i}].key`} label="Key">
+                            <TextInput
+                              name={`metadata[${i}].key`}
+                              onChange={handleChange}
+                              value={m.key}
+                            />
+                            <ErrorMessage name={`metadata[${i}].key`} />
+                          </FormField>
+                          <FormField
+                            margin={{ left: "small" }}
+                            htmlFor={`metadata[${i}].val`}
+                            label="Value"
+                          >
+                            <TextInput
+                              name={`metadata[${i}].val`}
+                              onChange={handleChange}
+                              value={m.val}
+                            />
+                            <ErrorMessage name={`metadata[${i}].val`} />
+                          </FormField>
+                          <Button
+                            margin={{ left: "small" }}
+                            alignSelf="end"
+                            hoverIndicator="light-1"
+                            onClick={() => arrayHelpers.remove(i)}
+                          >
+                            <Box pad="small" direction="row" align="center">
+                              <Trash />
+                            </Box>
+                          </Button>
+                        </Box>
+                      ))
+                    : null}
+                </Box>
               </Box>
             )}
           />

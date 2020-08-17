@@ -24,6 +24,7 @@ import {
   Notice,
   BarLoader,
   ListGrid,
+  AnchorLink,
 } from "../ui";
 import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
@@ -46,7 +47,12 @@ const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
   return (
     <TableRow>
       <TableCell scope="row" size="large">
-        <strong>{campaign.name}</strong>
+        <AnchorLink
+          size="small"
+          fontWeight="bold"
+          to={`/dashboard/campaigns/send/${campaign.id}`}
+          label={campaign.name}
+        />
       </TableCell>
       <TableCell scope="row" size="large">
         <Badge color={statusColors[campaign.status]}>{campaign.status}</Badge>
@@ -272,114 +278,118 @@ const List = () => {
 
   return (
     <ListGrid>
-      {showDelete.show && (
-        <Modal
-          title={`Delete campaign ${showDelete.name} ?`}
-          hideModal={hideModal}
-          form={
-            <DeleteForm
-              id={showDelete.id}
-              callApi={callApi}
-              hideModal={hideModal}
-            />
-          }
-        />
-      )}
-      {showCreate && (
-        <Modal
-          title={`Create campaign`}
-          hideModal={() => openCreateModal(false)}
-          form={
-            <CreateCampaign
-              callApi={callApi}
-              hideModal={() => openCreateModal(false)}
-            />
-          }
-        />
-      )}
-      {showEdit.show && (
-        <Modal
-          title={`Edit campaign`}
-          hideModal={hideEditModal}
-          form={
-            <EditCampaign
-              id={showEdit.id}
-              callApi={callApi}
-              hideModal={hideEditModal}
-            />
-          }
-        />
-      )}
-      <Box gridArea="nav" direction="row">
-        <Box alignSelf="center" margin={{ right: "small" }}>
-          <Heading level="2">Campaigns</Heading>
-        </Box>
-        <Box alignSelf="center">
-          <Button
-            primary
-            color="status-ok"
-            label="Create new"
-            icon={<Add />}
-            reverse
-            onClick={() => {
-              if (hasSesKeys) {
-                openCreateModal(true);
-              }
-            }}
-            disabled={!hasSesKeys}
+      <>
+        {showDelete.show && (
+          <Modal
+            title={`Delete campaign ${showDelete.name} ?`}
+            hideModal={hideModal}
+            form={
+              <DeleteForm
+                id={showDelete.id}
+                callApi={callApi}
+                hideModal={hideModal}
+              />
+            }
           />
-        </Box>
-        {!hasSesKeys && hasCampaigns && (
-          <Box margin={{ left: "auto" }} alignSelf="center">
-            <Notice
-              message="Set your SES keys in order to send, create or edit campaigns."
-              status="status-warning"
+        )}
+        {showCreate && (
+          <Modal
+            title={`Create campaign`}
+            hideModal={() => openCreateModal(false)}
+            form={
+              <CreateCampaign
+                callApi={callApi}
+                hideModal={() => openCreateModal(false)}
+              />
+            }
+          />
+        )}
+        {showEdit.show && (
+          <Modal
+            title={`Edit campaign`}
+            hideModal={hideEditModal}
+            form={
+              <EditCampaign
+                id={showEdit.id}
+                callApi={callApi}
+                hideModal={hideEditModal}
+              />
+            }
+          />
+        )}
+        <Box gridArea="nav" direction="row">
+          <Box alignSelf="center" margin={{ right: "small" }}>
+            <Heading level="2">Campaigns</Heading>
+          </Box>
+          <Box alignSelf="center">
+            <Button
+              primary
+              color="status-ok"
+              label="Create new"
+              icon={<Add />}
+              reverse
+              onClick={() => {
+                if (hasSesKeys) {
+                  openCreateModal(true);
+                }
+              }}
+              disabled={!hasSesKeys}
             />
           </Box>
-        )}
-      </Box>
-      <Box gridArea="main">
-        <Box animation="fadeIn">
-          {table}
-
-          {!state.isLoading &&
-            !state.isError &&
-            state.data.collection.length === 0 && (
-              <Box align="center" margin={{ top: "large" }}>
-                <Heading level="2">Create your first campaign.</Heading>
-              </Box>
-            )}
+          {!hasSesKeys && hasCampaigns && (
+            <Box margin={{ left: "auto" }} alignSelf="center">
+              <Notice
+                message="Set your SES keys in order to send, create or edit campaigns."
+                status="status-warning"
+                color="white"
+                borderColor="status-warning"
+              />
+            </Box>
+          )}
         </Box>
-        {hasCampaigns ? (
-          <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-            <Box margin={{ right: "small" }}>
-              <Button
-                icon={<FormPreviousLink />}
-                label="Previous"
-                disabled={state.data.links.previous === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.previous,
-                  });
-                }}
-              />
-            </Box>
-            <Box>
-              <Button
-                icon={<FormNextLink />}
-                reverse
-                label="Next"
-                disabled={state.data.links.next === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.next,
-                  });
-                }}
-              />
-            </Box>
+        <Box gridArea="main">
+          <Box animation="fadeIn">
+            {table}
+
+            {!state.isLoading &&
+              !state.isError &&
+              state.data.collection.length === 0 && (
+                <Box align="center" margin={{ top: "large" }}>
+                  <Heading level="2">Create your first campaign.</Heading>
+                </Box>
+              )}
           </Box>
-        ) : null}
-      </Box>
+          {hasCampaigns ? (
+            <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
+              <Box margin={{ right: "small" }}>
+                <Button
+                  icon={<FormPreviousLink />}
+                  label="Previous"
+                  disabled={state.data.links.previous === null}
+                  onClick={() => {
+                    callApi({
+                      url: state.data.links.previous,
+                    });
+                  }}
+                />
+              </Box>
+              <Box>
+                <Button
+                  icon={<FormNextLink />}
+                  reverse
+                  label="Next"
+                  disabled={state.data.links.next === null}
+                  onClick={() => {
+                    callApi({
+                      url: state.data.links.next,
+                    });
+                  }}
+                />
+              </Box>
+            </Box>
+          ) : null}
+        </Box>
+      </>
     </ListGrid>
   );
 };
