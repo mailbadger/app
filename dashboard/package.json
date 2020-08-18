@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@uppy/aws-s3": "^1.6.9",
-    "@uppy/core": "^1.13.0",
+    "@uppy/core": "^1.13.1",
     "@uppy/react": "^1.10.4",
     "axios": "^0.19.2",
     "codemirror": "^5.56.0",
