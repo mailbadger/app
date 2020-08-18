@@ -2269,10 +2269,10 @@
     "@uppy/utils" "^3.2.2"
     namespace-emitter "^2.0.1"
 
-"@uppy/core@^1.13.0":
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.13.0.tgz#1d9161d6072817659077b5a26a9204fa8511732f"
-  integrity sha512-bSrjAwXSGbqNYFWeTzKMuysdXwVUSXjLHl6/RbVQBPVOzETzkObNtXWK02pldQf0HxVpeQryzmA7Ws6Z8ow3tA==
+"@uppy/core@^1.13.1":
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.13.1.tgz#fcec53cac4b4e89c56beeade125b27df6a257c63"
+  integrity sha512-HaWHUGDgcjya0NljV6dvEkVjGm+/WtrUEw+Zo7JA3Ah3VfgIUS/f7/uX+INsw+I4++TzcKSxr9fjTf+IzXSwJA==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/store-default" "^1.2.3"
