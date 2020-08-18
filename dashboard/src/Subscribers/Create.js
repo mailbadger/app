@@ -16,10 +16,12 @@ const subscrValidation = object().shape({
   name: string().max(191, "The name must not exceed 191 characters."),
   metadata: array().of(
     object().shape({
-      key: string().matches(
-        /^[\w-]*$/,
-        "The key must consist only of alphanumeric and hyphen characters."
-      ),
+      key: string()
+        .matches(
+          /^[\w-]*$/,
+          "The key must consist only of alphanumeric and hyphen characters."
+        )
+        .required("Key is required."),
       val: string()
         .max(191, "The value must not exceed 191 characters.")
         .required("Value is required."),

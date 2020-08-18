@@ -14,6 +14,8 @@ import {
 import { Edit, Trash, Add, Send, LinkPrevious } from "grommet-icons";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
+import { Redirect } from "react-router-dom";
+import qs from "qs";
 
 import { useApi } from "../hooks";
 import history from "../history";
@@ -22,7 +24,12 @@ import {
   SecondaryButton,
   Notice,
   ButtonWithLoader,
+  Modal,
 } from "../ui";
+import EditCampaign from "./Edit";
+import DeleteCampaign from "./Delete";
+import { mainInstance as axios } from "../axios";
+import { NotificationsContext } from "../Notifications/context";
 
 const sendValidation = object().shape({
   source: string()
@@ -33,10 +40,12 @@ const sendValidation = object().shape({
     .max(191, "The name must not exceed 191 characters."),
   metadata: array().of(
     object().shape({
-      key: string().matches(
-        /^[\w-]*$/,
-        "The key must consist only of alphanumeric and hyphen characters."
-      ),
+      key: string()
+        .matches(
+          /^[\w-]*$/,
+          "The key must consist only of alphanumeric and hyphen characters."
+        )
+        .required("Key is required."),
       val: string()
         .max(191, "The value must not exceed 191 characters.")
         .required("Value is required."),
@@ -319,11 +328,64 @@ Form.propTypes = {
   }),
 };
 
+const handleSubmit = (id, setSuccess, createNotification) => async (
+  values,
+  { setSubmitting, setErrors }
+) => {
+  const postForm = async () => {
+    try {
+      let data = {
+        from_name: values.from_name,
+        source: values.source,
+      };
+
+      if (values.metadata.length > 0) {
+        data.default_template_data = values.metadata.reduce((map, meta) => {
+          map[meta.key] = meta.val;
+          return map;
+        }, {});
+      }
+
+      if (values.segments.length > 0) {
+        data.segment_id = values.segments.map((s) => s.id);
+      }
+
+      await axios.post(
+        `/api/campaigns/${id}/start`,
+        qs.stringify(data, { arrayFormat: "brackets" })
+      );
+      createNotification(
+        "The campaign has started. We will begin queueing e-mails shortly."
+      );
+
+      setSuccess(true);
+    } catch (error) {
+      if (error.response) {
+        const { message, errors } = error.response.data;
+
+        setErrors(errors);
+
+        const msg = message
+          ? message
+          : "Unable to send campaign. Please try again.";
+
+        createNotification(msg, "status-error");
+      }
+    }
+  };
+
+  await postForm();
+
+  setSubmitting(false);
+};
+
 const SendCampaign = ({ match }) => {
+  const { createNotification } = useContext(NotificationsContext);
+  const [success, setSuccess] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
-  const [campaign] = useApi({
+  const [campaign, callApi] = useApi({
     url: `/api/campaigns/${match.params.id}`,
   });
 
@@ -339,10 +401,45 @@ const SendCampaign = ({ match }) => {
     );
   }
 
+  if (
+    success ||
+    (campaign && campaign.data && campaign.data.status !== "draft")
+  ) {
+    return <Redirect to={`/dashboard/campaigns/${match.params.id}/report`} />;
+  }
+
   return (
     <DetailsGrid>
       {campaign && campaign.data && (
         <>
+          {showEdit && (
+            <Modal
+              title={`Edit segment`}
+              hideModal={() => setShowEdit(false)}
+              form={
+                <EditCampaign
+                  id={campaign.data.id}
+                  hideModal={() => setShowEdit(false)}
+                  onSuccess={() =>
+                    callApi({ url: `/api/campaigns/${campaign.data.id}` })
+                  }
+                />
+              }
+            />
+          )}
+          {showDelete && (
+            <Modal
+              title={`Delete campaign ${campaign.data.name} ?`}
+              hideModal={() => setShowDelete(false)}
+              form={
+                <DeleteCampaign
+                  id={campaign.data.id}
+                  onSuccess={() => history.replace("/dashboard/campaigns")}
+                  hideModal={() => setShowDelete(false)}
+                />
+              }
+            />
+          )}
           <Box gridArea="title" direction="row">
             <Heading level="2" alignSelf="center">
               {campaign.data.name}
@@ -368,10 +465,16 @@ const SendCampaign = ({ match }) => {
           <Box gridArea="info" direction="column" alignSelf="start">
             <Formik
               validationSchema={sendValidation}
+              onSubmit={handleSubmit(
+                campaign.data.id,
+                setSuccess,
+                createNotification
+              )}
               initialValues={{
                 from_name: "",
                 source: "",
                 segments: [],
+                metadata: [],
               }}
             >
               {Form}

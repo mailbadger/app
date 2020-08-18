@@ -2,7 +2,6 @@ import React, { useState, useContext, memo } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
-import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import {
   TableHeader,
@@ -17,7 +16,6 @@ import {
 import history from "../history";
 import {
   StyledTable,
-  ButtonWithLoader,
   PlaceholderTable,
   Modal,
   Badge,
@@ -28,6 +26,7 @@ import {
 } from "../ui";
 import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
+import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
 const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
@@ -168,42 +167,6 @@ CampaignsTable.propTypes = {
   hasSesKeys: PropTypes.bool,
 };
 
-const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteCampaign = async (id) => {
-    await axios.delete(`/api/campaigns/${id}`);
-  };
-
-  const [isSubmitting, setSubmitting] = useState(false);
-  return (
-    <Box direction="row" alignSelf="end" pad="small">
-      <Box margin={{ right: "small" }}>
-        <Button label="Cancel" onClick={() => hideModal()} />
-      </Box>
-      <Box>
-        <ButtonWithLoader
-          primary
-          label="Delete"
-          color="#FF4040"
-          disabled={isSubmitting}
-          onClick={async () => {
-            setSubmitting(true);
-            await deleteCampaign(id);
-            await callApi({ url: "/api/campaigns" });
-            setSubmitting(false);
-            hideModal();
-          }}
-        />
-      </Box>
-    </Box>
-  );
-};
-
-DeleteForm.propTypes = {
-  id: PropTypes.number,
-  callApi: PropTypes.func,
-  hideModal: PropTypes.func,
-};
-
 const List = () => {
   const [showDelete, setShowDelete] = useState({
     show: false,
@@ -284,9 +247,9 @@ const List = () => {
             title={`Delete campaign ${showDelete.name} ?`}
             hideModal={hideModal}
             form={
-              <DeleteForm
+              <DeleteCampaign
                 id={showDelete.id}
-                callApi={callApi}
+                onSuccess={() => callApi({ url: "/api/campaigns" })}
                 hideModal={hideModal}
               />
             }
@@ -311,7 +274,7 @@ const List = () => {
             form={
               <EditCampaign
                 id={showEdit.id}
-                callApi={callApi}
+                onSuccess={() => callApi({ url: "/api/campaigns" })}
                 hideModal={hideEditModal}
               />
             }
