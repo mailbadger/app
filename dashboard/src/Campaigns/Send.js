@@ -15,6 +15,7 @@ import { Edit, Trash, Add, Send, LinkPrevious } from "grommet-icons";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
 import { Redirect } from "react-router-dom";
+import DOMPurify from "dompurify";
 import qs from "qs";
 
 import { useApi } from "../hooks";
@@ -25,6 +26,8 @@ import {
   Notice,
   ButtonWithLoader,
   Modal,
+  Badge,
+  AnchorLink,
 } from "../ui";
 import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
@@ -379,6 +382,62 @@ const handleSubmit = (id, setSuccess, createNotification) => async (
   setSubmitting(false);
 };
 
+const PreviewTemplate = React.memo(({ name }) => {
+  const [template] = useApi({
+    url: `/api/templates/${name}`,
+  });
+
+  if (template.isLoading) {
+    return <LoadingOverlay />;
+  }
+
+  return (
+    <Box direction="column">
+      <Box direction="row" margin={{ bottom: "small" }}>
+        <Box direction="column" align="start">
+          <Box>
+            <Text>
+              Subject{" "}
+              {template && template.data && (
+                <Badge>{template.data.subject_part}</Badge>
+              )}
+            </Text>
+          </Box>
+          <Box margin={{ top: "xsmall" }}>
+            <Text>
+              Name{" "}
+              <Badge>{template && template.data && template.data.name}</Badge>
+            </Text>
+          </Box>
+        </Box>
+        <Box margin={{ left: "auto", top: "auto" }}>
+          {template && template.data && (
+            <AnchorLink
+              size="medium"
+              to={`/dashboard/templates/${template.data.name}/edit`}
+            >
+              Edit template <Edit fontWeight="bold" size="18px" />
+            </AnchorLink>
+          )}
+        </Box>
+      </Box>
+      {template && template.data && (
+        <iframe
+          height="550px"
+          title="preview-template"
+          srcDoc={DOMPurify.sanitize(template.data.html_part, {
+            USE_PROFILES: { html: true },
+          })}
+        />
+      )}
+    </Box>
+  );
+});
+
+PreviewTemplate.propTypes = {
+  name: PropTypes.string.isRequired,
+};
+
 const SendCampaign = ({ match }) => {
   const { createNotification } = useContext(NotificationsContext);
   const [success, setSuccess] = useState(false);
@@ -490,7 +549,7 @@ const SendCampaign = ({ match }) => {
             />
           </Box>
           <Box gridArea="main" margin={{ left: "small" }}>
-            Sup
+            <PreviewTemplate name={campaign.data.template_name} />
           </Box>
         </>
       )}

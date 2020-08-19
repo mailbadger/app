@@ -226,7 +226,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading || keysLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
+    table = <PlaceholderTable header={Header} numCols={5} numRows={3} />;
   } else if (hasCampaigns) {
     table = (
       <CampaignsTable
