@@ -6,7 +6,7 @@
     "@uppy/aws-s3": "^1.6.9",
     "@uppy/core": "^1.13.1",
     "@uppy/react": "^1.10.5",
-    "axios": "^0.19.2",
+    "axios": "^0.20.0",
     "codemirror": "^5.56.0",
     "date-fns": "^2.15.0",
     "es6-promise": "^4.2.8",
