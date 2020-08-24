@@ -7,7 +7,7 @@
     "@uppy/core": "^1.13.1",
     "@uppy/react": "^1.10.5",
     "axios": "^0.20.0",
-    "codemirror": "^5.56.0",
+    "codemirror": "^5.57.0",
     "date-fns": "^2.15.0",
     "es6-promise": "^4.2.8",
     "formik": "^2.1.5",
