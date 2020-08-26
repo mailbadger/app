@@ -100,7 +100,9 @@ const Form = ({
   isSubmitting,
   values,
   setFieldValue,
+  quota,
 }) => {
+  const [totalSelectedSubs, setTotalSubs] = useState(0);
   const [selected, setSelected] = useState(values.segments);
   const [segments, callApi] = useApi(
     {
@@ -173,6 +175,12 @@ const Form = ({
   };
 
   const onChange = ({ value: nextSelected }) => {
+    let totalSubs = 0;
+    for (let i = 0; i < nextSelected.length; i++) {
+      totalSubs += nextSelected[i].subscribers_in_segment;
+    }
+
+    setTotalSubs(totalSubs);
     setSelected(nextSelected);
     setFieldValue("segments", nextSelected);
   };
@@ -276,7 +284,16 @@ const Form = ({
               </Box>
             )}
           />
-          <Box direction="row" alignSelf="end" margin={{ top: "large" }}>
+          <Box margin={{ top: "large", bottom: "small" }}>
+            <Text alignSelf="end">Total recipients: {totalSelectedSubs}</Text>
+            <Text alignSelf="end">
+              Send quota:{" "}
+              {quota &&
+                quota.data &&
+                quota.data.max_24_hour_send - quota.data.sent_last_24_hours}
+            </Text>
+          </Box>
+          <Box direction="row" alignSelf="end">
             <Box>
               <Button
                 alignSelf="start"
@@ -314,6 +331,14 @@ Form.propTypes = {
   handleChange: PropTypes.func,
   isSubmitting: PropTypes.bool,
   setFieldValue: PropTypes.func,
+  quota: PropTypes.shape({
+    isLoading: PropTypes.bool,
+    isError: PropTypes.bool,
+    data: PropTypes.shape({
+      max_24_hour_send: PropTypes.number,
+      sent_last_24_hours: PropTypes.number,
+    }),
+  }),
   values: PropTypes.shape({
     from_name: PropTypes.string,
     source: PropTypes.string,
@@ -444,6 +469,10 @@ const SendCampaign = ({ match }) => {
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
+  const [quota] = useApi({
+    url: "/api/ses/quota",
+  });
+
   const [campaign, callApi] = useApi({
     url: `/api/campaigns/${match.params.id}`,
   });
@@ -536,7 +565,7 @@ const SendCampaign = ({ match }) => {
                 metadata: [],
               }}
             >
-              {Form}
+              {(props) => <Form {...props} quota={quota} />}
             </Formik>
             <Notice
               message={`
