@@ -214,21 +214,25 @@ func HandleHook(c *gin.Context) {
 			return
 		}
 
-		err := storage.CreateClick(c, &entities.Click{
-			UserID:     u.ID,
-			CampaignID: cid,
-			Link:       msg.Click.Link,
-			UserAgent:  msg.Click.UserAgent,
-			IPAddress:  msg.Click.IPAddress,
-			CreatedAt:  msg.Click.Timestamp,
-		})
-		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{
-				"user_id":     u.ID,
-				"campaign_id": cid,
-				"message":     msg,
-			}).WithError(err).Error("Unable to create click record.")
+		for _, d := range msg.Mail.Destination {
+			err := storage.CreateClick(c, &entities.Click{
+				UserID:     u.ID,
+				CampaignID: cid,
+				Recipient:  d,
+				Link:       msg.Click.Link,
+				UserAgent:  msg.Click.UserAgent,
+				IPAddress:  msg.Click.IPAddress,
+				CreatedAt:  msg.Click.Timestamp,
+			})
+			if err != nil {
+				logger.From(c).WithFields(logrus.Fields{
+					"user_id":     u.ID,
+					"campaign_id": cid,
+					"message":     msg,
+				}).WithError(err).Error("Unable to create click record.")
+			}
 		}
+
 	case emails.OpenType:
 		if msg.Open == nil {
 			logger.From(c).WithField("message", msg).Error("OpenType: open is nil.")
@@ -236,20 +240,24 @@ func HandleHook(c *gin.Context) {
 			return
 		}
 
-		err := storage.CreateOpen(c, &entities.Open{
-			UserID:     u.ID,
-			CampaignID: cid,
-			UserAgent:  msg.Open.UserAgent,
-			IPAddress:  msg.Open.IPAddress,
-			CreatedAt:  msg.Open.Timestamp,
-		})
-		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{
-				"user_id":     u.ID,
-				"campaign_id": cid,
-				"message":     msg,
-			}).WithError(err).Error("Unable to create open record.")
+		for _, d := range msg.Mail.Destination {
+			err := storage.CreateOpen(c, &entities.Open{
+				UserID:     u.ID,
+				CampaignID: cid,
+				Recipient:  d,
+				UserAgent:  msg.Open.UserAgent,
+				IPAddress:  msg.Open.IPAddress,
+				CreatedAt:  msg.Open.Timestamp,
+			})
+			if err != nil {
+				logger.From(c).WithFields(logrus.Fields{
+					"user_id":     u.ID,
+					"campaign_id": cid,
+					"message":     msg,
+				}).WithError(err).Error("Unable to create open record.")
+			}
 		}
+
 	case emails.RenderingFailureType:
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id":   cid,

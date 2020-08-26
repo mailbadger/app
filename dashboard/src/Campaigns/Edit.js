@@ -152,7 +152,7 @@ EditForm.propTypes = {
   }),
 };
 
-const EditCampaign = ({ id, callApi, hideModal }) => {
+const EditCampaign = ({ id, onSuccess, hideModal }) => {
   const { createNotification } = useContext(NotificationsContext);
   const [state] = useApi({
     url: `/api/campaigns/${id}`,
@@ -172,7 +172,7 @@ const EditCampaign = ({ id, callApi, hideModal }) => {
 
         //done submitting, set submitting to false
         setSubmitting(false);
-        await callApi({ url: "/api/campaigns" });
+        onSuccess();
 
         hideModal();
       } catch (error) {
@@ -233,7 +233,7 @@ const EditCampaign = ({ id, callApi, hideModal }) => {
 };
 
 EditCampaign.propTypes = {
-  callApi: PropTypes.func,
+  onSuccess: PropTypes.func,
   hideModal: PropTypes.func,
   id: PropTypes.number,
 };

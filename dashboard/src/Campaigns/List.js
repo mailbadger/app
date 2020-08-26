@@ -2,7 +2,6 @@ import React, { useState, useContext, memo } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
-import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import {
   TableHeader,
@@ -17,16 +16,17 @@ import {
 import history from "../history";
 import {
   StyledTable,
-  ButtonWithLoader,
   PlaceholderTable,
   Modal,
   Badge,
   Notice,
   BarLoader,
   ListGrid,
+  AnchorLink,
 } from "../ui";
 import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
+import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
 const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
@@ -46,7 +46,12 @@ const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
   return (
     <TableRow>
       <TableCell scope="row" size="large">
-        <strong>{campaign.name}</strong>
+        <AnchorLink
+          size="small"
+          fontWeight="bold"
+          to={`/dashboard/campaigns/send/${campaign.id}`}
+          label={campaign.name}
+        />
       </TableCell>
       <TableCell scope="row" size="large">
         <Badge color={statusColors[campaign.status]}>{campaign.status}</Badge>
@@ -162,42 +167,6 @@ CampaignsTable.propTypes = {
   hasSesKeys: PropTypes.bool,
 };
 
-const DeleteForm = ({ id, callApi, hideModal }) => {
-  const deleteCampaign = async (id) => {
-    await axios.delete(`/api/campaigns/${id}`);
-  };
-
-  const [isSubmitting, setSubmitting] = useState(false);
-  return (
-    <Box direction="row" alignSelf="end" pad="small">
-      <Box margin={{ right: "small" }}>
-        <Button label="Cancel" onClick={() => hideModal()} />
-      </Box>
-      <Box>
-        <ButtonWithLoader
-          primary
-          label="Delete"
-          color="#FF4040"
-          disabled={isSubmitting}
-          onClick={async () => {
-            setSubmitting(true);
-            await deleteCampaign(id);
-            await callApi({ url: "/api/campaigns" });
-            setSubmitting(false);
-            hideModal();
-          }}
-        />
-      </Box>
-    </Box>
-  );
-};
-
-DeleteForm.propTypes = {
-  id: PropTypes.number,
-  callApi: PropTypes.func,
-  hideModal: PropTypes.func,
-};
-
 const List = () => {
   const [showDelete, setShowDelete] = useState({
     show: false,
@@ -257,7 +226,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading || keysLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={3} />;
+    table = <PlaceholderTable header={Header} numCols={5} numRows={3} />;
   } else if (hasCampaigns) {
     table = (
       <CampaignsTable
@@ -272,114 +241,118 @@ const List = () => {
 
   return (
     <ListGrid>
-      {showDelete.show && (
-        <Modal
-          title={`Delete campaign ${showDelete.name} ?`}
-          hideModal={hideModal}
-          form={
-            <DeleteForm
-              id={showDelete.id}
-              callApi={callApi}
-              hideModal={hideModal}
-            />
-          }
-        />
-      )}
-      {showCreate && (
-        <Modal
-          title={`Create campaign`}
-          hideModal={() => openCreateModal(false)}
-          form={
-            <CreateCampaign
-              callApi={callApi}
-              hideModal={() => openCreateModal(false)}
-            />
-          }
-        />
-      )}
-      {showEdit.show && (
-        <Modal
-          title={`Edit campaign`}
-          hideModal={hideEditModal}
-          form={
-            <EditCampaign
-              id={showEdit.id}
-              callApi={callApi}
-              hideModal={hideEditModal}
-            />
-          }
-        />
-      )}
-      <Box gridArea="nav" direction="row">
-        <Box alignSelf="center" margin={{ right: "small" }}>
-          <Heading level="2">Campaigns</Heading>
-        </Box>
-        <Box alignSelf="center">
-          <Button
-            primary
-            color="status-ok"
-            label="Create new"
-            icon={<Add />}
-            reverse
-            onClick={() => {
-              if (hasSesKeys) {
-                openCreateModal(true);
-              }
-            }}
-            disabled={!hasSesKeys}
+      <>
+        {showDelete.show && (
+          <Modal
+            title={`Delete campaign ${showDelete.name} ?`}
+            hideModal={hideModal}
+            form={
+              <DeleteCampaign
+                id={showDelete.id}
+                onSuccess={() => callApi({ url: "/api/campaigns" })}
+                hideModal={hideModal}
+              />
+            }
           />
-        </Box>
-        {!hasSesKeys && hasCampaigns && (
-          <Box margin={{ left: "auto" }} alignSelf="center">
-            <Notice
-              message="Set your SES keys in order to send, create or edit campaigns."
-              status="status-warning"
+        )}
+        {showCreate && (
+          <Modal
+            title={`Create campaign`}
+            hideModal={() => openCreateModal(false)}
+            form={
+              <CreateCampaign
+                callApi={callApi}
+                hideModal={() => openCreateModal(false)}
+              />
+            }
+          />
+        )}
+        {showEdit.show && (
+          <Modal
+            title={`Edit campaign`}
+            hideModal={hideEditModal}
+            form={
+              <EditCampaign
+                id={showEdit.id}
+                onSuccess={() => callApi({ url: "/api/campaigns" })}
+                hideModal={hideEditModal}
+              />
+            }
+          />
+        )}
+        <Box gridArea="nav" direction="row">
+          <Box alignSelf="center" margin={{ right: "small" }}>
+            <Heading level="2">Campaigns</Heading>
+          </Box>
+          <Box alignSelf="center">
+            <Button
+              primary
+              color="status-ok"
+              label="Create new"
+              icon={<Add />}
+              reverse
+              onClick={() => {
+                if (hasSesKeys) {
+                  openCreateModal(true);
+                }
+              }}
+              disabled={!hasSesKeys}
             />
           </Box>
-        )}
-      </Box>
-      <Box gridArea="main">
-        <Box animation="fadeIn">
-          {table}
-
-          {!state.isLoading &&
-            !state.isError &&
-            state.data.collection.length === 0 && (
-              <Box align="center" margin={{ top: "large" }}>
-                <Heading level="2">Create your first campaign.</Heading>
-              </Box>
-            )}
+          {!hasSesKeys && hasCampaigns && (
+            <Box margin={{ left: "auto" }} alignSelf="center">
+              <Notice
+                message="Set your SES keys in order to send, create or edit campaigns."
+                status="status-warning"
+                color="white"
+                borderColor="status-warning"
+              />
+            </Box>
+          )}
         </Box>
-        {hasCampaigns ? (
-          <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-            <Box margin={{ right: "small" }}>
-              <Button
-                icon={<FormPreviousLink />}
-                label="Previous"
-                disabled={state.data.links.previous === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.previous,
-                  });
-                }}
-              />
-            </Box>
-            <Box>
-              <Button
-                icon={<FormNextLink />}
-                reverse
-                label="Next"
-                disabled={state.data.links.next === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.next,
-                  });
-                }}
-              />
-            </Box>
+        <Box gridArea="main">
+          <Box animation="fadeIn">
+            {table}
+
+            {!state.isLoading &&
+              !state.isError &&
+              state.data.collection.length === 0 && (
+                <Box align="center" margin={{ top: "large" }}>
+                  <Heading level="2">Create your first campaign.</Heading>
+                </Box>
+              )}
           </Box>
-        ) : null}
-      </Box>
+          {hasCampaigns ? (
+            <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
+              <Box margin={{ right: "small" }}>
+                <Button
+                  icon={<FormPreviousLink />}
+                  label="Previous"
+                  disabled={state.data.links.previous === null}
+                  onClick={() => {
+                    callApi({
+                      url: state.data.links.previous,
+                    });
+                  }}
+                />
+              </Box>
+              <Box>
+                <Button
+                  icon={<FormNextLink />}
+                  reverse
+                  label="Next"
+                  disabled={state.data.links.next === null}
+                  onClick={() => {
+                    callApi({
+                      url: state.data.links.next,
+                    });
+                  }}
+                />
+              </Box>
+            </Box>
+          ) : null}
+        </Box>
+      </>
     </ListGrid>
   );
 };

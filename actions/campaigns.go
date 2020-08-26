@@ -22,8 +22,9 @@ import (
 )
 
 type sendCampaignParams struct {
-	Ids    []int64 `form:"segment_id[]" valid:"required"`
-	Source string  `form:"source" valid:"email,required~Email is blank or in invalid format"`
+	Ids      []int64 `form:"segment_id[]" valid:"required"`
+	Source   string  `form:"source" valid:"email,required~Email is empty or in invalid format"`
+	FromName string  `form:"from_name" valid:"required,stringlength(1|191)~From name is blank or exceeds maximum character limit."`
 }
 
 func StartCampaign(c *gin.Context) {
@@ -128,7 +129,7 @@ func StartCampaign(c *gin.Context) {
 
 	msg, err := json.Marshal(entities.SendCampaignParams{
 		SegmentIDs:             params.Ids,
-		Source:                 params.Source,
+		Source:                 fmt.Sprintf("%s <%s>", params.FromName, params.Source),
 		TemplateData:           templateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
@@ -158,7 +159,9 @@ func StartCampaign(c *gin.Context) {
 	campaign.Status = entities.StatusSending
 	err = storage.UpdateCampaign(c, campaign)
 	if err != nil {
-		logger.From(c).WithField("campaign_id", campaign.ID).WithError(err).Error("Unable to update campaign status.")
+		logger.From(c).
+			WithField("campaign_id", campaign.ID).
+			WithError(err).Error("Unable to update campaign status.")
 	}
 
 	c.JSON(http.StatusOK, gin.H{

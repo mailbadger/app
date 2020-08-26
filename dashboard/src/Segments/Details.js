@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import {
-  Grid,
   Box,
   Heading,
   Text,
   Meter,
   Button,
   ResponsiveContext,
+  Grid,
 } from "grommet";
 import {
   Edit,
@@ -30,7 +30,7 @@ import RemoveSubscriber from "./RemoveSubscriber";
 import history from "../history";
 import { Table, Header } from "../Subscribers";
 
-const ResponsiveGrid = React.memo(({ children }) => {
+const DetailsGrid = ({ children }) => {
   const size = useContext(ResponsiveContext);
 
   let cols = ["small", "small", "large", "xsmall"];
@@ -60,11 +60,11 @@ const ResponsiveGrid = React.memo(({ children }) => {
       {children}
     </Grid>
   );
-});
+};
 
-ResponsiveGrid.displayName = "ResponsiveGrid";
-ResponsiveGrid.propTypes = {
-  children: PropTypes.element.isRequired,
+DetailsGrid.displayName = "DetailsGrid";
+DetailsGrid.propTypes = {
+  children: PropTypes.element,
 };
 
 const SubscribersInfoBox = React.memo(({ totalInSegment, total }) => (
@@ -172,7 +172,7 @@ const Details = ({ match }) => {
   }
 
   return (
-    <ResponsiveGrid>
+    <DetailsGrid>
       {segment && (
         <>
           {showEdit && (
@@ -299,7 +299,7 @@ const Details = ({ match }) => {
           </Box>
         </>
       )}
-    </ResponsiveGrid>
+    </DetailsGrid>
   );
 };
 

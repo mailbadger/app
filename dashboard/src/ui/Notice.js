@@ -5,7 +5,7 @@ import { FormClose } from "grommet-icons";
 
 import StatusIcons from "./StatusIcons";
 
-const Notice = ({ message, status }) => {
+const Notice = ({ message, status, ...rest }) => {
   const [closed, setClosed] = useState(false);
   if (closed) {
     return null;
@@ -16,7 +16,7 @@ const Notice = ({ message, status }) => {
       border={{
         side: "all",
         size: "small",
-        color: "dark-2",
+        color: rest.borderColor || "dark-2",
       }}
       align="center"
       direction="row"
@@ -24,13 +24,18 @@ const Notice = ({ message, status }) => {
       justify="between"
       elevation="medium"
       pad={{ vertical: "xsmall", horizontal: "small" }}
-      background={status}
+      background={rest.color}
     >
-      <Box align="center" direction="row" gap="xsmall">
-        {StatusIcons[status]}
+      <Box alignSelf="start">{StatusIcons[status]}</Box>
+      <Box alignSelf="center" margin={{ left: "small" }}>
         <Text>{message}</Text>
       </Box>
-      <Button icon={<FormClose />} onClick={() => setClosed(true)} plain />
+      <Button
+        alignSelf="start"
+        icon={<FormClose />}
+        onClick={() => setClosed(true)}
+        plain
+      />
     </Box>
   );
 };
@@ -38,6 +43,8 @@ const Notice = ({ message, status }) => {
 Notice.propTypes = {
   message: PropTypes.string,
   status: PropTypes.string,
+  borderColor: PropTypes.string,
+  color: PropTypes.string,
 };
 
 export default Notice;
