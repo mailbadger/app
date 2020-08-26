@@ -125,18 +125,22 @@ CREATE TABLE IF NOT EXISTS `clicks` (
   `campaign_id` integer unsigned NOT NULL,
   `user_id`     integer unsigned NOT NULL,
   `ip_address`  varchar(50) NOT NULL,
+  `recipient`   varchar(191) NOT NULL,
   `user_agent`  varchar(191) NOT NULL,
   `link`        varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
-  INDEX id_created_at (`id`, `created_at`)
+  INDEX id_created_at (`id`, `created_at`),
+  INDEX link (`campaign_id`, `user_id`, `link`),
+  INDEX link (`campaign_id`, `user_id`, `recipient`, `link`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `opens` (
   `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
   `campaign_id` integer unsigned NOT NULL,
   `user_id`     integer unsigned NOT NULL,
+  `recipient`   varchar(191) NOT NULL,
   `ip_address`  varchar(50) NOT NULL,
   `user_agent`  varchar(191) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
