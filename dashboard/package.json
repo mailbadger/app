@@ -14,7 +14,7 @@
     "formik": "^2.1.5",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
-    "history": "^4.10.1",
+    "history": "^5.0.0",
     "prop-types": "^15.7.2",
     "qs": "^6.9.4",
     "react": "^16.13.1",
