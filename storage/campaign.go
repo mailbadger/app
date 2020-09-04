@@ -61,3 +61,18 @@ func (db *store) UpdateCampaign(c *entities.Campaign) error {
 func (db *store) DeleteCampaign(id, userID int64) error {
 	return db.Where("user_id = ?", userID).Delete(entities.Campaign{Model: entities.Model{ID: id}}).Error
 }
+
+// GetCampaignOpens fetches campaign opens by campaign id, and populates the pagination obj
+func (db *store) GetCampaignOpens(campID int64, p *PaginationCursor) error {
+	p.SetCollection(&[]entities.Open{})
+	p.SetResource("opens")
+
+	query := db.Table(p.Resource).
+		Where("campaign_id = ?", campID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
+
+	return db.Paginate(p, campID)
+}
