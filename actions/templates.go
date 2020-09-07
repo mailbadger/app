@@ -15,6 +15,10 @@ import (
 	"github.com/mailbadger/app/storage/templates"
 )
 
+type GetTemplateRequest struct {
+	Name string `json:"name"`
+}
+
 func GetTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -25,8 +29,16 @@ func GetTemplate(c *gin.Context) {
 		})
 		return
 	}
+	request := GetTemplateRequest{}
+	request.Name = c.Param("name")
 
-	name := c.Param("name")
+	err = c.ShouldBindJSON(request)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Name is required",
+		})
+		return
+	}
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
@@ -38,7 +50,7 @@ func GetTemplate(c *gin.Context) {
 	}
 
 	res, err := store.GetTemplate(&ses.GetTemplateInput{
-		TemplateName: aws.String(name),
+		TemplateName: aws.String(request.Name),
 	})
 
 	if err != nil {
@@ -49,7 +61,7 @@ func GetTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, entities.Template{
-		Name:        name,
+		Name:        request.Name,
 		HTMLPart:    *res.Template.HtmlPart,
 		TextPart:    *res.Template.TextPart,
 		SubjectPart: *res.Template.SubjectPart,
