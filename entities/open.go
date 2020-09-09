@@ -11,3 +11,15 @@ type Open struct {
 	IPAddress  string    `json:"ip_address"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+func (c Open) GetCreatedAt() time.Time {
+	return c.CreatedAt
+}
+
+func (c Open) GetID() int64 {
+	return c.ID
+}
+
+func (c Open) GetUpdatedAt() time.Time {
+	return time.Time{}
+}
