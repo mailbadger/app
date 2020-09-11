@@ -21,7 +21,7 @@
     "react-codemirror2": "^7.2.1",
     "react-content-loader": "^5.1.1",
     "react-dom": "^16.13.1",
-    "react-error-boundary": "^2.3.1",
+    "react-error-boundary": "^2.3.2",
     "react-google-recaptcha": "^2.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
