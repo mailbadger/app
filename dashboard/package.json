@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "@uppy/aws-s3": "^1.6.9",
+    "@uppy/react": "^1.10.6",
     "@uppy/core": "^1.13.2",
-    "@uppy/react": "^1.10.5",
     "axios": "^0.20.0",
     "codemirror": "^5.57.0",
     "date-fns": "^2.16.1",
