@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `clicks` (
   FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
   INDEX id_created_at (`id`, `created_at`),
   INDEX link (`campaign_id`, `user_id`, `link`),
-  INDEX link (`campaign_id`, `user_id`, `recipient`, `link`)
+  INDEX link_recipients (`campaign_id`, `user_id`, `recipient`, `link`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `opens` (

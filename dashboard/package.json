@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@uppy/aws-s3": "^1.6.9",
-    "@uppy/core": "^1.13.1",
-    "@uppy/react": "^1.10.5",
+    "@uppy/aws-s3": "^1.7.0",
+    "@uppy/react": "^1.10.6",
+    "@uppy/core": "^1.13.2",
     "axios": "^0.20.0",
     "codemirror": "^5.57.0",
     "date-fns": "^2.16.1",
-    "dompurify": "^2.0.14",
+    "dompurify": "^2.0.15",
     "es6-promise": "^4.2.8",
     "formik": "^2.1.5",
     "grommet": "^2.10.0",
@@ -26,7 +26,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
     "styled-components": "^4.4.1",
-    "whatwg-fetch": "^3.4.0",
+    "whatwg-fetch": "^3.4.1",
     "yup": "^0.29.3"
   },
   "scripts": {
@@ -58,8 +58,8 @@
   "devDependencies": {
     "eslint": "^6.6.0",
     "eslint-plugin-react": "^7.20.6",
-    "husky": "^4.2.5",
-    "lint-staged": "^10.2.13",
+    "husky": "^4.3.0",
+    "lint-staged": "^10.3.0",
     "prettier": "2.1.1"
   }
 }

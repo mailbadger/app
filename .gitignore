@@ -36,4 +36,4 @@ static
 *.vscode
 *.idea
 
-.env*
+.env.*
