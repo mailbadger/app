@@ -31,7 +31,7 @@ type Storage interface {
 	CreateCampaign(*entities.Campaign) error
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
-	GetCampaignOpens(campID int64, p *PaginationCursor) error
+	GetCampaignOpens(campaignID int64, p *PaginationCursor) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -182,8 +182,8 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 
 //GetCampaignOpens populates a pagination object with a collection of
 // open by the specified campaign id
-func GetCampaignOpens(c context.Context, campID int64, p *PaginationCursor) error {
-	return GetFromContext(c).GetCampaignOpens(campID, p)
+func GetCampaignOpens(c context.Context, campaignID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetCampaignOpens(campaignID, p)
 }
 
 // GetSegments populates a pagination object with a collection of
