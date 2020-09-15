@@ -82,3 +82,22 @@ func (c Campaign) GetCreatedAt() time.Time {
 func (c Campaign) GetUpdatedAt() time.Time {
 	return c.Model.UpdatedAt
 }
+
+type ClicksStats struct {
+	Unique int64 `json:"unique"`
+	Total  int64 `json:"total"`
+}
+
+type OpensStats struct {
+	Unique int64 `json:"unique"`
+	Total  int64 `json:"total"`
+}
+
+type CampaignStats struct {
+	TotalSent  int64        `json:"total_sent"`
+	Delivered  int64        `json:"delivered"`
+	Opens      *OpensStats  `json:"opens"`
+	Clicks     *ClicksStats `json:"clicks"`
+	Bounces    int64        `json:"bounces"`
+	Complaints int64        `json:"complaints"`
+}

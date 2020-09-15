@@ -32,6 +32,12 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
 	GetCampaignOpens(campaignID int64, p *PaginationCursor) error
+	GetClicksStats(campaignID int64) (*entities.ClicksStats, error)
+	GetOpensStats(campaignID int64) (*entities.OpensStats, error)
+	GetTotalSends(campaignID int64) (int64, error)
+	GetTotalDelivered(campaignID int64) (int64, error)
+	GetTotalBounces(campaignID int64) (int64, error)
+	GetTotalComplaints(campaignID int64) (int64, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -184,6 +190,38 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 // open by the specified campaign id
 func GetCampaignOpens(c context.Context, campaignID int64, p *PaginationCursor) error {
 	return GetFromContext(c).GetCampaignOpens(campaignID, p)
+}
+
+// GetClicksStats populates a ClickStats object with a results of
+// clicks by the specified campaign id
+func GetClicksStats(c context.Context, campaignID int64) (*entities.ClicksStats, error) {
+	return GetFromContext(c).GetClicksStats(campaignID)
+}
+
+// GetOpensStats populates a ClickStats object with a results of
+// opens by the specified campaign id
+func GetOpensStats(c context.Context, campaignID int64) (*entities.OpensStats, error) {
+	return GetFromContext(c).GetOpensStats(campaignID)
+}
+
+// GetTotalSends returns total sends for specified campaign id
+func GetTotalSends(c context.Context, campaignID int64) (int64, error) {
+	return GetFromContext(c).GetTotalSends(campaignID)
+}
+
+// GetTotalDelivered returns  total delivered for specified campaign id
+func GetTotalDelivered(c context.Context, campaignID int64) (int64, error) {
+	return GetFromContext(c).GetTotalDelivered(campaignID)
+}
+
+// GetTotalBounces returns  total bounces for specified campaign id
+func GetTotalBounces(c context.Context, campaignID int64) (int64, error) {
+	return GetFromContext(c).GetTotalBounces(campaignID)
+}
+
+//GetTotalComplaints returns total complaints for specified campaign id
+func GetTotalComplaints(c context.Context, campaignID int64) (int64, error) {
+	return GetFromContext(c).GetTotalComplaints(campaignID)
 }
 
 // GetSegments populates a pagination object with a collection of
