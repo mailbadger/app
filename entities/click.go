@@ -13,3 +13,10 @@ type Click struct {
 	IPAddress  string    `json:"ip_address"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+// ClicksStats entity holds information about total and unique recipients that clicked a certain link
+type ClicksStats struct {
+	Link         string `json:"link"`
+	UniqueClicks int64  `json:"unique_clicks"`
+	TotalClicks  int64  `json:"total_clicks"`
+}
