@@ -76,3 +76,16 @@ func (db *store) GetCampaignOpens(campaignID int64, p *PaginationCursor) error {
 
 	return db.Paginate(p, campaignID)
 }
+
+// GetCampaignClicks fetches collection of clicks stats by campaign id and user id from database
+func (db *store) GetCampaignClicks(id, userID int64) ([]entities.ClicksStats, error) {
+	var clickStats []entities.ClicksStats
+	err := db.Table("clicks").
+		Select("link, COUNT(DISTINCT(recipient)) AS unique_clicks, COUNT(recipient) AS total_clicks").
+		Where("campaign_id = ? AND user_id = ?", id, userID).
+		Group("link").
+		Find(&clickStats).
+		Error
+
+	return clickStats, err
+}
