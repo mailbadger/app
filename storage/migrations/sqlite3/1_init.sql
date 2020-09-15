@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS "opens" (
   "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
+  `recipient`       varchar(191),
   "ip_address"      varchar(50),
   "user_agent"      varchar(191),
   "created_at"      datetime

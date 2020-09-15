@@ -118,4 +118,47 @@ func TestCampaign(t *testing.T) {
 	// Test delete campaign
 	err = store.DeleteCampaign(1, 1)
 	assert.Nil(t, err)
+
+	// Test insert open
+	open := []entities.Open{
+		{
+			ID:         1,
+			UserID:     1,
+			CampaignID: 1,
+			Recipient:  "jhon@doe.com",
+			UserAgent:  "android",
+			IPAddress:  "1.1.1.1",
+			CreatedAt:  now,
+		},
+		{
+			ID:         2,
+			UserID:     1,
+			CampaignID: 1,
+			Recipient:  "jhon@email.com",
+			UserAgent:  "windows",
+			IPAddress:  "1.1.1.1",
+			CreatedAt:  now,
+		},
+	}
+	// insert open 1
+	err = store.CreateOpen(&open[0])
+	assert.Nil(t, err)
+	// insert open 2
+	err = store.CreateOpen(&open[1])
+	assert.Nil(t, err)
+
+	//Test get campaign opens backwards
+	p = NewPaginationCursor("/api/campaigns/{id}/opens", 13)
+	p.SetEndingBefore(1)
+	// Test get campaign opens
+	err = store.GetCampaignOpens(1, p)
+	assert.Nil(t, err)
+
+	campOpens := p.Collection.(*[]entities.Open)
+	assert.NotNil(t, *campOpens)
+	assert.NotEmpty(t, *campOpens)
+	assert.Equal(t, 1, len(*campOpens))
+	// campOpens[0] - order desc
+	assert.Equal(t, open[1], (*campOpens)[0])
+
 }

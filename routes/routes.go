@@ -190,6 +190,7 @@ func New() http.Handler {
 			campaigns.PUT("/:id", actions.PutCampaign)
 			campaigns.DELETE("/:id", actions.DeleteCampaign)
 			campaigns.POST("/:id/start", actions.StartCampaign)
+			campaigns.GET("/:id/opens", middleware.PaginateWithCursor(), actions.GetCampaignOpens)
 		}
 
 		segments := authorized.Group("/segments")
