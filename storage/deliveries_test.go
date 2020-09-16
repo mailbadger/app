@@ -23,7 +23,7 @@ func TestDeliveries(t *testing.T) {
 	now := time.Now().UTC()
 
 	// test get empty delivery stats
-	totalDeliveries, err := store.GetTotalDelivered(1)
+	totalDeliveries, err := store.GetTotalDelivered(1,1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(0), totalDeliveries)
 
@@ -58,7 +58,7 @@ func TestDeliveries(t *testing.T) {
 	}
 
 	// test get total delivery stats
-	totalDeliveries, err = store.GetTotalDelivered(1)
+	totalDeliveries, err = store.GetTotalDelivered(1,1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalDeliveries)
 

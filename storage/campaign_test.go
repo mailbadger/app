@@ -151,7 +151,7 @@ func TestCampaign(t *testing.T) {
 	p = NewPaginationCursor("/api/campaigns/{id}/opens", 13)
 	p.SetEndingBefore(1)
 	// Test get campaign opens
-	err = store.GetCampaignOpens(1, p)
+	err = store.GetCampaignOpens(1, 1, p)
 	assert.Nil(t, err)
 
 	campOpens := p.Collection.(*[]entities.Open)

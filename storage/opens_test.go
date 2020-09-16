@@ -23,7 +23,7 @@ func TestOpens(t *testing.T) {
 	now := time.Now().UTC()
 
 	// test get empty opens stats
-	opensStats, err := store.GetOpensStats(1)
+	opensStats, err := store.GetOpensStats(1,1)
 	assert.Nil(t, err)
 	assert.Equal(t, &entities.OpensStats{}, opensStats)
 
@@ -65,7 +65,7 @@ func TestOpens(t *testing.T) {
 	}
 
 	// test get campaign opens stats
-	opensStats, err = store.GetOpensStats(1)
+	opensStats, err = store.GetOpensStats(1,1)
 	assert.Nil(t, err)
 	assert.NotNil(t, opensStats)
 	exp := &entities.OpensStats{Unique: 2, Total: 3}

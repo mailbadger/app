@@ -23,7 +23,7 @@ func TestClicks(t *testing.T) {
 	now := time.Now().UTC()
 
 	// test get empty campaign clicks stats
-	clicksStats, err := store.GetClicksStats(1)
+	clicksStats, err := store.GetClicksStats(1,1)
 	assert.Nil(t, err)
 	assert.NotNil(t, clicksStats)
 	assert.Equal(t, &entities.ClicksStats{}, clicksStats)
@@ -67,7 +67,7 @@ func TestClicks(t *testing.T) {
 	}
 
 	// test get campaign clicks stats
-	clicksStats, err = store.GetClicksStats(1)
+	clicksStats, err = store.GetClicksStats(1,1)
 	assert.Nil(t, err)
 	assert.NotNil(t, clicksStats)
 	exp := &entities.ClicksStats{Unique: 2, Total: 3}
