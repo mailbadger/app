@@ -383,23 +383,26 @@ func GetCampaignOpens(c *gin.Context) {
 	})
 }
 
-func GetCampaignClicks(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if stats, err := storage.GetCampaignClicksStats(c, id, middleware.GetUser(c).ID); err == nil {
-			c.JSON(http.StatusOK, entities.CampaignClicksStats{
-				Total:       int64(len(stats)),
-				ClicksStats: stats,
-			})
-			return
-		}
+func GetCampaignClicksStats(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+	}
 
+	stats, err := storage.GetCampaignClicksStats(c, id, middleware.GetUser(c).ID)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign clicks not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
+	c.JSON(http.StatusOK, entities.CampaignClicksStats{
+		Total:       int64(len(stats)),
+		ClicksStats: stats,
 	})
+	return
+
 }
