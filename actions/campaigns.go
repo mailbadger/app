@@ -436,6 +436,5 @@ func GetCampaignStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, campaignStats)
-	return
 
 }
