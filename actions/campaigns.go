@@ -383,59 +383,59 @@ func GetCampaignOpens(c *gin.Context) {
 }
 
 func GetCampaignStats(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 
-		var campaignStats entities.CampaignStats
-		campaignStats.TotalSent, err = storage.GetTotalSends(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-		campaignStats.Delivered, err = storage.GetTotalDelivered(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-		campaignStats.Opens, err = storage.GetOpensStats(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-		campaignStats.Clicks, err = storage.GetClicksStats(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-		campaignStats.Bounces, err = storage.GetTotalBounces(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-		campaignStats.Complaints, err = storage.GetTotalComplaints(c, id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Campaign stats not found",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, campaignStats)
-		return
-
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
-	})
+	var campaignStats entities.CampaignStats
+	campaignStats.TotalSent, err = storage.GetTotalSends(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Delivered, err = storage.GetTotalDelivered(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Opens, err = storage.GetOpensStats(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Clicks, err = storage.GetClicksStats(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Bounces, err = storage.GetTotalBounces(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Complaints, err = storage.GetTotalComplaints(c, id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, campaignStats)
+	return
 
 }

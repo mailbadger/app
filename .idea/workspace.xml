@@ -2,16 +2,21 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1a7675fa-4ab6-4520-b5c1-fa7512ea076a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/storage/migrations/mysql/1_init.sql" beforeDir="false" afterPath="$PROJECT_DIR$/storage/migrations/mysql/1_init.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CODE_OF_CONDUCT.md" beforeDir="false" afterPath="$PROJECT_DIR$/CODE_OF_CONDUCT.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/actions/campaigns.go" beforeDir="false" afterPath="$PROJECT_DIR$/actions/campaigns.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
   </component>
   <component name="GOROOT" path="$USER_HOME$/sdk/go1.14.1" />
   <component name="Git.Settings">
@@ -21,6 +26,7 @@
     <option name="indexEntireGoPath" value="false" />
   </component>
   <component name="ProjectId" id="1h0UnWv9dsYLJKsrgNeToFZvw6W" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -28,6 +34,7 @@
   <component name="PropertiesComponent">
     <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="configurable.Global.GOPATH.is.expanded" value="true" />
@@ -42,23 +49,65 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="go.vgo" />
   </component>
-  <component name="RunManager">
-    <configuration name="docker-compose.yaml.bulksender: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
-      <deployment type="docker-compose.yml">
-        <settings>
-          <option name="services">
-            <list>
-              <option value="bulksender" />
-            </list>
-          </option>
-          <option name="sourceFilePath" value="docker-compose.yaml" />
-        </settings>
-      </deployment>
+  <component name="RunManager" selected="Go Test.clicks_test.go">
+    <configuration name="TestBounces in github.com/mailbadger/app/storage" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <working_directory value="$PROJECT_DIR$/storage" />
+      <framework value="gotest" />
+      <kind value="PACKAGE" />
+      <package value="github.com/mailbadger/app/storage" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <pattern value="^\QTestBounces\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="clicks_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <working_directory value="$PROJECT_DIR$/storage" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <package value="github.com/mailbadger/app" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/storage/clicks_test.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="deliveries_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <working_directory value="$PROJECT_DIR$/storage" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <package value="github.com/mailbadger/app" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/storage/deliveries_test.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="opens_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <working_directory value="$PROJECT_DIR$/storage" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <package value="github.com/mailbadger/app" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/storage/opens_test.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="sends_test.go" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="app" />
+      <working_directory value="$PROJECT_DIR$/storage" />
+      <framework value="gotest" />
+      <kind value="FILE" />
+      <package value="github.com/mailbadger/app" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/storage/sends_test.go" />
       <method v="2" />
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Docker.docker-compose.yaml.bulksender: Compose Deployment" />
+        <item itemvalue="Go Test.clicks_test.go" />
+        <item itemvalue="Go Test.deliveries_test.go" />
+        <item itemvalue="Go Test.sends_test.go" />
+        <item itemvalue="Go Test.opens_test.go" />
+        <item itemvalue="Go Test.TestBounces in github.com/mailbadger/app/storage" />
       </list>
     </recent_temporary>
   </component>
@@ -70,9 +119,33 @@
     <integration-enabled>true</integration-enabled>
   </component>
   <component name="WindowStateProjectService">
+    <state width="2514" height="404" key="GridCell.Tab.0.bottom" timestamp="1600246089276">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="404" key="GridCell.Tab.0.bottom/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600246089276" />
+    <state width="2514" height="404" key="GridCell.Tab.0.center" timestamp="1600246089276">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="404" key="GridCell.Tab.0.center/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600246089276" />
+    <state width="2514" height="404" key="GridCell.Tab.0.left" timestamp="1600246089276">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="404" key="GridCell.Tab.0.left/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600246089276" />
+    <state width="2514" height="404" key="GridCell.Tab.0.right" timestamp="1600246089276">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="404" key="GridCell.Tab.0.right/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600246089276" />
     <state x="2700" y="343" key="SettingsEditor" timestamp="1599147727050">
       <screen x="0" y="34" width="4480" height="1406" />
     </state>
     <state x="2700" y="343" key="SettingsEditor/0.34.4480.1406@0.34.4480.1406" timestamp="1599147727050" />
+    <state x="3007" y="623" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1600186621669">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="3007" y="623" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600186621669" />
+    <state x="3045" y="467" key="refactoring.ChangeSignatureDialog" timestamp="1600187076691">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="3045" y="467" key="refactoring.ChangeSignatureDialog/0.34.1920.1046/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600187076691" />
   </component>
 </project>
