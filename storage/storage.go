@@ -33,7 +33,7 @@ type Storage interface {
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
 	GetCampaignOpens(campaignID int64, p *PaginationCursor) error
-	GetCampaignClicks(int64, int64) ([]entities.ClicksStats, error)
+	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -190,7 +190,7 @@ func GetCampaignOpens(c context.Context, campaignID int64, p *PaginationCursor) 
 
 // GetCampaignClicksStats returns a collection of clicks stats by given campaign id and user id
 func GetCampaignClicksStats(c context.Context, id, userID int64) ([]entities.ClicksStats, error) {
-	return GetFromContext(c).GetCampaignClicks(id, userID)
+	return GetFromContext(c).GetCampaignClicksStats(id, userID)
 }
 
 // GetSegments populates a pagination object with a collection of
