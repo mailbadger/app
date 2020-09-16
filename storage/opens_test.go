@@ -63,8 +63,7 @@ func TestOpens(t *testing.T) {
 	assert.Nil(t, err)
 
 	// test get campaign opens stats
-	opensStats := &entities.OpensStats{}
-	opensStats, err = store.GetOpensStats(1)
+	opensStats, err := store.GetOpensStats(1)
 	assert.Nil(t, err)
 	assert.NotNil(t, opensStats)
 	assert.Equal(t, int64(3), opensStats.Total)

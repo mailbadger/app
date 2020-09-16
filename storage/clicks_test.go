@@ -66,8 +66,7 @@ func TestClicks(t *testing.T) {
 	assert.Nil(t, err)
 
 	// test get campaign clicks stats
-	clicksStats := &entities.ClicksStats{}
-	clicksStats, err = store.GetClicksStats(1)
+	clicksStats, err := store.GetClicksStats(1)
 	assert.Nil(t, err)
 	assert.NotNil(t, clicksStats)
 	assert.Equal(t, int64(3), clicksStats.Total)
