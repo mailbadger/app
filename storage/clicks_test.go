@@ -142,6 +142,7 @@ func TestClicks(t *testing.T) {
 		assert.Nil(t, err)
 	}
 
+	// Test get campaign clicks stats
 	campaignClicksStats, err := store.GetCampaignClicksStats(1, 1)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, campaignClicksStats)
@@ -164,6 +165,7 @@ func TestClicks(t *testing.T) {
 		},
 	}, campaignClicksStats)
 
+	// Test get campaign clicks stats
 	campaignClicksStats, err = store.GetCampaignClicksStats(1, 2)
 	assert.Nil(t, err)
 	assert.Empty(t, campaignClicksStats)

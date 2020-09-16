@@ -389,6 +389,7 @@ func GetCampaignClicksStats(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Id must be an integer",
 		})
+		return
 	}
 
 	stats, err := storage.GetCampaignClicksStats(c, id, middleware.GetUser(c).ID)
