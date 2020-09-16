@@ -404,6 +404,4 @@ func GetCampaignClicksStats(c *gin.Context) {
 		Total:       int64(len(stats)),
 		ClicksStats: stats,
 	})
-	return
-
 }
