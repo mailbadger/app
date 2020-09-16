@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
-	github.com/aws/aws-sdk-go v1.34.23
+	github.com/aws/aws-sdk-go v1.34.24
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -39,9 +39,9 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/sys v0.0.0-20200915084602-288bc346aa39 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
-	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20200914193844-75d14daec038 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
+	google.golang.org/api v0.32.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
