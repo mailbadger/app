@@ -22,7 +22,11 @@ func TestSends(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test insert sends
+	// test get empty sends
+	totalSends, err := store.GetTotalSends(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalSends)
+
 	sends := []entities.Send{
 		{
 			ID:               1,
@@ -45,15 +49,14 @@ func TestSends(t *testing.T) {
 			CreatedAt:        now,
 		},
 	}
-	// insert send 1
-	err := store.CreateSend(&sends[0])
-	assert.Nil(t, err)
-	// insert send 2
-	err = store.CreateSend(&sends[1])
-	assert.Nil(t, err)
+	// test insert opens
+	for _, i := range sends {
+		err = store.CreateSend(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get total sends stats
-	totalSends, err := store.GetTotalSends(1)
+	totalSends, err = store.GetTotalSends(1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalSends)
 

@@ -22,7 +22,11 @@ func TestComplaints(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test insert complaints
+	// Test get empty complaints
+	totalComplaints, err := store.GetTotalComplaints(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalComplaints)
+
 	complaints := []entities.Complaint{
 		{
 			ID:         1,
@@ -45,15 +49,14 @@ func TestComplaints(t *testing.T) {
 			CreatedAt:  now,
 		},
 	}
-	// insert complaints 1
-	err := store.CreateComplaint(&complaints[0])
-	assert.Nil(t, err)
-	// insert complaints 2
-	err = store.CreateComplaint(&complaints[1])
-	assert.Nil(t, err)
+	// test insert opens
+	for _, i := range complaints {
+		err = store.CreateComplaint(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get total complaints
-	totalComplaints, err := store.GetTotalComplaints(1)
+	totalComplaints, err = store.GetTotalComplaints(1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalComplaints)
 

@@ -22,7 +22,11 @@ func TestDeliveries(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test insert deliveries
+	// test get empty delivery stats
+	totalDeliveries, err := store.GetTotalDelivered(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalDeliveries)
+
 	deliveries := []entities.Delivery{
 		{
 			ID:                   1,
@@ -47,15 +51,14 @@ func TestDeliveries(t *testing.T) {
 			CreatedAt:            now,
 		},
 	}
-	// insert delivery 1
-	err := store.CreateDelivery(&deliveries[0])
-	assert.Nil(t, err)
-	// insert delivery 2
-	err = store.CreateDelivery(&deliveries[1])
-	assert.Nil(t, err)
+	// test insert deliveries
+	for _, i := range deliveries {
+		err = store.CreateDelivery(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get total delivery stats
-	totalDeliveries, err := store.GetTotalDelivered(1)
+	totalDeliveries, err = store.GetTotalDelivered(1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalDeliveries)
 

@@ -22,7 +22,12 @@ func TestClicks(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test insert click
+	// test get empty campaign clicks stats
+	clicksStats, err := store.GetClicksStats(1)
+	assert.Nil(t, err)
+	assert.NotNil(t, clicksStats)
+	assert.Equal(t, &entities.ClicksStats{}, clicksStats)
+
 	clicks := []entities.Click{
 		{
 			ID:         1,
@@ -55,21 +60,17 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 	}
-	// insert click 1
-	err := store.CreateClick(&clicks[0])
-	assert.Nil(t, err)
-	// insert click 2
-	err = store.CreateClick(&clicks[1])
-	assert.Nil(t, err)
-	// insert click 3
-	err = store.CreateClick(&clicks[2])
-	assert.Nil(t, err)
+	// test insert opens
+	for _, i := range clicks {
+		err = store.CreateClick(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get campaign clicks stats
-	clicksStats, err := store.GetClicksStats(1)
+	clicksStats, err = store.GetClicksStats(1)
 	assert.Nil(t, err)
 	assert.NotNil(t, clicksStats)
-	assert.Equal(t, int64(3), clicksStats.Total)
-	assert.Equal(t, int64(2), clicksStats.Unique)
+	exp := &entities.ClicksStats{Unique: 2, Total: 3}
+	assert.Equal(t, exp, clicksStats)
 
 }

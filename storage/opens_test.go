@@ -22,6 +22,11 @@ func TestOpens(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
+	// test get empty opens stats
+	opensStats, err := store.GetOpensStats(1)
+	assert.Nil(t, err)
+	assert.Equal(t, &entities.OpensStats{}, opensStats)
+
 	// Test insert open
 	open := []entities.Open{
 		{
@@ -52,21 +57,18 @@ func TestOpens(t *testing.T) {
 			CreatedAt:  now,
 		},
 	}
-	// insert open 1
-	err := store.CreateOpen(&open[0])
-	assert.Nil(t, err)
-	// insert open 2
-	err = store.CreateOpen(&open[1])
-	assert.Nil(t, err)
-	// insert open 3
-	err = store.CreateOpen(&open[2])
-	assert.Nil(t, err)
+
+	// test insert opens
+	for _, i := range open {
+		err = store.CreateOpen(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get campaign opens stats
-	opensStats, err := store.GetOpensStats(1)
+	opensStats, err = store.GetOpensStats(1)
 	assert.Nil(t, err)
 	assert.NotNil(t, opensStats)
-	assert.Equal(t, int64(3), opensStats.Total)
-	assert.Equal(t, int64(2), opensStats.Unique)
+	exp := &entities.OpensStats{Unique: 2, Total: 3}
+	assert.Equal(t, exp, opensStats)
 
 }

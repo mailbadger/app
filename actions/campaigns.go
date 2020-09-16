@@ -389,6 +389,7 @@ func GetCampaignStats(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Id must be an integer",
 		})
+		return
 	}
 
 	var campaignStats entities.CampaignStats

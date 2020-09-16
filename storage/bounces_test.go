@@ -22,7 +22,11 @@ func TestBounces(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test insert bounces
+	// test get empty bounces stats
+	totalBounces, err := store.GetTotalBounces(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalBounces)
+
 	bounces := []entities.Bounce{
 		{
 			ID:             1,
@@ -51,15 +55,14 @@ func TestBounces(t *testing.T) {
 			CreatedAt:      now,
 		},
 	}
-	// insert bounce 1
-	err := store.CreateBounce(&bounces[0])
-	assert.Nil(t, err)
-	// insert bounce 2
-	err = store.CreateBounce(&bounces[1])
-	assert.Nil(t, err)
+	// test insert bounces
+	for _, i := range bounces {
+		err = store.CreateBounce(&i)
+		assert.Nil(t, err)
+	}
 
 	// test get total bounces stats
-	totalBounces, err := store.GetTotalBounces(1)
+	totalBounces, err = store.GetTotalBounces(1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalBounces)
 
