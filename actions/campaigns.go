@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
@@ -18,7 +20,6 @@ import (
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
-	"github.com/sirupsen/logrus"
 )
 
 type sendCampaignParams struct {
@@ -355,6 +356,7 @@ func GetCampaignOpens(c *gin.Context) {
 		})
 		return
 	}
+	user := middleware.GetUser(c)
 
 	p, ok := val.(*storage.PaginationCursor)
 	if !ok {
@@ -366,7 +368,7 @@ func GetCampaignOpens(c *gin.Context) {
 	}
 
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if err := storage.GetCampaignOpens(c, id, p); err == nil {
+		if err := storage.GetCampaignOpens(c, id, user.ID, p); err == nil {
 			c.JSON(http.StatusOK, p)
 			return
 		}
@@ -379,5 +381,87 @@ func GetCampaignOpens(c *gin.Context) {
 
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": "Id must be an integer",
+	})
+}
+
+func GetCampaignStats(c *gin.Context) {
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+	user := middleware.GetUser(c)
+
+	var campaignStats entities.CampaignStats
+	campaignStats.TotalSent, err = storage.GetTotalSends(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Delivered, err = storage.GetTotalDelivered(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Opens, err = storage.GetOpensStats(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Clicks, err = storage.GetClicksStats(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Bounces, err = storage.GetTotalBounces(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+	campaignStats.Complaints, err = storage.GetTotalComplaints(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign stats not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, campaignStats)
+
+}
+
+func GetCampaignClicksStats(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	stats, err := storage.GetCampaignClicksStats(c, id, middleware.GetUser(c).ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign clicks not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entities.CampaignClicksStats{
+		Total:       int64(len(stats)),
+		ClicksStats: stats,
 	})
 }

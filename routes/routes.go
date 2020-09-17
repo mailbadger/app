@@ -191,6 +191,8 @@ func New() http.Handler {
 			campaigns.DELETE("/:id", actions.DeleteCampaign)
 			campaigns.POST("/:id/start", actions.StartCampaign)
 			campaigns.GET("/:id/opens", middleware.PaginateWithCursor(), actions.GetCampaignOpens)
+			campaigns.GET("/:id/stats", actions.GetCampaignStats)
+			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
 		}
 
 		segments := authorized.Group("/segments")
