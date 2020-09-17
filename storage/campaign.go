@@ -82,8 +82,8 @@ func (db *store) GetClicksStats(campaignID, userID int64) (*entities.ClicksStats
 	clickStats := &entities.ClicksStats{}
 	err := db.Table("clicks").
 		Select("count(distinct(recipient))").
-		Count(&clickStats.Unique).Select("count(recipient)").
-		Count(&clickStats.Total).
+		Count(&clickStats.UniqueClicks).Select("count(recipient)").
+		Count(&clickStats.TotalClicks).
 		Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
 	return clickStats, err
 }

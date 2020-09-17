@@ -11,6 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
@@ -18,7 +20,6 @@ import (
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
-	"github.com/sirupsen/logrus"
 )
 
 type sendCampaignParams struct {
@@ -440,4 +441,27 @@ func GetCampaignStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, campaignStats)
 
+}
+
+func GetCampaignClicksStats(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	stats, err := storage.GetCampaignClicksStats(c, id, middleware.GetUser(c).ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign clicks not found",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, entities.CampaignClicksStats{
+		Total:       int64(len(stats)),
+		ClicksStats: stats,
+	})
 }
