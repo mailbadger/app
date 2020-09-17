@@ -22,44 +22,49 @@ func TestClicks(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	// Test clicks
+	// test get empty campaign clicks stats
+	clicksStats, err := store.GetClicksStats(1,1)
+	assert.Nil(t, err)
+	assert.NotNil(t, clicksStats)
+	assert.Equal(t, &entities.ClicksStats{}, clicksStats)
+
 	clicks := []entities.Click{
 		{
 			ID:         1,
 			UserID:     1,
 			CampaignID: 1,
-			Recipient:  "test@mail.com",
-			Link:       "http://example.com?foo=bar",
+			Recipient:  "jhon@doe.com",
 			UserAgent:  "android",
-			IPAddress:  "192.168.0.1",
+			IPAddress:  "1.1.1.1",
 			CreatedAt:  now,
+			Link:       "s",
 		},
 		{
 			ID:         2,
 			UserID:     1,
 			CampaignID: 1,
-			Recipient:  "test@mail.com",
-			Link:       "http://example.com?foo=bar",
-			UserAgent:  "android",
-			IPAddress:  "192.168.0.1",
+			Recipient:  "jhon@email.com",
+			Link:       "a",
+			UserAgent:  "windows",
+			IPAddress:  "1.1.1.1",
 			CreatedAt:  now,
 		},
 		{
 			ID:         3,
 			UserID:     1,
 			CampaignID: 1,
-			Recipient:  "test@mail.com",
-			Link:       "http://example.com?foo=bar",
-			UserAgent:  "android",
-			IPAddress:  "192.168.0.1",
+			Recipient:  "jhon@email.com",
+			Link:       "a",
+			UserAgent:  "windows",
+			IPAddress:  "1.1.1.1",
 			CreatedAt:  now,
 		},
 		{
 			ID:         4,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "test@mail.com",
-			Link:       "http://example.com?asd=dsa",
+			Link:       "http://example.com?foo=bar",
 			UserAgent:  "android",
 			IPAddress:  "192.168.0.1",
 			CreatedAt:  now,
@@ -67,9 +72,9 @@ func TestClicks(t *testing.T) {
 		{
 			ID:         5,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "test@mail.com",
-			Link:       "http://example.com?asd=dsa",
+			Link:       "http://example.com?foo=bar",
 			UserAgent:  "android",
 			IPAddress:  "192.168.0.1",
 			CreatedAt:  now,
@@ -77,9 +82,9 @@ func TestClicks(t *testing.T) {
 		{
 			ID:         6,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "test@mail.com",
-			Link:       "http://example.com?test=test",
+			Link:       "http://example.com?foo=bar",
 			UserAgent:  "android",
 			IPAddress:  "192.168.0.1",
 			CreatedAt:  now,
@@ -87,7 +92,37 @@ func TestClicks(t *testing.T) {
 		{
 			ID:         7,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
+			Recipient:  "test@mail.com",
+			Link:       "http://example.com?asd=dsa",
+			UserAgent:  "android",
+			IPAddress:  "192.168.0.1",
+			CreatedAt:  now,
+		},
+		{
+			ID:         8,
+			UserID:     1,
+			CampaignID: 2,
+			Recipient:  "test@mail.com",
+			Link:       "http://example.com?asd=dsa",
+			UserAgent:  "android",
+			IPAddress:  "192.168.0.1",
+			CreatedAt:  now,
+		},
+		{
+			ID:         9,
+			UserID:     1,
+			CampaignID: 2,
+			Recipient:  "test@mail.com",
+			Link:       "http://example.com?test=test",
+			UserAgent:  "android",
+			IPAddress:  "192.168.0.1",
+			CreatedAt:  now,
+		},
+		{
+			ID:         10,
+			UserID:     1,
+			CampaignID: 2,
 			Recipient:  "gl-test@mail.com",
 			Link:       "http://example.com?asd=dsa",
 			UserAgent:  "windows",
@@ -95,9 +130,9 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 		{
-			ID:         8,
+			ID:         11,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "gl-test@mail.com",
 			Link:       "http://example.com?foo=bar",
 			UserAgent:  "windows",
@@ -105,9 +140,9 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 		{
-			ID:         9,
+			ID:         12,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "dj-test@mail.com",
 			Link:       "http://example.com?foo=bar",
 			UserAgent:  "windows",
@@ -115,9 +150,9 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 		{
-			ID:         10,
+			ID:         13,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "dj-test@mail.com",
 			Link:       "http://example.com?foo=bar",
 			UserAgent:  "windows",
@@ -125,9 +160,9 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 		{
-			ID:         11,
+			ID:         14,
 			UserID:     1,
-			CampaignID: 1,
+			CampaignID: 2,
 			Recipient:  "dj-test@mail.com",
 			Link:       "http://example.com?test=test",
 			UserAgent:  "windows",
@@ -135,15 +170,21 @@ func TestClicks(t *testing.T) {
 			CreatedAt:  now,
 		},
 	}
-
-	for _, click := range clicks {
-		// Test insert click
-		err := store.CreateClick(&click)
+	// test insert opens
+	for _, i := range clicks {
+		err = store.CreateClick(&i)
 		assert.Nil(t, err)
 	}
 
+	// test get campaign clicks stats
+	clicksStats, err = store.GetClicksStats(1,1)
+	assert.Nil(t, err)
+	assert.NotNil(t, clicksStats)
+	exp := &entities.ClicksStats{UniqueClicks: 5, TotalClicks: 14}
+	assert.Equal(t, exp, clicksStats)
+
 	// Test get campaign clicks stats
-	campaignClicksStats, err := store.GetCampaignClicksStats(1, 1)
+	campaignClicksStats, err := store.GetCampaignClicksStats(2, 1)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, campaignClicksStats)
 
@@ -165,9 +206,8 @@ func TestClicks(t *testing.T) {
 		},
 	}, campaignClicksStats)
 
-	// Test get campaign clicks stats
-	campaignClicksStats, err = store.GetCampaignClicksStats(1, 2)
+	// Test get empty campaign clicks stats
+	campaignClicksStats, err = store.GetCampaignClicksStats(55, 1)
 	assert.Nil(t, err)
 	assert.Empty(t, campaignClicksStats)
-
 }

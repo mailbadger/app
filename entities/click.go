@@ -16,7 +16,7 @@ type Click struct {
 
 // ClicksStats entity holds information about total and unique recipients that clicked a certain link
 type ClicksStats struct {
-	Link         string `json:"link"`
+	Link         string `json:"link,omitempty"`
 	UniqueClicks int64  `json:"unique_clicks"`
 	TotalClicks  int64  `json:"total_clicks"`
 }
