@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS "clicks" (
   "campaign_id"     integer,
   "user_id"         integer,
   "ip_address"      varchar(50),
+  "recipient"       varchar(191),
   "user_agent"      varchar(191),
   "link"            varchar(191),
   "created_at"      datetime

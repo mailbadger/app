@@ -63,16 +63,66 @@ func (db *store) DeleteCampaign(id, userID int64) error {
 }
 
 // GetCampaignOpens fetches campaign opens by campaign id, and populates the pagination obj
-func (db *store) GetCampaignOpens(campaignID int64, p *PaginationCursor) error {
+func (db *store) GetCampaignOpens(campaignID, userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Open{})
 	p.SetResource("opens")
 
 	query := db.Table(p.Resource).
-		Where("campaign_id = ?", campaignID).
+		Where("campaign_id = ? and user_id=?", campaignID, userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
 	p.SetQuery(query)
 
 	return db.Paginate(p, campaignID)
+}
+
+// GetClicksStats fetches campaign total & unique clicks from the database.
+func (db *store) GetClicksStats(campaignID, userID int64) (*entities.ClicksStats, error) {
+	clickStats := &entities.ClicksStats{}
+	err := db.Table("clicks").
+		Select("count(distinct(recipient))").
+		Count(&clickStats.Unique).Select("count(recipient)").
+		Count(&clickStats.Total).
+		Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return clickStats, err
+}
+
+// GetOpensStats fetches campaign total & unique opens from the database.
+func (db *store) GetOpensStats(campaignID, userID int64) (*entities.OpensStats, error) {
+	opensStats := &entities.OpensStats{}
+	err := db.Table("opens").
+		Select("count(distinct(recipient))").
+		Count(&opensStats.Unique).Select("count(recipient)").
+		Count(&opensStats.Total).
+		Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return opensStats, err
+}
+
+// GetTotalSends returns total sends for campaign id from the database.
+func (db *store) GetTotalSends(campaignID, userID int64) (int64, error) {
+	var totalSent int64
+	err := db.Table("sends").Select("count(campaign_id)").Count(&totalSent).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return totalSent, err
+}
+
+// GetTotalDelivered fetches campaign total deliveries  from the database.
+func (db *store) GetTotalDelivered(campaignID, userID int64) (int64, error) {
+	var totalDelivered int64
+	err := db.Table("deliveries").Select("count(distinct(recipient))").Count(&totalDelivered).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return totalDelivered, err
+}
+
+// GetTotalBounces fetches campaign total bounces  from the database.
+func (db *store) GetTotalBounces(campaignID, userID int64) (int64, error) {
+	var totalBounces int64
+	err := db.Table("bounces").Select("count(recipient)").Count(&totalBounces).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return totalBounces, err
+}
+
+// GetTotalComplaints fetches campaign total bounces  from the database.
+func (db *store) GetTotalComplaints(campaignID, userID int64) (int64, error) {
+	var totalComplaints int64
+	err := db.Table("complaints").Select("count(recipient)").Count(&totalComplaints).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	return totalComplaints, err
 }
