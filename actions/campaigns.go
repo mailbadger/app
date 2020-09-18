@@ -3,11 +3,11 @@ package actions
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 	"strings"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
@@ -24,8 +24,8 @@ import (
 
 type sendCampaignParams struct {
 	Ids      []int64 `form:"segment_id[]" valid:"required"`
-	Source   string  `form:"source" valid:"email,required~Email is empty or in invalid format"`
-	FromName string  `form:"from_name" valid:"required,stringlength(1|191)~From name is blank or exceeds maximum character limit."`
+	Source   string  `form:"source" binding:"required"`
+	FromName string  `form:"from_name" binding:"required,max=191."`
 }
 
 func StartCampaign(c *gin.Context) {
@@ -38,26 +38,13 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	params := &sendCampaignParams{}
-	err = c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind send campaign params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		msg := "Unable to start campaign, invalid request parameters."
-		if err != nil {
-			msg = err.Error()
+	if err := c.ShouldBind(params); err != nil {
+		for _, fieldErr := range err.(validator.ValidationErrors) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+			})
+			return
 		}
-
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": msg,
-		})
-		return
 	}
 
 	templateData := c.PostFormMap("default_template_data")
@@ -222,11 +209,26 @@ func GetCampaign(c *gin.Context) {
 	})
 }
 
+type paramsCampaign struct {
+	Name         string `json:"name" form:"name" binding:"required,max=191"`
+	TemplateName string `json:"template_name" form:"template_name" binding:"required,max=191"`
+}
+
 func PostCampaign(c *gin.Context) {
-	name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
+
+	params := &paramsCampaign{}
+	if err := c.ShouldBind(params); err != nil {
+		for _, fieldErr := range err.(validator.ValidationErrors) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+			})
+			return
+		}
+	}
+
 	user := middleware.GetUser(c)
 
-	_, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
+	_, err := storage.GetCampaignByName(c, params.Name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Campaign with that name already exists",
@@ -235,18 +237,10 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	campaign := &entities.Campaign{
-		Name:         name,
+		Name:         params.Name,
 		UserID:       user.ID,
-		TemplateName: templateName,
+		TemplateName: params.TemplateName,
 		Status:       entities.StatusDraft,
-	}
-
-	if !campaign.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  campaign.Errors,
-		})
-		return
 	}
 
 	err = storage.CreateCampaign(c, campaign)
@@ -274,9 +268,16 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		name, templateName := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("template_name"))
-
-		campaign2, err := storage.GetCampaignByName(c, name, middleware.GetUser(c).ID)
+		params := &paramsCampaign{}
+		if err := c.ShouldBind(params); err != nil {
+			for _, fieldErr := range err.(validator.ValidationErrors) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+				})
+				return
+			}
+		}
+		campaign2, err := storage.GetCampaignByName(c, params.Name, middleware.GetUser(c).ID)
 		if err == nil && campaign.ID != campaign2.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign with that name already exists",
@@ -284,8 +285,8 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		campaign.Name = name
-		campaign.TemplateName = templateName
+		campaign.Name = params.Name
+		campaign.TemplateName = params.TemplateName
 
 		if !campaign.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
