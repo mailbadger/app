@@ -2,17 +2,18 @@ package actions
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
+	"net/http"
+	"strings"
 )
 
 func GetTemplate(c *gin.Context) {
@@ -127,14 +128,14 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	param := &postTemplate{}
-	err = c.Bind(param)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind post template params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
+	params := &postTemplate{}
+	if err := c.ShouldBind(params); err != nil {
+		for _, fieldErr := range err.(validator.ValidationErrors) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+			})
+			return
+		}
 	}
 
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
@@ -148,10 +149,10 @@ func PostTemplate(c *gin.Context) {
 
 	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
 		Template: &ses.Template{
-			TemplateName: aws.String(param.Name),
-			HtmlPart:     aws.String(param.Html),
-			TextPart:     aws.String(param.Html),
-			SubjectPart:  aws.String(param.Subject),
+			TemplateName: aws.String(params.Name),
+			HtmlPart:     aws.String(params.Html),
+			TextPart:     aws.String(params.Html),
+			SubjectPart:  aws.String(params.Subject),
 		},
 	})
 	if err != nil {
@@ -168,10 +169,10 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
-		Name:        param.Name,
-		HTMLPart:    param.Html,
-		TextPart:    param.Html,
-		SubjectPart: param.Subject,
+		Name:        params.Name,
+		HTMLPart:    params.Html,
+		TextPart:    params.Html,
+		SubjectPart: params.Subject,
 	})
 }
 
