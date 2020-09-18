@@ -110,6 +110,12 @@ func GetTemplates(c *gin.Context) {
 	})
 }
 
+type postTemplate struct {
+	Name    string `json:"name" form:"name" binding:"required"`
+	Html    string `json:"content" form:"content" binding:"required,html"`
+	Subject string `json:"subject" form:"subject" binding:"required"`
+}
+
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -117,6 +123,16 @@ func PostTemplate(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "AWS Ses keys not set.",
+		})
+		return
+	}
+
+	param := &postTemplate{}
+	err = c.Bind(param)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind post template params.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Invalid parameters, please try again.",
 		})
 		return
 	}
@@ -130,19 +146,14 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	name := c.PostForm("name")
-	html := c.PostForm("content")
-	subject := c.PostForm("subject")
-
 	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
 		Template: &ses.Template{
-			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(html),
-			TextPart:     aws.String(html),
-			SubjectPart:  aws.String(subject),
+			TemplateName: aws.String(param.Name),
+			HtmlPart:     aws.String(param.Html),
+			TextPart:     aws.String(param.Html),
+			SubjectPart:  aws.String(param.Subject),
 		},
 	})
-
 	if err != nil {
 		reason := "Unable to create template."
 
@@ -157,10 +168,10 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
-		Name:        name,
-		HTMLPart:    html,
-		TextPart:    html,
-		SubjectPart: subject,
+		Name:        param.Name,
+		HTMLPart:    param.Html,
+		TextPart:    param.Html,
+		SubjectPart: param.Subject,
 	})
 }
 
