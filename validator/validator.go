@@ -1,11 +1,12 @@
 package validator
 
 import (
-	"github.com/gin-gonic/gin/binding"
-	"gopkg.in/go-playground/validator.v9"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/gin-gonic/gin/binding"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type DefaultValidator struct {

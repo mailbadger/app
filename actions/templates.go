@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"

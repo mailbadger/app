@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"github.com/gin-gonic/gin/binding"
-	"github.com/mailbadger/app/validator"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,10 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin/binding"
+
+	"github.com/mailbadger/app/validator"
+
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/utils"
-	"github.com/sirupsen/logrus"
 )
 
 func init() {

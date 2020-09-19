@@ -1,8 +1,9 @@
 package validator
 
 import (
-	"gopkg.in/go-playground/validator.v9"
 	"strings"
+
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type FieldError struct {
