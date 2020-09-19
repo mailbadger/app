@@ -17,11 +17,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	adapter "github.com/gwatts/gin-adapter"
+	"github.com/sirupsen/logrus"
+	"github.com/unrolled/secure"
+
 	"github.com/mailbadger/app/actions"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/utils"
-	"github.com/sirupsen/logrus"
-	"github.com/unrolled/secure"
 )
 
 // New creates a new HTTP handler with the specified middleware.

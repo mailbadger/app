@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
@@ -110,6 +111,12 @@ func GetTemplates(c *gin.Context) {
 	})
 }
 
+type postTemplate struct {
+	Name    string `form:"name" binding:"required,max=191"`
+	Content string `form:"content" binding:"required,html"`
+	Subject string `form:"subject" binding:"required,max=191"`
+}
+
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -121,6 +128,11 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
+	params := &postTemplate{}
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
+		return
+	}
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to create SES template store.")
@@ -130,19 +142,14 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	name := c.PostForm("name")
-	html := c.PostForm("content")
-	subject := c.PostForm("subject")
-
 	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
 		Template: &ses.Template{
-			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(html),
-			TextPart:     aws.String(html),
-			SubjectPart:  aws.String(subject),
+			TemplateName: aws.String(params.Name),
+			HtmlPart:     aws.String(params.Content),
+			TextPart:     aws.String(params.Content),
+			SubjectPart:  aws.String(params.Subject),
 		},
 	})
-
 	if err != nil {
 		reason := "Unable to create template."
 
@@ -157,11 +164,16 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
-		Name:        name,
-		HTMLPart:    html,
-		TextPart:    html,
-		SubjectPart: subject,
+		Name:        params.Name,
+		HTMLPart:    params.Content,
+		TextPart:    params.Content,
+		SubjectPart: params.Subject,
 	})
+}
+
+type putTemplate struct {
+	Content string `json:"content" form:"content" binding:"required,html"`
+	Subject string `json:"subject" form:"subject" binding:"required,max=191"`
 }
 
 func PutTemplate(c *gin.Context) {
@@ -175,6 +187,14 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
+	params := &putTemplate{}
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
+		return
+	}
+
+	name := c.Param("name")
+
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to create SES template store.")
@@ -183,17 +203,12 @@ func PutTemplate(c *gin.Context) {
 		})
 		return
 	}
-
-	name := c.Param("name")
-	html := c.PostForm("content")
-	subject := c.PostForm("subject")
-
 	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
 		Template: &ses.Template{
 			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(html),
-			TextPart:     aws.String(html),
-			SubjectPart:  aws.String(subject),
+			HtmlPart:     aws.String(params.Content),
+			TextPart:     aws.String(params.Content),
+			SubjectPart:  aws.String(params.Subject),
 		},
 	})
 
@@ -212,9 +227,9 @@ func PutTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, entities.Template{
 		Name:        name,
-		HTMLPart:    html,
-		TextPart:    html,
-		SubjectPart: subject,
+		HTMLPart:    params.Content,
+		TextPart:    params.Content,
+		SubjectPart: params.Subject,
 	})
 }
 
