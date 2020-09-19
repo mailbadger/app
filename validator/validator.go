@@ -16,11 +16,8 @@ type DefaultValidator struct {
 var _ binding.StructValidator = &DefaultValidator{}
 
 func (v *DefaultValidator) ValidateStruct(obj interface{}) error {
-
 	if kindOfData(obj) == reflect.Struct {
-
 		v.lazyinit()
-
 		if err := v.validate.Struct(obj); err != nil {
 			return err
 		}
@@ -46,7 +43,6 @@ func (v *DefaultValidator) lazyinit() {
 }
 
 func kindOfData(data interface{}) reflect.Kind {
-
 	value := reflect.ValueOf(data)
 	valueType := value.Kind()
 
