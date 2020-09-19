@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
@@ -150,7 +149,7 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) error {
 }
 
 type putForgotPassParams struct {
-	Password string `form:"password" valid:"required"`
+	Password string `form:"password" binding:"required,min=8"`
 }
 
 func PutForgotPassword(c *gin.Context) {
@@ -165,31 +164,8 @@ func PutForgotPassword(c *gin.Context) {
 	}
 
 	params := &putForgotPassParams{}
-	err = c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		passError := valid.ErrorByField(err, "Password")
-		if passError == "" {
-			passError = "The password must not be empty."
-		}
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": passError,
-		})
-		return
-	}
-
-	if len(params.Password) < 8 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"password": "The new password must be atleast 8 characters.",
-		})
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
