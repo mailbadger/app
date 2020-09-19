@@ -14,5 +14,6 @@ func AbortWithError(c *gin.Context, err error) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": mbvalidator.FieldError{Err: fieldErr}.String(),
 		})
+		return
 	}
 }
