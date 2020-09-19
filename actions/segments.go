@@ -204,13 +204,6 @@ func PutSegmentSubscribers(c *gin.Context) {
 			return
 		}
 
-		if len(subs.Ids) == 0 {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Ids list is empty",
-			})
-			return
-		}
-
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
 			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
@@ -296,12 +289,6 @@ func DetachSegmentSubscribers(c *gin.Context) {
 			return
 		}
 
-		if len(subs.Ids) == 0 {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Ids list is empty",
-			})
-			return
-		}
 
 		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
 		if err != nil {
