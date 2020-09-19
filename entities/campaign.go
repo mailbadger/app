@@ -58,6 +58,12 @@ type SendCampaignParams struct {
 	SesKeys                `json:"ses_keys"`
 }
 
+// CampaignClicksStats represents clicks stats by campaign, total number of links and stats for each link
+type CampaignClicksStats struct {
+	Total       int64         `json:"total"`
+	ClicksStats []ClicksStats `json:"collection"`
+}
+
 // Validate validates the campaign properties and populates the Errors map
 // in case of any errors.
 func (c *Campaign) Validate() bool {
@@ -81,11 +87,6 @@ func (c Campaign) GetCreatedAt() time.Time {
 
 func (c Campaign) GetUpdatedAt() time.Time {
 	return c.Model.UpdatedAt
-}
-
-type ClicksStats struct {
-	Unique int64 `json:"unique"`
-	Total  int64 `json:"total"`
 }
 
 type OpensStats struct {

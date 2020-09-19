@@ -4,12 +4,12 @@
   "private": true,
   "dependencies": {
     "@uppy/aws-s3": "^1.7.0",
-    "@uppy/react": "^1.10.6",
+    "@uppy/react": "^1.10.7",
     "@uppy/core": "^1.13.2",
     "axios": "^0.20.0",
     "codemirror": "^5.57.0",
     "date-fns": "^2.16.1",
-    "dompurify": "^2.0.15",
+    "dompurify": "^2.0.16",
     "es6-promise": "^4.2.8",
     "formik": "^2.1.5",
     "grommet": "^2.10.0",
@@ -59,7 +59,7 @@
     "eslint": "^6.6.0",
     "eslint-plugin-react": "^7.20.6",
     "husky": "^4.3.0",
-    "lint-staged": "^10.3.0",
-    "prettier": "2.1.1"
+    "lint-staged": "^10.4.0",
+    "prettier": "2.1.2"
   }
 }
