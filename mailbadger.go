@@ -10,10 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin/binding"
+
+	"github.com/mailbadger/app/validator"
+
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/utils"
-	"github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -32,6 +37,8 @@ func init() {
 
 func main() {
 	handler := routes.New()
+
+	binding.Validator = new(validator.DefaultValidator)
 
 	var cfg *tls.Config
 	var addr = os.Getenv("PORT")
