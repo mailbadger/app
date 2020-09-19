@@ -2,18 +2,17 @@ package actions
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
-	mbvalidator "github.com/mailbadger/app/validator"
-	"net/http"
 )
 
 func GetTemplate(c *gin.Context) {
@@ -130,14 +129,9 @@ func PostTemplate(c *gin.Context) {
 
 	params := &postTemplate{}
 	if err := c.ShouldBind(params); err != nil {
-		for _, fieldErr := range err.(validator.ValidationErrors) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": mbvalidator.FieldError{Err: fieldErr}.String(),
-			})
-			return
-		}
+		AbortWithError(c, err)
+		return
 	}
-
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to create SES template store.")
@@ -194,12 +188,8 @@ func PutTemplate(c *gin.Context) {
 
 	params := &putTemplate{}
 	if err := c.ShouldBind(params); err != nil {
-		for _, fieldErr := range err.(validator.ValidationErrors) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": mbvalidator.FieldError{Err: fieldErr}.String(),
-			})
-			return
-		}
+		AbortWithError(c, err)
+		return
 	}
 
 	name := c.Param("name")
