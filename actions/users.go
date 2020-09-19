@@ -85,29 +85,13 @@ func ChangePassword(c *gin.Context) {
 }
 
 type forgotPassParams struct {
-	Email string `form:"email" valid:"email"`
+	Email string `form:"email" binding:"required,email"`
 }
 
 func PostForgotPassword(c *gin.Context) {
 	params := &forgotPassParams{}
-	err := c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		emailError := valid.ErrorByField(err, "Email")
-		if emailError == "" {
-			emailError = "Email must be in valid format."
-		}
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": emailError,
-		})
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
