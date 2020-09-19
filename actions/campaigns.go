@@ -3,10 +3,11 @@ package actions
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -218,12 +219,8 @@ func PostCampaign(c *gin.Context) {
 
 	params := &paramsCampaign{}
 	if err := c.ShouldBind(params); err != nil {
-		for _, fieldErr := range err.(validator.ValidationErrors) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
-			})
-			return
-		}
+		AbortWithError(c, err)
+		return
 	}
 
 	user := middleware.GetUser(c)
@@ -270,13 +267,10 @@ func PutCampaign(c *gin.Context) {
 
 		params := &paramsCampaign{}
 		if err := c.ShouldBind(params); err != nil {
-			for _, fieldErr := range err.(validator.ValidationErrors) {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
-				})
-				return
-			}
+			AbortWithError(c, err)
+			return
 		}
+
 		campaign2, err := storage.GetCampaignByName(c, params.Name, middleware.GetUser(c).ID)
 		if err == nil && campaign.ID != campaign2.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
