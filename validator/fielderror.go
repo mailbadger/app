@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"fmt"
 	"gopkg.in/go-playground/validator.v9"
 	"strings"
 )
@@ -19,10 +18,6 @@ func (q FieldError) String() string {
 	// Print condition parameters, e.g. max=191 -> max { 191 }
 	if q.Err.Param() != "" {
 		sb.WriteString(" " + q.Err.Param())
-	}
-
-	if q.Err.Value() != nil && q.Err.Value() != "" {
-		sb.WriteString(fmt.Sprintf(", actual: %v", len(q.Err.Value().(string))))
 	}
 
 	return sb.String()

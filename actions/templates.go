@@ -6,13 +6,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
-	validator2 "github.com/mailbadger/app/validator"
-	"gopkg.in/go-playground/validator.v9"
+	mbvalidator "github.com/mailbadger/app/validator"
 	"net/http"
 )
 
@@ -132,7 +132,7 @@ func PostTemplate(c *gin.Context) {
 	if err := c.ShouldBind(params); err != nil {
 		for _, fieldErr := range err.(validator.ValidationErrors) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": validator2.FieldError{Err: fieldErr}.String(),
+				"message": mbvalidator.FieldError{Err: fieldErr}.String(),
 			})
 			return
 		}
@@ -196,7 +196,7 @@ func PutTemplate(c *gin.Context) {
 	if err := c.ShouldBind(params); err != nil {
 		for _, fieldErr := range err.(validator.ValidationErrors) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": validator2.FieldError{Err: fieldErr}.String(),
+				"message": mbvalidator.FieldError{Err: fieldErr}.String(),
 			})
 			return
 		}
