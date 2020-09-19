@@ -13,7 +13,7 @@ services:
       - MYSQL_DATABASE=mailbadger
     volumes:
       - dbdata:/var/lib/mysql
-
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf
   nsqlookupd:
     image: nsqio/nsq
     command: /nsqlookupd
