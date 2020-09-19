@@ -3,18 +3,18 @@ package actions
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
-	"github.com/sirupsen/logrus"
 )
 
 type subs struct {
-	Ids []int64 `form:"ids[]"`
+	Ids []int64 `form:"ids[]" binding:"required"`
 }
 
 func GetSegments(c *gin.Context) {
@@ -83,23 +83,23 @@ func GetSegment(c *gin.Context) {
 	})
 }
 
+type paramsSegments struct {
+	Name string `form:"name" binding:"required,max=191"`
+}
+
 func PostSegment(c *gin.Context) {
-	name := strings.TrimSpace(c.PostForm("name"))
-
-	l := &entities.Segment{
-		Name:   name,
-		UserID: middleware.GetUser(c).ID,
-	}
-
-	if !l.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  l.Errors,
-		})
+	params := &paramsSegments{}
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
-	_, err := storage.GetSegmentByName(c, name, middleware.GetUser(c).ID)
+	l := &entities.Segment{
+		Name:   params.Name,
+		UserID: middleware.GetUser(c).ID,
+	}
+
+	_, err := storage.GetSegmentByName(c, params.Name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Segment with that name already exists.",
@@ -126,16 +126,12 @@ func PutSegment(c *gin.Context) {
 			})
 			return
 		}
-
-		l.Name = strings.TrimSpace(c.PostForm("name"))
-
-		if !l.Validate() {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid data",
-				"errors":  l.Errors,
-			})
+		params := &paramsSegments{}
+		if err := c.ShouldBind(params); err != nil {
+			AbortWithError(c, err)
 			return
 		}
+		l.Name = params.Name
 
 		l2, err := storage.GetSegmentByName(c, l.Name, middleware.GetUser(c).ID)
 		if err == nil && l2.ID != l.ID {
@@ -203,12 +199,8 @@ func PutSegmentSubscribers(c *gin.Context) {
 		}
 
 		subs := &subs{}
-		err = c.Bind(subs)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to bind params")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid parameters, please try again.",
-			})
+		if err := c.ShouldBind(subs); err != nil {
+			AbortWithError(c, err)
 			return
 		}
 
@@ -299,12 +291,8 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		}
 
 		subs := &subs{}
-		err = c.Bind(subs)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to bind params")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid parameters, please try again.",
-			})
+		if err := c.ShouldBind(subs); err != nil {
+			AbortWithError(c, err)
 			return
 		}
 
