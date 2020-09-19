@@ -5,17 +5,14 @@ go 1.14
 require (
 	github.com/asaskevich/govalidator v0.0.0-20200907205600-7a23bdc65eef
 	github.com/aws/aws-sdk-go v1.34.24
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/contrib v0.0.0-20200913005814-1c32036e7ea4
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
-	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gobuffalo/genny v0.0.0-20181207164119-84844398a37d // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.7.0
@@ -44,6 +41,6 @@ require (
 	google.golang.org/grpc v1.32.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gopkg.in/go-playground/validator.v8 v8.18.2 // indirect
+	gopkg.in/go-playground/validator.v9 v9.29.1
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

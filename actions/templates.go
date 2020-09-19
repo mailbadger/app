@@ -6,14 +6,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
+	validator2 "github.com/mailbadger/app/validator"
+	"gopkg.in/go-playground/validator.v9"
 	"net/http"
-	"strings"
 )
 
 func GetTemplate(c *gin.Context) {
@@ -112,9 +112,9 @@ func GetTemplates(c *gin.Context) {
 }
 
 type postTemplate struct {
-	Name    string `json:"name" form:"name" binding:"required,max=191"`
-	Content string `json:"content" form:"content" binding:"required,html"`
-	Subject string `json:"subject" form:"subject" binding:"required,max=191"`
+	Name    string `form:"name" binding:"required,max=191"`
+	Content string `form:"content" binding:"required,html"`
+	Subject string `form:"subject" binding:"required,max=191"`
 }
 
 func PostTemplate(c *gin.Context) {
@@ -132,7 +132,7 @@ func PostTemplate(c *gin.Context) {
 	if err := c.ShouldBind(params); err != nil {
 		for _, fieldErr := range err.(validator.ValidationErrors) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+				"message": validator2.FieldError{Err: fieldErr}.String(),
 			})
 			return
 		}
@@ -196,7 +196,7 @@ func PutTemplate(c *gin.Context) {
 	if err := c.ShouldBind(params); err != nil {
 		for _, fieldErr := range err.(validator.ValidationErrors) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
+				"message": validator2.FieldError{Err: fieldErr}.String(),
 			})
 			return
 		}

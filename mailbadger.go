@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/mailbadger/app/validator"
 	"net/http"
 	"os"
 	"os/signal"
@@ -32,6 +34,8 @@ func init() {
 
 func main() {
 	handler := routes.New()
+
+	binding.Validator = new(validator.DefaultValidator)
 
 	var cfg *tls.Config
 	var addr = os.Getenv("PORT")
