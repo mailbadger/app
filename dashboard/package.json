@@ -9,7 +9,7 @@
     "axios": "^0.20.0",
     "codemirror": "^5.57.0",
     "date-fns": "^2.16.1",
-    "dompurify": "^2.0.15",
+    "dompurify": "^2.0.16",
     "es6-promise": "^4.2.8",
     "formik": "^2.1.5",
     "grommet": "^2.10.0",
