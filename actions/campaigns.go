@@ -21,9 +21,9 @@ import (
 )
 
 type sendCampaignParams struct {
-	Ids      []int64 `form:"segment_id[]" valid:"required"`
+	Ids      []int64 `form:"segment_id[]" binding:"required"`
 	Source   string  `form:"source" binding:"required,email"`
-	FromName string  `form:"from_name" binding:"required,max=191."`
+	FromName string  `form:"from_name" binding:"required,max=191"`
 }
 
 func StartCampaign(c *gin.Context) {
