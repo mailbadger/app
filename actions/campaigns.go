@@ -203,14 +203,14 @@ func GetCampaign(c *gin.Context) {
 	})
 }
 
-type paramsCampaign struct {
+type campaignParams struct {
 	Name         string `json:"name" form:"name" binding:"required,max=191"`
 	TemplateName string `json:"template_name" form:"template_name" binding:"required,max=191"`
 }
 
 func PostCampaign(c *gin.Context) {
 
-	params := &paramsCampaign{}
+	params := &campaignParams{}
 	if err := c.ShouldBind(params); err != nil {
 		AbortWithError(c, err)
 		return
@@ -258,7 +258,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		params := &paramsCampaign{}
+		params := &campaignParams{}
 		if err := c.ShouldBind(params); err != nil {
 			AbortWithError(c, err)
 			return
