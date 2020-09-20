@@ -13,6 +13,12 @@ type FieldError struct {
 func (q FieldError) String() string {
 	var sb strings.Builder
 
+	if q.Err.ActualTag() == "email" {
+		sb.WriteString("Validation failed on field '" + q.Err.Field() + "'")
+		sb.WriteString(", wrong " + q.Err.ActualTag() + " format")
+		return sb.String()
+	}
+
 	sb.WriteString("Validation failed on field '" + q.Err.Field() + "'")
 	sb.WriteString(", condition: " + q.Err.ActualTag())
 
