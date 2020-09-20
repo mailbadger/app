@@ -83,12 +83,12 @@ func GetSegment(c *gin.Context) {
 	})
 }
 
-type paramsSegments struct {
+type segmentsParams struct {
 	Name string `form:"name" binding:"required,max=191"`
 }
 
 func PostSegment(c *gin.Context) {
-	params := &paramsSegments{}
+	params := &segmentsParams{}
 	if err := c.ShouldBind(params); err != nil {
 		AbortWithError(c, err)
 		return
@@ -126,7 +126,7 @@ func PutSegment(c *gin.Context) {
 			})
 			return
 		}
-		params := &paramsSegments{}
+		params := &segmentsParams{}
 		if err := c.ShouldBind(params); err != nil {
 			AbortWithError(c, err)
 			return
