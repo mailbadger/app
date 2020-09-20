@@ -38,7 +38,7 @@ func GetSESKeys(c *gin.Context) {
 type postSESKeysParam struct {
 	AccessKey string `form:"access_key" binding:"required,alphanum"`
 	SecretKey string `form:"secret_key" binding:"required"`
-	Region string `form:"region" binding:"required"`
+	Region    string `form:"region" binding:"required"`
 }
 
 func PostSESKeys(c *gin.Context) {
