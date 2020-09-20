@@ -7,19 +7,19 @@ import (
 	"os"
 	"time"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
-	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func GetMe(c *gin.Context) {
@@ -28,8 +28,8 @@ func GetMe(c *gin.Context) {
 }
 
 type changePassParams struct {
-	Password    string `form:"password" valid:"required"`
-	NewPassword string `form:"new_password" valid:"required"`
+	Password    string `form:"password" binding:"required"`
+	NewPassword string `form:"new_password" binding:"required,min=8"`
 }
 
 func ChangePassword(c *gin.Context) {
@@ -42,36 +42,12 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	params := &changePassParams{}
-	err := c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		msg := "Unable to change password, invalid request parameters."
-		if err != nil {
-			msg = err.Error()
-		}
-
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": msg,
-		})
-		return
-	}
-
-	if len(params.NewPassword) < 8 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"new_password": "The new password must be atleast 8 characters.",
-		})
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(params.Password))
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(params.Password))
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "The password that you entered is incorrect.",
@@ -108,29 +84,13 @@ func ChangePassword(c *gin.Context) {
 }
 
 type forgotPassParams struct {
-	Email string `form:"email" valid:"email"`
+	Email string `form:"email" binding:"required,email"`
 }
 
 func PostForgotPassword(c *gin.Context) {
 	params := &forgotPassParams{}
-	err := c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		emailError := valid.ErrorByField(err, "Email")
-		if emailError == "" {
-			emailError = "Email must be in valid format."
-		}
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": emailError,
-		})
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
@@ -189,7 +149,7 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) error {
 }
 
 type putForgotPassParams struct {
-	Password string `form:"password" valid:"required"`
+	Password string `form:"password" binding:"required,min=8"`
 }
 
 func PutForgotPassword(c *gin.Context) {
@@ -204,31 +164,8 @@ func PutForgotPassword(c *gin.Context) {
 	}
 
 	params := &putForgotPassParams{}
-	err = c.Bind(params)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		passError := valid.ErrorByField(err, "Password")
-		if passError == "" {
-			passError = "The password must not be empty."
-		}
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": passError,
-		})
-		return
-	}
-
-	if len(params.Password) < 8 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"password": "The new password must be atleast 8 characters.",
-		})
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
 		return
 	}
 
