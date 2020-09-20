@@ -22,7 +22,7 @@ import (
 
 type sendCampaignParams struct {
 	Ids      []int64 `form:"segment_id[]" binding:"required"`
-	Source   string  `form:"source" binding:"required,email"`
+	Source   string  `form:"source" binding:"required,email,max=191"`
 	FromName string  `form:"from_name" binding:"required,max=191"`
 }
 
