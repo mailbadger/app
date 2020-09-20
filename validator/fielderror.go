@@ -17,9 +17,9 @@ func (q FieldError) String() string {
 
 	switch q.Err.ActualTag() {
 	case "email":
-		sb.WriteString(", wrong " + q.Err.ActualTag() + " format")
+		sb.WriteString(", wrong email format")
 	case "required":
-		sb.WriteString(", field is " + q.Err.ActualTag())
+		sb.WriteString(", field is required")
 	case "max":
 		sb.WriteString(", max length allowed: " + q.Err.Param())
 	case "min":
