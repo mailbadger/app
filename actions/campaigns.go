@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -25,7 +22,7 @@ import (
 
 type sendCampaignParams struct {
 	Ids      []int64 `form:"segment_id[]" valid:"required"`
-	Source   string  `form:"source" binding:"required"`
+	Source   string  `form:"source" binding:"required,email"`
 	FromName string  `form:"from_name" binding:"required,max=191."`
 }
 
@@ -40,12 +37,8 @@ func StartCampaign(c *gin.Context) {
 
 	params := &sendCampaignParams{}
 	if err := c.ShouldBind(params); err != nil {
-		for _, fieldErr := range err.(validator.ValidationErrors) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": fmt.Sprintf("Invalid parameter %s, failed on validation: %s", strings.ToLower(fieldErr.Field()), strings.ToLower(fieldErr.ActualTag())),
-			})
-			return
-		}
+		AbortWithError(c, err)
+		return
 	}
 
 	templateData := c.PostFormMap("default_template_data")
