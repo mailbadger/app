@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/events"
@@ -34,6 +35,12 @@ func GetSESKeys(c *gin.Context) {
 	c.JSON(http.StatusOK, keys)
 }
 
+type postSESKeysParam struct {
+	AccessKey string `form:"access_key" binding:"required,alphanum"`
+	SecretKey string `form:"secret_key" binding:"required"`
+	Region string `form:"region" binding:"required"`
+}
+
 func PostSESKeys(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -45,16 +52,17 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	keys := &entities.SesKeys{
-		AccessKey: strings.TrimSpace(c.PostForm("access_key")),
-		SecretKey: strings.TrimSpace(c.PostForm("secret_key")),
-		Region:    strings.TrimSpace(c.PostForm("region")),
-		UserID:    u.ID,
+	params := &postSESKeysParam{}
+	if err := c.ShouldBind(params); err != nil {
+		AbortWithError(c, err)
+		return
 	}
 
-	if !keys.Validate() {
-		c.JSON(http.StatusBadRequest, keys.Errors)
-		return
+	keys := &entities.SesKeys{
+		AccessKey: strings.TrimSpace(params.AccessKey),
+		SecretKey: strings.TrimSpace(params.SecretKey),
+		Region:    strings.TrimSpace(params.Region),
+		UserID:    u.ID,
 	}
 
 	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
