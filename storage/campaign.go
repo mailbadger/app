@@ -126,3 +126,18 @@ func (db *store) GetTotalComplaints(campaignID, userID int64) (int64, error) {
 	err := db.Table("complaints").Select("count(recipient)").Count(&totalComplaints).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
 	return totalComplaints, err
 }
+
+// GetCampaignComplaints fetches campaign complaints by campaign id, and populates the pagination obj
+func (db *store) GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error {
+	p.SetCollection(&[]entities.Complaint{})
+	p.SetResource("complaints")
+
+	query := db.Table(p.Resource).
+		Where("campaign_id = ? and user_id = ?", campaignID, userID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
+
+	return db.Paginate(p, campaignID)
+}

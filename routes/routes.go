@@ -194,6 +194,7 @@ func New() http.Handler {
 			campaigns.GET("/:id/opens", middleware.PaginateWithCursor(), actions.GetCampaignOpens)
 			campaigns.GET("/:id/stats", actions.GetCampaignStats)
 			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
+			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaintsStats)
 		}
 
 		segments := authorized.Group("/segments")

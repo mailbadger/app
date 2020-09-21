@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/entities"
 )
 
@@ -39,6 +40,7 @@ type Storage interface {
 	GetTotalBounces(campaignID, userID int64) (int64, error)
 	GetTotalComplaints(campaignID, userID int64) (int64, error)
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
+	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -191,6 +193,12 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 // open by the specified campaign id
 func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
+}
+
+// GetCampaignComplaints populates a pagination object with a collection of
+// complaints by the specified campaign id
+func GetCampaignComplaints(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetCampaignComplaints(campaignID, userID, p)
 }
 
 // GetClicksStats populates a ClickStats object with a results of
