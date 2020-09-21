@@ -39,6 +39,7 @@ type Storage interface {
 	GetTotalBounces(campaignID, userID int64) (int64, error)
 	GetTotalComplaints(campaignID, userID int64) (int64, error)
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
+	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -187,10 +188,10 @@ func DeleteCampaign(c context.Context, id, userID int64) error {
 	return GetFromContext(c).DeleteCampaign(id, userID)
 }
 
-// GetCampaignOpens populates a pagination object with a collection of
-// open by the specified campaign id
-func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
-	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
+// GetCampaignBounces populates a pagination object with a collection of
+// bounce by the specified campaign id
+func GetCampaignBounces(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetCampaignBounces(campaignID, userID, p)
 }
 
 // GetClicksStats populates a ClickStats object with a results of
@@ -204,6 +205,13 @@ func GetClicksStats(c context.Context, campaignID, userID int64) (*entities.Clic
 func GetOpensStats(c context.Context, campaignID, userID int64) (*entities.OpensStats, error) {
 	return GetFromContext(c).GetOpensStats(campaignID, userID)
 }
+
+// GetCampaignOpens populates a pagination object with a collection of
+// open by the specified campaign id
+func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
+	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
+}
+
 
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {

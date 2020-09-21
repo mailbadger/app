@@ -8,8 +8,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func createCampaigns(store Storage) {
@@ -140,12 +141,11 @@ func TestCampaign(t *testing.T) {
 			CreatedAt:  now,
 		},
 	}
-	// insert open 1
-	err = store.CreateOpen(&open[0])
-	assert.Nil(t, err)
-	// insert open 2
-	err = store.CreateOpen(&open[1])
-	assert.Nil(t, err)
+	// test insert open
+	for _, i := range open {
+		err = store.CreateOpen(&i)
+		assert.Nil(t, err)
+	}
 
 	//Test get campaign opens backwards
 	p = NewPaginationCursor("/api/campaigns/{id}/opens", 13)
@@ -160,5 +160,53 @@ func TestCampaign(t *testing.T) {
 	assert.Equal(t, 1, len(*campOpens))
 	// campOpens[0] - order desc
 	assert.Equal(t, open[1], (*campOpens)[0])
+
+	// insert bounces to test get campaign bounces
+	bounces := []entities.Bounce{
+		{
+			ID:             1,
+			UserID:         1,
+			CampaignID:     1,
+			Recipient:      "asd",
+			Type:           "dsa",
+			SubType:        "asd",
+			Action:         "dsa",
+			Status:         "dsa",
+			DiagnosticCode: "dsa",
+			FeedbackID:     "dsa",
+			CreatedAt:      now,
+		},
+		{
+			ID:             2,
+			UserID:         1,
+			CampaignID:     1,
+			Recipient:      "asd",
+			Type:           "dsa",
+			SubType:        "asd",
+			Action:         "dsa",
+			Status:         "dsa",
+			DiagnosticCode: "dsa",
+			FeedbackID:     "dsa",
+			CreatedAt:      now,
+		},
+	}
+	// test insert bounce
+	for _, i := range bounces {
+		err = store.CreateBounce(&i)
+		assert.Nil(t, err)
+	}
+	//Test get campaign bounces backwards
+	p = NewPaginationCursor("/api/campaigns/{id}/bounces", 2)
+	p.SetEndingBefore(1)
+	// Test get campaign opens
+	err = store.GetCampaignBounces(1, 1, p)
+	assert.Nil(t, err)
+
+	campBounce := p.Collection.(*[]entities.Bounce)
+	assert.NotNil(t, *campBounce)
+	assert.NotEmpty(t, *campBounce)
+	assert.Equal(t, 1, len(*campBounce))
+	// campBounce[0] - order desc
+	assert.Equal(t, bounces[1], (*campBounce)[0])
 
 }
