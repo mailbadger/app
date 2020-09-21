@@ -459,7 +459,7 @@ func GetCampaignComplaintsStats(c *gin.Context) {
 	if !ok {
 		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to fetch campaigns. Please try again.",
+			"message": "Unable to fetch campaign complaints. Please try again.",
 		})
 		return
 	}
