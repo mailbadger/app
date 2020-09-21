@@ -459,7 +459,7 @@ func GetCampaignBounces(c *gin.Context) {
 	if !ok {
 		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to fetch campaigns. Please try again.",
+			"message": "Unable to fetch campaigns bounces. Please try again.",
 		})
 		return
 	}
@@ -469,7 +469,7 @@ func GetCampaignBounces(c *gin.Context) {
 	if !ok {
 		logger.From(c).Error("Unable to cast pagination cursor from context value.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to fetch campaign opens. Please try again.",
+			"message": "Unable to fetch campaign bounces. Please try again.",
 		})
 		return
 	}
@@ -481,7 +481,7 @@ func GetCampaignBounces(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Campaign opens not found",
+			"message": "Campaign bounces not found",
 		})
 		return
 	}
