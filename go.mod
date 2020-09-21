@@ -36,7 +36,6 @@ require (
 	github.com/ugorji/go v1.1.8 // indirect
 	github.com/unrolled/secure v1.0.8
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
@@ -45,6 +44,6 @@ require (
 	google.golang.org/grpc v1.32.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gopkg.in/go-playground/validator.v9 v9.29.1
+	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
