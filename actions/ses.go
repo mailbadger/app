@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -57,18 +56,19 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	if err := body.Validate(validator.Validator()); err != nil {
+	if err := params.Validate(body, validator.Validator()); err != nil {
 		logger.From(c).WithError(err).Error("Invalid ses keys params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": err.Error(),
+			"errors":  err.FormatErrors(),
 		})
 		return
 	}
 
 	keys := &entities.SesKeys{
-		AccessKey: strings.TrimSpace(c.PostForm("access_key")),
-		SecretKey: strings.TrimSpace(c.PostForm("secret_key")),
-		Region:    strings.TrimSpace(c.PostForm("region")),
+		AccessKey: body.AccessKey,
+		SecretKey: body.SecretKey,
+		Region:    body.Region,
 		UserID:    u.ID,
 	}
 
