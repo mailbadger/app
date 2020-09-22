@@ -2,7 +2,6 @@ package validator
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -11,29 +10,32 @@ import (
 var ErrGeneric = errors.New("Invalid parameters, please try again")
 
 type FieldErrors struct {
-	Errors validator.ValidationErrors
+	Errors      validator.ValidationErrors
 }
 
-func (q FieldErrors) Error() string {
-	var sb strings.Builder
+// FormatErrors creates key and message for each validation error
+func (q FieldErrors) FormatErrors() map[string]string {
+	errMessages := make(map[string]string)
 
 	for _, err := range q.Errors {
-		sb.WriteString("Validation failed on field '" + err.Field() + "'")
-
 		switch err.ActualTag() {
 		case "email":
-			sb.WriteString(", wrong email format")
+			errMessages[err.Field()] = "Invalid email format"
 		case "required":
-			sb.WriteString(", field is required")
+			errMessages[err.Field()] = "This field is required"
 		case "max":
-			sb.WriteString(", max length allowed: " + err.Param())
+			errMessages[err.Field()] = "Max length allowed is " + err.Param()
 		case "min":
-			sb.WriteString(", min length allowed: " + err.Param())
+			errMessages[err.Field()] = "Must be at least " + err.Param() + " character long"
 		default:
-			sb.WriteString(", condition: " + err.ActualTag())
-
+			errMessages[err.Field()] = "Validation failed on condition: " + err.ActualTag()
 		}
 	}
 
-	return sb.String()
+	return errMessages
+}
+
+// Override this func just to implement error interface
+func (q FieldErrors) Error() string {
+	return "Invalid parameters, please try again"
 }
