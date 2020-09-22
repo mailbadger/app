@@ -74,7 +74,7 @@ func (db *store) GetCampaignOpens(campaignID, userID int64, p *PaginationCursor)
 
 	p.SetQuery(query)
 
-	return db.Paginate(p, campaignID)
+	return db.Paginate(p, userID)
 }
 
 // GetClicksStats fetches campaign total & unique clicks from the database.
@@ -109,20 +109,20 @@ func (db *store) GetTotalSends(campaignID, userID int64) (int64, error) {
 // GetTotalDelivered fetches campaign total deliveries  from the database.
 func (db *store) GetTotalDelivered(campaignID, userID int64) (int64, error) {
 	var totalDelivered int64
-	err := db.Table("deliveries").Select("count(distinct(recipient))").Count(&totalDelivered).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	err := db.Table("deliveries").Count(&totalDelivered).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
 	return totalDelivered, err
 }
 
 // GetTotalBounces fetches campaign total bounces  from the database.
 func (db *store) GetTotalBounces(campaignID, userID int64) (int64, error) {
 	var totalBounces int64
-	err := db.Table("bounces").Select("count(recipient)").Count(&totalBounces).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	err := db.Table("bounces").Count(&totalBounces).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
 	return totalBounces, err
 }
 
 // GetTotalComplaints fetches campaign total bounces  from the database.
 func (db *store) GetTotalComplaints(campaignID, userID int64) (int64, error) {
 	var totalComplaints int64
-	err := db.Table("complaints").Select("count(recipient)").Count(&totalComplaints).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
+	err := db.Table("complaints").Count(&totalComplaints).Where("campaign_id = ? and user_id= ?", campaignID, userID).Error
 	return totalComplaints, err
 }

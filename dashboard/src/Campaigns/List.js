@@ -43,13 +43,17 @@ const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
     opts.unshift("Edit");
   }
 
+  let to = `/dashboard/campaigns/send/${campaign.id}`;
+  if (campaign.status === "sent") {
+    to = `/dashboard/campaigns/${campaign.id}/report`;
+  }
   return (
     <TableRow>
       <TableCell scope="row" size="large">
         <AnchorLink
           size="small"
           fontWeight="bold"
-          to={`/dashboard/campaigns/send/${campaign.id}`}
+          to={to}
           label={campaign.name}
         />
       </TableCell>
