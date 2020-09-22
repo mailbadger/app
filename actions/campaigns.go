@@ -489,5 +489,4 @@ func GetCampaignBounces(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": "Campaign bounces not found",
 	})
-	return
 }
