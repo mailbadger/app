@@ -35,7 +35,7 @@ func (q FieldErrors) FormatErrors() map[string]string {
 	return errMessages
 }
 
-// Override this func just to implement error interface
+// Error overriding this func just to implement error interface
 func (q FieldErrors) Error() string {
 	return "Invalid parameters, please try again"
 }
