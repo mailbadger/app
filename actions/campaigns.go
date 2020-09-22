@@ -489,5 +489,4 @@ func GetCampaignComplaintsStats(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": "Campaign complaints not found",
 	})
-	return
 }
