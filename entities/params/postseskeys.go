@@ -32,7 +32,7 @@ func (p *PostSESKeys) Validate(v *validator.Validate) error {
 				Errors: fieldErrors,
 			}
 		}
-		return myvalidator.GenericValidationError
+		return myvalidator.ErrGeneric
 	}
 
 	return nil

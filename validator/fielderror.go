@@ -7,8 +7,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// GenericValidationError default error when casting validator error into validator.ValidationErrors
-var GenericValidationError = errors.New("Invalid parameters, please try again")
+// ErrGeneric default error when casting validator error into validator.ValidationErrors
+var ErrGeneric = errors.New("Invalid parameters, please try again")
 
 type FieldErrors struct {
 	Errors validator.ValidationErrors

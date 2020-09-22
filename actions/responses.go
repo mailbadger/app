@@ -17,6 +17,6 @@ func AbortWithError(c *gin.Context, err error) {
 		return
 	}
 	c.JSON(http.StatusBadRequest, gin.H{
-		"message": mbvalidator.GenericValidationError.Error(),
+		"message": mbvalidator.ErrGeneric.Error(),
 	})
 }
