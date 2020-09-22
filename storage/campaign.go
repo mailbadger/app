@@ -133,12 +133,11 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 	p.SetResource("bounces")
 
 	query := db.Table(p.Resource).
-		Where("campaign_id = ? and user_id=?", campaignID, userID).
+		Where("campaign_id = ? and user_id= ?", campaignID, userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
 	p.SetQuery(query)
 
-	return db.Paginate(p, campaignID)
+	return db.Paginate(p, userID)
 }
-
