@@ -74,7 +74,7 @@ func (db *store) GetCampaignOpens(campaignID, userID int64, p *PaginationCursor)
 
 	p.SetQuery(query)
 
-	return db.Paginate(p, campaignID)
+	return db.Paginate(p, userID)
 }
 
 // GetClicksStats fetches campaign total & unique clicks from the database.
@@ -139,5 +139,5 @@ func (db *store) GetCampaignComplaints(campaignID, userID int64, p *PaginationCu
 
 	p.SetQuery(query)
 
-	return db.Paginate(p, campaignID)
+	return db.Paginate(p, userID)
 }

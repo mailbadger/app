@@ -474,19 +474,20 @@ func GetCampaignComplaintsStats(c *gin.Context) {
 		return
 	}
 
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if err := storage.GetCampaignComplaints(c, id, user.ID, p); err == nil {
-			c.JSON(http.StatusOK, p)
-			return
-		}
-
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Campaign complaints not found",
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
 		})
+	}
+
+	if err := storage.GetCampaignComplaints(c, id, user.ID, p); err == nil {
+		c.JSON(http.StatusOK, p)
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
+	c.JSON(http.StatusNotFound, gin.H{
+		"message": "Campaign complaints not found",
 	})
+	return
 }
