@@ -7,7 +7,7 @@
     "@uppy/react": "^1.10.7",
     "@uppy/core": "^1.13.2",
     "axios": "^0.20.0",
-    "codemirror": "^5.57.0",
+    "codemirror": "^5.58.0",
     "date-fns": "^2.16.1",
     "dompurify": "^2.0.17",
     "es6-promise": "^4.2.8",
