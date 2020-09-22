@@ -6,8 +6,31 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin/binding"
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/go-playground/validator/v10"
 )
+
+var (
+	once sync.Once
+	validatorTagName = "validate"
+)
+
+// MBValidator global validator
+var MBValidator *validator.Validate
+
+// Validator is a constructor for our validator
+// if our validator is once created it returns it else it creates it
+func Validator() *validator.Validate {
+	once.Do(func() {
+		initValidator()
+	})
+
+	return MBValidator
+}
+
+func initValidator() {
+	MBValidator = validator.New()
+	MBValidator.SetTagName(validatorTagName)
+}
 
 type DefaultValidator struct {
 	once     sync.Once

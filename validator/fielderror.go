@@ -1,32 +1,38 @@
 package validator
 
 import (
+	"errors"
 	"strings"
 
-	"gopkg.in/go-playground/validator.v9"
+	"github.com/go-playground/validator/v10"
 )
 
-type FieldError struct {
-	Err validator.FieldError
+// GenericValidationError default error when casting validator error into validator.ValidationErrors
+var GenericValidationError = errors.New("Invalid parameters, please try again")
+
+type FieldErrors struct {
+	Errors validator.ValidationErrors
 }
 
-func (q FieldError) String() string {
+func (q FieldErrors) Error() string {
 	var sb strings.Builder
 
-	sb.WriteString("Validation failed on field '" + q.Err.Field() + "'")
+	for _, err := range q.Errors {
+		sb.WriteString("Validation failed on field '" + err.Field() + "'")
 
-	switch q.Err.ActualTag() {
-	case "email":
-		sb.WriteString(", wrong email format")
-	case "required":
-		sb.WriteString(", field is required")
-	case "max":
-		sb.WriteString(", max length allowed: " + q.Err.Param())
-	case "min":
-		sb.WriteString(", min length allowed: " + q.Err.Param())
-	default:
-		sb.WriteString(", condition: " + q.Err.ActualTag())
+		switch err.ActualTag() {
+		case "email":
+			sb.WriteString(", wrong email format")
+		case "required":
+			sb.WriteString(", field is required")
+		case "max":
+			sb.WriteString(", max length allowed: " + err.Param())
+		case "min":
+			sb.WriteString(", min length allowed: " + err.Param())
+		default:
+			sb.WriteString(", condition: " + err.ActualTag())
 
+		}
 	}
 
 	return sb.String()
