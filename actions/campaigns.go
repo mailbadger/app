@@ -454,7 +454,7 @@ func GetCampaignClicksStats(c *gin.Context) {
 	})
 }
 
-func GetCampaignComplaintsStats(c *gin.Context) {
+func GetCampaignComplaints(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
 		logger.From(c).Error("Unable to fetch pagination cursor from context.")
