@@ -205,4 +205,52 @@ func TestCampaign(t *testing.T) {
 	//  order desc this is why 1 with 0 from slice.
 	assert.Equal(t, complaints[1], (*campComplaints)[0])
 
+	// insert bounces to test get campaign bounces
+	bounces := []entities.Bounce{
+		{
+			ID:             1,
+			UserID:         1,
+			CampaignID:     1,
+			Recipient:      "asd",
+			Type:           "dsa",
+			SubType:        "asd",
+			Action:         "dsa",
+			Status:         "dsa",
+			DiagnosticCode: "dsa",
+			FeedbackID:     "dsa",
+			CreatedAt:      now,
+		},
+		{
+			ID:             2,
+			UserID:         1,
+			CampaignID:     1,
+			Recipient:      "asd",
+			Type:           "dsa",
+			SubType:        "asd",
+			Action:         "dsa",
+			Status:         "dsa",
+			DiagnosticCode: "dsa",
+			FeedbackID:     "dsa",
+			CreatedAt:      now,
+		},
+	}
+	// test insert bounce
+	for _, i := range bounces {
+		err = store.CreateBounce(&i)
+		assert.Nil(t, err)
+	}
+	//Test get campaign bounces backwards
+	p = NewPaginationCursor("/api/campaigns/{id}/bounces", 2)
+	p.SetEndingBefore(1)
+	// Test get campaign opens
+	err = store.GetCampaignBounces(1, 1, p)
+	assert.Nil(t, err)
+
+	campBounce := p.Collection.(*[]entities.Bounce)
+	assert.NotNil(t, *campBounce)
+	assert.NotEmpty(t, *campBounce)
+	assert.Equal(t, 1, len(*campBounce))
+	// campBounce[0] - order desc
+	assert.Equal(t, bounces[1], (*campBounce)[0])
+
 }

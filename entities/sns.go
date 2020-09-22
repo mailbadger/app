@@ -62,6 +62,7 @@ type ComplainedRecipient struct {
 type ComplaintMsg struct {
 	ComplainedRecipients  []*ComplainedRecipient `json:"complainedRecipients"`
 	Timestamp             time.Time              `json:"timestamp"`
+	ArrivalDate           time.Time              `json:"arrivalDate"`
 	FeedbackID            string                 `json:"feedbackId"`
 	UserAgent             string                 `json:"userAgent"`
 	ComplaintFeedbackType string                 `json:"complaintFeedbackType"`
