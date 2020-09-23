@@ -172,6 +172,7 @@ func New() http.Handler {
 		{
 			users.GET("", actions.GetMe)
 			users.POST("/password", actions.ChangePassword)
+			users.DELETE("", actions.DeleteUser)
 		}
 
 		templates := authorized.Group("/templates")

@@ -254,3 +254,15 @@ func PutVerifyEmail(c *gin.Context) {
 		"message": "Your email has been verified.",
 	})
 }
+
+func DeleteUser(c *gin.Context) {
+	user := middleware.GetUser(c)
+
+	err := storage.DeleteUserByID(c, user.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to delete your account. Please try again.",
+		})
+		return
+	}
+}
