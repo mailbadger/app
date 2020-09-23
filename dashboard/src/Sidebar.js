@@ -73,7 +73,13 @@ const Sidebar = (props) => {
     <Fragment>
       {!showSidebar || size !== "small" ? (
         <Collapsible direction="horizontal" open={showSidebar}>
-          <Box flex width="18em" direction="column" justify="between">
+          <Box
+            flex
+            width="18em"
+            direction="column"
+            background="brand"
+            justify="between"
+          >
             <NavLinks />
           </Box>
         </Collapsible>

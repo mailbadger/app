@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "@uppy/aws-s3": "^1.7.0",
-    "@uppy/react": "^1.10.7",
     "@uppy/core": "^1.13.2",
+    "@uppy/react": "^1.10.7",
     "axios": "^0.20.0",
     "codemirror": "^5.57.0",
     "date-fns": "^2.16.1",
@@ -25,6 +25,7 @@
     "react-google-recaptcha": "^2.1.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
+    "recharts": "^1.8.5",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.4.1",
     "yup": "^0.29.3"

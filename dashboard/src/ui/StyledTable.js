@@ -10,7 +10,7 @@ const StyledTable = styled(Table)`
   }
 
   ${this} thead {
-    color: #6650aa;
+    color: #390099;
   }
 
   ${this} thead th div {

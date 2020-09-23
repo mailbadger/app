@@ -52,7 +52,7 @@ const Dashboard = () => {
   return (
     <Box
       direction="row"
-      flex
+      fill
       animation="fadeIn"
       overflow={{ horizontal: "hidden" }}
     >
