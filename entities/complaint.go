@@ -13,3 +13,15 @@ type Complaint struct {
 	FeedbackID string    `json:"feedback_id"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+func (c Complaint) GetCreatedAt() time.Time {
+	return c.CreatedAt
+}
+
+func (c Complaint) GetID() int64 {
+	return c.ID
+}
+
+func (c Complaint) GetUpdatedAt() time.Time {
+	return time.Time{}
+}

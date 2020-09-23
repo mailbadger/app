@@ -454,6 +454,43 @@ func GetCampaignClicksStats(c *gin.Context) {
 	})
 }
 
+func GetCampaignComplaints(c *gin.Context) {
+	val, ok := c.Get("cursor")
+	if !ok {
+		logger.From(c).Error("Unable to fetch pagination cursor from context.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch campaign complaints. Please try again.",
+		})
+		return
+	}
+	user := middleware.GetUser(c)
+
+	p, ok := val.(*storage.PaginationCursor)
+	if !ok {
+		logger.From(c).Error("Unable to cast pagination cursor from context value.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch campaign complaints. Please try again.",
+		})
+		return
+	}
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+	}
+
+	if err := storage.GetCampaignComplaints(c, id, user.ID, p); err == nil {
+		c.JSON(http.StatusOK, p)
+		return
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{
+		"message": "Campaign complaints not found",
+	})
+}
+
 func GetCampaignBounces(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
