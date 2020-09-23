@@ -265,4 +265,6 @@ func DeleteUser(c *gin.Context) {
 		})
 		return
 	}
+	// todo what to return when user and all stats is deleted.
+
 }
