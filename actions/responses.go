@@ -11,12 +11,10 @@ import (
 
 func AbortWithError(c *gin.Context, err error) {
 	if fieldErrors, ok := err.(validator.ValidationErrors); ok {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": fieldErrors.Error(),
-		})
+		c.JSON(http.StatusBadRequest, mbvalidator.NewValidationError(fieldErrors))
 		return
 	}
 	c.JSON(http.StatusBadRequest, gin.H{
-		"message": mbvalidator.ErrGeneric.Error(),
+		"message": mbvalidator.NewValidationError(nil),
 	})
 }

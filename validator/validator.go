@@ -7,6 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/sirupsen/logrus"
+
+	"github.com/mailbadger/app/entities/params"
 )
 
 var (
@@ -25,6 +28,22 @@ func Validator() *validator.Validate {
 	})
 
 	return MBValidator
+}
+
+// Validate is generic function for validation request body
+func Validate(body params.RequestBody) error {
+	body.TrimSpaces()
+
+	// Validate the instance
+	if err := Validator().Struct(body); err != nil {
+		logrus.Error(err)
+		if fieldErrors, ok := err.(validator.ValidationErrors); ok {
+			return NewValidationError(fieldErrors)
+		}
+		return NewValidationError(nil)
+	}
+
+	return nil
 }
 
 func initValidator() {

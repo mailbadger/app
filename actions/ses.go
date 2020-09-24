@@ -56,12 +56,9 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	if err := params.Validate(body, validator.Validator()); err != nil {
+	if err := validator.Validate(body); err != nil {
 		logger.From(c).WithError(err).Error("Invalid ses keys params.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": err.Error(),
-			"errors":  err.FormatErrors(),
-		})
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
