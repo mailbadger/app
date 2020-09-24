@@ -16,3 +16,15 @@ type Bounce struct {
 	FeedbackID     string    `json:"feedback_id"`
 	CreatedAt      time.Time `json:"created_at"`
 }
+
+func (b Bounce) GetCreatedAt() time.Time {
+	return b.CreatedAt
+}
+
+func (b Bounce) GetID() int64 {
+	return b.ID
+}
+
+func (b Bounce) GetUpdatedAt() time.Time {
+	return time.Time{}
+}
