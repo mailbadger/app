@@ -11,6 +11,8 @@ import {
   Legend,
 } from "recharts";
 
+import Bounces from "./Stats/Bounces";
+import Complaints from "./Stats/Complaints";
 import { LoadingOverlay } from "../ui";
 import { useApi } from "../hooks";
 
@@ -22,6 +24,8 @@ const DetailsGrid = ({ children }) => {
     [".", "title", "title", "title"],
     [".", "info", "main", "main"],
     [".", "info", "main", "main"],
+    [".", "bounces", "bounces", "bounces"],
+    [".", "complaints", "complaints", "complaints"],
   ];
 
   if (size === "medium") {
@@ -30,6 +34,8 @@ const DetailsGrid = ({ children }) => {
       ["title", "title", "title"],
       ["info", "main", "main"],
       ["info", "main", "main"],
+      ["bounces", "bounces", "bounces"],
+      ["complaints", "complaints", "complaints"],
     ];
   }
 
@@ -244,11 +250,19 @@ const Details = ({ match }) => {
               {campaign.name} stats report
             </Heading>
           </Box>
-          <Box gridArea="info" direction="column">
+          <Box gridArea="info">
             {stats && stats.data && <PercentageStats stats={stats.data} />}
           </Box>
           <Box gridArea="main">
             <StatsChart data={data} />
+          </Box>
+          <Box fill gridArea="bounces">
+            <Heading level="3">Bounces</Heading>
+            <Bounces campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="complaints" margin={{ bottom: "medium" }}>
+            <Heading level="3">Complaints</Heading>
+            <Complaints campaignId={campaign.id} />
           </Box>
         </>
       )}

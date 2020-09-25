@@ -102,7 +102,7 @@ class App extends Component {
       <Grommet theme={theme} full>
         <Router history={history}>
           <AuthProvider>
-            <Box fill direction="row" background="background">
+            <Box fill background="background">
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <Switch>
                   <ProtectedRoute path="/dashboard" component={Dashboard} />

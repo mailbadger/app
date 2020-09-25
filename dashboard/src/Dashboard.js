@@ -50,30 +50,19 @@ const Dashboard = () => {
   const size = useContext(ResponsiveContext);
 
   return (
-    <>
-      <Box
-        style={{ position: "fixed", top: 0, left: 0, height: "100%" }}
-        background="brand"
-      >
-        <Sidebar
-          showSidebar={showSidebar}
-          size={size}
-          closeSidebar={() => setSidebar(false)}
-        />
-      </Box>
-      <Box
-        direction="row"
-        fill
-        animation="fadeIn"
-        overflow={{ horizontal: "hidden" }}
-        margin={{ left: "18em" }}
-      >
+    <Box flex direction="row">
+      <Sidebar
+        showSidebar={showSidebar}
+        size={size}
+        closeSidebar={() => setSidebar(false)}
+      />
+      <Box fill animation="fadeIn" overflow={{ horizontal: "hidden" }}>
         <NotificationsProvider>
           <Routes />
           <Notification />
         </NotificationsProvider>
       </Box>
-    </>
+    </Box>
   );
 };
 

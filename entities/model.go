@@ -10,6 +10,4 @@ type Model struct {
 
 type ModelInterface interface {
 	GetID() int64
-	GetCreatedAt() time.Time
-	GetUpdatedAt() time.Time
 }
