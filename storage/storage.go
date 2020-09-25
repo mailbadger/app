@@ -20,6 +20,7 @@ type Storage interface {
 	GetActiveUserByUsername(string) (*entities.User, error)
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
+	DeleteUserByID(userID int64) error
 
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
@@ -139,6 +140,11 @@ func UpdateUser(c context.Context, user *entities.User) error {
 	return GetFromContext(c).UpdateUser(user)
 }
 
+// DeleteUserByID removes user and all stats
+func DeleteUserByID(c context.Context, userID int64) error {
+	return GetFromContext(c).DeleteUserByID(userID)
+}
+
 // GetSession returns the session by the given session id.
 func GetSession(c context.Context, sessionID string) (*entities.Session, error) {
 	return GetFromContext(c).GetSession(sessionID)
@@ -219,7 +225,6 @@ func GetOpensStats(c context.Context, campaignID, userID int64) (*entities.Opens
 func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
 }
-
 
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
