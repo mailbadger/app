@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
-	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities/params"
 )
@@ -36,7 +35,6 @@ func Validate(body params.RequestBody) error {
 
 	// Validate the instance
 	if err := Validator().Struct(body); err != nil {
-		logrus.Error(err)
 		if fieldErrors, ok := err.(validator.ValidationErrors); ok {
 			return NewValidationError(fieldErrors)
 		}

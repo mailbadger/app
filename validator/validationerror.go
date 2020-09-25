@@ -1,6 +1,8 @@
 package validator
 
 import (
+	"fmt"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -11,7 +13,7 @@ var genericMessage = "Invalid parameters, please try again"
 // using this error when validating request body
 type ValidationError struct {
 	Message          string                     `json:"message"`
-	Errors           map[string]string          `json:"errors"`
+	Errors           map[string]string          `json:"errors,omitempty"`
 	ValidationErrors validator.ValidationErrors `json:"-"`
 }
 
@@ -30,6 +32,7 @@ func NewValidationError(ve validator.ValidationErrors) *ValidationError {
 }
 
 // FormatErrors creates key and message for each validation error
+// be careful when using err.Param() only use it on tags with param value (ex: max=1)
 func (q *ValidationError) FormatErrors() {
 	q.Errors = make(map[string]string)
 
@@ -43,6 +46,8 @@ func (q *ValidationError) FormatErrors() {
 			q.Errors[err.Field()] = "Max length allowed is " + err.Param()
 		case "min":
 			q.Errors[err.Field()] = "Must be at least " + err.Param() + " character long"
+		case "alphanum":
+			q.Errors[err.Field()] = "Only alphanumeric characters allowed"
 		default:
 			q.Errors[err.Field()] = "Validation failed on condition: " + err.ActualTag()
 		}
@@ -51,5 +56,9 @@ func (q *ValidationError) FormatErrors() {
 
 // Error overriding this func just to implement error interface
 func (q ValidationError) Error() string {
-	return q.Message
+	if q.ValidationErrors != nil {
+		return fmt.Sprintf("validator: %s", q.ValidationErrors)
+	}
+
+	return fmt.Sprintf("validator: %s", q.Message)
 }
