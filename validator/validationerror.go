@@ -48,6 +48,8 @@ func (q *ValidationError) FormatErrors() {
 			q.Errors[err.Field()] = "Must be at least " + err.Param() + " character long"
 		case "alphanum":
 			q.Errors[err.Field()] = "Only alphanumeric characters allowed"
+		case "html":
+			q.Errors[err.Field()] = "Content must be html"
 		default:
 			q.Errors[err.Field()] = "Validation failed on condition: " + err.ActualTag()
 		}

@@ -175,10 +175,6 @@ func PostTemplate(c *gin.Context) {
 	})
 }
 
-type putTemplate struct {
-	Content string `json:"content" form:"content" binding:"required,html"`
-	Subject string `json:"subject" form:"subject" binding:"required,max=191"`
-}
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
