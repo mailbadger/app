@@ -175,7 +175,6 @@ func PostTemplate(c *gin.Context) {
 	})
 }
 
-
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
