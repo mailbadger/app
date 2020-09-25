@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/events"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/validator"
 )
 
 func GetSESKeys(c *gin.Context) {
@@ -45,16 +47,26 @@ func PostSESKeys(c *gin.Context) {
 		return
 	}
 
-	keys := &entities.SesKeys{
-		AccessKey: strings.TrimSpace(c.PostForm("access_key")),
-		SecretKey: strings.TrimSpace(c.PostForm("secret_key")),
-		Region:    strings.TrimSpace(c.PostForm("region")),
-		UserID:    u.ID,
+	body := &params.PostSESKeys{}
+	if err := c.ShouldBind(body); err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind ses keys params.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
 	}
 
-	if !keys.Validate() {
-		c.JSON(http.StatusBadRequest, keys.Errors)
+	if err := validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid ses keys params.")
+		c.JSON(http.StatusBadRequest, err)
 		return
+	}
+
+	keys := &entities.SesKeys{
+		AccessKey: body.AccessKey,
+		SecretKey: body.SecretKey,
+		Region:    body.Region,
+		UserID:    u.ID,
 	}
 
 	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
