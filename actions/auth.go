@@ -19,11 +19,6 @@ import (
 	"github.com/google/go-github/v25/github"
 	"github.com/google/uuid"
 	fb "github.com/huandu/facebook"
-	"github.com/mailbadger/app/emails"
-	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/logger"
-	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/utils"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	oauthfb "golang.org/x/oauth2/facebook"
@@ -32,13 +27,34 @@ import (
 	googleoauth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
+
+	"github.com/mailbadger/app/emails"
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/utils"
+	"github.com/mailbadger/app/validator"
 )
 
 // PostAuthenticate authenticates a user with the given username and password.
 func PostAuthenticate(c *gin.Context) {
-	username, password := c.PostForm("username"), c.PostForm("password")
+	body := &params.PostAuthenticate{}
+	if err:=c.ShouldBind(body); err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind authentication params.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
 
-	user, err := storage.GetActiveUserByUsername(c, username)
+	if err := validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid authentication params.")
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := storage.GetActiveUserByUsername(c, body.Username)
 	if err != nil {
 		if !gorm.IsRecordNotFoundError(err) {
 			logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
@@ -57,7 +73,7 @@ func PostAuthenticate(c *gin.Context) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(body.Password))
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Invalid credentials.",
