@@ -38,12 +38,13 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
+	body.DefaultTemplateData = c.PostFormMap("default_template_data")
+
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-
-	templateData := c.PostFormMap("default_template_data")
 
 	u := middleware.GetUser(c)
 
@@ -114,7 +115,7 @@ func StartCampaign(c *gin.Context) {
 	msg, err := json.Marshal(entities.SendCampaignParams{
 		SegmentIDs:             body.Ids,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
-		TemplateData:           templateData,
+		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
 		Campaign:               *campaign,
