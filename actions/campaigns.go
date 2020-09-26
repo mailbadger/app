@@ -31,7 +31,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	body := &params.SendCampaignParams{}
+	body := &params.SendCampaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
