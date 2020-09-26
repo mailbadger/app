@@ -2,6 +2,8 @@ package entities
 
 import (
 	"time"
+
+	valid "github.com/asaskevich/govalidator"
 )
 
 // Segment represents the list entity
@@ -22,6 +24,23 @@ type SegmentWithTotalSubs struct {
 	Segment
 	SubscribersInSeg int64  `json:"subscribers_in_segment" gorm:"column:subscribers_in_segment"`
 	TotalSubscribers *int64 `json:"total_subscribers,omitempty" sql:"-"`
+}
+
+// Validate validates the list properties and populates the Errors map
+// in case of any errors.
+func (l *Segment) Validate() bool {
+	l.Errors = make(map[string]string)
+
+	if valid.Trim(l.Name, "") == "" {
+		l.Errors["name"] = "The segment name cannot be empty."
+	}
+
+	res, err := valid.ValidateStruct(l)
+	if err != nil || !res {
+		l.Errors["message"] = err.Error()
+	}
+
+	return len(l.Errors) == 0
 }
 
 func (s Segment) GetID() int64 {
