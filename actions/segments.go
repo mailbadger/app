@@ -3,19 +3,18 @@ package actions
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/validator"
+
 	"github.com/sirupsen/logrus"
 )
-
-type subs struct {
-	Ids []int64 `form:"ids[]"`
-}
 
 func GetSegments(c *gin.Context) {
 	val, ok := c.Get("cursor")
@@ -84,22 +83,26 @@ func GetSegment(c *gin.Context) {
 }
 
 func PostSegment(c *gin.Context) {
-	name := strings.TrimSpace(c.PostForm("name"))
 
-	l := &entities.Segment{
-		Name:   name,
-		UserID: middleware.GetUser(c).ID,
-	}
-
-	if !l.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  l.Errors,
+	body := &params.SegmentParams{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
-	_, err := storage.GetSegmentByName(c, name, middleware.GetUser(c).ID)
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	l := &entities.Segment{
+		Name:   body.Name,
+		UserID: middleware.GetUser(c).ID,
+	}
+
+	_, err := storage.GetSegmentByName(c, body.Name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Segment with that name already exists.",
@@ -127,13 +130,16 @@ func PutSegment(c *gin.Context) {
 			return
 		}
 
-		l.Name = strings.TrimSpace(c.PostForm("name"))
-
-		if !l.Validate() {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid data",
-				"errors":  l.Errors,
+		body := &params.SegmentParams{}
+		if err := c.ShouldBind(body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
 			})
+			return
+		}
+
+		if err := validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
 
@@ -202,26 +208,22 @@ func PutSegmentSubscribers(c *gin.Context) {
 			return
 		}
 
-		subs := &subs{}
-		err = c.Bind(subs)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to bind params")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid parameters, please try again.",
+		body := &params.SegmentSubs{}
+		if err := c.ShouldBind(body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
 			})
 			return
 		}
 
-		if len(subs.Ids) == 0 {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Ids list is empty",
-			})
+		if err := validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
 
-		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
+		s, err := storage.GetSubscribersByIDs(c, body.Ids, user.ID)
 		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": body.Ids}).WithError(err).
 				Warn("Unable to find subscribers by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to add subscribers to the segment.",
@@ -232,7 +234,7 @@ func PutSegmentSubscribers(c *gin.Context) {
 		l.Subscribers = s
 
 		if err = storage.AppendSubscribers(c, l); err != nil {
-			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": body.Ids}).WithError(err).
 				Error("Unable to create subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to add the subscribers to the segment.",
@@ -298,26 +300,22 @@ func DetachSegmentSubscribers(c *gin.Context) {
 			return
 		}
 
-		subs := &subs{}
-		err = c.Bind(subs)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to bind params")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid parameters, please try again.",
+		body := &params.SegmentSubs{}
+		if err := c.ShouldBind(body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
 			})
 			return
 		}
 
-		if len(subs.Ids) == 0 {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Ids list is empty",
-			})
+		if err := validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
 			return
 		}
 
-		s, err := storage.GetSubscribersByIDs(c, subs.Ids, user.ID)
+		s, err := storage.GetSubscribersByIDs(c, body.Ids, user.ID)
 		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": body.Ids}).WithError(err).
 				Error("Unable to find subscribers by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to detach subscribers from the segment.",
@@ -328,7 +326,7 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		l.Subscribers = s
 
 		if err = storage.DetachSubscribers(c, l); err != nil {
-			logger.From(c).WithFields(logrus.Fields{"ids": subs.Ids}).WithError(err).
+			logger.From(c).WithFields(logrus.Fields{"ids": body.Ids}).WithError(err).
 				Error("Unable to remove subscriber_segment associations by the list of ids.")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to detach subscribers from the segment.",
