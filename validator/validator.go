@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	once sync.Once
+	once             sync.Once
 	validatorTagName = "validate"
 )
 
