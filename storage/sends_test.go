@@ -23,7 +23,7 @@ func TestSends(t *testing.T) {
 	now := time.Now().UTC()
 
 	// test get empty sends
-	totalSends, err := store.GetTotalSends(1,1)
+	totalSends, err := store.GetTotalSends(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(0), totalSends)
 
@@ -56,7 +56,7 @@ func TestSends(t *testing.T) {
 	}
 
 	// test get total sends stats
-	totalSends, err = store.GetTotalSends(1,1)
+	totalSends, err = store.GetTotalSends(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalSends)
 

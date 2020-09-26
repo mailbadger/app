@@ -23,7 +23,7 @@ func TestBounces(t *testing.T) {
 	now := time.Now().UTC()
 
 	// test get empty bounces stats
-	totalBounces, err := store.GetTotalBounces(1,1)
+	totalBounces, err := store.GetTotalBounces(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(0), totalBounces)
 
@@ -62,7 +62,7 @@ func TestBounces(t *testing.T) {
 	}
 
 	// test get total bounces stats
-	totalBounces, err = store.GetTotalBounces(1,1)
+	totalBounces, err = store.GetTotalBounces(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalBounces)
 

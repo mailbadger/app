@@ -220,7 +220,6 @@ func GetCampaignOpens(c context.Context, campaignID, userID int64, p *Pagination
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
 }
 
-
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalSends(campaignID, userID)
