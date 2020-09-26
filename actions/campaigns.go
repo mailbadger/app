@@ -207,7 +207,7 @@ func GetCampaign(c *gin.Context) {
 
 func PostCampaign(c *gin.Context) {
 
-	body := &params.CampaignParams{}
+	body := &params.Campaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -262,7 +262,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		body := &params.CampaignParams{}
+		body := &params.Campaign{}
 		if err := c.ShouldBind(body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Invalid parameters, please try again",
