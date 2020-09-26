@@ -11,7 +11,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-contrib/sessions"
@@ -104,12 +103,6 @@ func PostAuthenticate(c *gin.Context) {
 	})
 }
 
-type signupParams struct {
-	Email         string `form:"email" valid:"email,required~Email is blank or in invalid format"`
-	Password      string `form:"password" valid:"required"`
-	TokenResponse string `form:"token_response" valid:"optional"`
-}
-
 // PostSignup validates and creates a user account by the given
 // user parameters. The handler also sends a verification email
 func PostSignup(c *gin.Context) {
@@ -121,8 +114,8 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	params := &signupParams{}
-	err := c.Bind(params)
+	body := &params.PostSignUp{}
+	err := c.Bind(body)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to bind signup params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -131,29 +124,15 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	v, err := valid.ValidateStruct(params)
-	if !v {
-		msg := "Unable to create account, some parameters are invalid."
-		if err != nil {
-			msg = err.Error()
-		}
-
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": msg,
-		})
+	if err := validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid signup params.")
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	if len(params.Password) < 8 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"new_password": "The password must be atleast 8 characters in length.",
-		})
-		return
-	}
-
-	_, err = storage.GetUserByUsername(c, params.Email)
+	_, err = storage.GetUserByUsername(c, body.Email)
 	if err == nil {
-		logger.From(c).WithField("email", params.Email).Warn("Duplicate account.")
+		logger.From(c).WithField("email", body.Email).Warn("Duplicate account.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
@@ -171,9 +150,9 @@ func PostSignup(c *gin.Context) {
 			return
 		}
 
-		err = captcha.Verify(params.TokenResponse)
+		err = captcha.Verify(body.TokenResponse)
 		if err != nil {
-			logger.From(c).WithField("username", params.Email).WithError(err).Infof("recaptcha invalid response.")
+			logger.From(c).WithField("username", body.Email).WithError(err).Infof("recaptcha invalid response.")
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "Unable to create an account.",
 			})
@@ -190,7 +169,7 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusForbidden, gin.H{
@@ -200,7 +179,7 @@ func PostSignup(c *gin.Context) {
 	}
 
 	user := &entities.User{
-		Username: params.Email,
+		Username: body.Email,
 		UUID:     uuid.String(),
 		Password: sql.NullString{
 			String: string(hashedPassword),
@@ -213,7 +192,7 @@ func PostSignup(c *gin.Context) {
 
 	err = storage.CreateUser(c, user)
 	if err != nil {
-		logger.From(c).WithField("username", params.Email).WithError(err).Error("Unable to persist user.")
+		logger.From(c).WithField("username", body.Email).WithError(err).Error("Unable to persist user.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "Unable to create an account.",
 		})
