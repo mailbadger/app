@@ -48,6 +48,9 @@ func (q *ValidationError) FormatErrors() {
 			q.Errors[err.Field()] = "Must be at least " + err.Param() + " character long"
 		case "alphanum":
 			q.Errors[err.Field()] = "Only alphanumeric characters allowed"
+		case "oneof":
+			q.Errors[err.Field()] = "Must be one of: " + err.Param()
+
 		default:
 			q.Errors[err.Field()] = "Validation failed on condition: " + err.ActualTag()
 		}
