@@ -4,11 +4,11 @@ import (
 	"strings"
 )
 
-// SegmentParams represents request body for POST /api/segments
-type SegmentParams struct {
+// Segment represents request body for POST /api/segments
+type Segment struct {
 	Name string `form:"name" validate:"required,max=191"`
 }
 
-func (p *SegmentParams) TrimSpaces() {
+func (p *Segment) TrimSpaces() {
 	p.Name = strings.TrimSpace(p.Name)
 }

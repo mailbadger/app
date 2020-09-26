@@ -84,7 +84,7 @@ func GetSegment(c *gin.Context) {
 
 func PostSegment(c *gin.Context) {
 
-	body := &params.SegmentParams{}
+	body := &params.Segment{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -130,7 +130,7 @@ func PutSegment(c *gin.Context) {
 			return
 		}
 
-		body := &params.SegmentParams{}
+		body := &params.Segment{}
 		if err := c.ShouldBind(body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Invalid parameters, please try again",
