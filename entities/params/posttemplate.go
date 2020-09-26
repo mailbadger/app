@@ -11,6 +11,5 @@ type PostTemplate struct {
 
 func (p *PostTemplate) TrimSpaces() {
 	p.Name = strings.TrimSpace(p.Name)
-	p.Content = strings.TrimSpace(p.Content)
 	p.Subject = strings.TrimSpace(p.Subject)
 }

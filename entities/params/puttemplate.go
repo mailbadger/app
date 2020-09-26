@@ -9,6 +9,5 @@ type PutTemplate struct {
 }
 
 func (p *PutTemplate) TrimSpaces() {
-	p.Content = strings.TrimSpace(p.Content)
 	p.Subject = strings.TrimSpace(p.Subject)
 }
