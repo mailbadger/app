@@ -14,7 +14,7 @@ func (p *PostSubscriber) TrimSpaces() {
 	p.Name = strings.TrimSpace(p.Name)
 }
 
-// PutSubscriber represents request body for POST /api/subscribers/:id
+// PutSubscriber represents request body for PUT /api/subscribers/:id
 type PutSubscriber struct {
 	Name       string            `form:"name" validate:"omitempty,min=1,max=191"`
 	SegmentIDs []int64           `form:"segments[]" validate:"omitempty"`
@@ -23,4 +23,17 @@ type PutSubscriber struct {
 
 func (p *PutSubscriber) TrimSpaces() {
 	p.Name = strings.TrimSpace(p.Name)
+}
+
+// PostUnsubscribe represents request body for POST /api/unsubscribe
+type PostUnsubscribe struct {
+	Email string `form:"email" validate:"required,email"`
+	UUID  string `form:"uuid" validate:"required,uuid"`
+	Token string `form:"t" validate:"required"`
+}
+
+func (p *PostUnsubscribe) TrimSpaces() {
+	p.Email = strings.TrimSpace(p.Email)
+	p.UUID = strings.TrimSpace(p.UUID)
+	p.Token = strings.TrimSpace(p.Token)
 }

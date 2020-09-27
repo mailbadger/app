@@ -243,40 +243,46 @@ func DeleteSubscriber(c *gin.Context) {
 }
 
 func PostUnsubscribe(c *gin.Context) {
-	email := strings.TrimSpace(c.PostForm("email"))
-	uuid := strings.TrimSpace(c.PostForm("uuid"))
-	token := strings.TrimSpace(c.PostForm("t"))
+	body := &params.PostUnsubscribe{}
+	if err := c.ShouldBind(body); err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid subscriber params.")
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 
 	redirWithError := c.Request.Referer()
 
 	params := url.Values{}
-	params.Add("email", email)
-	params.Add("uuid", uuid)
-	params.Add("t", token)
+	params.Add("email", body.Email)
+	params.Add("uuid", body.UUID)
+	params.Add("t", body.Token)
 	params.Add("failed", "true")
 
 	redirWithError = redirWithError + "?" + params.Encode()
 
-	if token == "" || email == "" || uuid == "" {
-		c.Redirect(http.StatusPermanentRedirect, redirWithError)
-		return
-	}
-
-	u, err := storage.GetUserByUUID(c, uuid)
+	u, err := storage.GetUserByUUID(c, body.UUID)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: cannot find user by uuid.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	sub, err := storage.GetSubscriberByEmail(c, email, u.ID)
+	sub, err := storage.GetSubscriberByEmail(c, body.Email, u.ID)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: unable to fetch subscriber by email.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
@@ -285,17 +291,17 @@ func PostUnsubscribe(c *gin.Context) {
 	hash, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Error("Unsubscribe: unable to generate hash.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	if subtle.ConstantTimeCompare([]byte(token), []byte(hash)) != 1 {
+	if subtle.ConstantTimeCompare([]byte(body.Token), []byte(hash)) != 1 {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: hashes don't match.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
@@ -304,8 +310,8 @@ func PostUnsubscribe(c *gin.Context) {
 	err = storage.DeactivateSubscriber(c, u.ID, sub.Email)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: unable to update subscriber's status.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
