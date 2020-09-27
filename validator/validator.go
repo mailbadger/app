@@ -2,6 +2,7 @@ package validator
 
 import (
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -12,8 +13,10 @@ import (
 )
 
 var (
-	once             sync.Once
-	validatorTagName = "validate"
+	once                           sync.Once
+	validatorTagName               = "validate"
+	regexPatternAlphanumericHyphen = "^[\\w-]*$"
+	tagAlphanumericHyphen          = "alphanumhyphen"
 )
 
 // MBValidator global validator
@@ -50,6 +53,10 @@ func initValidator() {
 	MBValidator.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
 		return name
+	})
+	_ = MBValidator.RegisterValidation(tagAlphanumericHyphen, func(fl validator.FieldLevel) bool {
+		matched, _ := regexp.MatchString(regexPatternAlphanumericHyphen, fl.Field().String())
+		return matched
 	})
 }
 
