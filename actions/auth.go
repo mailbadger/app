@@ -39,8 +39,7 @@ import (
 // PostAuthenticate authenticates a user with the given username and password.
 func PostAuthenticate(c *gin.Context) {
 	body := &params.PostAuthenticate{}
-	if err:=c.ShouldBind(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind authentication params.")
+	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -48,7 +47,6 @@ func PostAuthenticate(c *gin.Context) {
 	}
 
 	if err := validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid authentication params.")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
@@ -115,17 +113,15 @@ func PostSignup(c *gin.Context) {
 	}
 
 	body := &params.PostSignUp{}
-	err := c.Bind(body)
+	err := c.ShouldBind(body)
 	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind signup params.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",
 		})
 		return
 	}
 
-	if err := validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid signup params.")
+	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
