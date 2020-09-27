@@ -10,7 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/services/subscribers/bulkremover"
+	"github.com/mailbadger/app/validator"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
@@ -77,45 +79,40 @@ type segmentsParam struct {
 }
 
 func PostSubscriber(c *gin.Context) {
-	name, email := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("email"))
-	meta := c.PostFormMap("metadata")
-	segments := &segmentsParam{}
-	err := c.Bind(segments)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+	var err error
+	body := &params.PostSubscriber{}
+
+	if err = c.Bind(body); err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
+	body.Metadata = c.PostFormMap("metadata")
+
+	if err = validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid subscriber params.")
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	s := &entities.Subscriber{
-		Name:     name,
-		Email:    email,
-		Metadata: meta,
+		Name:     body.Name,
+		Email:    body.Email,
+		Metadata: body.Metadata,
 		Active:   true,
 		UserID:   middleware.GetUser(c).ID,
 	}
 
-	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
 			"errors": map[string]string{
 				"segments": "Unable to find the specified segments.",
 			},
-		})
-		return
-	}
-
-	s.Segments = segs
-
-	if !s.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  s.Errors,
 		})
 		return
 	}
@@ -128,14 +125,13 @@ func PostSubscriber(c *gin.Context) {
 		return
 	}
 
-	metaJSON, err := json.Marshal(meta)
+	s.MetaJSON, err = json.Marshal(body.Metadata)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber, invalid metadata.",
 		})
 		return
 	}
-	s.MetaJSON = metaJSON
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
 		logger.From(c).
