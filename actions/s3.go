@@ -22,7 +22,6 @@ func GetSignedURL(c *gin.Context) {
 
 	body := &params.GetSignedURL{}
 	if err := c.ShouldBind(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -30,11 +29,9 @@ func GetSignedURL(c *gin.Context) {
 	}
 
 	if err := validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid params.")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-
 
 	client, err := s3.NewS3Client(
 		os.Getenv("AWS_S3_ACCESS_KEY"),
