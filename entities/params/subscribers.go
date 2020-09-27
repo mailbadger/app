@@ -37,3 +37,12 @@ func (p *PostUnsubscribe) TrimSpaces() {
 	p.UUID = strings.TrimSpace(p.UUID)
 	p.Token = strings.TrimSpace(p.Token)
 }
+
+type ImportSubscribers struct {
+	Filename   string  `form:"filename" validate:"required"`
+	SegmentIDs []int64 `form:"segments[]" validate:"omitempty"`
+}
+
+func (p *ImportSubscribers) TrimSpaces() {
+	p.Filename = strings.TrimSpace(p.Filename)
+}

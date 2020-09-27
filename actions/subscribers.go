@@ -16,13 +16,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
-	"github.com/sirupsen/logrus"
 )
 
 func GetSubscribers(c *gin.Context) {
@@ -74,16 +75,11 @@ func GetSubscriber(c *gin.Context) {
 	})
 }
 
-type segmentsParam struct {
-	Ids []int64 `form:"segments[]"`
-}
-
 func PostSubscriber(c *gin.Context) {
 	var err error
 	body := &params.PostSubscriber{}
 
 	if err = c.ShouldBind(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -93,7 +89,6 @@ func PostSubscriber(c *gin.Context) {
 	body.Metadata = c.PostFormMap("metadata")
 
 	if err = validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid subscriber params.")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
@@ -165,7 +160,6 @@ func PutSubscriber(c *gin.Context) {
 
 	body := &params.PutSubscriber{}
 	if err = c.ShouldBind(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -175,7 +169,6 @@ func PutSubscriber(c *gin.Context) {
 	body.Metadata = c.PostFormMap("metadata")
 
 	if err = validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid subscriber params.")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
@@ -245,7 +238,6 @@ func DeleteSubscriber(c *gin.Context) {
 func PostUnsubscribe(c *gin.Context) {
 	body := &params.PostUnsubscribe{}
 	if err := c.ShouldBind(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -253,7 +245,6 @@ func PostUnsubscribe(c *gin.Context) {
 	}
 
 	if err := validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid subscriber params.")
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
@@ -323,21 +314,23 @@ func PostUnsubscribe(c *gin.Context) {
 func ImportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	segments := &segmentsParam{}
-	err := c.Bind(segments)
+	body := &params.ImportSubscribers{}
+	err := c.ShouldBind(body)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	var segs []entities.Segment
-	if len(segments.Ids) > 0 {
-		segs, err = storage.GetSegmentsByIDs(c, u.ID, segments.Ids)
+	if len(body.SegmentIDs) > 0 {
+		segs, err = storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
@@ -347,13 +340,6 @@ func ImportSubscribers(c *gin.Context) {
 			})
 			return
 		}
-	}
-
-	filename := strings.TrimSpace(c.PostForm("filename"))
-	if filename == "" {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "The filename must not be empty.",
-		})
 	}
 
 	client, err := awss3.NewS3Client(
@@ -378,7 +364,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, client, filename, u.ID, segs)
+	}(c, client, body.Filename, u.ID, segs)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
