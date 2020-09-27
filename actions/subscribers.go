@@ -82,7 +82,7 @@ func PostSubscriber(c *gin.Context) {
 	var err error
 	body := &params.PostSubscriber{}
 
-	if err = c.Bind(body); err != nil {
+	if err = c.ShouldBind(body); err != nil {
 		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -163,22 +163,24 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
-	s.Name = strings.TrimSpace(c.PostForm("name"))
-	s.Metadata = c.PostFormMap("metadata")
-
-	segments := &segmentsParam{}
-	err = c.Bind(segments)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+	body := &params.PutSubscriber{}
+	if err = c.ShouldBind(body); err != nil {
+		logger.From(c).WithError(err).Error("Unable to bind subscriber params.")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
-	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	body.Metadata = c.PostFormMap("metadata")
+
+	if err = validator.Validate(body); err != nil {
+		logger.From(c).WithError(err).Error("Invalid subscriber params.")
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
@@ -189,24 +191,13 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
-	s.Segments = segs
-
-	if !s.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  s.Errors,
-		})
-		return
-	}
-
-	metaJSON, err := json.Marshal(s.Metadata)
+	s.MetaJSON, err = json.Marshal(s.Metadata)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber, invalid metadata.",
 		})
 		return
 	}
-	s.MetaJSON = metaJSON
 
 	if err = storage.UpdateSubscriber(c, s); err != nil {
 		logger.From(c).
