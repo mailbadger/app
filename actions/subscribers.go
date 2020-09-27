@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/services/subscribers/bulkremover"
@@ -374,11 +373,18 @@ func ImportSubscribers(c *gin.Context) {
 func BulkRemoveSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	filename := strings.TrimSpace(c.PostForm("filename"))
-	if filename == "" {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "The filename must not be empty.",
+	body := &params.BulkRemoveSubscribers{}
+	err := c.ShouldBind(body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
 	}
 
 	client, err := awss3.NewS3Client(
@@ -402,7 +408,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 				"filename": filename,
 			}).WithError(err).Warn("Unable to remove subscribers.")
 		}
-	}(c, client, filename, u.ID)
+	}(c, client, body.Filename, u.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly.",

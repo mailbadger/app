@@ -38,11 +38,21 @@ func (p *PostUnsubscribe) TrimSpaces() {
 	p.Token = strings.TrimSpace(p.Token)
 }
 
+// ImportSubscribers represents request body for POST /api/subscribers/import
 type ImportSubscribers struct {
 	Filename   string  `form:"filename" validate:"required"`
 	SegmentIDs []int64 `form:"segments[]" validate:"omitempty"`
 }
 
 func (p *ImportSubscribers) TrimSpaces() {
+	p.Filename = strings.TrimSpace(p.Filename)
+}
+
+// BulkRemoveSubscribers represents request body for POST /api/subscribers/bulk-remove
+type BulkRemoveSubscribers struct {
+	Filename   string  `form:"filename" validate:"required"`
+}
+
+func (p *BulkRemoveSubscribers) TrimSpaces() {
 	p.Filename = strings.TrimSpace(p.Filename)
 }
