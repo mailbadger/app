@@ -50,7 +50,7 @@ func (p *ImportSubscribers) TrimSpaces() {
 
 // BulkRemoveSubscribers represents request body for POST /api/subscribers/bulk-remove
 type BulkRemoveSubscribers struct {
-	Filename   string  `form:"filename" validate:"required"`
+	Filename string `form:"filename" validate:"required"`
 }
 
 func (p *BulkRemoveSubscribers) TrimSpaces() {
