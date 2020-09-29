@@ -10,10 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
+	"github.com/mailbadger/app/validator"
 )
 
 func GetTemplate(c *gin.Context) {
@@ -111,12 +113,6 @@ func GetTemplates(c *gin.Context) {
 	})
 }
 
-type postTemplate struct {
-	Name    string `form:"name" binding:"required,max=191"`
-	Content string `form:"content" binding:"required,html"`
-	Subject string `form:"subject" binding:"required,max=191"`
-}
-
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -128,11 +124,19 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	params := &postTemplate{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.PostTemplate{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
 		return
 	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to create SES template store.")
@@ -144,10 +148,10 @@ func PostTemplate(c *gin.Context) {
 
 	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
 		Template: &ses.Template{
-			TemplateName: aws.String(params.Name),
-			HtmlPart:     aws.String(params.Content),
-			TextPart:     aws.String(params.Content),
-			SubjectPart:  aws.String(params.Subject),
+			TemplateName: aws.String(body.Name),
+			HtmlPart:     aws.String(body.Content),
+			TextPart:     aws.String(body.Content),
+			SubjectPart:  aws.String(body.Subject),
 		},
 	})
 	if err != nil {
@@ -164,16 +168,11 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
-		Name:        params.Name,
-		HTMLPart:    params.Content,
-		TextPart:    params.Content,
-		SubjectPart: params.Subject,
+		Name:        body.Name,
+		HTMLPart:    body.Content,
+		TextPart:    body.Content,
+		SubjectPart: body.Subject,
 	})
-}
-
-type putTemplate struct {
-	Content string `json:"content" form:"content" binding:"required,html"`
-	Subject string `json:"subject" form:"subject" binding:"required,max=191"`
 }
 
 func PutTemplate(c *gin.Context) {
@@ -187,9 +186,16 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	params := &putTemplate{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.PutTemplate{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -206,9 +212,9 @@ func PutTemplate(c *gin.Context) {
 	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
 		Template: &ses.Template{
 			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(params.Content),
-			TextPart:     aws.String(params.Content),
-			SubjectPart:  aws.String(params.Subject),
+			HtmlPart:     aws.String(body.Content),
+			TextPart:     aws.String(body.Content),
+			SubjectPart:  aws.String(body.Subject),
 		},
 	})
 
@@ -227,9 +233,9 @@ func PutTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, entities.Template{
 		Name:        name,
-		HTMLPart:    params.Content,
-		TextPart:    params.Content,
-		SubjectPart: params.Subject,
+		HTMLPart:    body.Content,
+		TextPart:    body.Content,
+		SubjectPart: body.Subject,
 	})
 }
 
