@@ -16,20 +16,17 @@ import (
 
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
+	"github.com/mailbadger/app/validator"
 )
 
 func GetMe(c *gin.Context) {
 	c.Header("X-CSRF-Token", csrf.Token(c.Request))
 	c.JSON(http.StatusOK, middleware.GetUser(c))
-}
-
-type changePassParams struct {
-	Password    string `form:"password" binding:"required"`
-	NewPassword string `form:"new_password" binding:"required,min=8"`
 }
 
 func ChangePassword(c *gin.Context) {
@@ -41,13 +38,20 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	params := &changePassParams{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.ChangePassword{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
 		return
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(params.Password))
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(body.Password))
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "The password that you entered is incorrect.",
@@ -55,7 +59,7 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.NewPassword), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -83,18 +87,21 @@ func ChangePassword(c *gin.Context) {
 	})
 }
 
-type forgotPassParams struct {
-	Email string `form:"email" binding:"required,email"`
-}
-
 func PostForgotPassword(c *gin.Context) {
-	params := &forgotPassParams{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.ForgotPassword{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
 		return
 	}
 
-	u, err := storage.GetUserByUsername(c, params.Email)
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	u, err := storage.GetUserByUsername(c, body.Email)
 	if err == nil {
 		sender, err := emails.NewSesSender(
 			os.Getenv("AWS_SES_ACCESS_KEY"),
@@ -148,9 +155,6 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) error {
 	return err
 }
 
-type putForgotPassParams struct {
-	Password string `form:"password" binding:"required,min=8"`
-}
 
 func PutForgotPassword(c *gin.Context) {
 	tokenStr := c.Param("token")
@@ -163,11 +167,19 @@ func PutForgotPassword(c *gin.Context) {
 		return
 	}
 
-	params := &putForgotPassParams{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.PutForgotPassword{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
 		return
 	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 
 	user, err := storage.GetUser(c, t.UserID)
 	if err != nil {
@@ -177,7 +189,7 @@ func PutForgotPassword(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
 		c.JSON(http.StatusBadRequest, gin.H{
