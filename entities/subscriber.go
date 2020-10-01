@@ -3,13 +3,11 @@ package entities
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -55,34 +53,6 @@ func (s *Subscriber) GetUnsubscribeURL(uuid string) (string, error) {
 	params.Add("t", t)
 
 	return os.Getenv("APP_URL") + "/unsubscribe.html?" + params.Encode(), nil
-}
-
-// Validate subscriber properties,
-func (s *Subscriber) Validate() bool {
-	s.Errors = make(map[string]string)
-
-	if len(s.Name) > 0 { // Name is optional
-		if valid.Trim(s.Name, "") == "" {
-			s.Errors["name"] = "The subscriber name cannot be empty."
-		}
-
-		if !valid.StringLength(s.Name, "1", "191") {
-			s.Errors["name"] = "The name needs to be shorter than 190 characters."
-		}
-	}
-
-	if !valid.IsEmail(s.Email) {
-		s.Errors["email"] = "The specified email is not valid."
-	}
-
-	for key := range s.Metadata {
-		if !valid.Matches(key, "^[\\w-]*$") {
-			s.Errors["message"] = fmt.Sprintf("The specified key %s must consist only of alphanumeric and hyphen characters", key)
-			break
-		}
-	}
-
-	return len(s.Errors) == 0
 }
 
 // GenerateUnsubscribeToken generates and signs a new unsubscribe token with the given secret, from the
