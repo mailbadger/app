@@ -54,10 +54,15 @@ func initValidator() {
 		name := strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
 		return name
 	})
-	_ = MBValidator.RegisterValidation(tagAlphanumericHyphen, func(fl validator.FieldLevel) bool {
+
+	err := MBValidator.RegisterValidation(tagAlphanumericHyphen, func(fl validator.FieldLevel) bool {
 		matched, _ := regexp.MatchString(regexPatternAlphanumericHyphen, fl.Field().String())
 		return matched
 	})
+	if err != nil {
+		// if register validation fails panic
+		panic(err)
+	}
 }
 
 type DefaultValidator struct {
