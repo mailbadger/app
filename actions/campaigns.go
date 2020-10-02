@@ -13,18 +13,14 @@ import (
 
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
+	"github.com/mailbadger/app/validator"
 )
-
-type sendCampaignParams struct {
-	Ids      []int64 `form:"segment_id[]" binding:"required"`
-	Source   string  `form:"source" binding:"required,email,max=191"`
-	FromName string  `form:"from_name" binding:"required,max=191"`
-}
 
 func StartCampaign(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -35,13 +31,20 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	params := &sendCampaignParams{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.SendCampaign{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
 		return
 	}
+	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
+	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
-	templateData := c.PostFormMap("default_template_data")
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 
 	u := middleware.GetUser(c)
 
@@ -85,7 +88,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	lists, err := storage.GetSegmentsByIDs(c, u.ID, params.Ids)
+	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Subscriber lists are not found.",
@@ -110,9 +113,9 @@ func StartCampaign(c *gin.Context) {
 	csExists := err == nil
 
 	msg, err := json.Marshal(entities.SendCampaignParams{
-		SegmentIDs:             params.Ids,
-		Source:                 fmt.Sprintf("%s <%s>", params.FromName, params.Source),
-		TemplateData:           templateData,
+		SegmentIDs:             body.Ids,
+		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
+		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
 		Campaign:               *campaign,
@@ -130,7 +133,7 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
-			"segment_ids": params.Ids,
+			"segment_ids": body.Ids,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
@@ -203,22 +206,24 @@ func GetCampaign(c *gin.Context) {
 	})
 }
 
-type campaignParams struct {
-	Name         string `json:"name" form:"name" binding:"required,max=191"`
-	TemplateName string `json:"template_name" form:"template_name" binding:"required,max=191"`
-}
-
 func PostCampaign(c *gin.Context) {
 
-	params := &campaignParams{}
-	if err := c.ShouldBind(params); err != nil {
-		AbortWithError(c, err)
+	body := &params.Campaign{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	user := middleware.GetUser(c)
 
-	_, err := storage.GetCampaignByName(c, params.Name, middleware.GetUser(c).ID)
+	_, err := storage.GetCampaignByName(c, body.Name, middleware.GetUser(c).ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Campaign with that name already exists",
@@ -227,9 +232,9 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	campaign := &entities.Campaign{
-		Name:         params.Name,
+		Name:         body.Name,
 		UserID:       user.ID,
-		TemplateName: params.TemplateName,
+		TemplateName: body.TemplateName,
 		Status:       entities.StatusDraft,
 	}
 
@@ -258,13 +263,20 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		params := &campaignParams{}
-		if err := c.ShouldBind(params); err != nil {
-			AbortWithError(c, err)
+		body := &params.Campaign{}
+		if err := c.ShouldBind(body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
+			})
 			return
 		}
 
-		campaign2, err := storage.GetCampaignByName(c, params.Name, middleware.GetUser(c).ID)
+		if err := validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		campaign2, err := storage.GetCampaignByName(c, body.Name, middleware.GetUser(c).ID)
 		if err == nil && campaign.ID != campaign2.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Campaign with that name already exists",
@@ -272,8 +284,8 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		campaign.Name = params.Name
-		campaign.TemplateName = params.TemplateName
+		campaign.Name = body.Name
+		campaign.TemplateName = body.TemplateName
 
 		if !campaign.Validate() {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
