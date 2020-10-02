@@ -8,19 +8,21 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/services/subscribers/bulkremover"
+	"github.com/mailbadger/app/validator"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
-	"github.com/sirupsen/logrus"
 )
 
 func GetSubscribers(c *gin.Context) {
@@ -72,50 +74,39 @@ func GetSubscriber(c *gin.Context) {
 	})
 }
 
-type segmentsParam struct {
-	Ids []int64 `form:"segments[]"`
-}
-
 func PostSubscriber(c *gin.Context) {
-	name, email := strings.TrimSpace(c.PostForm("name")), strings.TrimSpace(c.PostForm("email"))
-	meta := c.PostFormMap("metadata")
-	segments := &segmentsParam{}
-	err := c.Bind(segments)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+	var err error
+	body := &params.PostSubscriber{}
+
+	if err = c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
+	body.Metadata = c.PostFormMap("metadata")
+
+	if err = validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	s := &entities.Subscriber{
-		Name:     name,
-		Email:    email,
-		Metadata: meta,
+		Name:     body.Name,
+		Email:    body.Email,
+		Metadata: body.Metadata,
 		Active:   true,
 		UserID:   middleware.GetUser(c).ID,
 	}
 
-	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
 			"errors": map[string]string{
 				"segments": "Unable to find the specified segments.",
 			},
-		})
-		return
-	}
-
-	s.Segments = segs
-
-	if !s.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  s.Errors,
 		})
 		return
 	}
@@ -128,14 +119,13 @@ func PostSubscriber(c *gin.Context) {
 		return
 	}
 
-	metaJSON, err := json.Marshal(meta)
+	s.MetaJSON, err = json.Marshal(body.Metadata)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber, invalid metadata.",
 		})
 		return
 	}
-	s.MetaJSON = metaJSON
 
 	if err := storage.CreateSubscriber(c, s); err != nil {
 		logger.From(c).
@@ -167,22 +157,22 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
-	s.Name = strings.TrimSpace(c.PostForm("name"))
-	s.Metadata = c.PostFormMap("metadata")
-
-	segments := &segmentsParam{}
-	err = c.Bind(segments)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+	body := &params.PutSubscriber{}
+	if err = c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
-	segs, err := storage.GetSegmentsByIDs(c, s.UserID, segments.Ids)
+	body.Metadata = c.PostFormMap("metadata")
+
+	if err = validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
@@ -193,24 +183,13 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
-	s.Segments = segs
-
-	if !s.Validate() {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors":  s.Errors,
-		})
-		return
-	}
-
-	metaJSON, err := json.Marshal(s.Metadata)
+	s.MetaJSON, err = json.Marshal(s.Metadata)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber, invalid metadata.",
 		})
 		return
 	}
-	s.MetaJSON = metaJSON
 
 	if err = storage.UpdateSubscriber(c, s); err != nil {
 		logger.From(c).
@@ -256,40 +235,44 @@ func DeleteSubscriber(c *gin.Context) {
 }
 
 func PostUnsubscribe(c *gin.Context) {
-	email := strings.TrimSpace(c.PostForm("email"))
-	uuid := strings.TrimSpace(c.PostForm("uuid"))
-	token := strings.TrimSpace(c.PostForm("t"))
+	body := &params.PostUnsubscribe{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
 
 	redirWithError := c.Request.Referer()
 
 	params := url.Values{}
-	params.Add("email", email)
-	params.Add("uuid", uuid)
-	params.Add("t", token)
+	params.Add("email", body.Email)
+	params.Add("uuid", body.UUID)
+	params.Add("t", body.Token)
 	params.Add("failed", "true")
 
 	redirWithError = redirWithError + "?" + params.Encode()
 
-	if token == "" || email == "" || uuid == "" {
-		c.Redirect(http.StatusPermanentRedirect, redirWithError)
-		return
-	}
-
-	u, err := storage.GetUserByUUID(c, uuid)
+	u, err := storage.GetUserByUUID(c, body.UUID)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: cannot find user by uuid.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	sub, err := storage.GetSubscriberByEmail(c, email, u.ID)
+	sub, err := storage.GetSubscriberByEmail(c, body.Email, u.ID)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: unable to fetch subscriber by email.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
@@ -298,17 +281,17 @@ func PostUnsubscribe(c *gin.Context) {
 	hash, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Error("Unsubscribe: unable to generate hash.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
 
-	if subtle.ConstantTimeCompare([]byte(token), []byte(hash)) != 1 {
+	if subtle.ConstantTimeCompare([]byte(body.Token), []byte(hash)) != 1 {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: hashes don't match.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
@@ -317,8 +300,8 @@ func PostUnsubscribe(c *gin.Context) {
 	err = storage.DeactivateSubscriber(c, u.ID, sub.Email)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"email": email,
-			"uuid":  uuid,
+			"email": body.Email,
+			"uuid":  body.UUID,
 		}).WithError(err).Warn("Unsubscribe: unable to update subscriber's status.")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
@@ -330,21 +313,23 @@ func PostUnsubscribe(c *gin.Context) {
 func ImportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	segments := &segmentsParam{}
-	err := c.Bind(segments)
+	body := &params.ImportSubscribers{}
+	err := c.ShouldBind(body)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid data",
-			"errors": map[string]string{
-				"segments": "The segments array is in an invalid format.",
-			},
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
 	var segs []entities.Segment
-	if len(segments.Ids) > 0 {
-		segs, err = storage.GetSegmentsByIDs(c, u.ID, segments.Ids)
+	if len(body.SegmentIDs) > 0 {
+		segs, err = storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
@@ -354,13 +339,6 @@ func ImportSubscribers(c *gin.Context) {
 			})
 			return
 		}
-	}
-
-	filename := strings.TrimSpace(c.PostForm("filename"))
-	if filename == "" {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "The filename must not be empty.",
-		})
 	}
 
 	client, err := awss3.NewS3Client(
@@ -385,7 +363,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, client, filename, u.ID, segs)
+	}(c, client, body.Filename, u.ID, segs)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -395,11 +373,18 @@ func ImportSubscribers(c *gin.Context) {
 func BulkRemoveSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	filename := strings.TrimSpace(c.PostForm("filename"))
-	if filename == "" {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "The filename must not be empty.",
+	body := &params.BulkRemoveSubscribers{}
+	err := c.ShouldBind(body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
 	}
 
 	client, err := awss3.NewS3Client(
@@ -423,7 +408,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 				"filename": filename,
 			}).WithError(err).Warn("Unable to remove subscribers.")
 		}
-	}(c, client, filename, u.ID)
+	}(c, client, body.Filename, u.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly.",

@@ -99,12 +99,6 @@ func TestSubscriber(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, m["foo"], "baz")
 
-	//Test subscriber validation when name and email are invalid
-	s.Name = ""
-	s.Email = "foo bar"
-	s.Validate()
-	assert.Equal(t, s.Errors["email"], "The specified email is not valid.")
-
 	//Test get subs
 	p = NewPaginationCursor("/api/subcribers", 10)
 	err = store.GetSubscribers(1, p)
