@@ -1,3 +1,5 @@
+-- +migrate Up
+
 CREATE TABLE IF NOT EXISTS "reports"
 (
     "id"           integer primary key autoincrement,
@@ -10,3 +12,8 @@ CREATE TABLE IF NOT EXISTS "reports"
     "created_at"   datetime,
     "updated_at"   datetime
 );
+
+
+-- +migrate Down
+
+DROP TABLE "reports";

@@ -1,3 +1,5 @@
+-- +migrate Up
+
 CREATE TABLE IF NOT EXISTS `reports`
 (
     `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
@@ -13,3 +15,7 @@ CREATE TABLE IF NOT EXISTS `reports`
     INDEX user_id_resource (`user_id`, `resource`)
 ) CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
+
+-- +migrate Down
+
+DROP TABLE `reports`;
