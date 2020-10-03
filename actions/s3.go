@@ -4,28 +4,32 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	awss3 "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-gonic/gin"
+
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/validator"
 )
 
 func GetSignedURL(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	filename := strings.TrimSpace(c.PostForm("filename"))
-	contentType := strings.TrimSpace(c.PostForm("contentType"))
-	action := strings.ToLower(strings.TrimSpace(c.PostForm("action")))
-
-	if action != "import" && action != "export" && action != "remove" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to sign url. Invalid action.",
+	body := &params.GetSignedURL{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
 		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -43,8 +47,8 @@ func GetSignedURL(c *gin.Context) {
 	}
 	req, _ := client.PutObjectRequest(&awss3.PutObjectInput{
 		Bucket:      aws.String(os.Getenv("AWS_S3_BUCKET")),
-		Key:         aws.String(fmt.Sprintf("subscribers/%s/%d/%s", action, u.ID, filename)),
-		ContentType: aws.String(contentType),
+		Key:         aws.String(fmt.Sprintf("subscribers/%s/%d/%s", body.Action, u.ID, body.Filename)),
+		ContentType: aws.String(body.ContentType),
 	})
 
 	url, err := req.Presign(15 * time.Minute)
@@ -60,7 +64,7 @@ func GetSignedURL(c *gin.Context) {
 		"url":    url,
 		"method": req.Operation.HTTPMethod,
 		"headers": map[string]string{
-			"content-type": contentType,
+			"content-type": body.ContentType,
 		},
 	})
 }

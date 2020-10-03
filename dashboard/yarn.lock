@@ -2290,14 +2290,14 @@
     namespace-emitter "^2.0.1"
     preact "8.2.9"
 
-"@uppy/dashboard@^1.12.7":
-  version "1.12.7"
-  resolved "https://registry.yarnpkg.com/@uppy/dashboard/-/dashboard-1.12.7.tgz#3c47a98d240fc4aa0ab4abb687625b6fee7c77d9"
-  integrity sha512-dhD/LTA0e/lV1ThU8SVCOIYF/XVZw43oyiuanDkCX51mjVxasgS77n0Jnj+5SztFQd0qGZ6lW/uZdLtew+2bfA==
+"@uppy/dashboard@^1.12.8":
+  version "1.12.8"
+  resolved "https://registry.yarnpkg.com/@uppy/dashboard/-/dashboard-1.12.8.tgz#1ec26020753fb58ac6182f5adad7d018e6157097"
+  integrity sha512-ryz2x2i/jwVJCDGcdiQqD6Az92WPY6ft/r5iu2TTxOIzUFdou3T1rKF/6Dbh3qVCbzzFviPMLdTVfaSsEoQdNw==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/informer" "^1.5.11"
-    "@uppy/provider-views" "^1.7.6"
+    "@uppy/provider-views" "^1.7.7"
     "@uppy/status-bar" "^1.7.6"
     "@uppy/thumbnail-generator" "^1.6.7"
     "@uppy/utils" "^3.2.3"
@@ -2334,21 +2334,21 @@
     "@uppy/utils" "^3.2.3"
     preact "8.2.9"
 
-"@uppy/provider-views@^1.7.6":
-  version "1.7.6"
-  resolved "https://registry.yarnpkg.com/@uppy/provider-views/-/provider-views-1.7.6.tgz#df999a91c4797741603914415e047a17e8fa20de"
-  integrity sha512-IGB4wTm/a5cMW0MImhNrOF4cic3dLxTD2D7mKVtvnktAuJ5qqx94IuZlEYjNq0QRYUGi2bokb1f9BJJVKlZuOg==
+"@uppy/provider-views@^1.7.7":
+  version "1.7.7"
+  resolved "https://registry.yarnpkg.com/@uppy/provider-views/-/provider-views-1.7.7.tgz#fe85617d86b72ce376f9efa0c369ab7b2eb3af2e"
+  integrity sha512-PLIAeUJKNOU+Yfxr4iX6oFoHS15SZZhnDj+n2JWyg3l6iNOG7gvLq85OMARFOUA0DlP5srRq4NlR/nlMWo+0xw==
   dependencies:
     "@uppy/utils" "^3.2.3"
     classnames "^2.2.6"
     preact "8.2.9"
 
-"@uppy/react@^1.10.7":
-  version "1.10.7"
-  resolved "https://registry.yarnpkg.com/@uppy/react/-/react-1.10.7.tgz#73961391fb0519bff277dcc2d394d35941e75cf6"
-  integrity sha512-dsNXCveWSUUl9OVaioKk/xQhit+UuJC5WUaRr5NuSV2Zhli9WUE9RxJ9wYpaebwtYq5g7W+Cy+ktIXNqR7FULA==
+"@uppy/react@^1.10.8":
+  version "1.10.8"
+  resolved "https://registry.yarnpkg.com/@uppy/react/-/react-1.10.8.tgz#260bc37693c8a1aa6f719cada22b67414913466d"
+  integrity sha512-FO6PThrYZaEGZd7G3YooHHKsxhZqF6/Euy+jI8CLhROf78Kg0Gr3dURhwaH902NgPrA5Yfa6xRSC1d4etwMktg==
   dependencies:
-    "@uppy/dashboard" "^1.12.7"
+    "@uppy/dashboard" "^1.12.8"
     "@uppy/drag-drop" "^1.4.19"
     "@uppy/progress-bar" "^1.3.19"
     "@uppy/status-bar" "^1.7.6"
@@ -4742,10 +4742,10 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
-dompurify@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.1.0.tgz#29ae507c1e50ea8e46929844194670605160df01"
-  integrity sha512-wKExRhOwUnfm1icoISSXnlmM1P2l07W2tFQqbU+8oySnvy7tHwj2iHJ1kJQi8EfcTlojsHKESOJwCGVJmNUdPQ==
+dompurify@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.1.1.tgz#b5aa988676b093a9c836d8b855680a8598af25fe"
+  integrity sha512-NijiNVkS/OL8mdQL1hUbCD6uty/cgFpmNiuFxrmJ5YPH2cXrPKIewoixoji56rbZ6XBPmtM8GA8/sf9unlSuwg==
 
 domutils@1.5.1:
   version "1.5.1"
@@ -5121,10 +5121,10 @@ eslint-plugin-react@7.19.0:
     string.prototype.matchall "^4.0.2"
     xregexp "^4.3.0"
 
-eslint-plugin-react@^7.21.2:
-  version "7.21.2"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.21.2.tgz#3bd5d2c4c36d5a0428d0d6dda301ac9a84d681b2"
-  integrity sha512-j3XKvrK3rpBzveKFbgAeGsWb9uz6iUOrR0jixRfjwdFeGSRsXvVTFtHDQYCjsd1/6Z/xvb8Vy3LiI5Reo7fDrg==
+eslint-plugin-react@^7.21.3:
+  version "7.21.3"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-react/-/eslint-plugin-react-7.21.3.tgz#71655d2af5155b19285ec929dd2cdc67a4470b52"
+  integrity sha512-OI4GwTCqyIb4ipaOEGLWdaOHCXZZydStAsBEPB2e1ZfNM37bojpgO1BoOQbFb0eLVz3QLDx7b+6kYcrxCuJfhw==
   dependencies:
     array-includes "^3.1.1"
     array.prototype.flatmap "^1.2.3"
@@ -5732,10 +5732,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-formik@^2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/formik/-/formik-2.1.5.tgz#de5bbbe35543fa6d049fe96b8ee329d6cd6892b8"
-  integrity sha512-bWpo3PiqVDYslvrRjTq0Isrm0mFXHiO33D8MS6t6dWcqSFGeYF52nlpCM2xwOJ6tRVRznDkL+zz/iHPL4LDuvQ==
+formik@^2.1.7:
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/formik/-/formik-2.1.7.tgz#40bd04e59b242176d0a17c701830f1536cd7506b"
+  integrity sha512-n1wviIh0JsvHqj9PufNvOV+fS7mFwh9FfMxxTMnTrKR/uVYMS06DKaivXBlJdDF0qEwTcPHxSmIQ3deFHL3Hsg==
   dependencies:
     deepmerge "^2.1.1"
     hoist-non-react-statics "^3.3.0"
@@ -6150,17 +6150,10 @@ hoist-non-react-statics@^2.3.1:
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
   integrity sha512-rqcy4pJo55FTTLWt+bU8ukscqHeE/e9KWvsOW2b/a3afxQZhwkQdT1rPPCJ0rYXdj4vNcasY8zHTH+jF/qStxw==
 
-hoist-non-react-statics@^3.1.0:
+hoist-non-react-statics@^3.1.0, hoist-non-react-statics@^3.2.0, hoist-non-react-statics@^3.3.0:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.2.tgz#ece0acaf71d62c2969c2ec59feff42a4b1a85b45"
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
-  dependencies:
-    react-is "^16.7.0"
-
-hoist-non-react-statics@^3.2.0, hoist-non-react-statics@^3.3.0:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.1.tgz#101685d3aff3b23ea213163f6e8e12f4f111e19f"
-  integrity sha512-wbg3bpgA/ZqWrZuMOeJi8+SKMhr7X9TesL/rXMjTzh0p0JUBo3II8DHboYbuIXWRlttrUFxwcu/5kygrCw8fJw==
   dependencies:
     react-is "^16.7.0"
 
