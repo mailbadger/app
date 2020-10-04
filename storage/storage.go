@@ -99,6 +99,7 @@ type Storage interface {
 	CreateDelivery(d *entities.Delivery) error
 
 	CreateReport(r *entities.Report) error
+	UpdateReport(r *entities.Report) error
 	GetReportByFilename(fileName string, userID int64) (*entities.Report, error)
 }
 
@@ -462,6 +463,11 @@ func CreateDelivery(c context.Context, d *entities.Delivery) error {
 // CreateReport adds new report in the database.
 func CreateReport(c context.Context, r *entities.Report) error {
 	return GetFromContext(c).CreateReport(r)
+}
+
+// UpdateReport updates report in the database.
+func UpdateReport(c context.Context, r *entities.Report) error {
+	return GetFromContext(c).UpdateReport(r)
 }
 
 // GetReportByFilename returns report for provided user id and file name
