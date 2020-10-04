@@ -45,7 +45,7 @@ services:
       - mysql
       - nsqd
     env_file: 
-    - .env.local
+    - .env.docker
 
   bulksender:
     image: mailbadger/app
@@ -53,7 +53,7 @@ services:
     depends_on:
       - app
     env_file: 
-    - .env.local
+    - .env.docker
 
   campaigner:
     image: mailbadger/app
@@ -61,7 +61,7 @@ services:
     depends_on:
       - app
     env_file: 
-    - .env.local
+    - .env.docker
 
 volumes:
   dbdata:

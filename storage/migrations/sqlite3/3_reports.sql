@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS "reports"
     "created_at" datetime,
     "updated_at" datetime
 );
+CREATE INDEX IF NOT EXISTS i_user ON "reports" (user_id);
 
 
 -- +migrate Down
