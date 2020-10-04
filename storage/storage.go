@@ -97,6 +97,9 @@ type Storage interface {
 	CreateClick(c *entities.Click) error
 	CreateOpen(o *entities.Open) error
 	CreateDelivery(d *entities.Delivery) error
+
+	CreateReport(r *entities.Report) error
+	GetReportByFilename(fileName string, userID int64) (*entities.Report, error)
 }
 
 // SetToContext sets the storage to the context
@@ -219,7 +222,6 @@ func GetOpensStats(c context.Context, campaignID, userID int64) (*entities.Opens
 func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
 }
-
 
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
@@ -455,4 +457,14 @@ func CreateOpen(c context.Context, open *entities.Open) error {
 // CreateDelivery adds new delivery in the database.
 func CreateDelivery(c context.Context, d *entities.Delivery) error {
 	return GetFromContext(c).CreateDelivery(d)
+}
+
+// CreateReport adds new report in the database.
+func CreateReport(c context.Context, r *entities.Report) error {
+	return GetFromContext(c).CreateReport(r)
+}
+
+// GetReportByFilename returns report for provided user id and file name
+func GetReportByFilename(c context.Context, fileName string, userID int64) (*entities.Report, error) {
+	return GetFromContext(c).GetReportByFilename(fileName, userID)
 }

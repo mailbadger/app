@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `reports`
     `id`         integer unsigned primary key AUTO_INCREMENT NOT NULL,
     `user_id`    integer unsigned                            NOT NULL,
     `resource`   varchar(191)                                NOT NULL,
-    `filename`   varchar(191)                                NOT NULL,
+    `file_name`  varchar(191)                                NOT NULL,
     `type`       varchar(191)                                NOT NULL,
     `status`     varchar(191)                                NOT NULL,
     `note`       varchar(191),
