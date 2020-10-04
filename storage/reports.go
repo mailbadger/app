@@ -13,8 +13,8 @@ func (db *store) UpdateReport(r *entities.Report) error {
 }
 
 // GetReportByFilename returns the report by the given file name and user id
-func (db *store) GetReportByFilename(fileName string, userID int64) (*entities.Report, error) {
+func (db *store) GetReportByFilename(filename string, userID int64) (*entities.Report, error) {
 	var report = new(entities.Report)
-	err := db.Where("user_id = ? and file_name = ?", userID, fileName).Find(report).Error
+	err := db.Where("user_id = ? and file_name = ?", userID, filename).Find(report).Error
 	return report, err
 }
