@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
   `name`        varchar(191) DEFAULT NULL,
   `email`       varchar(191) NOT NULL,
   `metadata`    JSON,
+  `blacklisted` tinyint(1) NOT NULL,
   `active`      tinyint(1) NOT NULL,
   `created_at`  datetime(6) NOT NULL,
   `updated_at`  datetime(6) NOT NULL,
