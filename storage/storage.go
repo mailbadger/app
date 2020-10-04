@@ -471,6 +471,6 @@ func UpdateReport(c context.Context, r *entities.Report) error {
 }
 
 // GetReportByFilename returns report for provided user id and file name
-func GetReportByFilename(c context.Context, fileName string, userID int64) (*entities.Report, error) {
+func GetReportByFilename(c context.Context, filename string, userID int64) (*entities.Report, error) {
 	return GetFromContext(c).GetReportByFilename(fileName, userID)
 }
