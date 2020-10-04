@@ -5,7 +5,7 @@ import { Anchor, ThemeContext } from "grommet";
 import { Link } from "react-router-dom";
 
 const AnchorLink = (props) => {
-  const { hover } = props;
+  const { hover, color, active } = props;
   let hfw = "bold";
   let hcolor = "";
   if (hover) {
@@ -19,6 +19,9 @@ const AnchorLink = (props) => {
     fw = fontWeight;
   }
 
+  let dark = active ? "white" : "light-1";
+  let light = active ? "white" : "dark-1";
+
   return (
     <ThemeContext.Extend
       value={{
@@ -26,8 +29,8 @@ const AnchorLink = (props) => {
           textDecoration: "none",
           fontWeight: fw,
           color: {
-            dark: props.active ? "brand" : "dark-1",
-            light: props.active ? "brand" : "dark-1",
+            dark: dark,
+            light: light,
           },
           extend: {
             boxShadow: "none",
@@ -58,6 +61,10 @@ AnchorLink.propTypes = {
   hover: PropTypes.shape({
     fontWeight: PropTypes.string,
     color: PropTypes.string,
+  }),
+  color: PropTypes.shape({
+    active: PropTypes.string,
+    idle: PropTypes.string,
   }),
 };
 

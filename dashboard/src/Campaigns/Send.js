@@ -422,16 +422,18 @@ const PreviewTemplate = React.memo(({ name }) => {
         <Box direction="column" align="start">
           <Box>
             <Text>
-              Subject{" "}
-              {template && template.data && (
-                <Badge>{template.data.subject_part}</Badge>
-              )}
+              Name{" "}
+              <Badge color="#00b4d8">
+                {template && template.data && template.data.name}
+              </Badge>
             </Text>
           </Box>
           <Box margin={{ top: "xsmall" }}>
             <Text>
-              Name{" "}
-              <Badge>{template && template.data && template.data.name}</Badge>
+              Subject{" "}
+              {template && template.data && (
+                <Badge color="#00b4d8">{template.data.subject_part}</Badge>
+              )}
             </Text>
           </Box>
         </Box>
@@ -447,13 +449,16 @@ const PreviewTemplate = React.memo(({ name }) => {
         </Box>
       </Box>
       {template && template.data && (
-        <iframe
-          height="550px"
-          title="preview-template"
-          srcDoc={DOMPurify.sanitize(template.data.html_part, {
-            USE_PROFILES: { html: true },
-          })}
-        />
+        <Box elevation="small">
+          <iframe
+            frameBorder="0"
+            height="550px"
+            title="preview-template"
+            srcDoc={DOMPurify.sanitize(template.data.html_part, {
+              USE_PROFILES: { html: true },
+            })}
+          />
+        </Box>
       )}
     </Box>
   );
@@ -577,7 +582,7 @@ const SendCampaign = ({ match }) => {
               borderColor="neutral-2"
             />
           </Box>
-          <Box gridArea="main" margin={{ left: "small" }}>
+          <Box gridArea="main" margin={{ left: "medium" }}>
             <PreviewTemplate name={campaign.data.template_name} />
           </Box>
         </>

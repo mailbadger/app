@@ -46,7 +46,10 @@ const NavLinks = () => {
 
   return (
     <Fragment>
-      <Box margin={{ top: "small" }} pad="large">
+      <Box
+        margin={{ top: "small" }}
+        pad={{ vertical: "large", horizontal: "medium" }}
+      >
         {links.map((link) => (
           <Box pad="xsmall" direction="row" key={link.label}>
             <AnchorLink
@@ -73,7 +76,13 @@ const Sidebar = (props) => {
     <Fragment>
       {!showSidebar || size !== "small" ? (
         <Collapsible direction="horizontal" open={showSidebar}>
-          <Box flex width="18em" direction="column" justify="between">
+          <Box
+            flex
+            width="256px"
+            direction="column"
+            background="brand"
+            justify="between"
+          >
             <NavLinks />
           </Box>
         </Collapsible>

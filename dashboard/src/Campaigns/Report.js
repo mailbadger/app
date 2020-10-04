@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
-import { Box, Heading, ResponsiveContext, Grid, Text, Meter } from "grommet";
+import { Box, Heading, ResponsiveContext, Grid, Text } from "grommet";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
+import Bounces from "./Stats/Bounces";
+import Complaints from "./Stats/Complaints";
+import Clicks from "./Stats/Clicks";
+import Opens from "./Stats/Opens";
 import { LoadingOverlay } from "../ui";
 import { useApi } from "../hooks";
 
@@ -13,6 +26,10 @@ const DetailsGrid = ({ children }) => {
     [".", "title", "title", "title"],
     [".", "info", "main", "main"],
     [".", "info", "main", "main"],
+    [".", "bounces", "bounces", "bounces"],
+    [".", "complaints", "complaints", "complaints"],
+    [".", "opens", "opens", "opens"],
+    [".", "clicks", "clicks", "clicks"],
   ];
 
   if (size === "medium") {
@@ -21,6 +38,10 @@ const DetailsGrid = ({ children }) => {
       ["title", "title", "title"],
       ["info", "main", "main"],
       ["info", "main", "main"],
+      ["bounces", "bounces", "bounces"],
+      ["complaints", "complaints", "complaints"],
+      ["opens", "opens", "opens"],
+      ["clicks", "clicks", "clicks"],
     ];
   }
 
@@ -43,22 +64,31 @@ DetailsGrid.propTypes = {
 };
 
 const Stat = React.memo(({ label, value, total, footer }) => (
-  <>
+  <Box
+    margin={{ horizontal: "xsmall" }}
+    pad={{ horizontal: "small", vertical: "xsmall" }}
+  >
     <Box direction="row">
       <Text margin={{ right: "large" }} size="medium">
         <b>{label}</b>
       </Text>
       <Text margin={{ left: "auto" }} size="medium">
-        {Math.round((value / total) * 100).toFixed(2)}%
+        {total && Math.round((value / total) * 100).toFixed(2)}%
       </Text>
     </Box>
     <Box align="end" margin={{ left: "small", top: "xsmall" }}>
       <Text size="16px">{footer}</Text>
     </Box>
-  </>
+  </Box>
 ));
 
 Stat.displayName = "Stat";
+Stat.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.number,
+  total: PropTypes.number,
+  footer: PropTypes.string,
+};
 
 const PercentageStats = React.memo(({ stats }) => {
   const s = [
@@ -99,14 +129,9 @@ const PercentageStats = React.memo(({ stats }) => {
         alignSelf="start"
         round={{ corner: "top", size: "small" }}
         background="white"
-        pad={{ vertical: "small", right: "medium" }}
       >
         {s.map((stat) => (
-          <Box
-            key={stat.label}
-            margin={{ bottom: "medium" }}
-            pad={{ horizontal: "small" }}
-          >
+          <Box key={stat.label} pad={{ horizontal: "small" }} border="bottom">
             <Stat {...stat} />
           </Box>
         ))}
@@ -133,8 +158,26 @@ PercentageStats.propTypes = {
   }),
 };
 
+const StatsChart = React.memo(({ data }) => (
+  <BarChart width={700} height={350} data={data}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="name" />
+    <YAxis />
+    <Tooltip />
+    <Legend />
+    <Bar dataKey="unique" stackId="a" fill="#711FFF" />
+    <Bar dataKey="total" stackId="a" fill="#00C781" />
+  </BarChart>
+));
+
+StatsChart.displayName = "StatsChart";
+StatsChart.propTypes = {
+  data: PropTypes.array,
+};
+
 const Details = ({ match }) => {
   const [campaign, setCampaign] = useState();
+  const [data, setData] = useState([]);
 
   const [state] = useApi({
     url: `/api/campaigns/${match.params.id}`,
@@ -151,6 +194,46 @@ const Details = ({ match }) => {
 
     setCampaign(state.data);
   }, [state]);
+
+  useEffect(() => {
+    if (stats.isLoading || stats.isError || !stats.data) {
+      return;
+    }
+
+    const data = stats.data;
+    setData([
+      {
+        name: "Total sent",
+        total: data.total_sent,
+      },
+      {
+        name: "Delivered",
+        total: data.delivered,
+      },
+      {
+        name: "Bounces",
+        total: data.bounces,
+      },
+      {
+        name: "Complaints",
+        total: data.complaints,
+      },
+      {
+        name: "Clicks",
+        total: data.clicks.total,
+        unique: data.clicks.unique,
+      },
+      {
+        name: "Opened",
+        total: data.opens.total,
+        unique: data.opens.unique,
+      },
+      {
+        name: "Unopened",
+        total: data.delivered - data.opens.total,
+      },
+    ]);
+  }, [stats]);
 
   if (state.isLoading) {
     return <LoadingOverlay />;
@@ -173,8 +256,27 @@ const Details = ({ match }) => {
               {campaign.name} stats report
             </Heading>
           </Box>
-          <Box gridArea="info" direction="column">
+          <Box gridArea="info">
             {stats && stats.data && <PercentageStats stats={stats.data} />}
+          </Box>
+          <Box gridArea="main">
+            <StatsChart data={data} />
+          </Box>
+          <Box fill gridArea="bounces">
+            <Heading level="3">Bounces</Heading>
+            <Bounces campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="complaints" margin={{ bottom: "medium" }}>
+            <Heading level="3">Complaints</Heading>
+            <Complaints campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="opens" margin={{ bottom: "medium" }}>
+            <Heading level="3">Opens</Heading>
+            <Opens campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="clicks" margin={{ bottom: "medium" }}>
+            <Heading level="3">Clicks</Heading>
+            <Clicks campaignId={campaign.id} />
           </Box>
         </>
       )}

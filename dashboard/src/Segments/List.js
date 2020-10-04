@@ -302,7 +302,7 @@ const List = () => {
     table = (
       <PlaceholderTable width="100%" header={Header} numCols={4} numRows={8} />
     );
-  } else if (state.data.collection.length > 0) {
+  } else if (state.data && state.data.collection.length > 0) {
     table = (
       <SegmentTable
         isLoading={state.isLoading}

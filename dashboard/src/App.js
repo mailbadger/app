@@ -25,7 +25,7 @@ const theme = deepMerge(grommet, {
     },
     colors: {
       background: "light-3",
-      brand: "#6650AA",
+      brand: "#390099",
     },
   },
   tabs: {
@@ -52,17 +52,17 @@ const theme = deepMerge(grommet, {
   button: {
     border: {
       radius: "5px",
-      color: "#6650AA",
+      color: "#390099",
     },
     primary: {
-      color: "#6650AA",
+      color: "#390099",
     },
   },
   anchor: {
     primary: {
       color: "#999999",
     },
-    color: "#6650AA",
+    color: "#390099",
   },
 });
 
@@ -102,7 +102,7 @@ class App extends Component {
       <Grommet theme={theme} full>
         <Router history={history}>
           <AuthProvider>
-            <Box flex background="background">
+            <Box fill background="background">
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <Switch>
                   <ProtectedRoute path="/dashboard" component={Dashboard} />

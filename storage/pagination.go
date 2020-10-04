@@ -216,7 +216,7 @@ func (db *store) GetFirst(userID int64, table string, scopes ...func(*gorm.DB) *
 	scopes = append(scopes, BelongsToUser(userID))
 	err := db.Table(table).
 		Scopes(scopes...).
-		Order("created_at, id").
+		Order("id").
 		Limit(1).
 		Find(&model).
 		Error
@@ -228,7 +228,7 @@ func (db *store) GetLast(userID int64, table string, scopes ...func(*gorm.DB) *g
 	scopes = append(scopes, BelongsToUser(userID))
 	err := db.Table(table).
 		Scopes(scopes...).
-		Order("created_at desc, id desc").
+		Order("id desc").
 		Limit(1).
 		Find(&model).
 		Error
