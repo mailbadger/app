@@ -1,5 +1,13 @@
 package entities
 
+const (
+	StatusFailed     = "failed"
+	StatusDone       = "done"
+	StatusInProgress = "in_progress"
+
+	SubscribersResource = "subscribers"
+)
+
 //Report represents the Report entity
 type Report struct {
 	Model
