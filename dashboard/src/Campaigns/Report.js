@@ -13,6 +13,8 @@ import {
 
 import Bounces from "./Stats/Bounces";
 import Complaints from "./Stats/Complaints";
+import Clicks from "./Stats/Clicks";
+import Opens from "./Stats/Opens";
 import { LoadingOverlay } from "../ui";
 import { useApi } from "../hooks";
 
@@ -26,6 +28,8 @@ const DetailsGrid = ({ children }) => {
     [".", "info", "main", "main"],
     [".", "bounces", "bounces", "bounces"],
     [".", "complaints", "complaints", "complaints"],
+    [".", "opens", "opens", "opens"],
+    [".", "clicks", "clicks", "clicks"],
   ];
 
   if (size === "medium") {
@@ -36,6 +40,8 @@ const DetailsGrid = ({ children }) => {
       ["info", "main", "main"],
       ["bounces", "bounces", "bounces"],
       ["complaints", "complaints", "complaints"],
+      ["opens", "opens", "opens"],
+      ["clicks", "clicks", "clicks"],
     ];
   }
 
@@ -263,6 +269,14 @@ const Details = ({ match }) => {
           <Box fill gridArea="complaints" margin={{ bottom: "medium" }}>
             <Heading level="3">Complaints</Heading>
             <Complaints campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="opens" margin={{ bottom: "medium" }}>
+            <Heading level="3">Opens</Heading>
+            <Opens campaignId={campaign.id} />
+          </Box>
+          <Box fill gridArea="clicks" margin={{ bottom: "medium" }}>
+            <Heading level="3">Clicks</Heading>
+            <Clicks campaignId={campaign.id} />
           </Box>
         </>
       )}

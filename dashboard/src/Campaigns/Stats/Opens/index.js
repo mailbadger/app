@@ -8,30 +8,23 @@ import {
   TableCell,
   Box,
   Button,
+  Heading,
 } from "grommet";
 import { FormPreviousLink, FormNextLink } from "grommet-icons";
 
 import { StyledTable, PlaceholderTable } from "../../../ui";
 import { useApi } from "../../../hooks";
+import truncate from "../../../utils/truncate";
 
-const Row = memo(({ bounce }) => {
-  const d = parseISO(bounce.created_at);
+const Row = memo(({ open }) => {
+  const d = parseISO(open.created_at);
   return (
     <TableRow>
       <TableCell scope="row" size="large">
-        {bounce.recipient}
+        {open.recipient}
       </TableCell>
       <TableCell scope="row" size="small">
-        {bounce.type}
-      </TableCell>
-      <TableCell scope="row" size="small">
-        {bounce.sub_type}
-      </TableCell>
-      <TableCell scope="row" size="xsmall">
-        {bounce.status}
-      </TableCell>
-      <TableCell scope="row" size="large">
-        {bounce.diagnostic_code}
+        {truncate(open.user_agent, 50)}&hellip;
       </TableCell>
       <TableCell scope="row" size="large">
         {formatRelative(d, new Date())}
@@ -42,16 +35,12 @@ const Row = memo(({ bounce }) => {
 
 Row.displayName = "Row";
 Row.propTypes = {
-  bounce: PropTypes.shape({
+  open: PropTypes.shape({
     id: PropTypes.number,
     campaign_id: PropTypes.number,
     recipient: PropTypes.string,
-    type: PropTypes.string,
-    sub_type: PropTypes.string,
-    action: PropTypes.string,
-    status: PropTypes.string,
-    diagnostic_code: PropTypes.string,
-    feedback_id: PropTypes.string,
+    ip_address: PropTypes.string,
+    user_agent: PropTypes.string,
     created_at: PropTypes.string,
   }),
 };
@@ -59,22 +48,13 @@ Row.propTypes = {
 const Header = () => (
   <TableHeader>
     <TableRow>
-      <TableCell scope="col" border="bottom" size="xsmall">
+      <TableCell scope="col" border="bottom" size="small">
         <strong>Recipient</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="xxsmall">
-        <strong>Type</strong>
+      <TableCell scope="col" border="bottom" size="small">
+        <strong>User Agent</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="xxsmall">
-        <strong>Sub Type</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="xxsmall">
-        <strong>Status</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="xsmall">
-        <strong>Diagnostic Code</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="xsmall">
+      <TableCell scope="col" border="bottom" size="small">
         <strong>Created At</strong>
       </TableCell>
     </TableRow>
@@ -87,8 +67,8 @@ const Table = memo(({ list }) => (
   <StyledTable>
     <Header />
     <TableBody>
-      {list.map((b) => (
-        <Row bounce={b} key={b.id} />
+      {list.map((o) => (
+        <Row open={o} key={o.id} />
       ))}
     </TableBody>
   </StyledTable>
@@ -99,10 +79,10 @@ Table.propTypes = {
   list: PropTypes.array,
 };
 
-const Bounces = ({ campaignId }) => {
+const Opens = ({ campaignId }) => {
   const [state, callApi] = useApi(
     {
-      url: `/api/campaigns/${campaignId}/bounces`,
+      url: `/api/campaigns/${campaignId}/opens`,
     },
     {
       collection: [],
@@ -110,12 +90,18 @@ const Bounces = ({ campaignId }) => {
   );
 
   if (state.isLoading) {
-    return <PlaceholderTable header={Header} numCols={6} numRows={6} />;
+    return <PlaceholderTable header={Header} numCols={6} numRows={3} />;
   }
   if (!state.isLoading && !state.isError) {
     return (
       <>
         <Table list={state.data.collection} />
+        {!state.isLoading && !state.isError &&
+          state.data.collection.length === 0 && (
+            <Box align="center">
+              <Heading level="3">Opens list is currently empty.</Heading>
+            </Box>
+        )}
         {state.data.collection.length > 0 ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
@@ -151,10 +137,10 @@ const Bounces = ({ campaignId }) => {
   return null;
 };
 
-Bounces.propTypes = {
+Opens.propTypes = {
   campaignId: PropTypes.number,
 };
 
-export { Table, Row, Header, Bounces };
+export { Table, Row, Header, Opens };
 
-export default Bounces;
+export default Opens;
