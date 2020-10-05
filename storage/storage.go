@@ -97,6 +97,10 @@ type Storage interface {
 	CreateClick(c *entities.Click) error
 	CreateOpen(o *entities.Open) error
 	CreateDelivery(d *entities.Delivery) error
+
+	CreateReport(r *entities.Report) error
+	UpdateReport(r *entities.Report) error
+	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 }
 
 // SetToContext sets the storage to the context
@@ -454,4 +458,19 @@ func CreateOpen(c context.Context, open *entities.Open) error {
 // CreateDelivery adds new delivery in the database.
 func CreateDelivery(c context.Context, d *entities.Delivery) error {
 	return GetFromContext(c).CreateDelivery(d)
+}
+
+// CreateReport adds new report in the database.
+func CreateReport(c context.Context, r *entities.Report) error {
+	return GetFromContext(c).CreateReport(r)
+}
+
+// UpdateReport updates report in the database.
+func UpdateReport(c context.Context, r *entities.Report) error {
+	return GetFromContext(c).UpdateReport(r)
+}
+
+// GetReportByFilename returns report for provided user id and file name
+func GetReportByFilename(c context.Context, filename string, userID int64) (*entities.Report, error) {
+	return GetFromContext(c).GetReportByFilename(filename, userID)
 }
