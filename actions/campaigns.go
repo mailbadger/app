@@ -287,14 +287,6 @@ func PutCampaign(c *gin.Context) {
 		campaign.Name = body.Name
 		campaign.TemplateName = body.TemplateName
 
-		if !campaign.Validate() {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Invalid data",
-				"errors":  campaign.Errors,
-			})
-			return
-		}
-
 		err = storage.UpdateCampaign(c, campaign)
 
 		if err != nil {

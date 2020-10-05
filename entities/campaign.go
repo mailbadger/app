@@ -3,7 +3,6 @@ package entities
 import (
 	"time"
 
-	valid "github.com/asaskevich/govalidator"
 	"github.com/aws/aws-sdk-go/service/ses"
 )
 
@@ -26,8 +25,8 @@ const (
 type Campaign struct {
 	Model
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
-	Name         string            `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
-	TemplateName string            `json:"template_name" valid:"required"`
+	Name         string            `json:"name" gorm:"not null"`
+	TemplateName string            `json:"template_name"`
 	Status       string            `json:"status"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
@@ -62,19 +61,6 @@ type SendCampaignParams struct {
 type CampaignClicksStats struct {
 	Total       int64         `json:"total"`
 	ClicksStats []ClicksStats `json:"collection"`
-}
-
-// Validate validates the campaign properties and populates the Errors map
-// in case of any errors.
-func (c *Campaign) Validate() bool {
-	c.Errors = make(map[string]string)
-
-	res, err := valid.ValidateStruct(c)
-	if err != nil || !res {
-		c.Errors["message"] = err.Error()
-	}
-
-	return len(c.Errors) == 0
 }
 
 func (c Campaign) GetID() int64 {
