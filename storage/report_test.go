@@ -58,6 +58,7 @@ func TestReport(t *testing.T) {
 		Note:     "unable to unmarshal bla",
 	}
 	err = store.UpdateReport(&updatedReport)
+	assert.Nil(t, err)
 
 	// check updated report
 	upReport, err := store.GetReportByFilename("subv2", 1)
