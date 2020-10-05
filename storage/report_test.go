@@ -50,4 +50,20 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, reports[0].FileName, report.FileName)
 	assert.Equal(t, reports[0].Resource, report.Resource)
 
+	// test update report
+	updatedReport := entities.Report{
+		UserID:   1,
+		FileName: "subv2",
+		Status:   "failed",
+		Note:     "unable to unmarshal bla",
+	}
+	err = store.UpdateReport(&updatedReport)
+
+	// check updated report
+	upReport, err := store.GetReportByFilename("subv2", 1)
+	assert.Nil(t, err)
+
+	assert.Equal(t, updatedReport.Status, upReport.Status)
+	assert.Equal(t, updatedReport.Note, upReport.Note)
+
 }
