@@ -18,3 +18,9 @@ func (db *store) GetReportByFilename(filename string, userID int64) (*entities.R
 	err := db.Where("user_id = ? and file_name = ?", userID, filename).Find(report).Error
 	return report, err
 }
+
+func (db *store) GetRunningReportForUser(userID int64) (*entities.Report, error) {
+	var report = new(entities.Report)
+	err := db.Where("user_id = ? and status = ?", userID, entities.StatusInProgress).Find(report).Error
+	return report, err
+}

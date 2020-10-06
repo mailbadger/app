@@ -101,6 +101,7 @@ type Storage interface {
 	CreateReport(r *entities.Report) error
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
+	GetRunningReportForUser(int64) (*entities.Report, error)
 }
 
 // SetToContext sets the storage to the context
@@ -473,4 +474,8 @@ func UpdateReport(c context.Context, r *entities.Report) error {
 // GetReportByFilename returns report for provided user id and file name
 func GetReportByFilename(c context.Context, filename string, userID int64) (*entities.Report, error) {
 	return GetFromContext(c).GetReportByFilename(filename, userID)
+}
+
+func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report, error) {
+	return GetFromContext(c).GetRunningReportForUser(userID)
 }
