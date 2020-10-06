@@ -31,10 +31,7 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 // IsAnotherReportRunning returns true if there is report in progress for a user or false if all are done
 func (r reportService) IsAnotherReportRunning(c *gin.Context, userID int64) bool {
 	_, err := storage.GetRunningReportForUser(c, userID)
-	if err != nil {
-		return true
-	}
-	return false
+	return err != nil
 }
 
 func (r reportService) IsLimitExceeded(c *gin.Context, userID int64) bool {

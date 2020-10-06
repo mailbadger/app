@@ -30,5 +30,4 @@ func newDefaultExporter() *defaultExporter {
 func (de defaultExporter) Export(c *gin.Context) {
 	// TODO discuss this
 	logger.From(c).Errorf("Something went wrong")
-	return
 }
