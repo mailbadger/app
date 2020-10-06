@@ -220,7 +220,7 @@ func New() http.Handler {
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 			subscribers.POST("/import", actions.ImportSubscribers)
 			subscribers.POST("/bulk-remove", actions.BulkRemoveSubscribers)
-			subscribers.GET("export/download/:filename", actions.DownloadSubscribersReport)
+			subscribers.GET("/export/download/:filename", actions.DownloadSubscribersReport)
 		}
 
 		ses := authorized.Group(("/ses"))
