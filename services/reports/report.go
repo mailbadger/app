@@ -1,6 +1,9 @@
 package reports
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/mailbadger/app/entities"
@@ -12,9 +15,9 @@ import (
 type ReportService interface {
 	IsAnotherReportRunning(*gin.Context, int64) bool
 	IsLimitExceeded(*gin.Context, int64) bool
-	GenerateReport(*gin.Context) (*entities.Report, error)
-	UpdateReport(*gin.Context) (*entities.Report, error)
+	GenerateExportReport(*gin.Context, *entities.Report)
 	GenerateCSV(*gin.Context)
+	GenerateFilename(*gin.Context, int64, string, time.Time) string
 }
 
 type reportService struct {
@@ -38,14 +41,14 @@ func (r reportService) IsLimitExceeded(c *gin.Context, userID int64) bool {
 	panic("implement me")
 }
 
-func (r reportService) GenerateReport(c *gin.Context) (*entities.Report, error) {
-	panic("implement me")
-}
+func (r reportService) GenerateExportReport(c *gin.Context, report *entities.Report) {
 
-func (r reportService) UpdateReport(c *gin.Context) (*entities.Report, error) {
-	panic("implement me")
 }
 
 func (r reportService) GenerateCSV(c *gin.Context) {
 	panic("implement me")
+}
+
+func (r reportService) GenerateFilename(context *gin.Context, userID int64, resource string, timestamp time.Time) string {
+	return fmt.Sprintf("/reports/%d/%s_%s",userID,resource,timestamp.Format("2006-01-02 15:04:05"))
 }
