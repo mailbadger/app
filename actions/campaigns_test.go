@@ -6,7 +6,6 @@ import (
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 func TestGetCampaignAction(t *testing.T) {
@@ -29,12 +28,24 @@ func TestGetCampaignAction(t *testing.T) {
 
 }
 
+
+// this func will run all actions from campaign
 func testCampaigns(e *httpexpect.Expect) {
 	type campaign struct {
 		Name         string `json:"name"`
 		TemplateName string `json:"template_name"`
 	}
-	logrus.Info(e)
+
+
+	// if we need to auth we can call auth api and use token from it to run
+	// other campaigns actions like post campaign and etc.
+	// example for this
+	r := e.POST("/login").WithForm(Login{"username", "pw"}).
+		Expect().
+		Status(http.StatusOK).JSON().Object()
+
+	// take token from auth and use it on others actions..
+	r.Keys().ContainsOnly("token")
 
 	// test post campaigns
 	e.POST("/campaigns").WithForm(campaign{
@@ -44,7 +55,7 @@ func testCampaigns(e *httpexpect.Expect) {
 		Expect().
 		Status(http.StatusOK)
 
-	// test get campaigns by id
+	// test get campaigns by id ( same campaign we create with post campaigns test.
 	e.GET("/campaigns/1").
 		Expect().
 		Status(http.StatusOK)
