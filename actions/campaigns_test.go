@@ -6,6 +6,8 @@ import (
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-gonic/gin"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestGetCampaignAction(t *testing.T) {
@@ -28,14 +30,12 @@ func TestGetCampaignAction(t *testing.T) {
 
 }
 
-
 // this func will run all actions from campaign
 func testCampaigns(e *httpexpect.Expect) {
 	type campaign struct {
 		Name         string `json:"name"`
 		TemplateName string `json:"template_name"`
 	}
-
 
 	// if we need to auth we can call auth api and use token from it to run
 	// other campaigns actions like post campaign and etc.
@@ -55,8 +55,13 @@ func testCampaigns(e *httpexpect.Expect) {
 		Expect().
 		Status(http.StatusOK)
 
+	expCampaign := &entities.Campaign{
+		Name:         "test1",
+		TemplateName: "test1",
+	}
+
 	// test get campaigns by id ( same campaign we create with post campaigns test.
 	e.GET("/campaigns/1").
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusOK).JSON().Equal(expCampaign)
 }
