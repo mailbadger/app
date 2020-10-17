@@ -11,6 +11,10 @@ const key = "logger"
 
 // From returns a logger entry from the given context.
 func From(ctx context.Context) *logrus.Entry {
+	l := ctx.Value(key)
+	if l == nil {
+		return logrus.NewEntry(logrus.StandardLogger())
+	}
 	return ctx.Value(key).(*logrus.Entry)
 }
 

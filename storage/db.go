@@ -114,10 +114,7 @@ func initDb(config string, db *gorm.DB) error {
 		return err
 	}
 
-	uuid, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
+	uuid := uuid.New()
 
 	//Create the default user
 	admin := entities.User{
