@@ -17,13 +17,26 @@ import (
 
 func init() {
 	gin.SetMode(gin.TestMode)
-	os.Setenv("DATABASE_DRIVER", "sqlite3")
-	os.Setenv("DATABASE_CONFIG", ":memory:")
-	os.Setenv("SESSION_AUTH_KEY", "foo")
-	os.Setenv("SESSION_AUTH_KEY", "secretexmplkeythatis32characters")
 }
 
 func TestUnauthorizedUser(t *testing.T) {
+	err := os.Setenv("DATABASE_DRIVER", "sqlite3")
+	if err != nil {
+		t.FailNow()
+	}
+	err = os.Setenv("DATABASE_CONFIG", ":memory:")
+	if err != nil {
+		t.FailNow()
+	}
+	err = os.Setenv("SESSION_AUTH_KEY", "foo")
+	if err != nil {
+		t.FailNow()
+	}
+	err = os.Setenv("SESSION_AUTH_KEY", "secretexmplkeythatis32characters")
+	if err != nil {
+		t.FailNow()
+	}
+
 	store := cookie.NewStore(
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
 		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
