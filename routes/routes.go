@@ -170,7 +170,7 @@ func New() http.Handler {
 	{
 		users := authorized.Group("/users")
 		{
-			users.GET("", actions.GetMe)
+			users.GET("/me", actions.GetMe)
 			users.POST("/password", actions.ChangePassword)
 		}
 
