@@ -22,6 +22,7 @@ import (
 
 	"github.com/mailbadger/app/actions"
 	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -49,12 +50,16 @@ func New() http.Handler {
 		HttpOnly: true,
 	})
 
+	driver := os.Getenv("DATABASE_DRIVER")
+	config := storage.MakeConfigFromEnv(driver)
+	s := storage.New(driver, config)
+
 	handler := gin.New()
 
 	handler.Use(gin.Recovery())
 	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(sessions.Sessions("mbsess", store))
-	handler.Use(middleware.Storage())
+	handler.Use(middleware.Storage(s))
 	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
@@ -139,10 +144,48 @@ func New() http.Handler {
 	lmt := tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
 	lmt.SetMessageContentType("application/json; charset=utf-8")
-	// Guest routes
+
+	SetGuestRoutes(
+		handler,
+		middleware.NoCache(),
+		tollbooth_gin.LimitHandler(lmt),
+	)
+
+	SetAuthorizedRoutes(
+		handler,
+		middleware.NoCache(),
+		CSRF(),
+		tollbooth_gin.LimitHandler(lmt),
+	)
+
+	return handler
+}
+
+// CSRF returns a handler which performs checks for CSRF tokens.
+func CSRF() gin.HandlerFunc {
+	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
+	csrfMd := csrf.Protect([]byte(os.Getenv("SESSION_AUTH_KEY")),
+		csrf.MaxAge(0),
+		csrf.Secure(secureCookie),
+		csrf.Path("/api"),
+		csrf.SameSite(csrf.SameSiteStrictMode),
+		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusForbidden)
+			_, err := w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))
+			if err != nil {
+				logrus.Error(err)
+			}
+		})),
+	)
+
+	return adapter.Wrap(csrfMd)
+}
+
+// SetGuestRoutes sets the guest routes to the gin engine handler along with
+// a number of middleware that we set.
+func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 	guest := handler.Group("/api")
-	guest.Use(middleware.NoCache())
-	guest.Use(tollbooth_gin.LimitHandler(lmt))
+	guest.Use(middleware...)
 
 	guest.GET("/auth/github/callback", actions.GithubCallback)
 	guest.GET("/auth/github", actions.GetGithubAuth)
@@ -157,16 +200,17 @@ func New() http.Handler {
 	guest.POST("/signup", actions.PostSignup)
 	guest.POST("/hooks/:uuid", actions.HandleHook)
 	guest.POST("/unsubscribe", actions.PostUnsubscribe)
+}
 
-	// Authorized routes
+// SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
+// the Authorized middleware which performs the checks for authorized user as well as
+// other optional middlewares that we set.
+func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.NoCache())
 	authorized.Use(middleware.Authorized())
-	authorized.Use(CSRF())
-	authorized.Use(tollbooth_gin.LimitHandler(lmt))
+	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout)
-
 	{
 		users := authorized.Group("/users")
 		{
@@ -243,25 +287,4 @@ func New() http.Handler {
 			s3.POST("/sign", actions.GetSignedURL)
 		}
 	}
-
-	return handler
-}
-
-func CSRF() gin.HandlerFunc {
-	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
-	csrfMd := csrf.Protect([]byte(os.Getenv("SESSION_AUTH_KEY")),
-		csrf.MaxAge(0),
-		csrf.Secure(secureCookie),
-		csrf.Path("/api"),
-		csrf.SameSite(csrf.SameSiteStrictMode),
-		csrf.ErrorHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusForbidden)
-			_, err := w.Write([]byte(`{"message": "Forbidden - CSRF token invalid"}`))
-			if err != nil {
-				logrus.Error(err)
-			}
-		})),
-	)
-
-	return adapter.Wrap(csrfMd)
 }
