@@ -423,7 +423,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 func DownloadSubscribersReport(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	fileName := c.Param("filename")
+	fileName := c.Query("filename")
 
 	report, err := storage.GetReportByFilename(c, fileName, u.ID)
 	if err != nil {
