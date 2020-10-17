@@ -64,7 +64,7 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 		Note:     note,
 	}
 
-	err := storage.CreateReport(c, report)
+	err = storage.CreateReport(c, report)
 	if err != nil {
 		return nil, fmt.Errorf("creaate report: %w", err)
 	}
