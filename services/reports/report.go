@@ -47,7 +47,11 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 		return nil, ErrAnotherReportRunning
 	}
 
-	if isLimitExceeded(c, userID) {
+	limit, err := isLimitExceeded(c, userID, time.Now())
+	if err != nil {
+		return nil, fmt.Errorf("is limit exceeded check error: %w", err)
+	}
+	if limit {
 		return nil, ErrLimitReached
 	}
 
@@ -78,6 +82,14 @@ func isAnotherReportRunning(c *gin.Context, userID int64) bool {
 	return err != nil
 }
 
-func isLimitExceeded(c *gin.Context, userID int64) bool {
-	panic("implement me")
+func isLimitExceeded(c *gin.Context, userID int64, time time.Time) (bool, error) {
+	nOfReports, err := storage.GetNumberOfReportsForDateTime(c, userID, time)
+	if err != nil {
+		return false, err
+	}
+
+	if nOfReports > 100 {
+		return true, nil
+	}
+	return false, nil
 }
