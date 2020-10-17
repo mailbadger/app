@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,13 +12,19 @@ import (
 	"github.com/mailbadger/app/storage"
 )
 
+const (
+	reportTypeExport = "export"
+)
+
+var (
+	ErrAnotherReportRunning = errors.New("another report running")
+	ErrLimitReached         = errors.New("you reached the limit")
+)
+
 // ReportService represents all report functionalities
 type ReportService interface {
-	IsAnotherReportRunning(*gin.Context, int64) bool
-	IsLimitExceeded(*gin.Context, int64) bool
 	GenerateExportReport(*gin.Context, *entities.Report)
-	GenerateCSV(*gin.Context)
-	GenerateFilename(*gin.Context, int64, string, time.Time) string
+	CreateExportReport(*gin.Context, int64, string, string) (*entities.Report, error)
 }
 
 type reportService struct {
@@ -31,24 +38,46 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 	}
 }
 
-// IsAnotherReportRunning returns true if there is report in progress for a user or false if all are done
-func (r reportService) IsAnotherReportRunning(c *gin.Context, userID int64) bool {
-	_, err := storage.GetRunningReportForUser(c, userID)
-	return err != nil
-}
-
-func (r reportService) IsLimitExceeded(c *gin.Context, userID int64) bool {
-	panic("implement me")
-}
-
 func (r reportService) GenerateExportReport(c *gin.Context, report *entities.Report) {
 
 }
 
-func (r reportService) GenerateCSV(c *gin.Context) {
-	panic("implement me")
+func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resource, note string) (*entities.Report, error) {
+	if isAnotherReportRunning(c, userID) {
+		return nil, ErrAnotherReportRunning
+	}
+
+	if isLimitExceeded(c, userID) {
+		return nil, ErrLimitReached
+	}
+
+	report := &entities.Report{
+		UserID:   userID,
+		Resource: resource,
+		FileName: generateFilename(c, userID, resource, time.Now()),
+		Type:     reportTypeExport,
+		Status:   entities.StatusInProgress,
+		Note:     note,
+	}
+
+	err := storage.CreateReport(c, report)
+	if err != nil {
+		return nil, fmt.Errorf("creaate report: %w", err)
+	}
+
+	return report, nil
 }
 
-func (r reportService) GenerateFilename(context *gin.Context, userID int64, resource string, timestamp time.Time) string {
-	return fmt.Sprintf("/reports/%d/%s_%s",userID,resource,timestamp.Format("2006-01-02 15:04:05"))
+func generateFilename(context *gin.Context, userID int64, resource string, timestamp time.Time) string {
+	return fmt.Sprintf("/reports/%d/%s_%s", userID, resource, timestamp.Format("2006-01-02 15:04:05"))
+}
+
+// isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
+func isAnotherReportRunning(c *gin.Context, userID int64) bool {
+	_, err := storage.GetRunningReportForUser(c, userID)
+	return err != nil
+}
+
+func isLimitExceeded(c *gin.Context, userID int64) bool {
+	panic("implement me")
 }

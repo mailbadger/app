@@ -8,24 +8,22 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"time"
-
-	"github.com/mailbadger/app/entities/params"
-	"github.com/mailbadger/app/services/exporters"
-	"github.com/mailbadger/app/services/reports"
-	"github.com/mailbadger/app/services/subscribers/bulkremover"
-	"github.com/mailbadger/app/validator"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/exporters"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers/bulkremover"
 	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/validator"
 )
 
 func GetSubscribers(c *gin.Context) {
@@ -423,37 +421,26 @@ func ExportSubscribers(c *gin.Context) {
 
 	reportSvc := reports.NewReportService(exporters.NewExporter("subscribers"))
 
-	if reportSvc.IsAnotherReportRunning(c, u.ID) {
-		c.JSON(http.StatusForbidden,gin.H{
-			"message": "There is a report already running",
-		})
-		return
-	}
-
-	if reportSvc.IsLimitExceeded(c, u.ID) {
-		c.JSON(http.StatusForbidden,gin.H{
-			"message": "You reached the limit",
-		})
-		return
-	}
-
-	report := &entities.Report{
-		UserID:   u.ID,
-		Resource: "subscribers",
-		FileName: reportSvc.GenerateFilename(c,u.ID,"subscribers", time.Now()),
-		Type:     "export",
-		Status:   entities.StatusInProgress,
-		Note:     "",
-	}
-
-	err := storage.CreateReport(c,report)
+	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Failed to create report, please try again",
-		})
+		switch err {
+		case reports.ErrAnotherReportRunning:
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "There is a report already running",
+			})
+		case reports.ErrLimitReached:
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You reached the limit",
+			})
+		default:
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to create export report.",
+			})
+		}
+		return
 	}
 
-	go reportSvc.GenerateExportReport(c.Copy(),report)
+	go reportSvc.GenerateExportReport(c.Copy(), report)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Submitted for export",
