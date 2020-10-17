@@ -214,13 +214,20 @@ func New() http.Handler {
 		subscribers := authorized.Group("/subscribers")
 		{
 			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers)
-			subscribers.GET("/:id", actions.GetSubscriber)
+			subscribers.GET("/:id", func(c *gin.Context) {
+				// Related issue: https://github.com/gin-gonic/gin/issues/205
+				if strings.HasPrefix(c.Request.URL.Path, "/api/subscribers/export/download") {
+					actions.DownloadSubscribersReport(c)
+					return
+				}
+
+				actions.GetSubscriber(c)
+			})
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 			subscribers.POST("/import", actions.ImportSubscribers)
 			subscribers.POST("/bulk-remove", actions.BulkRemoveSubscribers)
-			subscribers.GET("/export/download", actions.DownloadSubscribersReport)
 		}
 
 		ses := authorized.Group(("/ses"))
