@@ -124,12 +124,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				dest = append(dest, d)
 			}
 
-			uuid, err := uuid.NewRandom()
-			if err != nil {
-				logrus.WithError(err).Error("Unable to generate random uuid.")
-				continue
-			}
-
 			defaultData, err := json.Marshal(msg.TemplateData)
 			if err != nil {
 				logrus.WithError(err).Error("Unable to marshal template data as JSON.")
@@ -157,6 +151,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			if msg.ConfigurationSetExists {
 				input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
 			}
+
+			uuid := uuid.New()
 
 			bulkMsg := entities.BulkSendMessage{
 				UUID:       uuid.String(),

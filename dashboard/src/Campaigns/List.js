@@ -5,17 +5,16 @@ import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import { useApi } from "../hooks";
 import {
   TableHeader,
-  TableBody,
   TableRow,
   TableCell,
   Box,
   Button,
   Heading,
   Select,
+  DataTable,
 } from "grommet";
 import history from "../history";
 import {
-  StyledTable,
   PlaceholderTable,
   Modal,
   Badge,
@@ -23,14 +22,35 @@ import {
   BarLoader,
   ListGrid,
   AnchorLink,
+  StyledDataTable,
 } from "../ui";
 import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
-const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
-  const d = parseISO(campaign.created_at);
+const NameLink = ({id, name, status}) => {
+  let to = `/dashboard/campaigns/send/${id}`;
+  if (status === "sent") {
+    to = `/dashboard/campaigns/${id}/report`;
+  }
+  return (
+    <AnchorLink
+      size="small"
+      fontWeight="bold"
+      to={to}
+      label={name}
+    />
+  )
+};
+NameLink.displayName = "NameLink";
+NameLink.propTypes = {
+  name: PropTypes.string,
+  id: PropTypes.number,
+  status: PropTypes.string,
+}
+
+const StatusBadge = ({status}) => {
   const statusColors = {
     draft: "#CCCCCC",
     sending: "#00739D",
@@ -38,83 +58,93 @@ const Row = memo(({ campaign, setShowDelete, setShowEdit, hasSesKeys }) => {
     scheduled: "#FFCA58",
   };
 
+  return <Badge color={statusColors[status]}>{status}</Badge>;
+}
+
+StatusBadge.propTypes = {
+  status: PropTypes.string
+};
+StatusBadge.displayName = "StatusBadge";
+
+const ActionDropdown = ({id, name, hasSesKeys, setShowEdit, setShowDelete}) => {
   let opts = ["Delete"];
   if (hasSesKeys) {
     opts.unshift("Edit");
   }
-
-  let to = `/dashboard/campaigns/send/${campaign.id}`;
-  if (campaign.status === "sent") {
-    to = `/dashboard/campaigns/${campaign.id}/report`;
-  }
   return (
-    <TableRow>
-      <TableCell scope="row" size="large">
-        <AnchorLink
-          size="small"
-          fontWeight="bold"
-          to={to}
-          label={campaign.name}
-        />
-      </TableCell>
-      <TableCell scope="row" size="large">
-        <Badge color={statusColors[campaign.status]}>{campaign.status}</Badge>
-      </TableCell>
-      <TableCell scope="row" size="large">
-        {campaign.template_name}
-      </TableCell>
-      <TableCell scope="row" size="large">
-        {formatRelative(d, new Date())}
-      </TableCell>
-      <TableCell scope="row" size="xsmall" align="end">
-        <Select
-          alignSelf="center"
-          plain
-          icon={<More />}
-          options={opts}
-          onChange={({ option }) => {
-            (function () {
-              switch (option) {
-                case "Edit":
-                  setShowEdit({
-                    show: true,
-                    id: campaign.id,
-                  });
-                  break;
-                case "Delete":
-                  setShowDelete({
-                    show: true,
-                    name: campaign.name,
-                    id: campaign.id,
-                  });
-                  break;
-                default:
-                  return null;
-              }
-            })();
-          }}
-        />
-      </TableCell>
-    </TableRow>
-  );
-});
-
-Row.propTypes = {
-  campaign: PropTypes.shape({
-    name: PropTypes.string,
-    id: PropTypes.number,
-    status: PropTypes.string,
-    template_name: PropTypes.string,
-    created_at: PropTypes.string,
-  }),
-  setShowDelete: PropTypes.func,
-  setShowEdit: PropTypes.func,
-  hasSesKeys: PropTypes.bool,
+    <Select
+      alignSelf="center"
+      plain
+      icon={<More />}
+      options={opts}
+      onChange={({ option }) => {
+        (function () {
+          switch (option) {
+            case "Edit":
+              setShowEdit({
+                show: true,
+                id: id,
+              });
+              break;
+            case "Delete":
+              setShowDelete({
+                show: true,
+                name: name,
+                id: id,
+              });
+              break;
+            default:
+              return null;
+          }
+        })();
+      }}
+    />
+  )
 };
 
-Row.displayName = "Row";
+ActionDropdown.displayName = "ActionDropdown";
+ActionDropdown.propTypes = {
+  id: PropTypes.number,
+  name: PropTypes.string,
+  hasSesKeys: PropTypes.bool,
+  setShowEdit: PropTypes.func,
+  setShowDelete: PropTypes.func,
+}
 
-const Header = () => (
+const columns = [
+  {
+    property: 'name',
+    primary: true,
+    render: NameLink,
+    header: 'Name',
+    search: true,
+  },
+  {
+    property: 'status',
+    header: 'Status',
+    render: StatusBadge,
+  },
+  {
+    property: 'template_name',
+    header: 'Template Name',
+  },
+  {
+    property: 'created_at',
+    header: 'Created At',
+    render: campaign => {
+      const d = parseISO(campaign.created_at);
+      return formatRelative(d, new Date());
+    }
+  },
+  {
+    property: 'action',
+    header: 'Action',
+    align: 'end',
+    render: ActionDropdown,
+  }
+]
+
+const PlaceholderHeader = () => (
   <TableHeader>
     <TableRow>
       <TableCell scope="col" border="bottom" size="xxsmall">
@@ -142,24 +172,19 @@ const Header = () => (
   </TableHeader>
 );
 
-Header.displayName = "Header";
+PlaceholderHeader.displayName = "PlaceholderHeader";
 
 const CampaignsTable = memo(
   ({ list, setShowDelete, hasSesKeys, setShowEdit }) => (
-    <StyledTable>
-      <Header />
-      <TableBody>
-        {list.map((c) => (
-          <Row
-            campaign={c}
-            key={c.id}
-            setShowDelete={setShowDelete}
-            setShowEdit={setShowEdit}
-            hasSesKeys={hasSesKeys}
-          />
-        ))}
-      </TableBody>
-    </StyledTable>
+    <StyledDataTable
+      columns={columns} 
+      data={list.map(c => ({...c, setShowDelete, hasSesKeys, setShowEdit}))} 
+      background={{
+        header: 'white',
+        body: ['light-1','white'],
+      }}
+      size="medium"
+    />
   )
 );
 
@@ -230,7 +255,7 @@ const List = () => {
 
   let table = null;
   if (state.isLoading || keysLoading) {
-    table = <PlaceholderTable header={Header} numCols={5} numRows={3} />;
+    table = <PlaceholderTable header={PlaceholderHeader} numCols={5} numRows={3} />;
   } else if (hasCampaigns) {
     table = (
       <CampaignsTable

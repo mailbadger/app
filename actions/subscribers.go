@@ -4,10 +4,15 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
@@ -445,4 +450,67 @@ func ExportSubscribers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Submitted for export",
 	})
+}
+
+func DownloadSubscribersReport(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	fileName := c.Query("filename")
+
+	report, err := storage.GetReportByFilename(c, fileName, u.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Report not found",
+		})
+		return
+	}
+
+	if report.Status == entities.StatusFailed {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Failed to generate report, please try again.",
+		})
+		return
+	}
+
+	if report.Status == entities.StatusInProgress {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Generating report, please try again later.",
+		})
+		return
+	}
+
+	if report.Status == entities.StatusDone {
+		client, err := awss3.NewS3Client(
+			os.Getenv("AWS_S3_ACCESS_KEY"),
+			os.Getenv("AWS_S3_SECRET_KEY"),
+			os.Getenv("AWS_S3_REGION"),
+		)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Unable to create s3 client.")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to sign url.",
+			})
+			return
+		}
+
+		req, _ := client.GetObjectRequest(&s3.GetObjectInput{
+			Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
+			Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", u.ID, fileName)),
+		})
+
+		pUrl, err := req.Presign(15 * time.Minute)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to sign s3 url.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to sign url.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"url": pUrl,
+		})
+
+	}
+
 }

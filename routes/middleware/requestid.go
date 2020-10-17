@@ -2,11 +2,9 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 )
 
 const reqIDKey = "reqid"
@@ -18,14 +16,7 @@ func RequestID() gin.HandlerFunc {
 		requestID := c.Request.Header.Get("X-Request-Id")
 
 		if requestID == "" {
-			uuid4, err := uuid.NewRandom()
-			if err != nil {
-				logrus.WithError(err).Error("RequestID: Unable to generate uuid")
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-					"message": "We are unable to process the request at the moment. Please try again.",
-				})
-				return
-			}
+			uuid4 := uuid.New()
 			requestID = uuid4.String()
 		}
 
