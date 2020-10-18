@@ -13,7 +13,7 @@ func (db *store) CreateReport(r *entities.Report) error {
 
 // UpdateReport edits an existing report in the database.
 func (db *store) UpdateReport(r *entities.Report) error {
-	return db.Where("id = ? and user_id = ?", r.ID, r.UserID).Save(r).Error
+	return db.Where("user_id = ? and resource = ? and file_name= ? and type = ?", r.UserID, r.Resource, r.FileName, r.Type).Save(r).Error
 }
 
 // GetReportByFilename returns the report by the given file name and user id
