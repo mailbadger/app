@@ -458,7 +458,15 @@ func ExportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go reportSvc.GenerateExportReport(c.Copy(), report)
+	go func(c *gin.Context, report *entities.Report) {
+		err := reportSvc.GenerateExportReport(c, report)
+		if err != nil {
+			logger.From(c).WithFields(logrus.Fields{
+				"report": report,
+			}).WithError(err).Errorf("export failed")
+			//TODO discuss handling this error
+		}
+	}(c.Copy(), report)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We have started the export process, please wait.",

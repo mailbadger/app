@@ -6,10 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/storage"
 )
@@ -25,7 +23,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(*gin.Context, *entities.Report)
+	GenerateExportReport(*gin.Context, *entities.Report) error
 	CreateExportReport(*gin.Context, int64, string, string) (*entities.Report, error)
 }
 
@@ -40,13 +38,13 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 	}
 }
 
-func (r *reportService) GenerateExportReport(c *gin.Context, report *entities.Report) {
+func (r *reportService) GenerateExportReport(c *gin.Context, report *entities.Report) error {
 	err := r.exporter.Export(c, report)
 	if err != nil {
-		logger.From(c).WithFields(logrus.Fields{
-			"report": report,
-		}).WithError(err).Errorf("export failed")
+		return fmt.Errorf("export: %w", err)
 	}
+
+	return nil
 }
 
 func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resource, note string) (*entities.Report, error) {
