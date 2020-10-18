@@ -29,28 +29,21 @@ import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
-const NameLink = ({id, name, status}) => {
+const NameLink = ({ id, name, status }) => {
   let to = `/dashboard/campaigns/send/${id}`;
   if (status === "sent") {
     to = `/dashboard/campaigns/${id}/report`;
   }
-  return (
-    <AnchorLink
-      size="small"
-      fontWeight="bold"
-      to={to}
-      label={name}
-    />
-  )
+  return <AnchorLink size="small" fontWeight="bold" to={to} label={name} />;
 };
 NameLink.displayName = "NameLink";
 NameLink.propTypes = {
   name: PropTypes.string,
   id: PropTypes.number,
   status: PropTypes.string,
-}
+};
 
-const StatusBadge = ({status}) => {
+const StatusBadge = ({ status }) => {
   const statusColors = {
     draft: "#CCCCCC",
     sending: "#00739D",
@@ -59,14 +52,20 @@ const StatusBadge = ({status}) => {
   };
 
   return <Badge color={statusColors[status]}>{status}</Badge>;
-}
+};
 
 StatusBadge.propTypes = {
-  status: PropTypes.string
+  status: PropTypes.string,
 };
 StatusBadge.displayName = "StatusBadge";
 
-const ActionDropdown = ({id, name, hasSesKeys, setShowEdit, setShowDelete}) => {
+const ActionDropdown = ({
+  id,
+  name,
+  hasSesKeys,
+  setShowEdit,
+  setShowDelete,
+}) => {
   let opts = ["Delete"];
   if (hasSesKeys) {
     opts.unshift("Edit");
@@ -99,7 +98,7 @@ const ActionDropdown = ({id, name, hasSesKeys, setShowEdit, setShowDelete}) => {
         })();
       }}
     />
-  )
+  );
 };
 
 ActionDropdown.displayName = "ActionDropdown";
@@ -109,40 +108,40 @@ ActionDropdown.propTypes = {
   hasSesKeys: PropTypes.bool,
   setShowEdit: PropTypes.func,
   setShowDelete: PropTypes.func,
-}
+};
 
 const columns = [
   {
-    property: 'name',
+    property: "name",
     primary: true,
     render: NameLink,
-    header: 'Name',
+    header: "Name",
     search: true,
   },
   {
-    property: 'status',
-    header: 'Status',
+    property: "status",
+    header: "Status",
     render: StatusBadge,
   },
   {
-    property: 'template_name',
-    header: 'Template Name',
+    property: "template_name",
+    header: "Template Name",
   },
   {
-    property: 'created_at',
-    header: 'Created At',
-    render: campaign => {
+    property: "created_at",
+    header: "Created At",
+    render: (campaign) => {
       const d = parseISO(campaign.created_at);
       return formatRelative(d, new Date());
-    }
+    },
   },
   {
-    property: 'action',
-    header: 'Action',
-    align: 'end',
+    property: "action",
+    header: "Action",
+    align: "end",
     render: ActionDropdown,
-  }
-]
+  },
+];
 
 const PlaceholderHeader = () => (
   <TableHeader>
@@ -177,11 +176,11 @@ PlaceholderHeader.displayName = "PlaceholderHeader";
 const CampaignsTable = memo(
   ({ list, setShowDelete, hasSesKeys, setShowEdit }) => (
     <StyledDataTable
-      columns={columns} 
-      data={list.map(c => ({...c, setShowDelete, hasSesKeys, setShowEdit}))} 
+      columns={columns}
+      data={list.map((c) => ({ ...c, setShowDelete, hasSesKeys, setShowEdit }))}
       background={{
-        header: 'white',
-        body: ['light-1','white'],
+        header: "white",
+        body: ["light-1", "white"],
       }}
       size="medium"
     />
@@ -255,7 +254,9 @@ const List = () => {
 
   let table = null;
   if (state.isLoading || keysLoading) {
-    table = <PlaceholderTable header={PlaceholderHeader} numCols={5} numRows={3} />;
+    table = (
+      <PlaceholderTable header={PlaceholderHeader} numCols={5} numRows={3} />
+    );
   } else if (hasCampaigns) {
     table = (
       <CampaignsTable
