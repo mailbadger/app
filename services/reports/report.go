@@ -24,7 +24,7 @@ var (
 // ReportService represents all report functionalities
 type ReportService interface {
 	GenerateExportReport(*gin.Context, *entities.Report) error
-	CreateExportReport(*gin.Context, int64, string, string) (*entities.Report, error)
+	CreateExportReport(*gin.Context, int64, string, string, time.Time) (*entities.Report, error)
 }
 
 type reportService struct {
@@ -47,12 +47,12 @@ func (r *reportService) GenerateExportReport(c *gin.Context, report *entities.Re
 	return nil
 }
 
-func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resource, note string) (*entities.Report, error) {
+func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resource, note string, date time.Time) (*entities.Report, error) {
 	if isAnotherReportRunning(c, userID) {
 		return nil, ErrAnotherReportRunning
 	}
 
-	limit, err := isLimitExceeded(c, userID, time.Now())
+	limit, err := isLimitExceeded(c, userID, date)
 	if err != nil {
 		return nil, fmt.Errorf("is limit exceeded check error: %w", err)
 	}
@@ -63,7 +63,7 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 	report := &entities.Report{
 		UserID:   userID,
 		Resource: resource,
-		FileName: generateFilename(c, userID, resource, time.Now()),
+		FileName: generateFilename(c, userID, resource, date),
 		Type:     reportTypeExport,
 		Status:   entities.StatusInProgress,
 		Note:     note,
@@ -88,7 +88,7 @@ func isAnotherReportRunning(c *gin.Context, userID int64) bool {
 }
 
 func isLimitExceeded(c *gin.Context, userID int64, time time.Time) (bool, error) {
-	n, err := storage.GetNumberOfReportsForDateTime(c, userID, time)
+	n, err := storage.GetNumberOfReportsForDate(c, userID, time)
 	if err != nil {
 		return false, err
 	}

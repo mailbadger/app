@@ -30,8 +30,8 @@ func (db *store) GetRunningReportForUser(userID int64) (*entities.Report, error)
 }
 
 // GetNumberOfReportsForDateTime returns number of reports for user id and datetime.
-func (db *store) GetNumberOfReportsForDateTime(userID int64, time time.Time) (int64, error) {
+func (db *store) GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error) {
 	var count int64
-	err := db.Model(entities.Report{}).Where("user_id = ? and created_at = ?", userID, time).Count(&count).Error
+	err := db.Model(entities.Report{}).Where("user_id = ? and DATE(created_at) = DATE(?)", userID, time).Count(&count).Error
 	return count, err
 }

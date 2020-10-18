@@ -102,7 +102,7 @@ type Storage interface {
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 	GetRunningReportForUser(int64) (*entities.Report, error)
-	GetNumberOfReportsForDateTime(userID int64, time time.Time) (int64, error)
+	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 }
 
 // SetToContext sets the storage to the context
@@ -481,7 +481,7 @@ func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report,
 	return GetFromContext(c).GetRunningReportForUser(userID)
 }
 
-// GetNumberOfReportsForDateTime returns number of reports for date time.
-func GetNumberOfReportsForDateTime(c context.Context, userID int64, time time.Time) (int64, error) {
-	return GetFromContext(c).GetNumberOfReportsForDateTime(userID, time)
+// GetNumberOfReportsForDate returns number of reports for date time.
+func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) (int64, error) {
+	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
 }

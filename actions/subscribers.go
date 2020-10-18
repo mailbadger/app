@@ -439,7 +439,7 @@ func ExportSubscribers(c *gin.Context) {
 
 	reportSvc := reports.NewReportService(exporters.NewExporter("subscribers", s3))
 
-	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "")
+	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "", time.Now())
 	if err != nil {
 		switch err {
 		case reports.ErrAnotherReportRunning:
