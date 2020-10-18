@@ -62,6 +62,10 @@ func TestReport(t *testing.T) {
 
 	// test update report
 	updatedReport := entities.Report{
+		Model: entities.Model{
+			ID:        2,
+			UpdatedAt: time.Now(),
+		},
 		UserID:   1,
 		FileName: "subv2",
 		Status:   "failed",
