@@ -444,11 +444,11 @@ func ExportSubscribers(c *gin.Context) {
 		switch err {
 		case reports.ErrAnotherReportRunning:
 			c.JSON(http.StatusForbidden, gin.H{
-				"message": "There is a report already running",
+				"message": "There is a report already running.",
 			})
 		case reports.ErrLimitReached:
 			c.JSON(http.StatusForbidden, gin.H{
-				"message": "You reached the limit",
+				"message": "You reached the daily limit, unable to generate report.",
 			})
 		default:
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -461,7 +461,7 @@ func ExportSubscribers(c *gin.Context) {
 	go reportSvc.GenerateExportReport(c.Copy(), report)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Submitted for export",
+		"message": "We have started the export process, please wait.",
 	})
 }
 
@@ -473,7 +473,7 @@ func DownloadSubscribersReport(c *gin.Context) {
 	report, err := storage.GetReportByFilename(c, fileName, u.ID)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Report not found",
+			"message": "Report not found.",
 		})
 		return
 	}
