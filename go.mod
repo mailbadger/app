@@ -13,9 +13,9 @@ require (
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/contrib v0.0.0-20200913005814-1c32036e7ea4
 	github.com/gin-gonic/gin v1.6.3
-	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-playground/validator/v10 v10.4.0
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/gocarina/gocsv v0.0.0-20200925213129-04be9ee2e1a2
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/csrf v1.7.0
@@ -27,7 +27,6 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
-	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/lib/pq v1.8.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
@@ -49,7 +48,6 @@ require (
 	google.golang.org/api v0.33.0
 	google.golang.org/genproto v0.0.0-20200918140846-d0d605568037 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect

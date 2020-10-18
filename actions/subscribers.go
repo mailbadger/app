@@ -424,7 +424,20 @@ func BulkRemoveSubscribers(c *gin.Context) {
 func ExportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	reportSvc := reports.NewReportService(exporters.NewExporter("subscribers"))
+	s3, err := awss3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	reportSvc := reports.NewReportService(exporters.NewExporter("subscribers", s3))
 
 	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "")
 	if err != nil {
