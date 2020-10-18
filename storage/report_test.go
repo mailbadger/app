@@ -62,6 +62,10 @@ func TestReport(t *testing.T) {
 
 	// test update report
 	updatedReport := entities.Report{
+		Model: entities.Model{
+			ID:        2,
+			UpdatedAt: time.Now(),
+		},
 		UserID:   1,
 		FileName: "subv2",
 		Status:   "failed",
@@ -77,7 +81,7 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, updatedReport.Status, upReport.Status)
 	assert.Equal(t, updatedReport.Note, upReport.Note)
 
-	numOfRep, err := store.GetNumberOfReportsForDateTime(1, now)
+	numOfRep, err := store.GetNumberOfReportsForDate(1, now)
 	assert.Nil(t, err)
 
 	assert.Equal(t, int64(2), numOfRep)
