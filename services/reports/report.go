@@ -88,12 +88,12 @@ func isAnotherReportRunning(c *gin.Context, userID int64) bool {
 }
 
 func isLimitExceeded(c *gin.Context, userID int64, time time.Time) (bool, error) {
-	nOfReports, err := storage.GetNumberOfReportsForDateTime(c, userID, time)
+	n, err := storage.GetNumberOfReportsForDateTime(c, userID, time)
 	if err != nil {
 		return false, err
 	}
 
-	if nOfReports > 100 {
+	if n > 100 {
 		return true, nil
 	}
 	return false, nil
