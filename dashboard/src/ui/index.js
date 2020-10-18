@@ -7,7 +7,7 @@ import Modal from "./Modal";
 import PlaceholderRow from "./PlaceholderRow";
 import PlaceholderTable from "./PlaceholderTable";
 import StyledSpinner from "./StyledSpinner";
-import StyledTable from "./StyledTable";
+import { StyledTable, StyledDataTable } from "./StyledTable";
 import StyledTextInput from "./StyledTextInput";
 import SecondaryButton from "./SecondaryButton";
 import AnchorLink from "./AnchorLink";
@@ -27,6 +27,7 @@ export {
   PlaceholderTable,
   StyledSpinner,
   StyledTable,
+  StyledDataTable,
   StyledTextInput,
   SecondaryButton,
   AnchorLink,

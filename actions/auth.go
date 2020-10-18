@@ -156,15 +156,6 @@ func PostSignup(c *gin.Context) {
 		}
 	}
 
-	uuid, err := uuid.NewRandom()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to generate random uuid.")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
@@ -173,6 +164,8 @@ func PostSignup(c *gin.Context) {
 		})
 		return
 	}
+
+	uuid := uuid.New()
 
 	user := &entities.User{
 		Username: body.Email,
@@ -574,12 +567,7 @@ func completeCallback(c *gin.Context, email, source, host string) {
 			return
 		}
 
-		uuid, err := uuid.NewRandom()
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to generate random uuid.")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
-			return
-		}
+		uuid := uuid.New()
 
 		u = &entities.User{
 			UUID:     uuid.String(),

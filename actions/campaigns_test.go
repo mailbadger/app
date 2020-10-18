@@ -4,64 +4,57 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gavv/httpexpect/v2"
-	"github.com/gin-gonic/gin"
-
-	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/storage"
 )
 
-func TestGetCampaignAction(t *testing.T) {
-	// Create new gin instance
-	handler := gin.New()
+func TestCampaigns(t *testing.T) {
+	s := storage.New("sqlite3", ":memory:")
 
-	// Create httpexpect instance
-	e := httpexpect.WithConfig(httpexpect.Config{
-		Client: &http.Client{
-			Transport: httpexpect.NewBinder(handler),
-			Jar:       httpexpect.NewJar(),
-		},
-		Reporter: httpexpect.NewAssertReporter(t),
-		Printers: []httpexpect.Printer{
-			httpexpect.NewDebugPrinter(t, true),
-		},
-	})
-
-	testCampaigns(e)
-
-}
-
-// this func will run all actions from campaign
-func testCampaigns(e *httpexpect.Expect) {
-	type campaign struct {
-		Name         string `json:"name"`
-		TemplateName string `json:"template_name"`
+	e := setup(t, s)
+	auth, err := createAuthenticatedExpect(e, s)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
 	}
 
-	// if we need to auth we can call auth api and use token from it to run
-	// other campaigns actions like post campaign and etc.
-	// example for this
-	r := e.POST("/login").WithForm(Login{"username", "pw"}).
+	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: "djale"}).
 		Expect().
-		Status(http.StatusOK).JSON().Object()
+		Status(http.StatusUnauthorized)
 
-	// take token from auth and use it on others actions..
-	r.Keys().ContainsOnly("token")
-
-	// test post campaigns
-	e.POST("/campaigns").WithForm(campaign{
-		Name:         "test1",
-		TemplateName: "test1",
-	}).
+	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "", TemplateName: ""}).
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusBadRequest).JSON().Object().
+		ValueEqual("message", "Invalid parameters, please try again").
+		ValueEqual("errors", map[string]string{"name": "This field is required", "template_name": "This field is required"})
 
-	expCampaign := &entities.Campaign{
-		Name:         "test1",
-		TemplateName: "test1",
-	}
-
-	// test get campaigns by id ( same campaign we create with post campaigns test.
-	e.GET("/campaigns/1").
+	// test post campaign
+	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: "djale"}).
 		Expect().
-		Status(http.StatusOK).JSON().Equal(expCampaign)
+		Status(http.StatusCreated)
+
+	// test inserted campaign
+	auth.GET("/api/campaigns/1").
+		Expect().
+		Status(http.StatusOK).JSON().Object().
+		ValueEqual("name", "djale").
+		ValueEqual("template_name", "djale").
+		ValueEqual("status", "draft")
+
+	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "djaleputtest", TemplateName: "djaleputtest"}).
+		Expect().
+		Status(http.StatusNoContent)
+
+	// test updated campaign
+	auth.GET("/api/campaigns/1").
+		Expect().
+		Status(http.StatusOK).JSON().Object().
+		ValueEqual("name", "djaleputtest").
+		ValueEqual("template_name", "djaleputtest").
+		ValueEqual("status", "draft")
+
+	// delete campaign by id
+	auth.DELETE("/api/campaigns/1").
+		Expect().
+		Status(http.StatusNoContent)
 }

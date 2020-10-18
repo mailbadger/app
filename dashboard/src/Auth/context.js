@@ -30,7 +30,7 @@ class AuthProvider extends Component {
     const callApi = async () => {
       try {
         this.setState({ isLoading: true, error: null });
-        const result = await axios.get("/api/users");
+        const result = await axios.get("/api/users/me");
         this.setState({
           error: null,
           isLoading: false,
