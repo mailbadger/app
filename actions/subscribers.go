@@ -458,7 +458,7 @@ func ExportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(c *gin.Context, report *entities.Report) {
+	go func(c context.Context, report *entities.Report) {
 		err := reportSvc.GenerateExportReport(c, report)
 		if err != nil {
 			logger.From(c).WithFields(logrus.Fields{

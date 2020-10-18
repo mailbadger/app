@@ -2,6 +2,7 @@ package exporters
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
 
 	"github.com/mailbadger/app/entities"
@@ -27,7 +27,7 @@ func NewSubscriptionExporter(s3 s3iface.S3API) *SubscribersExporter {
 	}
 }
 
-func (se *SubscribersExporter) Export(c *gin.Context, report *entities.Report) error {
+func (se *SubscribersExporter) Export(c context.Context, report *entities.Report) error {
 	p := storage.NewPaginationCursor("", 10)
 	err := storage.GetSubscribers(c, report.UserID, p)
 	if err != nil {

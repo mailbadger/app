@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -23,7 +24,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(*gin.Context, *entities.Report) error
+	GenerateExportReport(context.Context, *entities.Report) error
 	CreateExportReport(*gin.Context, int64, string, string, time.Time) (*entities.Report, error)
 }
 
@@ -38,7 +39,7 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 	}
 }
 
-func (r *reportService) GenerateExportReport(c *gin.Context, report *entities.Report) error {
+func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) error {
 	err := r.exporter.Export(c, report)
 	if err != nil {
 		return fmt.Errorf("export: %w", err)
