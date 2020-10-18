@@ -24,10 +24,6 @@ func TestReport(t *testing.T) {
 
 	reports := []entities.Report{
 		{
-			Model: entities.Model{
-				ID:        1,
-				CreatedAt: now,
-			},
 			UserID:   1,
 			Resource: "subscriptions",
 			FileName: "subv1",
@@ -36,10 +32,6 @@ func TestReport(t *testing.T) {
 			Note:     "",
 		},
 		{
-			Model: entities.Model{
-				ID:        2,
-				CreatedAt: now,
-			},
 			UserID:   1,
 			Resource: "subscriptions",
 			FileName: "subv2",
