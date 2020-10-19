@@ -46,7 +46,7 @@ func TestSegments(t *testing.T) {
 		Expect().
 		Status(http.StatusNoContent)
 
-	// delete campaign by id
+	// delete segment by id
 	auth.DELETE("/api/segments/1").
 		Expect().
 		Status(http.StatusNoContent)
