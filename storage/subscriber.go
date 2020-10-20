@@ -217,6 +217,9 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 	return tx.Commit().Error
 }
 
+// GetSubscribersByUserID fetches chunk of subscribers with id greater than nextID
 func (db *store) GetSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
-	panic("implement me")
+	var s []entities.Subscriber
+	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(limit).Find(&s).Error
+	return s, err
 }
