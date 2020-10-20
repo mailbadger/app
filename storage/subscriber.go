@@ -216,3 +216,7 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 
 	return tx.Commit().Error
 }
+
+func (db *store) GetSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
+	panic("implement me")
+}

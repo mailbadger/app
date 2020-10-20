@@ -14,13 +14,13 @@ import (
 // Subscriber represents the subscriber entity
 type Subscriber struct {
 	Model
-	UserID      int64             `json:"-" gorm:"column:user_id; index" csv:"User ID"`
-	Name        string            `json:"name" csv:"Name"`
-	Email       string            `json:"email" gorm:"not null" csv:"Email"`
-	MetaJSON    JSON              `json:"metadata" gorm:"column:metadata; type:json" csv:"Metadata"`
-	Segments    []Segment         `json:"segments" gorm:"many2many:subscribers_segments;" csv:"Segments"`
-	Blacklisted bool              `json:"blacklisted" csv:"Blacklisted"`
-	Active      bool              `json:"active" csv:"Active"`
+	UserID      int64             `json:"-" gorm:"column:user_id; index"`
+	Name        string            `json:"name"`
+	Email       string            `json:"email" gorm:"not null"`
+	MetaJSON    JSON              `json:"metadata" gorm:"column:metadata; type:json"`
+	Segments    []Segment         `json:"segments" gorm:"many2many:subscribers_segments;""`
+	Blacklisted bool              `json:"blacklisted"`
+	Active      bool              `json:"active"`
 	Errors      map[string]string `json:"-" sql:"-"`
 	Metadata    map[string]string `json:"-" sql:"-"`
 }
