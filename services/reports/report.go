@@ -64,7 +64,7 @@ func (r *reportService) CreateExportReport(c context.Context, userID int64, reso
 	report := &entities.Report{
 		UserID:   userID,
 		Resource: resource,
-		FileName: generateFilename(userID, resource, date),
+		FileName: generateFilename(resource, date),
 		Type:     reportTypeExport,
 		Status:   entities.StatusInProgress,
 		Note:     note,
@@ -78,8 +78,9 @@ func (r *reportService) CreateExportReport(c context.Context, userID int64, reso
 	return report, nil
 }
 
-func generateFilename(userID int64, resource string, timestamp time.Time) string {
-	return fmt.Sprintf("/reports/%d/%s_%s", userID, resource, timestamp.Format("2006-01-02 15:04:05"))
+// generateFilename generates the report filename
+func generateFilename(resource string, date time.Time) string {
+	return fmt.Sprintf("%s_%d", resource, date.Unix())
 }
 
 // isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
