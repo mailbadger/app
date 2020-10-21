@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -441,17 +442,17 @@ func ExportSubscribers(c *gin.Context) {
 
 	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "", time.Now())
 	if err != nil {
-		switch err {
-		case reports.ErrAnotherReportRunning:
+		switch {
+		case errors.Is(err, reports.ErrAnotherReportRunning):
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "There is a report already running.",
 			})
-		case reports.ErrLimitReached:
+		case errors.Is(err, reports.ErrLimitReached):
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "You reached the daily limit, unable to generate report.",
 			})
 		default:
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Unable to create export report.",
 			})
 		}
