@@ -44,7 +44,7 @@ func (se *SubscribersExporter) Export(c context.Context, report *entities.Report
 	}
 
 	for {
-		subscribers, err := storage.GetSubscribersByUserID(c, report.UserID, nextID, limit)
+		subscribers, err := storage.SeekSubscribersByNextID(c, report.UserID, nextID, limit)
 		if err != nil {
 			return fmt.Errorf("get subscribers: %w", err)
 		}
