@@ -19,7 +19,7 @@ const (
 
 var (
 	ErrAnotherReportRunning = errors.New("another report running")
-	ErrLimitReached         = errors.New("report limit reached")
+	ErrLimitReached         = errors.New("you reached the limit")
 )
 
 // ReportService represents all report functionalities
@@ -57,7 +57,6 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 	if err != nil {
 		return nil, fmt.Errorf("is limit exceeded check error: %w", err)
 	}
-
 	if limit {
 		return nil, ErrLimitReached
 	}
@@ -65,7 +64,7 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 	report := &entities.Report{
 		UserID:   userID,
 		Resource: resource,
-		FileName: generateFilename(userID, resource, date),
+		FileName: generateFilename(c, userID, resource, date),
 		Type:     reportTypeExport,
 		Status:   entities.StatusInProgress,
 		Note:     note,
@@ -79,22 +78,24 @@ func (r *reportService) CreateExportReport(c *gin.Context, userID int64, resourc
 	return report, nil
 }
 
-func generateFilename(userID int64, resource string, timestamp time.Time) string {
+func generateFilename(context *gin.Context, userID int64, resource string, timestamp time.Time) string {
 	return fmt.Sprintf("/reports/%d/%s_%s", userID, resource, timestamp.Format("2006-01-02 15:04:05"))
 }
 
 // isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
-func isAnotherReportRunning(c context.Context, userID int64) bool {
+func isAnotherReportRunning(c *gin.Context, userID int64) bool {
 	_, err := storage.GetRunningReportForUser(c, userID)
 	return err != nil
 }
 
-// isLimitExceeded returns true if there are less than 100 reports for one day
 func isLimitExceeded(c *gin.Context, userID int64, time time.Time) (bool, error) {
 	n, err := storage.GetNumberOfReportsForDate(c, userID, time)
 	if err != nil {
 		return false, err
 	}
 
-	return n > 100, nil
+	if n > 100 {
+		return true, nil
+	}
+	return false, nil
 }
