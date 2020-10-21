@@ -37,6 +37,7 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 	}
 }
 
+// GenerateExportReport starts the resources export method
 func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) error {
 	err := r.exporter.Export(c, report)
 	if err != nil {
@@ -46,6 +47,7 @@ func (r *reportService) GenerateExportReport(c context.Context, report *entities
 	return nil
 }
 
+// CreateExportReport creates export report
 func (r *reportService) CreateExportReport(c context.Context, userID int64, resource, note string, date time.Time) (*entities.Report, error) {
 	if isAnotherReportRunning(c, userID) {
 		return nil, ErrAnotherReportRunning
@@ -86,6 +88,7 @@ func isAnotherReportRunning(c context.Context, userID int64) bool {
 	return err != nil
 }
 
+// isLimitExceeded returns true if there are less than 100 reports per day
 func isLimitExceeded(c context.Context, userID int64, time time.Time) (bool, error) {
 	n, err := storage.GetNumberOfReportsForDate(c, userID, time)
 	if err != nil {
