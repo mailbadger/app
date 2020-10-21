@@ -37,9 +37,6 @@ const StyledDataTable = styled(DataTable)`
     border-bottom: none;
   }
 `;
-export {
-  StyledDataTable,
-  StyledTable,
-}
+export { StyledDataTable, StyledTable };
 
 export default StyledTable;

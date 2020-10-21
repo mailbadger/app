@@ -192,13 +192,17 @@ const List = () => {
         <Box animation="fadeIn">
           {table}
 
-          {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
+          {!state.isLoading &&
+          !state.isError &&
+          state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
               <Heading level="2">Create your first template.</Heading>
             </Box>
           ) : null}
         </Box>
-        {!state.isLoading && !state.isError && state.data.collection.length > 0 ? (
+        {!state.isLoading &&
+        !state.isError &&
+        state.data.collection.length > 0 ? (
           <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
             <Box margin={{ right: "small" }}>
               <Button
