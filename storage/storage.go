@@ -73,7 +73,7 @@ type Storage interface {
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
-	GetSubscribersByUserID(int64, int64, int64) ([]entities.Subscriber, error)
+	SeekSubscribersByNextID(userID int64,nextID int64, limit int64) ([]entities.Subscriber, error)
 
 	GetAPIKeys(userID int64) []*entities.APIKey
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -102,7 +102,7 @@ type Storage interface {
 	CreateReport(r *entities.Report) error
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
-	GetRunningReportForUser(int64) (*entities.Report, error)
+	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 }
 
@@ -377,9 +377,9 @@ func GetTotalSubscribersBySegment(c context.Context, segmentID, userID int64) (i
 	return GetFromContext(c).GetTotalSubscribersBySegment(segmentID, userID)
 }
 
-// GetSubscribersByUserID returns subscribers for given user id
-func GetSubscribersByUserID(c context.Context, userID, nextID, limit int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).GetSubscribersByUserID(userID, nextID, limit)
+// SeekSubscribersByNextID returns subscribers for given user id
+func SeekSubscribersByNextID(c context.Context, userID, nextID, limit int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).SeekSubscribersByNextID(userID, nextID, limit)
 }
 
 // GetAPIKeys returns a list of APIKey entities.
