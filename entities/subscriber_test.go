@@ -3,6 +3,7 @@ package entities
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,8 +19,17 @@ func TestSubscriberEntity(t *testing.T) {
 		assert.FailNow(t, "unable to set os env.")
 	}
 
+var (
+	subID int64 = 123
+	now         = time.Now()
+)
+
 	sub := &Subscriber{
-		Model:    Model{ID: 123},
+		Model: Model{
+			ID:        subID,
+			CreatedAt: now,
+			UpdatedAt: now,
+		},
 		MetaJSON: []byte(`{"foo": "bar"}`),
 		Email:    "john.doe@example.com",
 	}
@@ -36,4 +46,13 @@ func TestSubscriberEntity(t *testing.T) {
 	tt, err := sub.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
 	assert.Nil(t, err)
 	assert.Equal(t, tt, "77de38e4b50e618a0ebb95db61e2f42697391659d82c064a5f81b9f48d85ccd5")
+
+	id := sub.GetID()
+	assert.Equal(t, subID, id)
+
+	createdAt := sub.GetCreatedAt()
+	assert.Equal(t, now, createdAt)
+
+	updatedAt := sub.GetUpdatedAt()
+	assert.Equal(t, now, updatedAt)
 }
