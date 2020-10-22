@@ -449,7 +449,7 @@ func ExportSubscribers(c *gin.Context) {
 
 	reportSvc := reports.NewReportService(exporter)
 
-	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "", time.Now())
+	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "started the export process", time.Now())
 	if err != nil {
 		switch {
 		case errors.Is(err, reports.ErrAnotherReportRunning):
@@ -478,9 +478,7 @@ func ExportSubscribers(c *gin.Context) {
 		}
 	}(c.Copy(), report)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "We have started the export process, please wait.",
-	})
+	c.JSON(http.StatusOK, report)
 }
 
 func DownloadSubscribersReport(c *gin.Context) {
