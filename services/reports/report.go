@@ -80,7 +80,7 @@ func (r *reportService) CreateExportReport(c context.Context, userID int64, reso
 
 // generateFilename generates the report filename
 func generateFilename(resource string, date time.Time) string {
-	return fmt.Sprintf("%s_%d", resource, date.Unix())
+	return fmt.Sprintf("%s_%d.csv", resource, date.Unix())
 }
 
 // isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
