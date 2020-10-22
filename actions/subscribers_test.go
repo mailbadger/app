@@ -29,13 +29,13 @@ func TestSubscribers(t *testing.T) {
 		ValueEqual("message", "Invalid parameters, please try again").
 		ValueEqual("errors", map[string]string{"email": "This field is required"})
 
-	// test validate email
-	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "Djale", Email: "sda", Metadata: map[string]string{"": ""}, SegmentIDs: nil}).
+	/*// test validator for params
+	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "Djale", Email: "sda", Metadata: map[string]string{"asd asd": "bla bla"}, SegmentIDs: nil}).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
-		ValueEqual("errors", map[string]string{"email": "Invalid email format"})
-
+		ValueEqual("errors", map[string]string{"email": "Invalid email format", "metadata": "Must consist only of alphanumeric and hyphen characters"})
+	*/
 	// test post subscriber
 	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "Djale", Email: "djale@email.com", Metadata: map[string]string{"test": "test"}, SegmentIDs: nil}).
 		Expect().
@@ -46,8 +46,64 @@ func TestSubscribers(t *testing.T) {
 		Expect().
 		Status(http.StatusCreated)
 
+	// test get subscribers length 2
+	auth.GET("/api/subscribers").
+		Expect().
+		Status(http.StatusOK).JSON().Object().Value("collection").Array().Length().Equal(2)
+
 	// test get subscribers
 	auth.GET("/api/subscribers").
 		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusOK).JSON().Object().Value("collection").Array().Element(0).Object().
+		ValueEqual("name", "Foo").
+		ValueEqual("email", "foo@email.com").
+		ValueEqual("blacklisted", false).
+		ValueEqual("active", true)
+
+	// test get subscribers by filter email like foo
+	auth.GET("/api/subscribers").WithQuery("scopes[email]", "foo").
+		Expect().
+		Status(http.StatusOK).JSON().Object().Value("collection").Array().Length().Equal(1)
+
+	// test get subscribers by filter email like foo
+	auth.GET("/api/subscribers").WithQuery("scopes[email]", "foo").
+		Expect().
+		Status(http.StatusOK).JSON().Object().Value("collection").Array().Element(0).Object().
+		ValueEqual("name", "Foo").
+		ValueEqual("email", "foo@email.com").
+		ValueEqual("blacklisted", false).
+		ValueEqual("active", true)
+
+	// test get subscriber by id
+	auth.GET("/api/subscribers/2").
+		Expect().
+		Status(http.StatusOK).JSON().Object().
+		ValueEqual("name", "Foo").
+		ValueEqual("email", "foo@email.com").
+		ValueEqual("blacklisted", false).
+		ValueEqual("active", true)
+
+	/*// test put subscriber by id
+	auth.PUT("/api/subscribers/2").WithForm(params.PutSubscriber{Name: "FooPutChange"}).
+		Expect().
+		Status(http.StatusNoContent)
+
+	// test updated subscriber
+	auth.GET("/api/subscribers/2").
+		Expect().
+		Status(http.StatusOK).JSON().Object().
+		ValueEqual("name", "FooPutChange").
+		ValueEqual("email", "foo@email.com").
+		ValueEqual("blacklisted", false).
+		ValueEqual("active", true)*/
+
+	// delete subscriber by id
+	auth.DELETE("/api/subscribers/1").
+		Expect().
+		Status(http.StatusNoContent)
+
+	// delete subscriber by id
+	auth.DELETE("/api/subscribers/2").
+		Expect().
+		Status(http.StatusNoContent)
 }
