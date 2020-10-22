@@ -11,7 +11,6 @@ import {
   Button,
   Heading,
   Select,
-  DataTable,
 } from "grommet";
 import history from "../history";
 import {
@@ -174,8 +173,9 @@ const PlaceholderHeader = () => (
 PlaceholderHeader.displayName = "PlaceholderHeader";
 
 const CampaignsTable = memo(
-  ({ list, setShowDelete, hasSesKeys, setShowEdit }) => (
-    <StyledDataTable
+  ({ list, setShowDelete, hasSesKeys, setShowEdit }) => {
+    console.log(list)
+    return <StyledDataTable
       columns={columns}
       data={list.map((c) => ({ ...c, setShowDelete, hasSesKeys, setShowEdit }))}
       background={{
@@ -184,7 +184,7 @@ const CampaignsTable = memo(
       }}
       size="medium"
     />
-  )
+  }
 );
 
 CampaignsTable.displayName = "CampaignsTable";
@@ -213,7 +213,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/campaigns",
+      url: "/api/campaigns?per_page=3",
     },
     {
       collection: [],
