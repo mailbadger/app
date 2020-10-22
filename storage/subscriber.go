@@ -41,7 +41,6 @@ func EmailLike(email string) func(*gorm.DB) *gorm.DB {
 func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Subscriber{})
 	p.SetResource("subscribers")
-
 	p.SetScopes(BelongsToUser(userID), BelongsToSegment(segmentID))
 
 	query := db.Table(p.Resource).

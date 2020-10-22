@@ -173,7 +173,8 @@ func GetCampaigns(c *gin.Context) {
 		return
 	}
 
-	err := storage.GetCampaigns(c, middleware.GetUser(c).ID, p)
+	scopeMap := c.QueryMap("scopes")
+	err := storage.GetCampaigns(c, middleware.GetUser(c).ID, p, scopeMap)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"starting_after": p.StartingAfter,
