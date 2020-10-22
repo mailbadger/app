@@ -11,7 +11,7 @@ import {
   Button,
   Heading,
   Select,
-  DataTable,
+  Text,
 } from "grommet";
 import history from "../history";
 import {
@@ -29,10 +29,17 @@ import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
 
-const NameLink = ({ id, name, status }) => {
+const NameLink = ({ id, name, status, hasSesKeys }) => {
   let to = `/dashboard/campaigns/send/${id}`;
   if (status === "sent") {
     to = `/dashboard/campaigns/${id}/report`;
+  }
+  if (status === "draft" && !hasSesKeys) {
+    return (
+      <Text weight="bold" size="small">
+        {name}
+      </Text>
+    );
   }
   return <AnchorLink size="small" fontWeight="bold" to={to} label={name} />;
 };
@@ -41,6 +48,7 @@ NameLink.propTypes = {
   name: PropTypes.string,
   id: PropTypes.number,
   status: PropTypes.string,
+  hasSesKeys: PropTypes.bool,
 };
 
 const StatusBadge = ({ status }) => {
@@ -174,17 +182,25 @@ const PlaceholderHeader = () => (
 PlaceholderHeader.displayName = "PlaceholderHeader";
 
 const CampaignsTable = memo(
-  ({ list, setShowDelete, hasSesKeys, setShowEdit }) => (
-    <StyledDataTable
-      columns={columns}
-      data={list.map((c) => ({ ...c, setShowDelete, hasSesKeys, setShowEdit }))}
-      background={{
-        header: "white",
-        body: ["light-1", "white"],
-      }}
-      size="medium"
-    />
-  )
+  ({ list, setShowDelete, hasSesKeys, setShowEdit }) => {
+    console.log(list);
+    return (
+      <StyledDataTable
+        columns={columns}
+        data={list.map((c) => ({
+          ...c,
+          setShowDelete,
+          hasSesKeys,
+          setShowEdit,
+        }))}
+        background={{
+          header: "white",
+          body: ["light-1", "white"],
+        }}
+        size="medium"
+      />
+    );
+  }
 );
 
 CampaignsTable.displayName = "CampaignsTable";
