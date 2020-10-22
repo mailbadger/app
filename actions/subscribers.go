@@ -49,7 +49,8 @@ func GetSubscribers(c *gin.Context) {
 		return
 	}
 
-	err := storage.GetSubscribers(c, middleware.GetUser(c).ID, p)
+	scopeMap := c.QueryMap("scopes")
+	err := storage.GetSubscribers(c, middleware.GetUser(c).ID, p, scopeMap)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to fetch subscribers collection.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
