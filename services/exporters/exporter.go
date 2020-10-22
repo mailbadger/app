@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/logger"
 )
 
 var (
@@ -26,17 +25,4 @@ func NewExporter(resource string, s3 s3iface.S3API) (Exporter, error) {
 	default:
 		return nil, ErrUnknownResource
 	}
-}
-
-type defaultExporter struct {
-}
-
-func newDefaultExporter() *defaultExporter {
-	return &defaultExporter{}
-}
-
-func (de defaultExporter) Export(c context.Context, report *entities.Report) error {
-	// TODO discuss this
-	logger.From(c).Errorf("Something went wrong")
-	return nil
 }
