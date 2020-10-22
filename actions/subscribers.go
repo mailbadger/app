@@ -433,12 +433,21 @@ func ExportSubscribers(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to import subscribers. Please try again.",
+			"message": "Unable to export subscribers. Please try again.",
 		})
 		return
 	}
 
-	reportSvc := reports.NewReportService(exporters.NewExporter("subscribers", s3))
+	exporter, err := exporters.NewExporter("subscribers", s3)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable do create subscribers exporter")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to export subscribers. Please try again.",
+		})
+		return
+	}
+
+	reportSvc := reports.NewReportService(exporter)
 
 	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "", time.Now())
 	if err != nil {
