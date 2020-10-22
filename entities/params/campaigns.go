@@ -8,9 +8,6 @@ type Campaign struct {
 	TemplateName string `form:"template_name" validate:"required,max=191"`
 }
 
-type Scopes struct {
-}
-
 func (p *Campaign) TrimSpaces() {
 	p.Name = strings.TrimSpace(p.Name)
 	p.TemplateName = strings.TrimSpace(p.TemplateName)
