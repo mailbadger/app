@@ -7,7 +7,7 @@ type PostSubscriber struct {
 	Name       string            `form:"name" validate:"omitempty,min=1,max=191"`
 	Email      string            `form:"email" validate:"required,email"`
 	SegmentIDs []int64           `form:"segments[]" validate:"omitempty"`
-	Metadata   map[string]string `form:"metadata" validate:"omitempty,dive,alphanumhyphen"`
+	Metadata   map[string]string `form:"metadata" validate:"omitempty,dive,keys,required,alphanumhyphen,endkeys,required"`
 }
 
 func (p *PostSubscriber) TrimSpaces() {
@@ -18,7 +18,7 @@ func (p *PostSubscriber) TrimSpaces() {
 type PutSubscriber struct {
 	Name       string            `form:"name" validate:"omitempty,min=1,max=191"`
 	SegmentIDs []int64           `form:"segments[]" validate:"omitempty"`
-	Metadata   map[string]string `form:"metadata" validate:"omitempty,dive,alphanumhyphen"`
+	Metadata   map[string]string `form:"metadata" validate:"omitempty,dive,keys,required,alphanumhyphen,endkeys,required"`
 }
 
 func (p *PutSubscriber) TrimSpaces() {
