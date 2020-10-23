@@ -83,12 +83,12 @@ func TestSubscribers(t *testing.T) {
 		ValueEqual("blacklisted", false).
 		ValueEqual("active", true)
 
-	/*// test put subscriber by id
-	auth.PUT("/api/subscribers/2").WithForm(params.PutSubscriber{Name: "FooPutChange"}).
+	// test put subscriber by id
+	auth.PUT("/api/subscribers/2").WithForm(params.PutSubscriber{Name: "FooPutChange", Metadata: map[string]string{"test": "test"}}).
 		Expect().
 		Status(http.StatusNoContent)
 
-	// test updated subscriber
+	/*// test updated subscriber
 	auth.GET("/api/subscribers/2").
 		Expect().
 		Status(http.StatusOK).JSON().Object().
