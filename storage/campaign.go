@@ -1,13 +1,23 @@
 package storage
 
 import (
+	"github.com/jinzhu/gorm"
 	"github.com/mailbadger/app/entities"
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj
-func (db *store) GetCampaigns(userID int64, p *PaginationCursor) error {
+func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
 	p.SetCollection(&[]entities.Campaign{})
 	p.SetResource("campaigns")
+
+	for k, v := range scopeMap {
+		if k == "name" {
+			p.AddScope(NameLike(v))
+		}
+		if k == "template_name" {
+			p.AddScope(TemplateNameLike(v))
+		}
+	}
 
 	query := db.Table(p.Resource).
 		Where("user_id = ?", userID).
@@ -157,4 +167,20 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 	p.SetQuery(query)
 
 	return db.Paginate(p, userID)
+}
+
+// NameLike applies a scope for campaigns by the given name.
+// The wildcard is applied on the end of the name search.
+func NameLike(name string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("name LIKE ?", name+"%")
+	}
+}
+
+// TemplateNameLike applies a scope for campaigns by the given template name.
+// The wildcard is applied on the end of the name search.
+func TemplateNameLike(templateName string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("template_name LIKE ?", templateName+"%")
+	}
 }

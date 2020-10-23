@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go v0.66.0 // indirect
 	github.com/andybalholm/brotli v1.0.1 // indirect
-	github.com/aws/aws-sdk-go v1.35.9
+	github.com/aws/aws-sdk-go v1.35.12
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/fatih/structs v1.1.0 // indirect
@@ -49,7 +49,6 @@ require (
 	google.golang.org/api v0.33.0
 	google.golang.org/genproto v0.0.0-20200918140846-d0d605568037 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect

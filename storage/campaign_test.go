@@ -65,11 +65,10 @@ func TestCampaign(t *testing.T) {
 	assert.True(t, campaign.CompletedAt.Valid)
 	assert.Equal(t, campaign.CompletedAt.Time, now)
 
-
 	//Test get campaigns
 	p := NewPaginationCursor("/api/campaigns", 13)
 	for i := 0; i < 10; i++ {
-		err := store.GetCampaigns(1, p)
+		err := store.GetCampaigns(1, p, nil)
 		assert.Nil(t, err)
 		col := p.Collection.(*[]entities.Campaign)
 		assert.NotNil(t, col)
@@ -88,7 +87,7 @@ func TestCampaign(t *testing.T) {
 	p = NewPaginationCursor("/api/campaigns", 13)
 	p.SetEndingBefore(1)
 	for i := 0; i < 8; i++ {
-		err := store.GetCampaigns(1, p)
+		err := store.GetCampaigns(1, p, nil)
 		assert.Nil(t, err)
 		col := p.Collection.(*[]entities.Campaign)
 		assert.NotNil(t, col)
