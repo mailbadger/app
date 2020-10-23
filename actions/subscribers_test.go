@@ -46,29 +46,30 @@ func TestSubscribers(t *testing.T) {
 		Expect().
 		Status(http.StatusCreated)
 
-	// test get subscribers length 2
-	auth.GET("/api/subscribers").
+	// test get subscribers collection length 2
+	collection := auth.GET("/api/subscribers").
 		Expect().
-		Status(http.StatusOK).JSON().Object().Value("collection").Array().Length().Equal(2)
+		Status(http.StatusOK).
+		JSON().Object().ValueEqual("total", 2)
 
-	// test get subscribers
-	auth.GET("/api/subscribers").
-		Expect().
-		Status(http.StatusOK).JSON().Object().Value("collection").Array().Element(0).Object().
+	// test links from  collection
+	collection.Value("links").Object().ContainsKey("previous").ContainsKey("next")
+
+	// test collection[0] values objects
+	collection.Value("collection").Array().Element(0).Object().
 		ValueEqual("name", "Foo").
 		ValueEqual("email", "foo@email.com").
 		ValueEqual("blacklisted", false).
 		ValueEqual("active", true)
 
 	// test get subscribers by filter email like foo
-	auth.GET("/api/subscribers").WithQuery("scopes[email]", "foo").
+	collection = auth.GET("/api/subscribers").WithQuery("scopes[email]", "foo").
 		Expect().
-		Status(http.StatusOK).JSON().Object().Value("collection").Array().Length().Equal(1)
+		Status(http.StatusOK).
+		JSON().Object().ValueEqual("total", 1)
 
-	// test get subscribers by filter email like foo
-	auth.GET("/api/subscribers").WithQuery("scopes[email]", "foo").
-		Expect().
-		Status(http.StatusOK).JSON().Object().Value("collection").Array().Element(0).Object().
+	// test collection[0] values objects filtered.
+	collection.Value("collection").Array().Element(0).Object().
 		ValueEqual("name", "Foo").
 		ValueEqual("email", "foo@email.com").
 		ValueEqual("blacklisted", false).
