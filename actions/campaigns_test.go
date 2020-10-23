@@ -50,7 +50,7 @@ func TestCampaigns(t *testing.T) {
 	collection.Value("links").Object().ContainsKey("previous").ContainsKey("next")
 	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
 
-	collection = auth.GET("/api/campaigns").
+	auth.GET("/api/campaigns").
 		WithQuery("scopes[name]", "foo").WithQuery("scopes[template_name]", "bar").
 		Expect().
 		Status(http.StatusOK).
