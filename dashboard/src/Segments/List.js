@@ -361,7 +361,7 @@ const List = () => {
         <Box animation="fadeIn">
           {table}
 
-          {!state.isLoading && state.data.collection.length === 0 ? (
+          {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "small" }}>
               <Heading level="2">Create your first segment.</Heading>
             </Box>
