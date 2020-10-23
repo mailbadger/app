@@ -88,14 +88,14 @@ func TestSubscribers(t *testing.T) {
 		Expect().
 		Status(http.StatusNoContent)
 
-	/*// test updated subscriber
+	// test updated subscriber
 	auth.GET("/api/subscribers/2").
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "FooPutChange").
 		ValueEqual("email", "foo@email.com").
 		ValueEqual("blacklisted", false).
-		ValueEqual("active", true)*/
+		ValueEqual("active", true)
 
 	// delete subscriber by id
 	auth.DELETE("/api/subscribers/1").

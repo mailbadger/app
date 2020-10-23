@@ -178,6 +178,8 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
+	s.Name = body.Name
+
 	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
