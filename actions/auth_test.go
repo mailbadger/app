@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities/params"
-
 	"github.com/mailbadger/app/storage"
 )
 
@@ -41,8 +40,8 @@ func TestAuth(t *testing.T) {
 		ValueEqual("password", "This field is required")
 
 	e.POST("/api/signup").WithForm(params.PostSignUp{
-		Email:         "email",
-		Password:      "password",
+		Email:    "email",
+		Password: "password",
 	}).Expect().
 		Status(http.StatusBadRequest).
 		JSON().Object().
@@ -51,8 +50,8 @@ func TestAuth(t *testing.T) {
 		ValueEqual("email", "Invalid email format")
 
 	e.POST("/api/signup").WithForm(params.PostSignUp{
-		Email:         "email",
-		Password:      "password",
+		Email:    "email",
+		Password: "password",
 	}).Expect().
 		Status(http.StatusBadRequest).
 		JSON().Object().
@@ -61,8 +60,8 @@ func TestAuth(t *testing.T) {
 		ValueEqual("email", "Invalid email format")
 
 	e.POST("/api/signup").WithForm(params.PostSignUp{
-		Email:         "gl@mail.com",
-		Password:      "password",
+		Email:    "gl@mail.com",
+		Password: "password",
 	}).Expect().
 		Status(http.StatusOK).
 		JSON().Object().
@@ -73,8 +72,8 @@ func TestAuth(t *testing.T) {
 		ValueEqual("verified", false)
 
 	e.POST("/api/signup").WithForm(params.PostSignUp{
-		Email:         "gl@mail.com",
-		Password:      "password",
+		Email:    "gl@mail.com",
+		Password: "password",
 	}).Expect().
 		Status(http.StatusForbidden).
 		JSON().Object().
