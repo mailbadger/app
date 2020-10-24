@@ -27,16 +27,9 @@ func (db *store) GetSubscribers(userID int64, p *PaginationCursor) error {
 func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Subscriber{})
 	p.SetResource("subscribers")
-
-	scopes := []func(*gorm.DB) *gorm.DB{
-		BelongsToUser(userID),
-		BelongsToSegment(segmentID),
-	}
-
-	p.SetScopes(scopes)
+	p.SetScopes(BelongsToUser(userID), BelongsToSegment(segmentID))
 
 	query := db.Table(p.Resource).
-		Scopes(scopes...).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
