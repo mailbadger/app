@@ -78,4 +78,40 @@ func TestAuth(t *testing.T) {
 		Status(http.StatusForbidden).
 		JSON().Object().
 		ValueEqual("message", "Unable to create an account.")
+
+	e.POST("/api/authenticate").
+		Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Invalid parameters, please try again").
+		Value("errors").Object().
+		ValueEqual("username", "This field is required").
+		ValueEqual("password", "This field is required")
+
+	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+		Username: "username",
+		Password: "password",
+	}).Expect().
+		Status(http.StatusForbidden).
+		JSON().Object().
+		ValueEqual("message", "Invalid credentials.")
+
+	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+		Username: "gl@mail.com",
+		Password: "badpassword",
+	}).Expect().
+		Status(http.StatusForbidden).
+		JSON().Object().
+		ValueEqual("message", "Invalid credentials.")
+
+	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+		Username: "gl@mail.com",
+		Password: "password",
+	}).Expect().
+		Status(http.StatusOK).
+		JSON().Object().
+		Value("user").Object().
+		ValueEqual("username", "gl@mail.com").
+		ValueEqual("source", "mailbadger.io").
+		ValueEqual("active", true)
 }
