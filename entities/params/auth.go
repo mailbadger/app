@@ -14,7 +14,7 @@ func (p *PostAuthenticate) TrimSpaces() {
 type PostSignUp struct {
 	Email         string `form:"email" validate:"required,email"`
 	Password      string `form:"password" validate:"required,min=8"`
-	TokenResponse string `form:"token_response" validate:"optional"`
+	TokenResponse string `form:"token_response" validate:"omitempty"`
 }
 
 func (p *PostSignUp) TrimSpaces() {
