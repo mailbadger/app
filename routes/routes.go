@@ -268,7 +268,6 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 				c.JSON(http.StatusNotFound, gin.H{
 					"message": "Not found.",
 				})
-				return
 			})
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
