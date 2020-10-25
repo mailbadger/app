@@ -24,7 +24,7 @@
     "react-error-boundary": "^2.3.1",
     "react-google-recaptcha": "^2.1.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.4",
+    "react-scripts": "4.0.0",
     "recharts": "^1.8.5",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.4.1",
