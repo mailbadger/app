@@ -114,4 +114,28 @@ func TestAuth(t *testing.T) {
 		ValueEqual("username", "gl@mail.com").
 		ValueEqual("source", "mailbadger.io").
 		ValueEqual("active", true)
+
+	e.GET("/api/auth/github").
+		Expect().
+		Status(http.StatusTemporaryRedirect)
+
+	e.GET("/api/auth/github/callback").
+		Expect().
+		Status(http.StatusPermanentRedirect)
+
+	e.GET("/api/auth/google").
+		Expect().
+		Status(http.StatusTemporaryRedirect)
+
+	e.GET("/api/auth/google/callback").
+		Expect().
+		Status(http.StatusPermanentRedirect)
+
+	e.GET("/api/auth/facebook").
+		Expect().
+		Status(http.StatusTemporaryRedirect)
+
+	e.GET("/api/auth/facebook/callback").
+		Expect().
+		Status(http.StatusPermanentRedirect)
 }
