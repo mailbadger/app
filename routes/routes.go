@@ -258,14 +258,17 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 		subscribers := authorized.Group("/subscribers")
 		{
 			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers)
-			subscribers.GET("/:id", func(c *gin.Context) {
-				// Related issue: https://github.com/gin-gonic/gin/issues/205
-				if strings.HasPrefix(c.Request.URL.Path, "/api/subscribers/export/download") {
+			subscribers.GET("/:id", actions.GetSubscriber)
+			subscribers.GET("/:id/download", func(c *gin.Context) {
+				idPath := c.Param("id")
+				if idPath == "export" {
 					actions.DownloadSubscribersReport(c)
 					return
 				}
-
-				actions.GetSubscriber(c)
+				c.JSON(http.StatusNotFound, gin.H{
+					"message": "Not found.",
+				})
+				return
 			})
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
