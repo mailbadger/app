@@ -26,16 +26,15 @@ func TestSubscribers(t *testing.T) {
 	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "", Email: "", Metadata: map[string]string{"": ""}, SegmentIDs: nil}).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
-		ValueEqual("message", "Invalid parameters, please try again").
-		ValueEqual("errors", map[string]string{"email": "This field is required"})
+		ValueEqual("message", "Invalid parameters, please try again")
 
-	/*// test validator for params
-	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "Djale", Email: "sda", Metadata: map[string]string{"asd asd": "bla bla"}, SegmentIDs: nil}).
+	// test validator for params // using WithFormField because of  dif metadata encoding gin/httpexpect
+	auth.POST("/api/subscribers").WithFormField("metadata[aaa aa]", "blabla").WithFormField("email", "sda").
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
-		ValueEqual("errors", map[string]string{"email": "Invalid email format", "metadata": "Must consist only of alphanumeric and hyphen characters"})
-	*/
+		ValueEqual("errors", map[string]string{"email": "Invalid email format", "metadata[aaa aa]": "Must consist only of alphanumeric and hyphen characters"})
+
 	// test post subscriber
 	auth.POST("/api/subscribers").WithForm(params.PostSubscriber{Name: "Djale", Email: "djale@email.com", Metadata: map[string]string{"test": "test"}, SegmentIDs: nil}).
 		Expect().
