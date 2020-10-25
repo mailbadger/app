@@ -151,7 +151,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 					m.CreatedAt,
 					m.ID,
 					time.Now(),
-				).Scopes(p.Scopes...).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
+			).Scopes(p.Scopes...).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
 		).Scopes(p.Scopes...).Find(p.Collection)
 
 		last, err = db.GetLast(userID, p.Resource, p.Scopes...)

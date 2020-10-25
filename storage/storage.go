@@ -54,7 +54,7 @@ type Storage interface {
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
 
-	GetSubscribers(int64, *PaginationCursor) error
+	GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	GetSubscribersBySegmentID(int64, int64, *PaginationCursor) error
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
@@ -302,8 +302,8 @@ func DetachSubscribers(c context.Context, l *entities.Segment) error {
 
 // GetSubscribers populates a pagination object with a collection of
 // subscribers by the specified user id.
-func GetSubscribers(c context.Context, userID int64, p *PaginationCursor) error {
-	return GetFromContext(c).GetSubscribers(userID, p)
+func GetSubscribers(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).GetSubscribers(userID, p, scopeMap)
 }
 
 // GetSubscribersBySegmentID populates a pagination object with a collection of

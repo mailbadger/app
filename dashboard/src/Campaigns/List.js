@@ -35,7 +35,11 @@ const NameLink = ({ id, name, status, hasSesKeys }) => {
     to = `/dashboard/campaigns/${id}/report`;
   }
   if (status === "draft" && !hasSesKeys) {
-    return <Text weight="bold" size="small">{name}</Text>;
+    return (
+      <Text weight="bold" size="small">
+        {name}
+      </Text>
+    );
   }
   return <AnchorLink size="small" fontWeight="bold" to={to} label={name} />;
 };
@@ -179,16 +183,23 @@ PlaceholderHeader.displayName = "PlaceholderHeader";
 
 const CampaignsTable = memo(
   ({ list, setShowDelete, hasSesKeys, setShowEdit }) => {
-    console.log(list)
-    return <StyledDataTable
-      columns={columns}
-      data={list.map((c) => ({ ...c, setShowDelete, hasSesKeys, setShowEdit }))}
-      background={{
-        header: "white",
-        body: ["light-1", "white"],
-      }}
-      size="medium"
-    />
+    console.log(list);
+    return (
+      <StyledDataTable
+        columns={columns}
+        data={list.map((c) => ({
+          ...c,
+          setShowDelete,
+          hasSesKeys,
+          setShowEdit,
+        }))}
+        background={{
+          header: "white",
+          body: ["light-1", "white"],
+        }}
+        size="medium"
+      />
+    );
   }
 );
 
