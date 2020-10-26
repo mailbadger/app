@@ -25,7 +25,7 @@ type Storage interface {
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
 
-	GetCampaigns(int64, *PaginationCursor) error
+	GetCampaigns(int64, *PaginationCursor, map[string]string) error
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
 	GetCampaignsByTemplateName(string, int64) ([]entities.Campaign, error)
@@ -54,7 +54,7 @@ type Storage interface {
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
 
-	GetSubscribers(int64, *PaginationCursor) error
+	GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	GetSubscribersBySegmentID(int64, int64, *PaginationCursor) error
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
 	GetSubscribersByIDs([]int64, int64) ([]entities.Subscriber, error)
@@ -163,8 +163,8 @@ func DeleteSession(c context.Context, sessionID string) error {
 
 // GetCampaigns populates a pagination object with a collection of
 // campaigns by the specified user id.
-func GetCampaigns(c context.Context, userID int64, p *PaginationCursor) error {
-	return GetFromContext(c).GetCampaigns(userID, p)
+func GetCampaigns(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).GetCampaigns(userID, p, scopeMap)
 }
 
 // GetCampaign returns a Campaign entity by the given id and user id.
@@ -305,8 +305,8 @@ func DetachSubscribers(c context.Context, l *entities.Segment) error {
 
 // GetSubscribers populates a pagination object with a collection of
 // subscribers by the specified user id.
-func GetSubscribers(c context.Context, userID int64, p *PaginationCursor) error {
-	return GetFromContext(c).GetSubscribers(userID, p)
+func GetSubscribers(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).GetSubscribers(userID, p, scopeMap)
 }
 
 // GetSubscribersBySegmentID populates a pagination object with a collection of

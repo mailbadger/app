@@ -9,9 +9,15 @@ import (
 )
 
 // GetSubscribers fetches subscribers by user id, and populates the pagination obj
-func (db *store) GetSubscribers(userID int64, p *PaginationCursor) error {
+func (db *store) GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
 	p.SetCollection(&[]entities.Subscriber{})
 	p.SetResource("subscribers")
+
+	for k, v := range scopeMap {
+		if k == "email" {
+			p.AddScope(EmailLike(v))
+		}
+	}
 
 	query := db.Table(p.Resource).
 		Where("user_id = ?", userID).
@@ -23,20 +29,21 @@ func (db *store) GetSubscribers(userID int64, p *PaginationCursor) error {
 	return db.Paginate(p, userID)
 }
 
+// EmailLike applies a scope for subscribers by the given email.
+// The wildcard is applied on the end of the email search.
+func EmailLike(email string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where("email LIKE ?", email+"%")
+	}
+}
+
 // GetSubscribersBySegmentID fetches subscribers by user id and list id, and populates the pagination obj
 func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *PaginationCursor) error {
 	p.SetCollection(&[]entities.Subscriber{})
 	p.SetResource("subscribers")
-
-	scopes := []func(*gorm.DB) *gorm.DB{
-		BelongsToUser(userID),
-		BelongsToSegment(segmentID),
-	}
-
-	p.SetScopes(scopes)
+	p.SetScopes(BelongsToUser(userID), BelongsToSegment(segmentID))
 
 	query := db.Table(p.Resource).
-		Scopes(scopes...).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 

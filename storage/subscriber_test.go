@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestSubscriber(t *testing.T) {
@@ -101,7 +102,7 @@ func TestSubscriber(t *testing.T) {
 
 	//Test get subs
 	p = NewPaginationCursor("/api/subcribers", 10)
-	err = store.GetSubscribers(1, p)
+	err = store.GetSubscribers(1, p, nil)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 

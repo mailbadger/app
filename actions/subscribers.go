@@ -51,7 +51,8 @@ func GetSubscribers(c *gin.Context) {
 		return
 	}
 
-	err := storage.GetSubscribers(c, middleware.GetUser(c).ID, p)
+	scopeMap := c.QueryMap("scopes")
+	err := storage.GetSubscribers(c, middleware.GetUser(c).ID, p, scopeMap)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to fetch subscribers collection.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -173,13 +174,12 @@ func PutSubscriber(c *gin.Context) {
 	}
 
 	body.Metadata = c.PostFormMap("metadata")
-
 	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	s.Segments, err = storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
+	segments, err := storage.GetSegmentsByIDs(c, s.UserID, body.SegmentIDs)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid data",
@@ -190,13 +190,17 @@ func PutSubscriber(c *gin.Context) {
 		return
 	}
 
-	s.MetaJSON, err = json.Marshal(s.Metadata)
+	metaJSON, err := json.Marshal(body.Metadata)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create subscriber, invalid metadata.",
 		})
 		return
 	}
+
+	s.Name = body.Name
+	s.MetaJSON = metaJSON
+	s.Segments = segments
 
 	if err = storage.UpdateSubscriber(c, s); err != nil {
 		logger.From(c).

@@ -89,8 +89,13 @@ func (c *PaginationCursor) SetCollection(collection interface{}) {
 }
 
 // SetScopes sets the pagination query scopes.
-func (c *PaginationCursor) SetScopes(scopes []func(*gorm.DB) *gorm.DB) {
+func (c *PaginationCursor) SetScopes(scopes ...func(*gorm.DB) *gorm.DB) {
 	c.Scopes = scopes
+}
+
+// AddScope adds a scope to the scopes slice.
+func (c *PaginationCursor) AddScope(scope func(*gorm.DB) *gorm.DB) {
+	c.Scopes = append(c.Scopes, scope)
 }
 
 // SetQuery sets the main query.
@@ -146,8 +151,8 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 					m.CreatedAt,
 					m.ID,
 					time.Now(),
-				).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
-		).Find(p.Collection)
+			).Scopes(p.Scopes...).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
+		).Scopes(p.Scopes...).Find(p.Collection)
 
 		last, err = db.GetLast(userID, p.Resource, p.Scopes...)
 		if err != nil {
@@ -165,7 +170,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			m.CreatedAt,
 			m.ID,
 			time.Now(),
-		).Find(p.Collection)
+		).Scopes(p.Scopes...).Find(p.Collection)
 
 		// when it is descending order we'll need the first record (last from behind) in order
 		// to check if it matches the last record from the current page. If they're the same
@@ -175,7 +180,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			return fmt.Errorf("paginate: get first: %w", err)
 		}
 	case Start:
-		p.Query.Find(p.Collection)
+		p.Query.Scopes(p.Scopes...).Find(p.Collection)
 	}
 
 	total, err := db.GetTotal(userID, p.Resource, p.Scopes...)
