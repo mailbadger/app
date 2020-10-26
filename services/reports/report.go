@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/storage"
 )
@@ -22,7 +25,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(c context.Context, report *entities.Report) error
+	GenerateExportReport(c context.Context, report *entities.Report)
 	CreateExportReport(c context.Context, userID int64, resource string, note string, date time.Time) (*entities.Report, error)
 }
 
@@ -38,13 +41,26 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 }
 
 // GenerateExportReport starts the resources export method
-func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) error {
+func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) {
+	// setting report status to done and then override it to failed if the export fails
+	report.Status = entities.StatusDone
+
 	err := r.exporter.Export(c, report)
 	if err != nil {
-		return fmt.Errorf("export: %w", err)
+		//report failed
+		report.Status = entities.StatusFailed
+
+		logger.From(c).WithFields(logrus.Fields{
+			"report": report,
+		}).WithError(err).Errorf("Export failed")
 	}
 
-	return nil
+	err = storage.UpdateReport(c, report)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"report": report,
+		}).WithError(err).Errorf("Unable to update report")
+	}
 }
 
 // CreateExportReport creates export report
@@ -86,7 +102,7 @@ func generateFilename(resource string, date time.Time) string {
 // isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
 func isAnotherReportRunning(c context.Context, userID int64) bool {
 	_, err := storage.GetRunningReportForUser(c, userID)
-	return err != nil
+	return err == nil
 }
 
 // isLimitExceeded returns true if there are less than 100 reports per day

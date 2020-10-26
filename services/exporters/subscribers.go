@@ -5,21 +5,23 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/storage"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 )
 
 type SubscribersExporter struct {
 	S3 s3iface.S3API
 }
 
-func NewSubscriptionExporter(s3 s3iface.S3API) *SubscribersExporter {
+func NewSubscribersExporter(s3 s3iface.S3API) *SubscribersExporter {
 	return &SubscribersExporter{
 		S3: s3,
 	}
@@ -127,8 +129,12 @@ func writeSubscribers(writer *csv.Writer, subscribers []entities.Subscriber) err
 }
 
 // formatSegments returns segments divided by ;
-func formatSegments(segments []entities.Segment) (string,error) {
+func formatSegments(segments []entities.Segment) (string, error) {
 	var b strings.Builder
+
+	if len(segments) == 0 {
+		return "", nil
+	}
 
 	for _, s := range segments {
 		_, err := fmt.Fprintf(&b, "%s; ", s.Name)
@@ -143,8 +149,12 @@ func formatSegments(segments []entities.Segment) (string,error) {
 }
 
 // formatMetadata returns metadata formatted in key = value pairs divided by ;
-func formatMetadata(metadata map[string]string) (string,error) {
+func formatMetadata(metadata map[string]string) (string, error) {
 	var b strings.Builder
+
+	if len(metadata) == 0 {
+		return "", nil
+	}
 
 	for k, v := range metadata {
 		_, err := fmt.Fprintf(&b, "%s = %s; ", k, v)

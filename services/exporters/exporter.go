@@ -20,8 +20,8 @@ type Exporter interface {
 
 func NewExporter(resource string, s3 s3iface.S3API) (Exporter, error) {
 	switch resource {
-	case "subscriptions":
-		return NewSubscriptionExporter(s3), nil
+	case "subscribers":
+		return NewSubscribersExporter(s3), nil
 	default:
 		return nil, ErrUnknownResource
 	}

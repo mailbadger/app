@@ -472,15 +472,7 @@ func ExportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(c context.Context, report *entities.Report) {
-		err := reportSvc.GenerateExportReport(c, report)
-		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{
-				"report": report,
-			}).WithError(err).Errorf("export failed")
-			//TODO discuss handling this error
-		}
-	}(c.Copy(), report)
+	go reportSvc.GenerateExportReport(c, report)
 
 	c.JSON(http.StatusOK, report)
 }
