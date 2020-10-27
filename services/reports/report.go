@@ -13,7 +13,7 @@ import (
 
 const (
 	reportTypeExport = "export"
-	maxReports = 100
+	maxReports       = 100
 )
 
 var (
