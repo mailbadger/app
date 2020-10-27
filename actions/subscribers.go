@@ -14,7 +14,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -472,9 +471,27 @@ func ExportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go reportSvc.GenerateExportReport(c, report)
+	go func(c context.Context, report *entities.Report) {
+		err := reportSvc.GenerateExportReport(c, report)
+		if err != nil {
+			// report failed
+			report.Status = entities.StatusFailed
+			logger.From(c).WithFields(logrus.Fields{
+				"report": report,
+			}).WithError(err).Errorf("Export failed")
+		}
 
-	c.JSON(http.StatusOK, report)
+		// report finished successfully
+		report.Status = entities.StatusDone
+
+		// update report status
+		err = storage.UpdateReport(c, report)
+		if err != nil {
+			logger.From(c).WithFields(logrus.Fields{
+				"report": report,
+			}).WithError(err).Errorf("Unable to update report")
+		}
+	}(c.Copy(), report)
 }
 
 func DownloadSubscribersReport(c *gin.Context) {

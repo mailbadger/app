@@ -6,10 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/storage"
 )
@@ -26,7 +23,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(c context.Context, report *entities.Report)
+	GenerateExportReport(c context.Context, report *entities.Report) error
 	CreateExportReport(c context.Context, userID int64, resource string, note string, date time.Time) (*entities.Report, error)
 }
 
@@ -42,26 +39,13 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 }
 
 // GenerateExportReport starts the resources export method
-func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) {
-	// setting report status to done and then override it to failed if the export fails
-	report.Status = entities.StatusDone
-
+func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) error {
 	err := r.exporter.Export(c, report)
 	if err != nil {
-		//report failed
-		report.Status = entities.StatusFailed
-
-		logger.From(c).WithFields(logrus.Fields{
-			"report": report,
-		}).WithError(err).Errorf("Export failed")
+		return fmt.Errorf("export: %w", err)
 	}
 
-	err = storage.UpdateReport(c, report)
-	if err != nil {
-		logger.From(c).WithFields(logrus.Fields{
-			"report": report,
-		}).WithError(err).Errorf("Unable to update report")
-	}
+	return nil
 }
 
 // CreateExportReport creates export report
