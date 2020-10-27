@@ -16,6 +16,7 @@ import (
 
 const (
 	reportTypeExport = "export"
+	maxReports = 100
 )
 
 var (
@@ -105,12 +106,12 @@ func isAnotherReportRunning(c context.Context, userID int64) bool {
 	return err == nil
 }
 
-// isLimitExceeded returns true if there are less than 100 reports per day
+// isLimitExceeded returns true if there are less than maxReports reports per day
 func isLimitExceeded(c context.Context, userID int64, time time.Time) (bool, error) {
 	n, err := storage.GetNumberOfReportsForDate(c, userID, time)
 	if err != nil {
 		return false, err
 	}
 
-	return n > 100, nil
+	return n > maxReports, nil
 }
