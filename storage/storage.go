@@ -73,7 +73,7 @@ type Storage interface {
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
-	SeekSubscribersByNextID(userID int64,nextID int64, limit int64) ([]entities.Subscriber, error)
+	SeekSubscribersByUserID(userID int64,nextID int64, limit int64) ([]entities.Subscriber, error)
 
 	GetAPIKeys(userID int64) []*entities.APIKey
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -377,9 +377,9 @@ func GetTotalSubscribersBySegment(c context.Context, segmentID, userID int64) (i
 	return GetFromContext(c).GetTotalSubscribersBySegment(segmentID, userID)
 }
 
-// SeekSubscribersByNextID returns subscribers for given user id
-func SeekSubscribersByNextID(c context.Context, userID, nextID, limit int64) ([]entities.Subscriber, error) {
-	return GetFromContext(c).SeekSubscribersByNextID(userID, nextID, limit)
+// SeekSubscribersByUserID returns subscribers for given user id
+func SeekSubscribersByUserID(c context.Context, userID, nextID, limit int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).SeekSubscribersByUserID(userID, nextID, limit)
 }
 
 // GetAPIKeys returns a list of APIKey entities.
