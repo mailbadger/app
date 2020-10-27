@@ -57,7 +57,7 @@ func (se *SubscribersExporter) Export(c context.Context, report *entities.Report
 			return fmt.Errorf("write %d subscribers with id greater than %d: %w", limit, nextID, err)
 		}
 
-		if len(subscribers) < 1000 {
+		if len(subscribers) < int(limit) {
 			break
 		}
 
