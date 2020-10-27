@@ -97,17 +97,17 @@ func writeSubscribers(writer *csv.Writer, subscribers []entities.Subscriber) err
 	for _, s := range subscribers {
 		_, err := s.GetMetadata()
 		if err != nil {
-			return err
+			return fmt.Errorf("get metadata: %w", err)
 		}
 
 		formattedSegments, err := formatSegments(s.Segments)
 		if err != nil {
-			return err
+			return fmt.Errorf("format segments: %w", err)
 		}
 
 		formatMetadata, err := formatMetadata(s.Metadata)
 		if err != nil {
-			return err
+			return fmt.Errorf("format metadata: %w", err)
 		}
 
 		err = writer.Write([]string{
@@ -121,7 +121,7 @@ func writeSubscribers(writer *csv.Writer, subscribers []entities.Subscriber) err
 			s.GetCreatedAt().Format("2006-01-02 15:04:05"),
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("write: %w", err)
 		}
 	}
 
@@ -139,7 +139,7 @@ func formatSegments(segments []entities.Segment) (string, error) {
 	for _, s := range segments {
 		_, err := fmt.Fprintf(&b, "%s; ", s.Name)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("fprintf: %w", err)
 		}
 	}
 
@@ -159,7 +159,7 @@ func formatMetadata(metadata map[string]string) (string, error) {
 	for k, v := range metadata {
 		_, err := fmt.Fprintf(&b, "%s = %s; ", k, v)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("fprintf: %w", err)
 		}
 	}
 
