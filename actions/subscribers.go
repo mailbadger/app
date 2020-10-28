@@ -472,24 +472,11 @@ func ExportSubscribers(c *gin.Context) {
 	}
 
 	go func(c context.Context, report *entities.Report) {
-		err := reportSvc.GenerateExportReport(c, report)
+		err := reportSvc.GenerateExportReport(c, u.ID, report)
 		if err != nil {
-			// report failed
-			report.Status = entities.StatusFailed
 			logger.From(c).WithFields(logrus.Fields{
 				"report": report,
 			}).WithError(err).Errorf("Export failed")
-		}
-
-		// report finished successfully
-		report.Status = entities.StatusDone
-
-		// update report status
-		err = storage.UpdateReport(c, report)
-		if err != nil {
-			logger.From(c).WithFields(logrus.Fields{
-				"report": report,
-			}).WithError(err).Errorf("Unable to update report")
 		}
 	}(c.Copy(), report)
 }

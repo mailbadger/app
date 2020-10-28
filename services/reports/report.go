@@ -42,7 +42,20 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report) error {
 	err := r.exporter.Export(c, userID, report)
 	if err != nil {
+		// report failed
+		report.Status = entities.StatusFailed
+		err = storage.UpdateReport(c, report)
+		if err != nil {
+			return fmt.Errorf("update report: %w", err)
+		}
 		return fmt.Errorf("export: %w", err)
+	}
+
+	// report generated successfully
+	report.Status = entities.StatusDone
+	err = storage.UpdateReport(c, report)
+	if err != nil {
+		return fmt.Errorf("update report: %w", err)
 	}
 
 	return nil
