@@ -23,7 +23,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(c context.Context, report *entities.Report) error
+	GenerateExportReport(c context.Context, userID int64,  report *entities.Report) error
 	CreateExportReport(c context.Context, userID int64, resource string, note string, date time.Time) (*entities.Report, error)
 }
 
@@ -39,8 +39,8 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 }
 
 // GenerateExportReport starts the resources export method
-func (r *reportService) GenerateExportReport(c context.Context, report *entities.Report) error {
-	err := r.exporter.Export(c, report)
+func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report) error {
+	err := r.exporter.Export(c, userID, report)
 	if err != nil {
 		return fmt.Errorf("export: %w", err)
 	}

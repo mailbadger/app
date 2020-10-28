@@ -15,7 +15,7 @@ var (
 
 // Exporter represents type for creating exporters for different resource
 type Exporter interface {
-	Export(context.Context, *entities.Report) error
+	Export(c context.Context, userID int64, report  *entities.Report) error
 }
 
 func NewExporter(resource string, s3 s3iface.S3API) (Exporter, error) {

@@ -27,7 +27,7 @@ func NewSubscribersExporter(s3 s3iface.S3API) *SubscribersExporter {
 	}
 }
 
-func (se *SubscribersExporter) Export(c context.Context, report *entities.Report) error {
+func (se *SubscribersExporter) Export(c context.Context, userID int64, report *entities.Report) error {
 	var (
 		err    error
 		nextID int64
@@ -46,7 +46,7 @@ func (se *SubscribersExporter) Export(c context.Context, report *entities.Report
 	}
 
 	for {
-		subscribers, err := storage.SeekSubscribersByUserID(c, report.UserID, nextID, limit)
+		subscribers, err := storage.SeekSubscribersByUserID(c, userID, nextID, limit)
 		if err != nil {
 			return fmt.Errorf("get subscribers: %w", err)
 		}
@@ -68,7 +68,7 @@ func (se *SubscribersExporter) Export(c context.Context, report *entities.Report
 
 	_, err = se.S3.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", report.UserID, report.FileName)),
+		Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", userID, report.FileName)),
 		Body:   bytes.NewReader(buf.Bytes()),
 	})
 	if err != nil {
