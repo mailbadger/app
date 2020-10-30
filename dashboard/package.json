@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@uppy/aws-s3": "^1.7.0",
+    "@uppy/aws-s3": "^1.7.1",
     "@uppy/react": "^1.10.8",
     "@uppy/core": "^1.13.2",
     "axios": "^0.21.0",

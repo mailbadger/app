@@ -2220,24 +2220,24 @@
     "@typescript-eslint/types" "4.5.0"
     eslint-visitor-keys "^2.0.0"
 
-"@uppy/aws-s3@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@uppy/aws-s3/-/aws-s3-1.7.0.tgz#238b07d446429fb418414a7fda6398928c0d0b7f"
-  integrity sha512-SRDnycp09b5RDgO6zaGizKMMJCgn5GeYj2bTsZkIQVEvRZJusY79KtiaSYuu1H1NGLZKbq2Dvb5X68G8kz0Ycg==
+"@uppy/aws-s3@^1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@uppy/aws-s3/-/aws-s3-1.7.1.tgz#a9e7343feb8eb19a4c19c92e808164421d44c856"
+  integrity sha512-iTvnw9TszLTB8QdKPTDFa8A1M4jBpWhSqfbQh+qH9xKDkp2T2CYndO/NkF7ZZM/CHpWnJ1uCad2qMg0HLUYSAA==
   dependencies:
-    "@uppy/companion-client" "^1.5.4"
-    "@uppy/utils" "^3.2.3"
-    "@uppy/xhr-upload" "^1.6.4"
+    "@uppy/companion-client" "^1.6.0"
+    "@uppy/utils" "^3.2.4"
+    "@uppy/xhr-upload" "^1.6.5"
     cuid "^2.1.1"
     qs-stringify "^1.1.0"
     url-parse "^1.4.7"
 
-"@uppy/companion-client@^1.5.4":
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/@uppy/companion-client/-/companion-client-1.5.4.tgz#11a9d2ee91a13789ca083f88a3ac7378b3fb20ed"
-  integrity sha512-AmrKamjHraqm/eV00ps8brw5ajI9NqjzBotTtPH9QaC+D3wIQ/EoWZNTGx4OlGYRahEoVr1K6hhlyUoHmEQc4w==
+"@uppy/companion-client@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@uppy/companion-client/-/companion-client-1.6.0.tgz#e94af551d5edf51100692abe08b398688b1d4456"
+  integrity sha512-AEhqP5TCNofbdtOEIa0hCy6QIyn4HXQRhh3LwaNv72/EJz957IseXpZ9aClli+A4gBuzUQg4M7WRSYpr3QdKAg==
   dependencies:
-    "@uppy/utils" "^3.2.3"
+    "@uppy/utils" "^3.2.4"
     namespace-emitter "^2.0.1"
 
 "@uppy/core@^1.13.2":
@@ -2344,21 +2344,21 @@
     exifr "^5.0.2"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.2.3":
-  version "3.2.3"
-  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.3.tgz#91cb4a133bd610b861fe3069be1f0e85036dcc20"
-  integrity sha512-ue14v4yKK6bYBPGjt31wvLnYMThKCVOsy3R7y++eFuPsxfidIGmOGiv+Qmv0895kMJtt7gk0MddXjbCdBX4Ksg==
+"@uppy/utils@^3.2.3", "@uppy/utils@^3.2.4":
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.4.tgz#5a34e11652ee04750e7685fbd253c2cd796e1712"
+  integrity sha512-aIIQThyzZEPOJRr4GwtxylFWumqdcTR193V9ax3M7pZhe/odTbdCuE5HNPWHFfxAjp3wT1FuDk0m5Lka+hzChg==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     lodash.throttle "^4.1.1"
 
-"@uppy/xhr-upload@^1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@uppy/xhr-upload/-/xhr-upload-1.6.4.tgz#c0d2b46626854d5c5f8ca64bad5d4213eb214ffb"
-  integrity sha512-Q+Fg+I+Tfpkl8WeAHnF+iIkxyVbTl06A3ihG3/LW/rB5e6Byb81E1DGVdkD71OtbIGk/Pn0DRPsqY5cSKUibsA==
+"@uppy/xhr-upload@^1.6.5":
+  version "1.6.5"
+  resolved "https://registry.yarnpkg.com/@uppy/xhr-upload/-/xhr-upload-1.6.5.tgz#d0bb52c0e419b61ce2ef63d012fa88d2390c29b8"
+  integrity sha512-BI0l26ug/iQL6nRm71qFJZ6eOw0wgnZuQruQKXAqlza4XGAukb8+GnU9iUWetfIo8invZGpKHeNJKd90w7KRCw==
   dependencies:
-    "@uppy/companion-client" "^1.5.4"
-    "@uppy/utils" "^3.2.3"
+    "@uppy/companion-client" "^1.6.0"
+    "@uppy/utils" "^3.2.4"
     cuid "^2.1.1"
 
 "@webassemblyjs/ast@1.9.0":
