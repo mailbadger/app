@@ -11,7 +11,7 @@
     "date-fns": "^2.16.1",
     "dompurify": "^2.2.2",
     "es6-promise": "^4.2.8",
-    "formik": "^2.2.2",
+    "formik": "^2.2.4",
     "grommet": "^2.10.0",
     "grommet-icons": "^4.4.0",
     "history": "^4.10.1",

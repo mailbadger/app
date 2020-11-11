@@ -2344,7 +2344,7 @@
     exifr "^5.0.2"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.2.3", "@uppy/utils@^3.2.4":
+"@uppy/utils@^3.2.4":
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.4.tgz#5a34e11652ee04750e7685fbd253c2cd796e1712"
   integrity sha512-aIIQThyzZEPOJRr4GwtxylFWumqdcTR193V9ax3M7pZhe/odTbdCuE5HNPWHFfxAjp3wT1FuDk0m5Lka+hzChg==
@@ -5886,10 +5886,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-formik@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.2.tgz#0b9ed3e5232e6e65f2a7b19b84c64787ce6a9a42"
-  integrity sha512-zAanhv7phAq1zcLw17j4u9BL2C1T/3LP/zZKE9vS9AmxzvpRpDBF9PrNgobAqoEipj+4M3QBT/j/iIyDIDnBvg==
+formik@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.4.tgz#d73c525aa70a7d278e619feb9c726c9d6968a2db"
+  integrity sha512-S1V3CeDI+qyBly6GJLLVZpBSwTA7Q2TtMqRXbCNnsN4eoiDycQQh3iequ+qJ3/sdkPHhXVQvAk7KOPQGdbjaXA==
   dependencies:
     deepmerge "^2.1.1"
     hoist-non-react-statics "^3.3.0"
