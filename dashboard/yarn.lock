@@ -2344,7 +2344,7 @@
     exifr "^5.0.2"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.2.3", "@uppy/utils@^3.2.4":
+"@uppy/utils@^3.2.4":
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.2.4.tgz#5a34e11652ee04750e7685fbd253c2cd796e1712"
   integrity sha512-aIIQThyzZEPOJRr4GwtxylFWumqdcTR193V9ax3M7pZhe/odTbdCuE5HNPWHFfxAjp3wT1FuDk0m5Lka+hzChg==
@@ -5886,17 +5886,16 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-formik@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.2.tgz#0b9ed3e5232e6e65f2a7b19b84c64787ce6a9a42"
-  integrity sha512-zAanhv7phAq1zcLw17j4u9BL2C1T/3LP/zZKE9vS9AmxzvpRpDBF9PrNgobAqoEipj+4M3QBT/j/iIyDIDnBvg==
+formik@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.5.tgz#addf4ed7a15ebddf22c883a3d358cd27c8a91a55"
+  integrity sha512-KkOsyYmh5xsow+wlbdL9QSkqvbiHSb1RIToBKiooCFW4lyypn+ZlHGjTuuOqUWBqZaI5nCEupeI275Mo6tFBzg==
   dependencies:
     deepmerge "^2.1.1"
     hoist-non-react-statics "^3.3.0"
     lodash "^4.17.14"
     lodash-es "^4.17.14"
     react-fast-compare "^2.0.1"
-    scheduler "^0.20.1"
     tiny-warning "^1.0.2"
     tslib "^1.10.0"
 
@@ -11140,14 +11139,6 @@ scheduler@^0.19.1:
   version "0.19.1"
   resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.19.1.tgz#4f3e2ed2c1a7d65681f4c854fa8c5a1ccb40f196"
   integrity sha512-n/zwRWRYSUj0/3g/otKDRPMh6qv2SYMWNq85IEa8iZyAv8od9zDYpGSnpBEjNgcMNq6Scbu5KfIPxNF72R/2EA==
-  dependencies:
-    loose-envify "^1.1.0"
-    object-assign "^4.1.1"
-
-scheduler@^0.20.1:
-  version "0.20.1"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.20.1.tgz#da0b907e24026b01181ecbc75efdc7f27b5a000c"
-  integrity sha512-LKTe+2xNJBNxu/QhHvDR14wUXHRQbVY5ZOYpOGWRzhydZUqrLb2JBvLPY7cAqFmqrWuDED0Mjk7013SZiOz6Bw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
