@@ -23,7 +23,7 @@ var (
 
 // ReportService represents all report functionalities
 type ReportService interface {
-	GenerateExportReport(c context.Context, userID int64,  report *entities.Report) error
+	GenerateExportReport(c context.Context, userID int64, report *entities.Report) (*entities.Report, error)
 	CreateExportReport(c context.Context, userID int64, resource string, note string, date time.Time) (*entities.Report, error)
 }
 
@@ -39,26 +39,31 @@ func NewReportService(exporter exporters.Exporter) ReportService {
 }
 
 // GenerateExportReport starts the resources export method
-func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report) error {
+func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report) (*entities.Report, error) {
+	var updateErr error
 	err := r.exporter.Export(c, userID, report)
 	if err != nil {
 		// report failed
 		report.Status = entities.StatusFailed
-		err = storage.UpdateReport(c, report)
-		if err != nil {
-			return fmt.Errorf("update report: %w", err)
+
+		updateErr = storage.UpdateReport(c, report)
+		if updateErr != nil {
+			return nil, fmt.Errorf("update report: %w", updateErr)
 		}
-		return fmt.Errorf("export: %w", err)
+
+		return nil, err
 	}
 
 	// report generated successfully
 	report.Status = entities.StatusDone
-	err = storage.UpdateReport(c, report)
-	if err != nil {
-		return fmt.Errorf("update report: %w", err)
+
+	// updating the report
+	updateErr = storage.UpdateReport(c, report)
+	if updateErr != nil {
+		return nil, fmt.Errorf("update report: %w", updateErr)
 	}
 
-	return nil
+	return report, nil
 }
 
 // CreateExportReport creates export report
