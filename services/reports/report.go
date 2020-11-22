@@ -91,7 +91,7 @@ func (r *reportService) CreateExportReport(c context.Context, userID int64, reso
 
 	err = storage.CreateReport(c, report)
 	if err != nil {
-		return nil, fmt.Errorf("creaate report: %w", err)
+		return nil, fmt.Errorf("create report: %w", err)
 	}
 
 	return report, nil
