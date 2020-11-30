@@ -479,6 +479,10 @@ func ExportSubscribers(c *gin.Context) {
 			}).WithError(err).Errorf("Export failed")
 		}
 	}(c.Copy(), report)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Generating report.Please wait.",
+	})
 }
 
 func DownloadSubscribersReport(c *gin.Context) {
