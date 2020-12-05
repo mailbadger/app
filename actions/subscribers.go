@@ -31,6 +31,12 @@ import (
 	"github.com/mailbadger/app/validator"
 )
 
+const resource = "subscribers"
+
+var (
+	note = "Started the export process."
+)
+
 func GetSubscribers(c *gin.Context) {
 	val, ok := c.Get("cursor")
 	if !ok {
@@ -452,7 +458,7 @@ func ExportSubscribers(c *gin.Context) {
 
 	reportSvc := reports.NewReportService(exporter)
 
-	report, err := reportSvc.CreateExportReport(c, u.ID, "subscribers", "started the export process", time.Now())
+	report, err := reportSvc.CreateExportReport(c, u.ID, resource, note, time.Now())
 	if err != nil {
 		switch {
 		case errors.Is(err, reports.ErrAnotherReportRunning):
@@ -464,6 +470,11 @@ func ExportSubscribers(c *gin.Context) {
 				"message": "You reached the daily limit, unable to generate report.",
 			})
 		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Error("Unable to create export report service")
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"message": "Unable to create export report.",
 			})
