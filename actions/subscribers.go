@@ -462,10 +462,20 @@ func ExportSubscribers(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, reports.ErrAnotherReportRunning):
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Info("There is a report already running for this user")
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "There is a report already running.",
 			})
 		case errors.Is(err, reports.ErrLimitReached):
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Info("This user reached the daily limit")
 			c.JSON(http.StatusForbidden, gin.H{
 				"message": "You reached the daily limit, unable to generate report.",
 			})
