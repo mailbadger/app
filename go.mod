@@ -27,7 +27,7 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
-	github.com/lib/pq v1.8.0
+	github.com/lib/pq v1.9.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
