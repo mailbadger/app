@@ -480,9 +480,7 @@ func ExportSubscribers(c *gin.Context) {
 		}
 	}(c.Copy(), report)
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Generating report.Please wait.",
-	})
+	c.JSON(http.StatusOK, report)
 }
 
 func DownloadSubscribersReport(c *gin.Context) {
