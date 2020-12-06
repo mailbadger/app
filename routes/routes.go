@@ -274,6 +274,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
 			subscribers.POST("/import", actions.ImportSubscribers)
 			subscribers.POST("/bulk-remove", actions.BulkRemoveSubscribers)
+			subscribers.POST("/export", actions.ExportSubscribers)
 		}
 
 		ses := authorized.Group(("/ses"))

@@ -73,6 +73,7 @@ type Storage interface {
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
+	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
 
 	GetAPIKeys(userID int64) []*entities.APIKey
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -101,6 +102,8 @@ type Storage interface {
 	CreateReport(r *entities.Report) error
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
+	GetRunningReportForUser(userID int64) (*entities.Report, error)
+	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 }
 
 // SetToContext sets the storage to the context
@@ -374,6 +377,11 @@ func GetTotalSubscribersBySegment(c context.Context, segmentID, userID int64) (i
 	return GetFromContext(c).GetTotalSubscribersBySegment(segmentID, userID)
 }
 
+// SeekSubscribersByUserID returns subscribers for given user id
+func SeekSubscribersByUserID(c context.Context, userID, nextID, limit int64) ([]entities.Subscriber, error) {
+	return GetFromContext(c).SeekSubscribersByUserID(userID, nextID, limit)
+}
+
 // GetAPIKeys returns a list of APIKey entities.
 func GetAPIKeys(c context.Context, userID int64) []*entities.APIKey {
 	return GetFromContext(c).GetAPIKeys(userID)
@@ -473,4 +481,13 @@ func UpdateReport(c context.Context, r *entities.Report) error {
 // GetReportByFilename returns report for provided user id and file name
 func GetReportByFilename(c context.Context, filename string, userID int64) (*entities.Report, error) {
 	return GetFromContext(c).GetReportByFilename(filename, userID)
+}
+
+func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report, error) {
+	return GetFromContext(c).GetRunningReportForUser(userID)
+}
+
+// GetNumberOfReportsForDate returns number of reports for date time.
+func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) (int64, error) {
+	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
 }
