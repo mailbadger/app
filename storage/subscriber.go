@@ -223,3 +223,10 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 
 	return tx.Commit().Error
 }
+
+// SeekSubscribersByUserID fetches chunk of subscribers with id greater than nextID
+func (db *store) SeekSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
+	var s []entities.Subscriber
+	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(limit).Find(&s).Error
+	return s, err
+}

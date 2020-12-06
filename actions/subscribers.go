@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,21 +14,27 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-
-	"github.com/mailbadger/app/entities/params"
-	"github.com/mailbadger/app/services/subscribers/bulkremover"
-	"github.com/mailbadger/app/validator"
-
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/exporters"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers/bulkremover"
 	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/validator"
+)
+
+const resource = "subscribers"
+
+var (
+	note = "Started the export process."
 )
 
 func GetSubscribers(c *gin.Context) {
@@ -424,6 +431,79 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	})
 }
 
+func ExportSubscribers(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	s3, err := awss3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to export subscribers. Please try again.",
+		})
+		return
+	}
+
+	exporter, err := exporters.NewExporter("subscribers", s3)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable do create subscribers exporter")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to export subscribers. Please try again.",
+		})
+		return
+	}
+
+	reportSvc := reports.NewReportService(exporter)
+
+	report, err := reportSvc.CreateExportReport(c, u.ID, resource, note, time.Now())
+	if err != nil {
+		switch {
+		case errors.Is(err, reports.ErrAnotherReportRunning):
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Info("There is a report already running for this user")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "There is a report already running.",
+			})
+		case errors.Is(err, reports.ErrLimitReached):
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Info("This user reached the daily limit")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "You reached the daily limit, unable to generate report.",
+			})
+		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":  u.ID,
+				"resource": resource,
+				"note":     note,
+			}).WithError(err).Error("Unable to create export report service")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "Unable to create export report.",
+			})
+		}
+		return
+	}
+
+	go func(c context.Context, report *entities.Report) {
+		report, err = reportSvc.GenerateExportReport(c, u.ID, report)
+		if err != nil {
+			logger.From(c).WithFields(logrus.Fields{
+				"report": report,
+			}).WithError(err).Errorf("Export failed")
+		}
+	}(c.Copy(), report)
+
+	c.JSON(http.StatusOK, report)
+}
+
 func DownloadSubscribersReport(c *gin.Context) {
 	u := middleware.GetUser(c)
 
@@ -432,7 +512,7 @@ func DownloadSubscribersReport(c *gin.Context) {
 	report, err := storage.GetReportByFilename(c, fileName, u.ID)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Report not found",
+			"message": "Report not found.",
 		})
 		return
 	}
