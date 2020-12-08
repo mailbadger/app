@@ -239,6 +239,7 @@ func PutTemplate(c *gin.Context) {
 	})
 }
 
+// TODO change it after merging get template
 func DeleteTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 
