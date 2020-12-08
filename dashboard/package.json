@@ -9,7 +9,7 @@
     "axios": "^0.21.0",
     "codemirror": "^5.58.3",
     "date-fns": "^2.16.1",
-    "dompurify": "^2.2.2",
+    "dompurify": "^2.2.3",
     "es6-promise": "^4.2.8",
     "formik": "^2.2.5",
     "grommet": "^2.10.0",
@@ -28,7 +28,7 @@
     "recharts": "^1.8.5",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.5.0",
-    "yup": "^0.32.0"
+    "yup": "^0.32.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -60,7 +60,7 @@
     "eslint": "^6.6.0",
     "eslint-plugin-react": "^7.21.5",
     "husky": "^4.3.5",
-    "lint-staged": "^10.5.2",
+    "lint-staged": "^10.5.3",
     "prettier": "2.2.1"
   }
 }
