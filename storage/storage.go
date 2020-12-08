@@ -104,6 +104,8 @@ type Storage interface {
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
+
+	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 }
 
 // SetToContext sets the storage to the context
@@ -490,4 +492,9 @@ func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report,
 // GetNumberOfReportsForDate returns number of reports for date time.
 func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) (int64, error) {
 	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
+}
+
+// GetTemplate returns a Template by given template id and user id
+func GetTemplate(c context.Context, templateID, userID int64) (*entities.Template, error) {
+	return GetFromContext(c).GetTemplate(templateID, userID)
 }
