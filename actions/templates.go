@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -13,37 +14,26 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
+	service "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
 )
 
 func GetTemplate(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
+	service := service.NewTemplateService() //TODO change package name after refactor
 
-	name := c.Param("name")
-
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	res, err := store.GetTemplate(&ses.GetTemplateInput{
-		TemplateName: aws.String(name),
-	})
-
+	template, err := service.GetTemplate(c, id, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found.",
@@ -51,12 +41,7 @@ func GetTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, entities.Template{
-		Name:        name,
-		HTMLPart:    *res.Template.HtmlPart,
-		TextPart:    *res.Template.TextPart,
-		SubjectPart: *res.Template.SubjectPart,
-	})
+	c.JSON(http.StatusOK, template)
 }
 
 func GetTemplates(c *gin.Context) {
