@@ -64,6 +64,7 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
+	handler.Use(middleware.S3Session())
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
