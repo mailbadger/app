@@ -31,9 +31,9 @@ func GetTemplate(c *gin.Context) {
 
 	u := middleware.GetUser(c)
 
-	service := service.NewTemplateService() //TODO change package name after refactor
+	s := service.NewTemplateService() //TODO change package name after refactor
 
-	template, err := service.GetTemplate(c, id, u.ID)
+	template, err := s.GetTemplate(c, id, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found.",
