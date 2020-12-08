@@ -15,7 +15,7 @@ func (s *s3storage) CreateHTMLTemplate(html string, bucket string, tmplInput *en
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("/PATH_TO_FILE/%d/%s", tmplInput.MerchantID, tmplInput.Name)),
+		Key:    aws.String(fmt.Sprintf("/PATH_TO_FILE/%d/%s", tmplInput.UserID, tmplInput.Name)),
 		Body:   bytes.NewReader([]byte(html)),
 	}
 	_, err := s.s3client.PutObject(input)

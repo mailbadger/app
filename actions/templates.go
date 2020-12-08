@@ -157,7 +157,7 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
-		MerchantID:  u.ID,
+		UserID:      u.ID,
 		Name:        body.Name,
 		HTMLPart:    body.Content,
 		TextPart:    body.Content,
@@ -167,14 +167,7 @@ func PostTemplate(c *gin.Context) {
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
+	service := tempService.NewTemplateService()
 
 	body := &params.PutTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -191,41 +184,36 @@ func PutTemplate(c *gin.Context) {
 
 	name := c.Param("name")
 
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	templateInput := &entities.Template{
+		Name:        name,
+		TextPart:    body.Content,
+		HTMLPart:    body.Content,
+		SubjectPart: body.Subject,
+	}
+
+	// todo Parse html_part to check for valid golang template
+	_, err := template.ParseFiles(templateInput.HTMLPart)
 	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
-		Template: &ses.Template{
-			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(body.Content),
-			TextPart:     aws.String(body.Content),
-			SubjectPart:  aws.String(body.Subject),
-		},
-	})
 
+	err = service.PutTemplate(c, templateInput)
 	if err != nil {
-		reason := "Unable to update template."
-
-		if awsErr, ok := err.(awserr.Error); ok {
-			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
-		}
-
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": reason,
+			"message": "Unable to create template, please try again.",
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, entities.Template{
-		Name:        name,
-		HTMLPart:    body.Content,
-		TextPart:    body.Content,
-		SubjectPart: body.Subject,
+		UserID:      templateInput.UserID,
+		Name:        templateInput.Name,
+		HTMLPart:    templateInput.HTMLPart,
+		TextPart:    templateInput.TextPart,
+		SubjectPart: templateInput.SubjectPart,
 	})
 }
 

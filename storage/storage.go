@@ -106,6 +106,7 @@ type Storage interface {
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 
 	CreateTemplate(t *entities.Template) error
+	UpdateTemplate(t *entities.Template) error
 }
 
 // SetToContext sets the storage to the context
@@ -497,4 +498,9 @@ func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) 
 // CreateTemplate adds new template in the database.
 func CreateTemplate(c context.Context, t *entities.Template) error {
 	return GetFromContext(c).CreateTemplate(t)
+}
+
+// UpdateTemplate updates template in the database.
+func UpdateTemplate(c context.Context, t *entities.Template) error {
+	return GetFromContext(c).UpdateTemplate(t)
 }

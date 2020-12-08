@@ -4,7 +4,7 @@ import "time"
 
 type Template struct {
 	Model
-	MerchantID  int64  `json:"merchant_id"`
+	UserID      int64  `json:"user_id"`
 	Name        string `json:"name"`
 	HTMLPart    string `json:"html_part"`
 	TextPart    string `json:"text_part"`
