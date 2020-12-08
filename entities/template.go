@@ -3,6 +3,8 @@ package entities
 import "time"
 
 type Template struct {
+	Model
+	MerchantID  int64  `json:"merchant_id"`
 	Name        string `json:"name"`
 	HTMLPart    string `json:"html_part"`
 	TextPart    string `json:"text_part"`

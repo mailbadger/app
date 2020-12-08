@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 	"net/http"
+	"text/template"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -13,6 +14,7 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
+	tempService "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
@@ -115,14 +117,7 @@ func GetTemplates(c *gin.Context) {
 
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
+	service := tempService.NewTemplateService()
 
 	body := &params.PostTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -137,37 +132,32 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
+	templateInput := &entities.Template{
+		Name:        body.Name,
+		HTMLPart:    body.Content,
+		TextPart:    body.Content,
+		SubjectPart: body.Subject,
+	}
+
+	// todo Parse html_part to check for valid golang template
+	_, err := template.ParseFiles(templateInput.HTMLPart)
 	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
-	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
-		Template: &ses.Template{
-			TemplateName: aws.String(body.Name),
-			HtmlPart:     aws.String(body.Content),
-			TextPart:     aws.String(body.Content),
-			SubjectPart:  aws.String(body.Subject),
-		},
-	})
+	err = service.PostTemplate(c, templateInput)
 	if err != nil {
-		reason := "Unable to create template."
-
-		if awsErr, ok := err.(awserr.Error); ok {
-			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
-		}
-
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": reason,
+			"message": "Unable to create template, please try again.",
 		})
 		return
 	}
 
 	c.JSON(http.StatusCreated, entities.Template{
+		MerchantID:  u.ID,
 		Name:        body.Name,
 		HTMLPart:    body.Content,
 		TextPart:    body.Content,
