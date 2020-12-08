@@ -28,7 +28,7 @@
     "recharts": "^1.8.5",
     "styled-components": "^4.4.1",
     "whatwg-fetch": "^3.5.0",
-    "yup": "^0.32.0"
+    "yup": "^0.32.5"
   },
   "scripts": {
     "start": "react-scripts start",
