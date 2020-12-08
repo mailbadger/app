@@ -185,6 +185,7 @@ func PutTemplate(c *gin.Context) {
 	name := c.Param("name")
 
 	templateInput := &entities.Template{
+		UserID:      u.ID,
 		Name:        name,
 		TextPart:    body.Content,
 		HTMLPart:    body.Content,
