@@ -22,16 +22,16 @@ func TestTemplate(t *testing.T) {
 	//templates for insert
 	templates := []entities.Template{
 		{
-			UserID:   1,
-			Name:     "template1",
-			TextPart: "asd {{.name}}",
-			Subject:  "subject",
+			UserID:      1,
+			Name:        "template1",
+			TextPart:    "asd {{.name}}",
+			SubjectPart: "subject",
 		},
 		{
-			UserID:   1,
-			Name:     "template2",
-			TextPart: "asd {{.name}}",
-			Subject:  "subject2",
+			UserID:      1,
+			Name:        "template2",
+			TextPart:    "asd {{.name}}",
+			SubjectPart: "subject2",
 		},
 	}
 
@@ -42,10 +42,10 @@ func TestTemplate(t *testing.T) {
 	}
 
 	templates[1] = entities.Template{
-		UserID:   1,
-		Name:     "template2",
-		TextPart: "asd {{.name}} and {{.surname}}",
-		Subject:  "subject2",
+		UserID:      1,
+		Name:        "template2",
+		TextPart:    "asd {{.name}} and {{.surname}}",
+		SubjectPart: "subject2",
 	}
 
 	err := store.UpdateTemplate(&templates[1])
