@@ -11,7 +11,7 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-func (s *s3storage) CreateHTMLTemplate(html string, bucket string, tmplInput *entities.Template) error {
+func (s *s3storage) CreateHTMLTemplate(html string, tmplInput *entities.Template) error {
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),

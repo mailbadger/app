@@ -11,7 +11,7 @@ import (
 const key = "s3"
 
 type S3Storage interface {
-	CreateHTMLTemplate(html string, bucket string, tmplInput *entities.Template) error
+	CreateHTMLTemplate(html string, tmplInput *entities.Template) error
 }
 
 // SetToContext sets the s3session to the context
@@ -25,6 +25,6 @@ func GetFromContext(c context.Context) S3Storage {
 }
 
 // CreateHTMLTemplate uploads html file to s3.
-func CreateHTMLTemplate(c context.Context, html string, bucket string, tmplInput *entities.Template) error {
-	return GetFromContext(c).CreateHTMLTemplate(html, bucket, tmplInput)
+func CreateHTMLTemplate(c context.Context, html string, tmplInput *entities.Template) error {
+	return GetFromContext(c).CreateHTMLTemplate(html, tmplInput)
 }

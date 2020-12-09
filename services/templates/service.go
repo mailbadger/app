@@ -9,10 +9,6 @@ import (
 	"github.com/mailbadger/app/storage/s3"
 )
 
-var (
-	bucket = "bucketo za templates"
-)
-
 type Service interface {
 	PostTemplate(c context.Context, input *entities.Template) error
 	PutTemplate(c context.Context, input *entities.Template) error
@@ -31,7 +27,7 @@ func (s service) PostTemplate(c context.Context, input *entities.Template) error
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
 
-	err = s3.CreateHTMLTemplate(c, input.HTMLPart, bucket, input)
+	err = s3.CreateHTMLTemplate(c, input.HTMLPart, input)
 	if err != nil {
 		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
 	}
@@ -45,7 +41,7 @@ func (s service) PutTemplate(c context.Context, input *entities.Template) error 
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
 
-	err = s3.CreateHTMLTemplate(c, input.HTMLPart, bucket, input)
+	err = s3.CreateHTMLTemplate(c, input.HTMLPart, input)
 	if err != nil {
 		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
 	}
