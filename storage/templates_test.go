@@ -40,4 +40,15 @@ func TestTemplate(t *testing.T) {
 		err := store.CreateTemplate(&te)
 		assert.Nil(t, err)
 	}
+
+	templates[1] = entities.Template{
+		UserID:   1,
+		Name:     "template2",
+		TextPart: "asd {{.name}} and {{.surname}}",
+		Subject:  "subject2",
+	}
+
+	err := store.UpdateTemplate(&templates[1])
+	assert.Nil(t, err)
+
 }
