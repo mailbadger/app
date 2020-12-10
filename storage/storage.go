@@ -104,6 +104,8 @@ type Storage interface {
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
+
+	ListTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 }
 
 // SetToContext sets the storage to the context
@@ -490,4 +492,10 @@ func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report,
 // GetNumberOfReportsForDate returns number of reports for date time.
 func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) (int64, error) {
 	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
+}
+
+// ListTemplates populates a pagination object with a collection of
+// templates by the specified user id.
+func ListTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).ListTemplates(userID, p, scopeMap)
 }

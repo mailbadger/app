@@ -18,3 +18,8 @@ type TemplateMeta struct {
 	Name      string    `json:"name"`
 	Timestamp time.Time `json:"timestamp"`
 }
+
+type TemplatesCollection struct {
+	Name        string `json:"name"`
+	SubjectPart string `json:"subject_part"`
+}
