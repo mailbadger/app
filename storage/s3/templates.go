@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,8 +11,8 @@ import (
 const bucket = "BUCKET HERE"
 
 // GetHTMLTemplate returns html part of the template saved in s3
-func (s s3storage) GetHTMLTemplate(userID int64, templateName string) (string, error) {
-	obj, err := s.s3client.GetObject(&s3.GetObjectInput{
+func GetHTMLTemplate(c context.Context, userID int64, templateName string) (string, error) {
+	obj, err := GetFromContext(c).GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(fmt.Sprintf("/PATH_TO_FILE/%d/%s", userID, templateName)),
 	})
@@ -27,3 +28,4 @@ func (s s3storage) GetHTMLTemplate(userID int64, templateName string) (string, e
 
 	return string(body), nil
 }
+
