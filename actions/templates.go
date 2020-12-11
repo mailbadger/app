@@ -133,6 +133,7 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	templateInput := &entities.Template{
+		UserID:      u.ID,
 		Name:        body.Name,
 		HTMLPart:    body.Content,
 		TextPart:    body.Content,
