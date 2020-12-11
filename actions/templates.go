@@ -132,6 +132,7 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
+	// todo ask about text part and html part should we change now post params ?
 	templateInput := &entities.Template{
 		UserID:      u.ID,
 		Name:        body.Name,
@@ -140,6 +141,7 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
+	// todo discuss about validation
 	// create new template and try to parse html part
 	_, err := template.New("new").Parse(templateInput.HTMLPart)
 	if err != nil {

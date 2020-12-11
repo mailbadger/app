@@ -8,7 +8,7 @@ type Template struct {
 	Name        string `json:"name"`
 	HTMLPart    string `json:"html_part" gorm:"-"`
 	TextPart    string `json:"text_part"`
-	SubjectPart string `json:"subject_part"`
+	SubjectPart string `json:"subject_part" gorm:"column:subject"`
 }
 
 type TemplateCollection struct {
