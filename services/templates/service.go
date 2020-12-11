@@ -9,8 +9,8 @@ import (
 	s3storage "github.com/mailbadger/app/storage/s3"
 )
 
-// TemplateService contains all methods for operating with templates
-type TemplateService interface {
+// Service contains all methods for operating with templates
+type Service interface {
 	DeleteTemplate(c context.Context, template *entities.Template) error
 }
 
@@ -18,8 +18,8 @@ type TemplateService interface {
 type service struct {
 }
 
-// NewTemplateService returns a new Service
-func NewTemplateService() TemplateService {
+// New returns a new Service
+func New() Service {
 	return &service{}
 }
 

@@ -22,9 +22,7 @@ import (
 
 	"github.com/mailbadger/app/actions"
 	"github.com/mailbadger/app/routes/middleware"
-	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
-	s3storage "github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -42,14 +40,14 @@ func New() http.Handler {
 		log.SetFormatter(&logrus.JSONFormatter{})
 	}
 
-	client, err := s3.NewS3Client(
+	/*s3Client, err := s3.NewS3Client(
 		os.Getenv("AWS_S3_ACCESS_KEY"),
 		os.Getenv("AWS_S3_SECRET_KEY"),
 		os.Getenv("AWS_S3_REGION"),
 	)
 	if err != nil {
 		panic(err)
-	}
+	}*/
 
 	store := cookie.NewStore(
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
@@ -65,7 +63,6 @@ func New() http.Handler {
 	config := storage.MakeConfigFromEnv(driver)
 
 	s := storage.New(driver, config)
-	s3store := s3storage.New(client)
 
 	handler := gin.New()
 
@@ -77,7 +74,6 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
-	handler.Use(middleware.S3Storage(s3store))
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
