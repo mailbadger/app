@@ -31,7 +31,7 @@ func GetTemplate(c *gin.Context) {
 
 	u := middleware.GetUser(c)
 
-	s := service.NewTemplateService() //TODO change package name after refactor
+	s := service.New() //TODO change package name after refactor
 
 	template, err := s.GetTemplate(c, id, u.ID)
 	if err != nil {

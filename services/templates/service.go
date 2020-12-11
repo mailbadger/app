@@ -16,7 +16,7 @@ type Service interface {
 type service struct {
 }
 
-func NewTemplateService() Service {
+func New() Service {
 	return &service{}
 }
 
