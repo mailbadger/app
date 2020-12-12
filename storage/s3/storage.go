@@ -26,7 +26,7 @@ func GetFromContext(c context.Context) s3iface.S3API {
 	return c.Value(key).(s3iface.S3API)
 }
 
-// CreateHTMLTemplate uploads html file to s3.
+// CreateTemplate uploads html file to s3.
 func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 
 	input := &s3.PutObjectInput{
