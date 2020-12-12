@@ -27,7 +27,7 @@ func (s service) PostTemplate(c context.Context, input *entities.Template) error
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
 
-	err = s3.CreateHTMLTemplate(c, input.HTMLPart, input)
+	err = s3.CreateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
 	}
@@ -41,7 +41,7 @@ func (s service) PutTemplate(c context.Context, input *entities.Template) error 
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
 
-	err = s3.CreateHTMLTemplate(c, input.HTMLPart, input)
+	err = s3.CreateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
 	}

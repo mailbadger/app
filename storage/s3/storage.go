@@ -27,12 +27,12 @@ func GetFromContext(c context.Context) s3iface.S3API {
 }
 
 // CreateHTMLTemplate uploads html file to s3.
-func CreateHTMLTemplate(c context.Context, html string, tmplInput *entities.Template) error {
+func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("/PATH_TO_FILE/%d/%s", tmplInput.UserID, tmplInput.Name)),
-		Body:   bytes.NewReader([]byte(html)),
+		Body:   bytes.NewReader([]byte(tmplInput.HTMLPart)),
 	}
 
 	_, err := GetFromContext(c).PutObject(input)
