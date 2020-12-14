@@ -2245,16 +2245,16 @@
     namespace-emitter "^2.0.1"
     preact "8.2.9"
 
-"@uppy/dashboard@^1.13.0":
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/@uppy/dashboard/-/dashboard-1.13.0.tgz#6607f4944c57d199f7d82adb83a3de1799cc6f30"
-  integrity sha512-u+haoxyGiAMZRIKkRubF7FXzFHOLMKQb9hXlOEG6Dv4OhKDe+WWp0vhTJbGWVlHMmKTq7ol5jkVeobzRXFCtLA==
+"@uppy/dashboard@^1.13.1":
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/@uppy/dashboard/-/dashboard-1.13.1.tgz#db0d0c6ea751e53919b225bb771c40f314bf31d2"
+  integrity sha512-0wx8bK0Tpnfl8uPzJtL4Chg1Tpyv4E8tO564abw6uE/FhcevudNcZQL3Z3qeV2iPu80VCNaAahZPBYjhcEKzLg==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/informer" "^1.5.13"
-    "@uppy/provider-views" "^1.9.0"
+    "@uppy/provider-views" "^1.9.1"
     "@uppy/status-bar" "^1.8.0"
-    "@uppy/thumbnail-generator" "^1.7.1"
+    "@uppy/thumbnail-generator" "^1.7.2"
     "@uppy/utils" "^3.2.5"
     classnames "^2.2.6"
     cuid "^2.1.1"
@@ -2289,21 +2289,21 @@
     "@uppy/utils" "^3.2.5"
     preact "8.2.9"
 
-"@uppy/provider-views@^1.9.0":
-  version "1.9.0"
-  resolved "https://registry.yarnpkg.com/@uppy/provider-views/-/provider-views-1.9.0.tgz#742908f89997557b8fe86759bcf2577ac7681f9c"
-  integrity sha512-muamUH3lkHZh4OTziD505JG0pQZC8kfy/J4WDmSwVkUtNueBvcYfg1txHmorV+CTaqeKuq7KsyVw9psbjf/LkA==
+"@uppy/provider-views@^1.9.1":
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/@uppy/provider-views/-/provider-views-1.9.1.tgz#1d3ad4329260ec1fa3c473fa374caee7d6525be9"
+  integrity sha512-9XvyjVmZf0rQnN1B86BwzXXL1v9/4ifrB9fvRSDPaJYYfgfNPCvR6PFKHr6mOxvuwGjlW64DJdPHMsv9vkMGBw==
   dependencies:
     "@uppy/utils" "^3.2.5"
     classnames "^2.2.6"
     preact "8.2.9"
 
-"@uppy/react@^1.10.11":
-  version "1.10.11"
-  resolved "https://registry.yarnpkg.com/@uppy/react/-/react-1.10.11.tgz#4ea31f09ceeab2dd45a762521563a7612f34b4c4"
-  integrity sha512-GA/HcSGM7fP6BYhBQXW6TmyGB76hlWBYjFDj3NjmodKW58CAtGWIPlsf5RZcBi1m2nIGjWmA6PuPR8LI816VwQ==
+"@uppy/react@^1.10.12":
+  version "1.10.12"
+  resolved "https://registry.yarnpkg.com/@uppy/react/-/react-1.10.12.tgz#065a5cd43908e4a566f2e7adb972fad8e43719cc"
+  integrity sha512-PQS/S/bgqIZy0CONOZywH1CWGGFz5WSzE6FbmZmlXxRnnJ+I7SKgmqlmzhvosuDSZzYFHMDGZ/oSx3DPFT+ISA==
   dependencies:
-    "@uppy/dashboard" "^1.13.0"
+    "@uppy/dashboard" "^1.13.1"
     "@uppy/drag-drop" "^1.4.21"
     "@uppy/progress-bar" "^1.3.21"
     "@uppy/status-bar" "^1.8.0"
@@ -2326,13 +2326,13 @@
   resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-1.2.4.tgz#480f50cbf23f36158557a42b7699da0cf629d368"
   integrity sha512-d4YTq6SeH792+vG9OXGCfmCIoo4RteLJKU2mZCzMYNjCZ1yNfU/FVw1r7heTc7f2wNls56ABor2xSybk/X+wFA==
 
-"@uppy/thumbnail-generator@^1.7.1":
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/@uppy/thumbnail-generator/-/thumbnail-generator-1.7.1.tgz#76e17b7e9c655683232ad9e4e244baa341807eb3"
-  integrity sha512-LIp8xZj5fQpHJbLPP0dD647UBQhT93S/pGXC/sziLeHlrbZnPqiek4tNuyRtirRmpX0q03eW616TT4x3bd9etQ==
+"@uppy/thumbnail-generator@^1.7.2":
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/@uppy/thumbnail-generator/-/thumbnail-generator-1.7.2.tgz#7254f5dfba4f703b460ea2aee742d60c721d4956"
+  integrity sha512-mXy0lHuJ1yz0yptTwjTa6cgpgKCRTIKTYQ11J+LnhnqTlHcUCz2a68gVrDJiY7ylBT5ayjs4EDyWrp8bbtrWSw==
   dependencies:
     "@uppy/utils" "^3.2.5"
-    exifr "^5.0.2"
+    exifr "^6.0.0"
     math-log2 "^1.0.1"
 
 "@uppy/utils@^3.2.5":
@@ -5471,10 +5471,10 @@ execa@^4.0.0, execa@^4.1.0:
     signal-exit "^3.0.2"
     strip-final-newline "^2.0.0"
 
-exifr@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.yarnpkg.com/exifr/-/exifr-5.0.2.tgz#63724cbe00c2292a90958facd1b1b62cd1ee5c4c"
-  integrity sha512-1I0R3CtoyVcFhMhg5VQwkJzvwiDd2vNHoH8dCu0aOPptBKKjgnzsA+JNnwQ3kyoRzdZoCixZFwe2oOSx9MQNqA==
+exifr@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/exifr/-/exifr-6.0.0.tgz#e82af10e158852a1c7e19aea45bceb4cdd486727"
+  integrity sha512-a8n3SVIyuI5NP5VJCb/rJHsqXnofgYL1ZXcJdKBXOmCNIrj+pSExaBFHcbdEF5xp5GQrK4kpOabLJ+wBfUGYuA==
 
 exit@^0.1.2:
   version "0.1.2"
