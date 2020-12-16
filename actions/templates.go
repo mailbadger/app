@@ -14,7 +14,7 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
-	tempService "github.com/mailbadger/app/services/templates"
+	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
@@ -117,7 +117,7 @@ func GetTemplates(c *gin.Context) {
 
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := tempService.NewTemplateService()
+	service := templatesvc.NewTemplateService()
 
 	body := &params.PostTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -136,8 +136,8 @@ func PostTemplate(c *gin.Context) {
 	templateInput := &entities.Template{
 		UserID:      u.ID,
 		Name:        body.Name,
-		HTMLPart:    body.Content,
-		TextPart:    body.Content,
+		HTMLPart:    body.HTMLPart,
+		TextPart:    body.TextPart,
 		SubjectPart: body.Subject,
 	}
 
@@ -161,16 +161,16 @@ func PostTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, entities.Template{
 		UserID:      u.ID,
-		Name:        body.Name,
-		HTMLPart:    body.Content,
-		TextPart:    body.Content,
-		SubjectPart: body.Subject,
+		Name:        templateInput.Name,
+		HTMLPart:    templateInput.HTMLPart,
+		TextPart:    templateInput.TextPart,
+		SubjectPart: templateInput.SubjectPart,
 	})
 }
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := tempService.NewTemplateService()
+	service := templatesvc.NewTemplateService()
 
 	body := &params.PutTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -190,8 +190,8 @@ func PutTemplate(c *gin.Context) {
 	templateInput := &entities.Template{
 		UserID:      u.ID,
 		Name:        name,
-		TextPart:    body.Content,
-		HTMLPart:    body.Content,
+		TextPart:    body.TextPart,
+		HTMLPart:    body.HTMLPart,
 		SubjectPart: body.Subject,
 	}
 

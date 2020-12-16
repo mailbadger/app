@@ -26,6 +26,11 @@ func GetFromContext(c context.Context) s3iface.S3API {
 	return c.Value(key).(s3iface.S3API)
 }
 
+// PutS3Object uploads a object to s3.
+func PutS3Object(c context.Context, input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+	return GetFromContext(c).PutObject(input)
+}
+
 // CreateTemplate uploads html file to s3.
 func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 
@@ -35,7 +40,7 @@ func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 		Body:   bytes.NewReader([]byte(tmplInput.HTMLPart)),
 	}
 
-	_, err := GetFromContext(c).PutObject(input)
+	_, err := PutS3Object(c, input)
 	if err != nil {
 		return fmt.Errorf("failed to insert html part to s3 error: %w", err)
 	}
