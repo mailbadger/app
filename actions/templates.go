@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -139,8 +140,26 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	err := service.PostTemplate(c, templateInput)
+	err := service.AddTemplate(c, templateInput)
 	if err != nil {
+		if errors.Is(err, templatesvc.ErrParseHTMLPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse html_part",
+			})
+			return
+		}
+		if errors.Is(err, templatesvc.ErrParseTextPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse text_part",
+			})
+			return
+		}
+		if errors.Is(err, templatesvc.ErrParseSubjectPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse subject_part",
+			})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create template, please try again.",
 		})
@@ -177,8 +196,26 @@ func PutTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	err := service.PutTemplate(c, templateInput)
+	err := service.UpdateTemplate(c, templateInput)
 	if err != nil {
+		if errors.Is(err, templatesvc.ErrParseHTMLPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse html_part",
+			})
+			return
+		}
+		if errors.Is(err, templatesvc.ErrParseTextPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse text_part",
+			})
+			return
+		}
+		if errors.Is(err, templatesvc.ErrParseSubjectPart) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse subject_part",
+			})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create template, please try again.",
 		})

@@ -2,6 +2,7 @@ package templates
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/cbroglie/mustache"
@@ -11,9 +12,15 @@ import (
 	"github.com/mailbadger/app/storage/s3"
 )
 
+var (
+	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
+	ErrParseTextPart    = errors.New("failed to parse TextPart")
+	ErrParseSubjectPart = errors.New("failed to parse SubjectPart")
+)
+
 type Service interface {
-	PostTemplate(c context.Context, input *entities.Template) error
-	PutTemplate(c context.Context, input *entities.Template) error
+	AddTemplate(c context.Context, input *entities.Template) error
+	UpdateTemplate(c context.Context, input *entities.Template) error
 }
 
 type service struct {
@@ -23,17 +30,22 @@ func NewTemplateService() Service {
 	return &service{}
 }
 
-func (s service) PostTemplate(c context.Context, input *entities.Template) error {
+func (s service) AddTemplate(c context.Context, input *entities.Template) error {
 
 	// parse string to validate template params
 	_, err := mustache.ParseString(input.HTMLPart)
 	if err != nil {
-		return fmt.Errorf("failed to parse html_part template error: %w", err)
+		return ErrParseHTMLPart
 	}
 	// parse string to validate template params
 	_, err = mustache.ParseString(input.TextPart)
 	if err != nil {
-		return fmt.Errorf("failed to parse text_part template error: %w", err)
+		return ErrParseTextPart
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(input.SubjectPart)
+	if err != nil {
+		return ErrParseSubjectPart
 	}
 
 	err = storage.CreateTemplate(c, input)
@@ -43,23 +55,28 @@ func (s service) PostTemplate(c context.Context, input *entities.Template) error
 
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
+		return fmt.Errorf("failed to create html template file to s3 error: %w", err)
 	}
 
 	return nil
 }
 
-func (s service) PutTemplate(c context.Context, input *entities.Template) error {
+func (s service) UpdateTemplate(c context.Context, input *entities.Template) error {
 
 	// parse string to validate template params
 	_, err := mustache.ParseString(input.HTMLPart)
 	if err != nil {
-		return fmt.Errorf("failed to parse html_part template error: %w", err)
+		return ErrParseHTMLPart
 	}
 	// parse string to validate template params
 	_, err = mustache.ParseString(input.TextPart)
 	if err != nil {
-		return fmt.Errorf("failed to parse text_part template error: %w", err)
+		return ErrParseTextPart
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(input.SubjectPart)
+	if err != nil {
+		return ErrParseSubjectPart
 	}
 
 	err = storage.UpdateTemplate(c, input)
@@ -69,7 +86,7 @@ func (s service) PutTemplate(c context.Context, input *entities.Template) error 
 
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed o create html template file to s3 error: %w", err)
+		return fmt.Errorf("failed to create html template file to s3 error: %w", err)
 	}
 
 	return nil
