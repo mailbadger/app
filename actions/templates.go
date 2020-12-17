@@ -200,24 +200,24 @@ func PutTemplate(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, templatesvc.ErrParseHTMLPart) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to create template, failed to parse html_part",
+				"message": "Unable to update template, failed to parse html_part",
 			})
 			return
 		}
 		if errors.Is(err, templatesvc.ErrParseTextPart) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to create template, failed to parse text_part",
+				"message": "Unable to update template, failed to parse text_part",
 			})
 			return
 		}
 		if errors.Is(err, templatesvc.ErrParseSubjectPart) {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Unable to create template, failed to parse subject_part",
+				"message": "Unable to update template, failed to parse subject_part",
 			})
 			return
 		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create template, please try again.",
+			"message": "Unable to update template, please try again.",
 		})
 		return
 	}
