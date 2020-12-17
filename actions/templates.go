@@ -132,7 +132,7 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	templateInput := &entities.Template{
+	template := &entities.Template{
 		UserID:      u.ID,
 		Name:        body.Name,
 		HTMLPart:    body.HTMLPart,
@@ -140,33 +140,29 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	err := service.AddTemplate(c, templateInput)
+	err := service.AddTemplate(c, template)
 	if err != nil {
-		if errors.Is(err, templatesvc.ErrParseHTMLPart) {
+		switch {
+		case errors.Is(err, templatesvc.ErrParseHTMLPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create template, failed to parse html_part",
 			})
-			return
-		}
-		if errors.Is(err, templatesvc.ErrParseTextPart) {
+		case errors.Is(err, templatesvc.ErrParseTextPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create template, failed to parse text_part",
 			})
-			return
-		}
-		if errors.Is(err, templatesvc.ErrParseSubjectPart) {
+		case errors.Is(err, templatesvc.ErrParseSubjectPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create template, failed to parse subject_part",
 			})
-			return
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, please try again.",
+			})
 		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create template, please try again.",
-		})
-		return
 	}
 
-	c.JSON(http.StatusCreated, templateInput)
+	c.JSON(http.StatusCreated, template)
 }
 
 func PutTemplate(c *gin.Context) {
@@ -188,7 +184,7 @@ func PutTemplate(c *gin.Context) {
 
 	name := c.Param("name")
 
-	templateInput := &entities.Template{
+	template := &entities.Template{
 		UserID:      u.ID,
 		Name:        name,
 		TextPart:    body.TextPart,
@@ -196,33 +192,30 @@ func PutTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	err := service.UpdateTemplate(c, templateInput)
+	err := service.UpdateTemplate(c, template)
 	if err != nil {
-		if errors.Is(err, templatesvc.ErrParseHTMLPart) {
+		switch {
+		case errors.Is(err, templatesvc.ErrParseHTMLPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to update template, failed to parse html_part",
 			})
-			return
-		}
-		if errors.Is(err, templatesvc.ErrParseTextPart) {
+		case errors.Is(err, templatesvc.ErrParseTextPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to update template, failed to parse text_part",
 			})
-			return
-		}
-		if errors.Is(err, templatesvc.ErrParseSubjectPart) {
+		case errors.Is(err, templatesvc.ErrParseSubjectPart):
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to update template, failed to parse subject_part",
 			})
-			return
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to update template, please try again.",
+			})
+
 		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to update template, please try again.",
-		})
-		return
 	}
 
-	c.JSON(http.StatusOK, templateInput)
+	c.JSON(http.StatusOK, template)
 }
 
 func DeleteTemplate(c *gin.Context) {
