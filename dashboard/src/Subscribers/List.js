@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import {
@@ -22,8 +22,10 @@ import {
 } from "grommet";
 
 import history from "../history";
-import { useApi } from "../hooks";
+import { useApi, useInterval } from "../hooks";
+import { mainInstance as axios } from "../axios";
 import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
+import { NotificationsContext } from "../Notifications/context";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
@@ -95,35 +97,102 @@ SubscriberTable.propTypes = {
   actions: PropTypes.func,
 };
 
-const rowActions = (setShowEdit, setShowDelete) => (subscriber) => (
-  <Select
-    alignSelf="center"
-    plain
-    icon={<More />}
-    options={["Edit", "Delete"]}
-    onChange={({ option }) => {
-      (function () {
-        switch (option) {
-          case "Edit":
-            setShowEdit({
-              show: true,
-              id: subscriber.id,
-            });
-            break;
-          case "Delete":
-            setShowDelete({
-              show: true,
-              email: subscriber.email,
-              id: subscriber.id,
-            });
-            break;
-          default:
-            return null;
+// eslint-disable-next-line react/display-name
+const rowActions = (setShowEdit, setShowDelete) => (subscriber) => {
+  return (
+    <Select
+      alignSelf="center"
+      plain
+      icon={<More />}
+      options={["Edit", "Delete"]}
+      onChange={({ option }) => {
+        (function () {
+          switch (option) {
+            case "Edit":
+              setShowEdit({
+                show: true,
+                id: subscriber.id,
+              });
+              break;
+            case "Delete":
+              setShowDelete({
+                show: true,
+                email: subscriber.email,
+                id: subscriber.id,
+              });
+              break;
+            default:
+              return null;
+          }
+        })();
+      } } />
+  );
+};
+
+const ExportSubscribers = () => {
+  const linkEl = useRef(null);
+  const { createNotification } = useContext(NotificationsContext);
+  const [notification, setNotification] = useState();
+  const [filename, setFilename] = useState("");
+  const [retries, setRetries] = useState(-1);
+  const [state, callApi] = useApi({
+    url: `/api/subscribers/export`,
+  }, null, true);
+
+  useInterval(
+    async () => {
+      await callApi({ url: `/api/subscribers/export/download?filename=${filename}` });
+      setRetries(retries - 1);
+    },
+    retries > 0 ? 1000 : null
+  );
+
+  useEffect(() => {
+    if (notification) {
+      createNotification(notification.message, notification.status);
+    }
+  }, [notification]);
+
+  useEffect(() => {
+    if (!state.isLoading && state.isError && state.data) {
+      if (state.data.status === "failed" && retries > 0 && retries < 50) {
+        setRetries(-1);
+        setNotification({message: state.data.message, status: "status-error"});
+      }
+    }
+  
+    if (!state.isLoading && !state.isError && state.data) {
+      if (retries > 0) {
+        setRetries(-1);
+        linkEl.current.click()
+      }
+    }
+  }, [state]);
+  
+
+  return (
+    <>
+    <SecondaryButton
+      disabled={retries > 0 || state.isLoading}
+      onClick={
+        async () => {
+          try {
+            const res = await axios.post(`/api/subscribers/export`);
+            setFilename(res.data.file_name);
+            setRetries(50);
+          } catch(e) {
+            console.error("Unable to generate report", e);
+          }
         }
-      })();
-    }}
-  />
-);
+        } icon={<Download size="20px" />} label="Export"
+    />
+    {
+      !state.isLoading && !state.isError && state.data && 
+      <a ref={linkEl} href={state.data.url}></a>
+    }
+    </>
+  )
+}
 
 const ActionButtons = () => (
   <>
@@ -139,7 +208,7 @@ const ActionButtons = () => (
       label="Delete from file"
       onClick={() => history.push("/dashboard/subscribers/bulk-delete")}
     />
-    <SecondaryButton icon={<Download size="20px" />} label="Export" />
+    <ExportSubscribers />
   </>
 );
 
