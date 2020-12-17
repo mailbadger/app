@@ -75,6 +75,8 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
+	handler.Use(middleware.S3Client(s3Client),
+	)
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
@@ -167,7 +169,6 @@ func New() http.Handler {
 		middleware.NoCache(),
 		CSRF(),
 		tollbooth_gin.LimitHandler(lmt),
-		middleware.S3Client(s3Client),
 	)
 
 	return handler

@@ -35,8 +35,8 @@ func PutS3Object(c context.Context, input *s3.PutObjectInput) (*s3.PutObjectOutp
 func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 
 	input := &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("/PATH_TO_FILE/%d/%s", tmplInput.UserID, tmplInput.Name)),
+		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("/%d", tmplInput.UserID)),
 		Body:   bytes.NewReader([]byte(tmplInput.HTMLPart)),
 	}
 
