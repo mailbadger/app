@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/cbroglie/mustache"
 	"github.com/gin-gonic/gin"
 
 	"github.com/mailbadger/app/entities"
@@ -132,7 +133,6 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	// todo ask about text part and html part should we change now post params ?
 	templateInput := &entities.Template{
 		UserID:      u.ID,
 		Name:        body.Name,
@@ -141,9 +141,16 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	// todo discuss about validation
-	// create new template and try to parse html part
-	_, err := template.New("new").Parse(templateInput.HTMLPart)
+	// parse string to validate template params
+	_, err := mustache.ParseString(body.HTMLPart)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(body.TextPart)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
