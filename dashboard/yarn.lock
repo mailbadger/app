@@ -2231,10 +2231,10 @@
     "@uppy/utils" "^3.2.5"
     namespace-emitter "^2.0.1"
 
-"@uppy/core@^1.14.1":
-  version "1.14.1"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.14.1.tgz#b927845f7e98daee9ed01c0c5f507f7196d22cf7"
-  integrity sha512-z74WpKcIOlsFASIEnnR5AryxBxT5QCxJJWwOZ8EdbcCVc8htIUFcWDXQshqgkh8ydZd9OUAS7xXHdqmpuqOuoQ==
+"@uppy/core@^1.14.2":
+  version "1.14.2"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.14.2.tgz#b5ff98364cdd95f4aafdfddca3f06cad3b4ac6f7"
+  integrity sha512-sBLEhqFM9aFyE2+30tzPBx7UzdCqbG4ifa/XYbMxrf36dwiELPurFJUDIA3VSxzsbzOVP4sWS1zVBO8w6Q3lNA==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/store-default" "^1.2.4"
