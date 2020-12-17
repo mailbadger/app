@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/cbroglie/mustache"
 	"github.com/gin-gonic/gin"
 
 	"github.com/mailbadger/app/entities"
@@ -140,24 +139,7 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	// parse string to validate template params
-	_, err := mustache.ParseString(body.HTMLPart)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-	// parse string to validate template params
-	_, err = mustache.ParseString(body.TextPart)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-
-	err = service.PostTemplate(c, templateInput)
+	err := service.PostTemplate(c, templateInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create template, please try again.",
@@ -165,13 +147,7 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, entities.Template{
-		UserID:      u.ID,
-		Name:        templateInput.Name,
-		HTMLPart:    templateInput.HTMLPart,
-		TextPart:    templateInput.TextPart,
-		SubjectPart: templateInput.SubjectPart,
-	})
+	c.JSON(http.StatusCreated, templateInput)
 }
 
 func PutTemplate(c *gin.Context) {
@@ -201,24 +177,7 @@ func PutTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	// parse string to validate template params
-	_, err := mustache.ParseString(body.HTMLPart)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-	// parse string to validate template params
-	_, err = mustache.ParseString(body.TextPart)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-
-	err = service.PutTemplate(c, templateInput)
+	err := service.PutTemplate(c, templateInput)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to create template, please try again.",
@@ -226,13 +185,7 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, entities.Template{
-		UserID:      templateInput.UserID,
-		Name:        templateInput.Name,
-		HTMLPart:    templateInput.HTMLPart,
-		TextPart:    templateInput.TextPart,
-		SubjectPart: templateInput.SubjectPart,
-	})
+	c.JSON(http.StatusOK, templateInput)
 }
 
 func DeleteTemplate(c *gin.Context) {

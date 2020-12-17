@@ -6,7 +6,7 @@ import "strings"
 type PostTemplate struct {
 	Name     string `form:"name" validate:"required,max=191"`
 	HTMLPart string `form:"html_part" validate:"required,html"`
-	TextPart string `form:"text_part"`
+	TextPart string `form:"text_part" validate:"required"`
 	Subject  string `form:"subject" validate:"required,max=191"`
 }
 
@@ -18,7 +18,7 @@ func (p *PostTemplate) TrimSpaces() {
 // PutTemplate represents request body for PUT /api/templates
 type PutTemplate struct {
 	HTMLPart string `form:"html_part" validate:"required,html"`
-	TextPart string `form:"text_part"`
+	TextPart string `form:"text_part" validate:"required"`
 	Subject  string `json:"subject" form:"subject" validate:"required,max=191"`
 }
 

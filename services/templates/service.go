@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cbroglie/mustache"
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
@@ -22,7 +24,19 @@ func NewTemplateService() Service {
 }
 
 func (s service) PostTemplate(c context.Context, input *entities.Template) error {
-	err := storage.CreateTemplate(c, input)
+
+	// parse string to validate template params
+	_, err := mustache.ParseString(input.HTMLPart)
+	if err != nil {
+		return fmt.Errorf("failed to parse html_part template error: %w", err)
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(input.TextPart)
+	if err != nil {
+		return fmt.Errorf("failed to parse text_part template error: %w", err)
+	}
+
+	err = storage.CreateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
@@ -36,7 +50,19 @@ func (s service) PostTemplate(c context.Context, input *entities.Template) error
 }
 
 func (s service) PutTemplate(c context.Context, input *entities.Template) error {
-	err := storage.UpdateTemplate(c, input)
+
+	// parse string to validate template params
+	_, err := mustache.ParseString(input.HTMLPart)
+	if err != nil {
+		return fmt.Errorf("failed to parse html_part template error: %w", err)
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(input.TextPart)
+	if err != nil {
+		return fmt.Errorf("failed to parse text_part template error: %w", err)
+	}
+
+	err = storage.UpdateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("failed to create template error: %w", err)
 	}
