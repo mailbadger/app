@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 	"net/http"
-	"text/template"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -202,8 +201,16 @@ func PutTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	// create new template and try to parse html part
-	_, err := template.New("new").Parse(templateInput.HTMLPart)
+	// parse string to validate template params
+	_, err := mustache.ParseString(body.HTMLPart)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+	// parse string to validate template params
+	_, err = mustache.ParseString(body.TextPart)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
