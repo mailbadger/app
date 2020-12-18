@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
@@ -156,6 +157,9 @@ func PostTemplate(c *gin.Context) {
 				"message": "Unable to create template, failed to parse subject_part",
 			})
 		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"template": template,
+			}).WithError(err).Error("Unable to create template")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create template, please try again.",
 			})
@@ -208,10 +212,12 @@ func PutTemplate(c *gin.Context) {
 				"message": "Unable to update template, failed to parse subject_part",
 			})
 		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"template": template,
+			}).WithError(err).Error("Unable to update template")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to update template, please try again.",
 			})
-
 		}
 	}
 
