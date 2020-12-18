@@ -164,6 +164,7 @@ func PostTemplate(c *gin.Context) {
 				"message": "Unable to create template, please try again.",
 			})
 		}
+		return
 	}
 
 	c.JSON(http.StatusCreated, template)
