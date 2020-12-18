@@ -520,6 +520,7 @@ func DownloadSubscribersReport(c *gin.Context) {
 	if report.Status == entities.StatusFailed {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Failed to generate report, please try again.",
+			"status":  report.Status,
 		})
 		return
 	}
@@ -527,6 +528,7 @@ func DownloadSubscribersReport(c *gin.Context) {
 	if report.Status == entities.StatusInProgress {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Generating report, please try again later.",
+			"status":  report.Status,
 		})
 		return
 	}
