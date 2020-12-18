@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@uppy/react": "^1.10.11",
+    "@uppy/react": "^1.10.12",
     "@uppy/aws-s3": "^1.7.3",
-    "@uppy/core": "^1.14.1",
+    "@uppy/core": "^1.14.2",
     "axios": "^0.21.0",
     "codemirror": "^5.58.3",
     "date-fns": "^2.16.1",
