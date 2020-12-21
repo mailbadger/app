@@ -48,14 +48,14 @@ func (s service) AddTemplate(c context.Context, input *entities.Template) error 
 		return ErrParseSubjectPart
 	}
 
-	err = storage.CreateTemplate(c, input)
-	if err != nil {
-		return fmt.Errorf("create template: %w", err)
-	}
-
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("save template to s3: %w", err)
+	}
+
+	err = storage.CreateTemplate(c, input)
+	if err != nil {
+		return fmt.Errorf("create template: %w", err)
 	}
 
 	return nil
@@ -79,14 +79,14 @@ func (s service) UpdateTemplate(c context.Context, input *entities.Template) err
 		return ErrParseSubjectPart
 	}
 
-	err = storage.UpdateTemplate(c, input)
-	if err != nil {
-		return fmt.Errorf("update template: %w", err)
-	}
-
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
 		return fmt.Errorf("save template to s3: %w", err)
+	}
+
+	err = storage.UpdateTemplate(c, input)
+	if err != nil {
+		return fmt.Errorf("update template: %w", err)
 	}
 
 	return nil
