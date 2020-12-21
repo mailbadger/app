@@ -36,7 +36,7 @@ func CreateTemplate(c context.Context, tmplInput *entities.Template) error {
 
 	input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("/%d", tmplInput.UserID)),
+		Key:    aws.String(fmt.Sprintf("/%d/%s", tmplInput.UserID, tmplInput.Name)),
 		Body:   bytes.NewReader([]byte(tmplInput.HTMLPart)),
 	}
 
