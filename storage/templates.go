@@ -13,3 +13,10 @@ func (db *store) CreateTemplate(t *entities.Template) error {
 func (db *store) UpdateTemplate(t *entities.Template) error {
 	return db.Where("user_id = ? and name = ?", t.UserID, t.Name).Save(t).Error
 }
+
+// GetTemplateByName returns the template by the given name and user id
+func (db *store) GetTemplateByName(name string, userID int64) (*entities.Template, error) {
+	var template = new(entities.Template)
+	err := db.Where("user_id = ? and name = ?", userID, name).Find(template).Error
+	return template, err
+}

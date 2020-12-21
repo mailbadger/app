@@ -141,7 +141,15 @@ func PostTemplate(c *gin.Context) {
 		SubjectPart: body.Subject,
 	}
 
-	err := service.AddTemplate(c, template)
+	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
+	if err == nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name already exists",
+		})
+		return
+	}
+
+	err = service.AddTemplate(c, template)
 	if err != nil {
 		switch {
 		case errors.Is(err, templatesvc.ErrParseHTMLPart):
@@ -159,6 +167,7 @@ func PostTemplate(c *gin.Context) {
 		default:
 			logger.From(c).WithFields(logrus.Fields{
 				"template": template,
+				"user_id":  u.ID,
 			}).WithError(err).Error("Unable to create template")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create template, please try again.",
@@ -173,6 +182,15 @@ func PostTemplate(c *gin.Context) {
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 	service := templatesvc.NewTemplateService()
+	name := c.Param("name")
+
+	template, err := storage.GetTemplateByName(c, name, u.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name does not exists",
+		})
+		return
+	}
 
 	body := &params.PutTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -187,17 +205,19 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	name := c.Param("name")
-
-	template := &entities.Template{
-		UserID:      u.ID,
-		Name:        name,
-		TextPart:    body.TextPart,
-		HTMLPart:    body.HTMLPart,
-		SubjectPart: body.Subject,
+	template2, err := storage.GetTemplateByName(c, body.Name, u.ID)
+	if err == nil && template.ID != template2.ID {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name already exists",
+		})
+		return
 	}
+	template.Name = body.Name
+	template.HTMLPart = body.HTMLPart
+	template.SubjectPart = body.Subject
+	template.TextPart = body.TextPart
 
-	err := service.UpdateTemplate(c, template)
+	err = service.UpdateTemplate(c, template)
 	if err != nil {
 		switch {
 		case errors.Is(err, templatesvc.ErrParseHTMLPart):
@@ -215,6 +235,7 @@ func PutTemplate(c *gin.Context) {
 		default:
 			logger.From(c).WithFields(logrus.Fields{
 				"template": template,
+				"user_id":  u.ID,
 			}).WithError(err).Error("Unable to update template")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to update template, please try again.",

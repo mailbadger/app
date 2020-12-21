@@ -107,6 +107,7 @@ type Storage interface {
 
 	CreateTemplate(t *entities.Template) error
 	UpdateTemplate(t *entities.Template) error
+	GetTemplateByName(name string, userID int64) (*entities.Template, error)
 }
 
 // SetToContext sets the storage to the context
@@ -503,4 +504,9 @@ func CreateTemplate(c context.Context, t *entities.Template) error {
 // UpdateTemplate updates template in the database.
 func UpdateTemplate(c context.Context, t *entities.Template) error {
 	return GetFromContext(c).UpdateTemplate(t)
+}
+
+// GetTemplateByName returns a Template entity by the given name and user id.
+func GetTemplateByName(c context.Context, name string, userID int64) (*entities.Template, error) {
+	return GetFromContext(c).GetTemplateByName(name, userID)
 }

@@ -20,6 +20,7 @@ type PutTemplate struct {
 	HTMLPart string `form:"html_part" validate:"required,html"`
 	TextPart string `form:"text_part" validate:"required"`
 	Subject  string `json:"subject" form:"subject" validate:"required,max=191"`
+	Name     string `form:"name" validate:"required,max=191"`
 }
 
 func (p *PutTemplate) TrimSpaces() {

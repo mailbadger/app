@@ -50,12 +50,12 @@ func (s service) AddTemplate(c context.Context, input *entities.Template) error 
 
 	err = storage.CreateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed to create template error: %w", err)
+		return fmt.Errorf("create template: %w", err)
 	}
 
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed to create html template file to s3 error: %w", err)
+		return fmt.Errorf("save template to s3: %w", err)
 	}
 
 	return nil
@@ -81,12 +81,12 @@ func (s service) UpdateTemplate(c context.Context, input *entities.Template) err
 
 	err = storage.UpdateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed to create template error: %w", err)
+		return fmt.Errorf("update template: %w", err)
 	}
 
 	err = s3.CreateTemplate(c, input)
 	if err != nil {
-		return fmt.Errorf("failed to create html template file to s3 error: %w", err)
+		return fmt.Errorf("save template to s3: %w", err)
 	}
 
 	return nil
