@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -41,6 +42,18 @@ func TestTemplate(t *testing.T) {
 		assert.Nil(t, err)
 	}
 
+	// template not found
+	template, err := store.GetTemplateByName("not-found", 1)
+	assert.Equal(t, errors.New("record not found"), err)
+	assert.Equal(t, new(entities.Template), template)
+
+	// get template by name and user id test
+	template, err = store.GetTemplateByName(templates[0].Name, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, templates[0].Name, template.Name)
+	assert.Equal(t, templates[0].TextPart, template.TextPart)
+	assert.Equal(t, templates[0].SubjectPart, template.SubjectPart)
+
 	templates[1] = entities.Template{
 		UserID:      1,
 		Name:        "template2",
@@ -48,7 +61,7 @@ func TestTemplate(t *testing.T) {
 		SubjectPart: "subject2",
 	}
 
-	err := store.UpdateTemplate(&templates[1])
+	err = store.UpdateTemplate(&templates[1])
 	assert.Nil(t, err)
 
 }
