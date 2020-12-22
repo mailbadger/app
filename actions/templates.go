@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -182,12 +183,19 @@ func PostTemplate(c *gin.Context) {
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
 	service := templatesvc.NewTemplateService()
-	name := c.Param("name")
 
-	template, err := storage.GetTemplateByName(c, name, u.ID)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	template, err := storage.GetTemplate(c, id, u.ID)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Template with that name does not exists",
+			"message": "Template not found",
 		})
 		return
 	}
@@ -205,8 +213,8 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	template2, err := storage.GetTemplateByName(c, body.Name, u.ID)
-	if err == nil && template.ID != template2.ID {
+	_, err = storage.GetTemplateByName(c, body.Name, u.ID)
+	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Template with that name already exists",
 		})
@@ -214,8 +222,8 @@ func PutTemplate(c *gin.Context) {
 	}
 	template.Name = body.Name
 	template.HTMLPart = body.HTMLPart
-	template.SubjectPart = body.Subject
 	template.TextPart = body.TextPart
+	template.SubjectPart = body.Subject
 
 	err = service.UpdateTemplate(c, template)
 	if err != nil {
