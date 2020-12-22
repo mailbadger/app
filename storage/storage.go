@@ -108,7 +108,7 @@ type Storage interface {
 	CreateTemplate(t *entities.Template) error
 	UpdateTemplate(t *entities.Template) error
 	GetTemplateByName(name string, userID int64) (*entities.Template, error)
-	GetTemplate(int64, int64) (*entities.Template, error)
+	GetTemplate(id int64, userID int64) (*entities.Template, error)
 }
 
 // SetToContext sets the storage to the context
@@ -512,7 +512,7 @@ func GetTemplateByName(c context.Context, name string, userID int64) (*entities.
 	return GetFromContext(c).GetTemplateByName(name, userID)
 }
 
-// GetTemplateByName returns a Template entity by the given name and user id.
+// GetTemplate returns a Template entity by the given id and user id.
 func GetTemplate(c context.Context, id, userID int64) (*entities.Template, error) {
 	return GetFromContext(c).GetTemplate(id, userID)
 }

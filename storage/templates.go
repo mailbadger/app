@@ -21,6 +21,7 @@ func (db *store) GetTemplateByName(name string, userID int64) (*entities.Templat
 	return template, err
 }
 
+// GetTemplate returns the template by the given id and user id
 func (db *store) GetTemplate(id, userID int64) (*entities.Template, error) {
 	var template = new(entities.Template)
 	err := db.Where("user_id = ? and id = ?", userID, id).Find(template).Error

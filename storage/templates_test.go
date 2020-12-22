@@ -23,12 +23,18 @@ func TestTemplate(t *testing.T) {
 	//templates for insert
 	templates := []entities.Template{
 		{
+			Model :entities.Model{
+				ID:        1,
+			},
 			UserID:      1,
 			Name:        "template1",
 			TextPart:    "asd {{.name}}",
 			SubjectPart: "subject",
 		},
 		{
+			Model :entities.Model{
+				ID:        2,
+			},
 			UserID:      1,
 			Name:        "template2",
 			TextPart:    "asd {{.name}}",
@@ -53,6 +59,13 @@ func TestTemplate(t *testing.T) {
 	assert.Equal(t, templates[0].Name, template.Name)
 	assert.Equal(t, templates[0].TextPart, template.TextPart)
 	assert.Equal(t, templates[0].SubjectPart, template.SubjectPart)
+
+	// get template by id and user id test
+	template, err = store.GetTemplate(templates[1].ID, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, templates[1].Name, template.Name)
+	assert.Equal(t, templates[1].TextPart, template.TextPart)
+	assert.Equal(t, templates[1].SubjectPart, template.SubjectPart)
 
 	templates[1] = entities.Template{
 		UserID:      1,
