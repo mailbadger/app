@@ -18,6 +18,7 @@ import (
 	"github.com/mailbadger/app/routes/middleware"
 	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
 )
@@ -119,7 +120,7 @@ func GetTemplates(c *gin.Context) {
 
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := templatesvc.NewTemplateService()
+	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	body := &params.PostTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -182,7 +183,7 @@ func PostTemplate(c *gin.Context) {
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := templatesvc.NewTemplateService()
+	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

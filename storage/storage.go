@@ -497,16 +497,6 @@ func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) 
 	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
 }
 
-// CreateTemplate adds new template in the database.
-func CreateTemplate(c context.Context, t *entities.Template) error {
-	return GetFromContext(c).CreateTemplate(t)
-}
-
-// UpdateTemplate updates template in the database.
-func UpdateTemplate(c context.Context, t *entities.Template) error {
-	return GetFromContext(c).UpdateTemplate(t)
-}
-
 // GetTemplateByName returns a Template entity by the given name and user id.
 func GetTemplateByName(c context.Context, name string, userID int64) (*entities.Template, error) {
 	return GetFromContext(c).GetTemplateByName(name, userID)

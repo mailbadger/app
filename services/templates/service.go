@@ -1,15 +1,19 @@
 package templates
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
+	s32 "github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/s3"
 )
 
 var (
@@ -24,36 +28,47 @@ type Service interface {
 }
 
 type service struct {
+	db storage.Storage
+	s3 s3iface.S3API
 }
 
-func NewTemplateService() Service {
-	return &service{}
+func NewTemplateService(db storage.Storage, s3 s3iface.S3API) Service {
+	return &service{
+		db: db,
+		s3: s3,
+	}
 }
 
-func (s service) AddTemplate(c context.Context, input *entities.Template) error {
+func (s service) AddTemplate(c context.Context, template *entities.Template) error {
 
 	// parse string to validate template params
-	_, err := mustache.ParseString(input.HTMLPart)
+	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
 		return ErrParseHTMLPart
 	}
 	// parse string to validate template params
-	_, err = mustache.ParseString(input.TextPart)
+	_, err = mustache.ParseString(template.TextPart)
 	if err != nil {
 		return ErrParseTextPart
 	}
 	// parse string to validate template params
-	_, err = mustache.ParseString(input.SubjectPart)
+	_, err = mustache.ParseString(template.SubjectPart)
 	if err != nil {
 		return ErrParseSubjectPart
 	}
 
-	err = s3.CreateTemplate(c, input)
-	if err != nil {
-		return fmt.Errorf("save template to s3: %w", err)
+	s3Input := &s32.PutObjectInput{
+		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("/%d/%d", template.UserID, template.ID)),
+		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
-	err = storage.CreateTemplate(c, input)
+	_, err = s.s3.PutObject(s3Input)
+	if err != nil {
+		return fmt.Errorf("failed to insert html part to s3 error: %w", err)
+	}
+
+	err = s.db.CreateTemplate(template)
 	if err != nil {
 		return fmt.Errorf("create template: %w", err)
 	}
@@ -61,30 +76,36 @@ func (s service) AddTemplate(c context.Context, input *entities.Template) error 
 	return nil
 }
 
-func (s service) UpdateTemplate(c context.Context, input *entities.Template) error {
+func (s service) UpdateTemplate(c context.Context, template *entities.Template) error {
 
 	// parse string to validate template params
-	_, err := mustache.ParseString(input.HTMLPart)
+	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
 		return ErrParseHTMLPart
 	}
 	// parse string to validate template params
-	_, err = mustache.ParseString(input.TextPart)
+	_, err = mustache.ParseString(template.TextPart)
 	if err != nil {
 		return ErrParseTextPart
 	}
 	// parse string to validate template params
-	_, err = mustache.ParseString(input.SubjectPart)
+	_, err = mustache.ParseString(template.SubjectPart)
 	if err != nil {
 		return ErrParseSubjectPart
 	}
 
-	err = s3.CreateTemplate(c, input)
-	if err != nil {
-		return fmt.Errorf("save template to s3: %w", err)
+	s3Input := &s32.PutObjectInput{
+		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("/%d/%d", template.UserID, template.ID)),
+		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
-	err = storage.UpdateTemplate(c, input)
+	_, err = s.s3.PutObject(s3Input)
+	if err != nil {
+		return fmt.Errorf("failed to insert html part to s3 error: %w", err)
+	}
+
+	err = s.db.UpdateTemplate(template)
 	if err != nil {
 		return fmt.Errorf("update template: %w", err)
 	}
