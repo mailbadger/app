@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
-	s32 "github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
 
@@ -57,7 +57,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 		return ErrParseSubjectPart
 	}
 
-	s3Input := &s32.PutObjectInput{
+	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
@@ -94,7 +94,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 		return ErrParseSubjectPart
 	}
 
-	s3Input := &s32.PutObjectInput{
+	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
