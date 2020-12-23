@@ -546,7 +546,7 @@ func DownloadSubscribersReport(c *gin.Context) {
 		}
 
 		req, _ := client.GetObjectRequest(&s3.GetObjectInput{
-			Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
+			Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 			Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", u.ID, fileName)),
 		})
 

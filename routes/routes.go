@@ -22,6 +22,7 @@ import (
 
 	"github.com/mailbadger/app/actions"
 	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
 )
@@ -40,14 +41,14 @@ func New() http.Handler {
 		log.SetFormatter(&logrus.JSONFormatter{})
 	}
 
-	/*s3Client, err := s3.NewS3Client(
+	s3Client, err := s3.NewS3Client(
 		os.Getenv("AWS_S3_ACCESS_KEY"),
 		os.Getenv("AWS_S3_SECRET_KEY"),
 		os.Getenv("AWS_S3_REGION"),
 	)
 	if err != nil {
 		panic(err)
-	}*/
+	}
 
 	store := cookie.NewStore(
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
@@ -74,6 +75,8 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
+	handler.Use(middleware.S3Client(s3Client),
+	)
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
@@ -233,7 +236,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			templates.GET("", actions.GetTemplates)
 			templates.GET("/:name", actions.GetTemplate)
 			templates.POST("", actions.PostTemplate)
-			templates.PUT("/:name", actions.PutTemplate)
+			templates.PUT("/:id", actions.PutTemplate)
 			templates.DELETE("/:name", actions.DeleteTemplate)
 		}
 
