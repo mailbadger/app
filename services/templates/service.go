@@ -59,7 +59,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 
 	s3Input := &s32.PutObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("/%d/%d", template.UserID, template.ID)),
+		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
@@ -96,7 +96,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 
 	s3Input := &s32.PutObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("/%d/%d", template.UserID, template.ID)),
+		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
