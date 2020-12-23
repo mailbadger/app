@@ -65,7 +65,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 
 	_, err = s.s3.PutObject(s3Input)
 	if err != nil {
-		return fmt.Errorf("failed to insert html part to s3 error: %w", err)
+		return fmt.Errorf("upload template: put s3 object: %w", err)
 	}
 
 	err = s.db.CreateTemplate(template)
@@ -102,7 +102,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 
 	_, err = s.s3.PutObject(s3Input)
 	if err != nil {
-		return fmt.Errorf("failed to insert html part to s3 error: %w", err)
+		return fmt.Errorf("upload template: put s3 object: %w", err)
 	}
 
 	err = s.db.UpdateTemplate(template)
