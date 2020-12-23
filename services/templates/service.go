@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	templatesBucket     = os.Getenv("TEMPLATES_BUCKET")
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
 	ErrParseSubjectPart = errors.New("failed to parse SubjectPart")
@@ -26,7 +27,6 @@ type Service interface {
 	AddTemplate(c context.Context, input *entities.Template) error
 	UpdateTemplate(c context.Context, input *entities.Template) error
 	GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error)
-
 }
 
 type service struct {
@@ -34,7 +34,7 @@ type service struct {
 	s3 s3iface.S3API
 }
 
-func NewTemplateService(db storage.Storage, s3 s3iface.S3API) Service {
+func New(db storage.Storage, s3 s3iface.S3API) Service {
 	return &service{
 		db: db,
 		s3: s3,
@@ -42,7 +42,6 @@ func NewTemplateService(db storage.Storage, s3 s3iface.S3API) Service {
 }
 
 func (s service) AddTemplate(c context.Context, template *entities.Template) error {
-
 	// parse string to validate template params
 	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
@@ -60,7 +59,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -79,7 +78,6 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 }
 
 func (s service) UpdateTemplate(c context.Context, template *entities.Template) error {
-
 	// parse string to validate template params
 	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
@@ -97,7 +95,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -114,19 +112,29 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 
 	return nil
 }
+
 // GetTemplate returns the template with given template id and user id
 func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
-	template, err := storage.GetTemplate(c, templateID, userID)
+	template, err := s.db.GetTemplate(templateID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get template: %w", err)
 	}
 
-	html, err := s3.GetHTMLTemplate(c, userID, template.Name)
+	obj, err := s.s3.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(templatesBucket),
+		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+	})
 	if err != nil {
-		return nil, fmt.Errorf("get html template: %w", err)
+		return nil, fmt.Errorf("get object: %w", err)
 	}
 
-	template.HTMLPart = html
+	var html []byte
+	_, err = obj.Body.Read(html)
+	if err != nil {
+		return nil, fmt.Errorf("read: %w", err)
+	}
+
+	template.HTMLPart = string(html)
 
 	return template, err
 }

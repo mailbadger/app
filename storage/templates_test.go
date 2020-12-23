@@ -20,11 +20,11 @@ func TestTemplate(t *testing.T) {
 	}()
 	store := From(db)
 
-	//templates for insert
+	// templates for insert
 	templates := []entities.Template{
 		{
-			Model :entities.Model{
-				ID:        1,
+			Model: entities.Model{
+				ID: 1,
 			},
 			UserID:      1,
 			Name:        "template1",
@@ -32,8 +32,8 @@ func TestTemplate(t *testing.T) {
 			SubjectPart: "subject",
 		},
 		{
-			Model :entities.Model{
-				ID:        2,
+			Model: entities.Model{
+				ID: 2,
 			},
 			UserID:      1,
 			Name:        "template2",
@@ -50,6 +50,10 @@ func TestTemplate(t *testing.T) {
 
 	// template not found
 	template, err := store.GetTemplateByName("not-found", 1)
+	assert.Equal(t, errors.New("record not found"), err)
+	assert.Equal(t, new(entities.Template), template)
+
+	template, err = store.GetTemplate(0, 1)
 	assert.Equal(t, errors.New("record not found"), err)
 	assert.Equal(t, new(entities.Template), template)
 
