@@ -213,8 +213,8 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	_, err = storage.GetTemplateByName(c, body.Name, u.ID)
-	if err == nil {
+	template2, err := storage.GetTemplateByName(c, body.Name, u.ID)
+	if err == nil && template.ID != template2.ID {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Template with that name already exists",
 		})
