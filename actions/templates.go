@@ -14,8 +14,9 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
-	service "github.com/mailbadger/app/services/templates"
+	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
 )
@@ -31,7 +32,7 @@ func GetTemplate(c *gin.Context) {
 
 	u := middleware.GetUser(c)
 
-	s := service.New() //TODO change package name after refactor
+	s := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	template, err := s.GetTemplate(c, id, u.ID)
 	if err != nil {
@@ -100,14 +101,7 @@ func GetTemplates(c *gin.Context) {
 
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
+	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	body := &params.PostTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -122,51 +116,68 @@ func PostTemplate(c *gin.Context) {
 		return
 	}
 
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	_, err = store.CreateTemplate(&ses.CreateTemplateInput{
-		Template: &ses.Template{
-			TemplateName: aws.String(body.Name),
-			HtmlPart:     aws.String(body.Content),
-			TextPart:     aws.String(body.Content),
-			SubjectPart:  aws.String(body.Subject),
-		},
-	})
-	if err != nil {
-		reason := "Unable to create template."
-
-		if awsErr, ok := err.(awserr.Error); ok {
-			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": reason,
-		})
-		return
-	}
-
-	c.JSON(http.StatusCreated, entities.Template{
+	template := &entities.Template{
+		UserID:      u.ID,
 		Name:        body.Name,
-		HTMLPart:    body.Content,
-		TextPart:    body.Content,
+		HTMLPart:    body.HTMLPart,
+		TextPart:    body.TextPart,
 		SubjectPart: body.Subject,
-	})
+	}
+
+	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
+	if err == nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name already exists",
+		})
+		return
+	}
+
+	err = service.AddTemplate(c, template)
+	if err != nil {
+		switch {
+		case errors.Is(err, templatesvc.ErrParseHTMLPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse html_part",
+			})
+		case errors.Is(err, templatesvc.ErrParseTextPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse text_part",
+			})
+		case errors.Is(err, templatesvc.ErrParseSubjectPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, failed to parse subject_part",
+			})
+		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"template": template,
+				"user_id":  u.ID,
+			}).WithError(err).Error("Unable to create template")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create template, please try again.",
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusCreated, template)
 }
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
+	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
-	keys, err := storage.GetSesKeys(c, u.ID)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	template, err := storage.GetTemplate(c, id, u.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template not found",
 		})
 		return
 	}
@@ -184,44 +195,45 @@ func PutTemplate(c *gin.Context) {
 		return
 	}
 
-	name := c.Param("name")
-
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+	template2, err := storage.GetTemplateByName(c, body.Name, u.ID)
+	if err == nil && template.ID != template2.ID {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name already exists",
 		})
 		return
 	}
-	_, err = store.UpdateTemplate(&ses.UpdateTemplateInput{
-		Template: &ses.Template{
-			TemplateName: aws.String(name),
-			HtmlPart:     aws.String(body.Content),
-			TextPart:     aws.String(body.Content),
-			SubjectPart:  aws.String(body.Subject),
-		},
-	})
+	template.Name = body.Name
+	template.HTMLPart = body.HTMLPart
+	template.TextPart = body.TextPart
+	template.SubjectPart = body.Subject
 
+	err = service.UpdateTemplate(c, template)
 	if err != nil {
-		reason := "Unable to update template."
-
-		if awsErr, ok := err.(awserr.Error); ok {
-			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
+		switch {
+		case errors.Is(err, templatesvc.ErrParseHTMLPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to update template, failed to parse html_part",
+			})
+		case errors.Is(err, templatesvc.ErrParseTextPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to update template, failed to parse text_part",
+			})
+		case errors.Is(err, templatesvc.ErrParseSubjectPart):
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to update template, failed to parse subject_part",
+			})
+		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"template": template,
+				"user_id":  u.ID,
+			}).WithError(err).Error("Unable to update template")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to update template, please try again.",
+			})
 		}
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": reason,
-		})
-		return
 	}
 
-	c.JSON(http.StatusOK, entities.Template{
-		Name:        name,
-		HTMLPart:    body.Content,
-		TextPart:    body.Content,
-		SubjectPart: body.Subject,
-	})
+	c.JSON(http.StatusOK, template)
 }
 
 func DeleteTemplate(c *gin.Context) {

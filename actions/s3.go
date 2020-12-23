@@ -46,7 +46,7 @@ func GetSignedURL(c *gin.Context) {
 		return
 	}
 	req, _ := client.PutObjectRequest(&awss3.PutObjectInput{
-		Bucket:      aws.String(os.Getenv("AWS_S3_BUCKET")),
+		Bucket:      aws.String(os.Getenv("FILES_BUCKET")),
 		Key:         aws.String(fmt.Sprintf("subscribers/%s/%d/%s", body.Action, u.ID, body.Filename)),
 		ContentType: aws.String(body.ContentType),
 	})

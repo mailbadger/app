@@ -45,7 +45,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	segments []entities.Segment,
 ) (err error) {
 	res, err := i.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
 	})
 	if err != nil {

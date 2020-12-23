@@ -105,6 +105,9 @@ type Storage interface {
 	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 
+	CreateTemplate(t *entities.Template) error
+	UpdateTemplate(t *entities.Template) error
+	GetTemplateByName(name string, userID int64) (*entities.Template, error)
 	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 }
 
@@ -494,7 +497,12 @@ func GetNumberOfReportsForDate(c context.Context, userID int64, time time.Time) 
 	return GetFromContext(c).GetNumberOfReportsForDate(userID, time)
 }
 
-// GetTemplate returns a Template by given template id and user id
+// GetTemplateByName returns a Template entity by the given name and user id.
+func GetTemplateByName(c context.Context, name string, userID int64) (*entities.Template, error) {
+	return GetFromContext(c).GetTemplateByName(name, userID)
+}
+
+// GetTemplate returns a Template entity by the given id and user id.
 func GetTemplate(c context.Context, templateID, userID int64) (*entities.Template, error) {
 	return GetFromContext(c).GetTemplate(templateID, userID)
 }

@@ -67,7 +67,7 @@ func (se *SubscribersExporter) Export(c context.Context, userID int64, report *e
 	writer.Flush()
 
 	_, err = se.S3.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", userID, report.FileName)),
 		Body:   bytes.NewReader(buf.Bytes()),
 	})

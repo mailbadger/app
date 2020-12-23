@@ -4,7 +4,25 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-func (db *store) GetTemplate(templateID int64, userID int64) (*entities.Template, error) {
+// CreateSubscriber creates a new subscriber in the database.
+func (db *store) CreateTemplate(t *entities.Template) error {
+	return db.Create(t).Error
+}
+
+// UpdateReport edits an existing template in the database.
+func (db *store) UpdateTemplate(t *entities.Template) error {
+	return db.Where("user_id = ? and id = ?", t.UserID, t.ID).Save(t).Error
+}
+
+// GetTemplateByName returns the template by the given name and user id
+func (db *store) GetTemplateByName(name string, userID int64) (*entities.Template, error) {
+	var template = new(entities.Template)
+	err := db.Where("user_id = ? and name = ?", userID, name).Find(template).Error
+	return template, err
+}
+
+// GetTemplate returns the template by the given id and user id
+func (db *store) GetTemplate(templateID, userID int64) (*entities.Template, error) {
 	var template = new(entities.Template)
 	err := db.Where("user_id = ? and id = ?", userID, templateID).Find(template).Error
 	return template, err
