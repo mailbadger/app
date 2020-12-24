@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useState } from "react";
+import { useReducer, useEffect, useState, useRef } from "react";
 import { mainInstance as axios } from "../axios";
 
 const dataFetchReducer = (state, action) => {
@@ -30,7 +30,8 @@ const dataFetchReducer = (state, action) => {
 
 const defaultOpts = {};
 
-const useDataApi = (initialOpts = defaultOpts, initialData) => {
+const useDataApi = (initialOpts = defaultOpts, initialData, skipFirst = false) => {
+  const firstUpdate = useRef(skipFirst);
   const [opts, setOpts] = useState(initialOpts);
 
   const [state, dispatch] = useReducer(dataFetchReducer, {
@@ -40,6 +41,11 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
   });
 
   useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+
     let didCancel = false;
 
     const fetchData = async () => {
@@ -53,7 +59,7 @@ const useDataApi = (initialOpts = defaultOpts, initialData) => {
         }
       } catch (error) {
         if (!didCancel) {
-          dispatch({ type: "REQUEST_FAILURE", error });
+          dispatch({ type: "REQUEST_FAILURE", error, payload: error.response.data });
         }
       }
     };
