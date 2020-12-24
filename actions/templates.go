@@ -71,7 +71,7 @@ func GetTemplates(c *gin.Context) {
 	if !ok {
 		logger.From(c).Error("Unable to fetch pagination cursor from context.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to fetch segments. Please try again.",
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
@@ -80,7 +80,7 @@ func GetTemplates(c *gin.Context) {
 	if !ok {
 		logger.From(c).Error("Unable to cast pagination cursor from context value.")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to fetch segments. Please try again.",
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
