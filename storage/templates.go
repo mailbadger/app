@@ -30,7 +30,7 @@ func (db *store) GetTemplate(id, userID int64) (*entities.Template, error) {
 
 // ListTemplates fetches templates by user id, and populates the pagination obj
 func (db *store) ListTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
-	p.SetCollection(&[]entities.TemplatesCollection{})
+	p.SetCollection(&[]entities.TemplatesCollectionItem{})
 	p.SetResource("templates")
 
 	for k, v := range scopeMap {
@@ -39,10 +39,12 @@ func (db *store) ListTemplates(userID int64, p *PaginationCursor, scopeMap map[s
 		}
 	}
 
-	p.SetQuery(db.Table(p.Resource).
+	query := db.Table(p.Resource).
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage))
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
 
 	return db.Paginate(p, userID)
 }
