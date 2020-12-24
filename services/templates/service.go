@@ -128,6 +128,9 @@ func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) er
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
+	if err != nil {
+		return fmt.Errorf("delete object: %w", err)
+	}
 
 	err = s.db.DeleteTemplate(templateID, userID)
 	if err != nil {
