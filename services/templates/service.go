@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	templatesBucket     = os.Getenv("TEMPLATES_BUCKET")
+	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
 
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
@@ -180,6 +180,8 @@ func (s service) getTemplate(c context.Context, templateID int64, userID int64) 
 	if err := g.Wait(); err != nil {
 		return nil, err
 	}
+
+	template.HTMLPart = html
 
 	return template, nil
 }
