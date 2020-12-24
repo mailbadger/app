@@ -274,7 +274,14 @@ func DeleteTemplate(c *gin.Context) {
 
 	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
-	service.DeleteTemplate(c, template)
+	err = service.DeleteTemplate(c, template)
+	if err != nil {
+		logger.From(c).WithField("template", *template).WithError(err).Error("Unable to delete template.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to delete template.",
+		})
+		return
+	}
 
 	c.Status(http.StatusNoContent)
 }
