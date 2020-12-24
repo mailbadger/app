@@ -118,16 +118,12 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 
 // DeleteTemplate deletes the given template
 func (s service) DeleteTemplate(c context.Context, template *entities.Template) error {
-	obj, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
+	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATE_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 	})
 	if err != nil {
 		return fmt.Errorf("delete object: %w", err)
-	}
-
-	if !aws.BoolValue(obj.DeleteMarker) {
-		return ErrDeleteFailed
 	}
 
 	err = storage.DeleteTemplate(c, template.ID, template.UserID)
