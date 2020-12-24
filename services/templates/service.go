@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
@@ -141,7 +140,7 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 	return template, nil
 }
 
-func (s service) getTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
+/*func (s service) getTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
 	g, _ := errgroup.WithContext(c)
 
 	var template *entities.Template
@@ -185,3 +184,4 @@ func (s service) getTemplate(c context.Context, templateID int64, userID int64) 
 
 	return template, nil
 }
+*/
