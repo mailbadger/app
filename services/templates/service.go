@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
@@ -18,6 +19,7 @@ import (
 
 var (
 	templatesBucket     = os.Getenv("TEMPLATES_BUCKET")
+
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
 	ErrParseSubjectPart = errors.New("failed to parse SubjectPart")
@@ -136,5 +138,48 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 
 	template.HTMLPart = string(html)
 
-	return template, err
+	return template, nil
+}
+
+func (s service) getTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
+	g, _ := errgroup.WithContext(c)
+
+	var template *entities.Template
+	var html string
+	var err error
+
+	g.Go(func() error {
+		template, err = s.db.GetTemplate(templateID, userID)
+		if err != nil {
+			return fmt.Errorf("get template: %w", err)
+		}
+
+		return nil
+	})
+
+	g.Go(func() error {
+		obj, err := s.s3.GetObject(&s3.GetObjectInput{
+			Bucket: aws.String(templatesBucket),
+			Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+		})
+		if err != nil {
+			return fmt.Errorf("get object: %w", err)
+		}
+
+		var htmlBytes []byte
+		_, err = obj.Body.Read(htmlBytes)
+		if err != nil {
+			return fmt.Errorf("read: %w", err)
+		}
+
+		html = string(htmlBytes)
+
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return template, nil
 }
