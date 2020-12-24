@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	templatesBucket = os.Getenv("TEMPLATE_BUCKET")
+
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
 	ErrParseSubjectPart = errors.New("failed to parse SubjectPart")
@@ -60,7 +62,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -97,7 +99,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("TEMPLATES_BUCKET")),
+		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -116,19 +118,16 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 }
 
 // DeleteTemplate deletes the given template
-func (s service) DeleteTemplate(c context.Context, templateID, userID int64) error {
-	_, err := s.db.GetTemplate(templateID	, userID)
+func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) error {
+	_, err := s.db.GetTemplate(templateID, userID)
 	if err != nil {
-		return fmt.Errorf("get template: %w",err)
+		return fmt.Errorf("get template: %w", err)
 	}
 
 	_, err = s.s3.DeleteObject(&s3.DeleteObjectInput{
-		Bucket: aws.String(os.Getenv("TEMPLATE_BUCKET")),
+		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
-	if err != nil {
-		return fmt.Errorf("delete object: %w", err)
-	}
 
 	err = s.db.DeleteTemplate(templateID, userID)
 	if err != nil {
