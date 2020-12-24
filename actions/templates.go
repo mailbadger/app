@@ -254,8 +254,6 @@ func PutTemplate(c *gin.Context) {
 }
 
 func DeleteTemplate(c *gin.Context) {
-	u := middleware.GetUser(c)
-
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -264,19 +262,15 @@ func DeleteTemplate(c *gin.Context) {
 		return
 	}
 
-	template, err := storage.GetTemplate(c, id, u.ID)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Template not found",
-		})
-		return
-	}
-
+	u := middleware.GetUser(c)
 	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
-	err = service.DeleteTemplate(c, template)
+	err = service.DeleteTemplate(c, id, u.ID)
 	if err != nil {
-		logger.From(c).WithField("template", *template).WithError(err).Error("Unable to delete template.")
+		logger.From(c).WithFields(logrus.Fields{
+			"user_id":     u.ID,
+			"template_id": id,
+		}).WithError(err).Error("Unable to delete template.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to delete template.",
 		})

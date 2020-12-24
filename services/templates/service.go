@@ -20,13 +20,12 @@ var (
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
 	ErrParseSubjectPart = errors.New("failed to parse SubjectPart")
-	ErrDeleteFailed     = errors.New("failed to delete")
 )
 
 type Service interface {
 	AddTemplate(c context.Context, input *entities.Template) error
 	UpdateTemplate(c context.Context, input *entities.Template) error
-	DeleteTemplate(c context.Context, template *entities.Template) error
+	DeleteTemplate(c context.Context, templateID, userID int64) error
 }
 
 // service implements the Service interface
@@ -117,16 +116,21 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 }
 
 // DeleteTemplate deletes the given template
-func (s service) DeleteTemplate(c context.Context, template *entities.Template) error {
-	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
+func (s service) DeleteTemplate(c context.Context, templateID, userID int64) error {
+	_, err := s.db.GetTemplate(templateID	, userID)
+	if err != nil {
+		return fmt.Errorf("get template: %w",err)
+	}
+
+	_, err = s.s3.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(os.Getenv("TEMPLATE_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
+		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
 	if err != nil {
 		return fmt.Errorf("delete object: %w", err)
 	}
 
-	err = storage.DeleteTemplate(c, template.ID, template.UserID)
+	err = s.db.DeleteTemplate(templateID, userID)
 	if err != nil {
 		return fmt.Errorf("delete template: %w", err)
 	}
