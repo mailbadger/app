@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
@@ -18,6 +19,9 @@ import (
 
 var (
 	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
+
+	ErrHTMLPartNotFound = errors.New("HTML part not found")
+	ErrInvalidHTMLPart = errors.New("HTML part is in invalid state")
 
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
@@ -121,16 +125,26 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 		return nil, fmt.Errorf("get template: %w", err)
 	}
 
-	obj, err := s.s3.GetObject(&s3.GetObjectInput{
+	result, err := s.s3.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
 	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchKey:
+				return nil, ErrHTMLPartNotFound
+			case s3.ErrCodeInvalidObjectState:
+				return nil, ErrInvalidHTMLPart
+			default:
+				return nil, fmt.Errorf("get object: %w", aerr)
+			}
+		}
 		return nil, fmt.Errorf("get object: %w", err)
 	}
 
 	var html []byte
-	_, err = obj.Body.Read(html)
+	_, err = result.Body.Read(html)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}

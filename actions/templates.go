@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
@@ -37,9 +38,28 @@ func GetTemplate(c *gin.Context) {
 
 	template, err := s.GetTemplate(c, id, u.ID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Template not found.",
-		})
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Template not found.",
+			})
+		case errors.Is(err, templatesvc.ErrHTMLPartNotFound):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "HTML part not found.",
+			})
+		case errors.Is(err, templatesvc.ErrInvalidHTMLPart):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "The state of the HTML part is invalid.",
+			})
+		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":     u.ID,
+				"template_id": id,
+			}).WithError(err).Errorf("Unable to get template")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to get template",
+			})
+		}
 		return
 	}
 
