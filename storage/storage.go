@@ -109,7 +109,7 @@ type Storage interface {
 	UpdateTemplate(t *entities.Template) error
 	GetTemplateByName(name string, userID int64) (*entities.Template, error)
 	GetTemplate(id int64, userID int64) (*entities.Template, error)
-	ListTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
+	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 }
 
 // SetToContext sets the storage to the context
@@ -508,8 +508,8 @@ func GetTemplate(c context.Context, id, userID int64) (*entities.Template, error
 	return GetFromContext(c).GetTemplate(id, userID)
 }
 
-// ListTemplates populates a pagination object with a collection of
+// GetTemplates populates a pagination object with a collection of
 // templates by the specified user id.
-func ListTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
-	return GetFromContext(c).ListTemplates(userID, p, scopeMap)
+func GetTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).GetTemplates(userID, p, scopeMap)
 }

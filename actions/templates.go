@@ -88,7 +88,7 @@ func GetTemplates(c *gin.Context) {
 	scopeMap := c.QueryMap("scopes")
 
 	s := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
-	err := s.ListTemplates(c, u.ID, p, scopeMap)
+	err := s.GetTemplates(c, u.ID, p, scopeMap)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"user_id":   u.ID,

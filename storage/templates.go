@@ -28,8 +28,8 @@ func (db *store) GetTemplate(id, userID int64) (*entities.Template, error) {
 	return template, err
 }
 
-// ListTemplates fetches templates by user id, and populates the pagination obj
-func (db *store) ListTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+// GetTemplates fetches templates by user id, and populates the pagination obj
+func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
 	p.SetCollection(&[]entities.TemplatesCollectionItem{})
 	p.SetResource("templates")
 
