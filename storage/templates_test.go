@@ -2,6 +2,8 @@ package storage
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -9,6 +11,20 @@ import (
 
 	"github.com/mailbadger/app/entities"
 )
+
+func createTemplates(store Storage) {
+	for i := 0; i < 100; i++ {
+		err := store.CreateTemplate(&entities.Template{
+			Name:        "foo " + strconv.Itoa(i),
+			SubjectPart: "Template {{.subject}} " + strconv.Itoa(i),
+			UserID:      1,
+			TextPart:    "draft {{.text}} " + strconv.Itoa(i),
+		})
+		if err != nil {
+			logrus.Fatal(err)
+		}
+	}
+}
 
 func TestTemplate(t *testing.T) {
 	db := openTestDb()
@@ -19,74 +35,98 @@ func TestTemplate(t *testing.T) {
 		}
 	}()
 	store := From(db)
+	createTemplates(store)
 
-	//templates for insert
-	templates := []entities.Template{
-		{
-			Model :entities.Model{
-				ID:        1,
-			},
-			UserID:      1,
-			Name:        "template1",
-			TextPart:    "asd {{.name}}",
-			SubjectPart: "subject",
-		},
-		{
-			Model :entities.Model{
-				ID:        2,
-			},
-			UserID:      1,
-			Name:        "template2",
-			TextPart:    "asd {{.name}}",
-			SubjectPart: "subject2",
-		},
+	// templates for insert
+	template := &entities.Template{
+		UserID:      1,
+		Name:        "template1",
+		TextPart:    "asd {{.name}}",
+		SubjectPart: "subject",
 	}
 
 	// test insert templates
-	for _, te := range templates {
-		err := store.CreateTemplate(&te)
-		assert.Nil(t, err)
-	}
+	err := store.CreateTemplate(template)
+	assert.Nil(t, err)
 
 	// template not found
-	template, err := store.GetTemplateByName("not-found", 1)
+	templateNotFound, err := store.GetTemplateByName("not-found", 1)
 	assert.Equal(t, errors.New("record not found"), err)
-	assert.Equal(t, new(entities.Template), template)
+	assert.Equal(t, new(entities.Template), templateNotFound)
 
 	// get template by name and user id test
-	template, err = store.GetTemplateByName(templates[0].Name, 1)
+	templateByName, err := store.GetTemplateByName(template.Name, 1)
 	assert.Nil(t, err)
-	assert.Equal(t, templates[0].Name, template.Name)
-	assert.Equal(t, templates[0].TextPart, template.TextPart)
-	assert.Equal(t, templates[0].SubjectPart, template.SubjectPart)
+	assert.Equal(t, template.Name, templateByName.Name)
+	assert.Equal(t, template.TextPart, templateByName.TextPart)
+	assert.Equal(t, template.SubjectPart, templateByName.SubjectPart)
 
 	// get template by id and user id test
-	template, err = store.GetTemplate(templates[1].ID, 1)
+	templateByID, err := store.GetTemplate(template.ID, 1)
 	assert.Nil(t, err)
-	assert.Equal(t, templates[1].Name, template.Name)
-	assert.Equal(t, templates[1].TextPart, template.TextPart)
-	assert.Equal(t, templates[1].SubjectPart, template.SubjectPart)
+	assert.Equal(t, template.Name, templateByID.Name)
+	assert.Equal(t, template.TextPart, templateByID.TextPart)
+	assert.Equal(t, template.SubjectPart, templateByID.SubjectPart)
 
-	templates[1] = entities.Template{
-		UserID:      1,
-		Name:        "template2",
-		TextPart:    "asd {{.name}} and {{.surname}}",
-		SubjectPart: "subject2",
-	}
+	// update template testing
+	template.TextPart = "asd {{.name}} and {{.surname}}"
+	template.SubjectPart = "Subject {{.update}}"
 
-	err = store.UpdateTemplate(&templates[1])
+	err = store.UpdateTemplate(template)
 	assert.Nil(t, err)
+
+	templateByID, err = store.GetTemplate(template.ID, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, template.Name, templateByID.Name)
+	assert.Equal(t, template.TextPart, templateByID.TextPart)
+	assert.Equal(t, template.SubjectPart, templateByID.SubjectPart)
 
 	p := NewPaginationCursor("/api/templates", 10)
-	err = store.ListTemplates(1, p, nil)
+	err = store.GetTemplates(1, p, nil)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
-	err = store.ListTemplates(1, p, map[string]string{"name":"template"})
+	err = store.GetTemplates(1, p, map[string]string{"name": "template"})
 	assert.Nil(t, err)
 	assert.NotEmpty(t, p.Collection)
 
-	err = store.ListTemplates(1, p, map[string]string{"name":"$%$#"})
+	err = store.GetTemplates(1, p, map[string]string{"name": "$%$#"})
 	assert.Nil(t, err)
 	assert.Empty(t, p.Collection)
+
+	// Test get templates forwards
+	p = NewPaginationCursor("/api/templates", 11)
+	for i := 0; i < 10; i++ {
+		err := store.GetTemplates(1, p, nil)
+		assert.Nil(t, err)
+		col := p.Collection.(*[]entities.TemplatesCollectionItem)
+		assert.NotNil(t, col)
+		assert.NotEmpty(t, *col)
+		if p.Links.Next != nil {
+			assert.Equal(t, 11, len(*col))
+			assert.Equal(t, fmt.Sprintf("/api/templates?per_page=%d&starting_after=%d", 11, (*col)[len(*col)-1].GetID()), *p.Links.Next)
+			p.SetStartingAfter((*col)[len(*col)-1].GetID())
+		} else {
+			assert.Equal(t, 2, len(*col))
+		}
+	}
+	assert.Equal(t, int64(101), p.Total)
+
+	// Test get templates backwards
+	p = NewPaginationCursor("/api/templates", 13)
+	p.SetEndingBefore(1)
+	for i := 0; i < 8; i++ {
+		err := store.GetTemplates(1, p, nil)
+		assert.Nil(t, err)
+		col := p.Collection.(*[]entities.TemplatesCollectionItem)
+		assert.NotNil(t, col)
+		assert.NotEmpty(t, *col)
+		if p.Links.Previous != nil {
+			assert.Equal(t, 13, len(*col))
+			assert.Equal(t, fmt.Sprintf("/api/templates?ending_before=%d&per_page=%d", (*col)[0].GetID(), 13), *p.Links.Previous)
+			p.SetEndingBefore((*col)[0].GetID())
+		} else {
+			assert.Equal(t, 9, len(*col))
+		}
+	}
 }
