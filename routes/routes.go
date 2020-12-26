@@ -233,7 +233,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 
 		templates := authorized.Group("/templates")
 		{
-			templates.GET("", actions.GetTemplates)
+			templates.GET("", middleware.PaginateWithCursor(), actions.GetTemplates)
 			templates.GET("/:name", actions.GetTemplate)
 			templates.POST("", actions.PostTemplate)
 			templates.PUT("/:id", actions.PutTemplate)

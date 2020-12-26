@@ -20,3 +20,15 @@ type TemplateMeta struct {
 	Name      string    `json:"name"`
 	Timestamp time.Time `json:"timestamp"`
 }
+
+type TemplatesCollectionItem struct {
+	ID          int64     `json:"id"`
+	Name        string    `json:"name"`
+	SubjectPart string    `json:"subject_part"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func (c TemplatesCollectionItem) GetID() int64 {
+	return c.ID
+}
