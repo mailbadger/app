@@ -109,6 +109,7 @@ type Storage interface {
 	UpdateTemplate(t *entities.Template) error
 	GetTemplateByName(name string, userID int64) (*entities.Template, error)
 	GetTemplate(id int64, userID int64) (*entities.Template, error)
+	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
 }
 
@@ -506,6 +507,12 @@ func GetTemplateByName(c context.Context, name string, userID int64) (*entities.
 // GetTemplate returns a Template entity by the given id and user id.
 func GetTemplate(c context.Context, id, userID int64) (*entities.Template, error) {
 	return GetFromContext(c).GetTemplate(id, userID)
+}
+
+// GetTemplates populates a pagination object with a collection of
+// templates by the specified user id.
+func GetTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	return GetFromContext(c).GetTemplates(userID, p, scopeMap)
 }
 
 // DeleteTemplate deletes the template with given template id and user id from db

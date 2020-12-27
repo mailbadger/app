@@ -27,6 +27,7 @@ var (
 type Service interface {
 	AddTemplate(c context.Context, input *entities.Template) error
 	UpdateTemplate(c context.Context, input *entities.Template) error
+	GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(c context.Context, templateID, userID int64) error
 }
 
@@ -115,6 +116,12 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 	}
 
 	return nil
+}
+
+// GetTemplates populates a pagination object with a collection of
+// templates by the specified user id.
+func (s service) GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error {
+	return s.db.GetTemplates(userID, p, scopeMap)
 }
 
 // DeleteTemplate deletes the given template

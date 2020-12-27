@@ -66,55 +66,40 @@ func GetTemplate(c *gin.Context) {
 func GetTemplates(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
+	val, ok := c.Get("cursor")
+	if !ok {
+		logger.From(c).Error("Unable to fetch pagination cursor from context.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
 
-	nextToken := c.Query("next_token")
-
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+	p, ok := val.(*storage.PaginationCursor)
+	if !ok {
+		logger.From(c).Error("Unable to cast pagination cursor from context value.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
 
-	res, err := store.ListTemplates(&ses.ListTemplatesInput{
-		NextToken: aws.String(nextToken),
-	})
+	scopeMap := c.QueryMap("scopes")
 
+	s := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
+	err := s.GetTemplates(c, u.ID, p, scopeMap)
 	if err != nil {
-		logger.From(c).WithField("token", nextToken).WithError(err).Error("Unable to list templates.")
+		logger.From(c).WithFields(logrus.Fields{
+			"user_id":   u.ID,
+			"scope_map": scopeMap,
+		}).WithError(err).Error("Unable to list templates.")
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Templates not found, invalid page token.",
 		})
 		return
 	}
 
-	list := []entities.TemplateMeta{}
-
-	for _, t := range res.TemplatesMetadata {
-		list = append(list, entities.TemplateMeta{
-			Name:      *t.Name,
-			Timestamp: *t.CreatedTimestamp,
-		})
-	}
-
-	var nt string
-	if res.NextToken != nil {
-		nt = *res.NextToken
-	}
-
-	c.JSON(http.StatusOK, entities.TemplateCollection{
-		NextToken:  nt,
-		Collection: list,
-	})
+	c.JSON(http.StatusOK, p)
 }
 
 func PostTemplate(c *gin.Context) {
