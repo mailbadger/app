@@ -126,12 +126,7 @@ func (s service) GetTemplates(c context.Context, userID int64, p *storage.Pagina
 
 // DeleteTemplate deletes the given template
 func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) error {
-	_, err := s.db.GetTemplate(templateID, userID)
-	if err != nil {
-		return fmt.Errorf("get template: %w", err)
-	}
-
-	_, err = s.s3.DeleteObject(&s3.DeleteObjectInput{
+	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})

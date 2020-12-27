@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
@@ -253,12 +252,6 @@ func DeleteTemplate(c *gin.Context) {
 
 	err = service.DeleteTemplate(c, id, u.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"message": "Template not found.",
-			})
-			return
-		}
 		logger.From(c).WithFields(logrus.Fields{
 			"user_id":     u.ID,
 			"template_id": id,
