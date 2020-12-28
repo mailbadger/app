@@ -48,3 +48,8 @@ func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[st
 
 	return db.Paginate(p, userID)
 }
+
+// DeleteTemplate deletes the template with given template id and user id from db
+func (db *store) DeleteTemplate(templateID int64, userID int64) error {
+	return db.Delete(entities.Template{Model: entities.Model{ID: templateID}, UserID: userID}).Error
+}

@@ -110,6 +110,7 @@ type Storage interface {
 	GetTemplateByName(name string, userID int64) (*entities.Template, error)
 	GetTemplate(id int64, userID int64) (*entities.Template, error)
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
+	DeleteTemplate(templateID int64, userID int64) error
 }
 
 // SetToContext sets the storage to the context
@@ -512,4 +513,9 @@ func GetTemplate(c context.Context, id, userID int64) (*entities.Template, error
 // templates by the specified user id.
 func GetTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
 	return GetFromContext(c).GetTemplates(userID, p, scopeMap)
+}
+
+// DeleteTemplate deletes the template with given template id and user id from db
+func DeleteTemplate(c context.Context, templateID int64, userID int64) error {
+	return GetFromContext(c).DeleteTemplate(templateID, userID)
 }

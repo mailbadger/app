@@ -2,12 +2,10 @@ package actions
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -241,40 +239,25 @@ func PutTemplate(c *gin.Context) {
 }
 
 func DeleteTemplate(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
 	u := middleware.GetUser(c)
+	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
 
-	keys, err := storage.GetSesKeys(c, u.ID)
+	err = service.DeleteTemplate(c, id, u.ID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
-
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	name := c.Param("name")
-
-	_, err = store.DeleteTemplate(&ses.DeleteTemplateInput{
-		TemplateName: aws.String(name),
-	})
-
-	if err != nil {
-		reason := "Unable to delete template."
-
-		if awsErr, ok := err.(awserr.Error); ok {
-			reason = fmt.Sprintf("%s: %s", awsErr.Code(), awsErr.Message())
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": reason,
+		logger.From(c).WithFields(logrus.Fields{
+			"user_id":     u.ID,
+			"template_id": id,
+		}).WithError(err).Error("Unable to delete template.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to delete template.",
 		})
 		return
 	}
