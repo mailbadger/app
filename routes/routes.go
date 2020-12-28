@@ -237,7 +237,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			templates.GET("/:id", actions.GetTemplate)
 			templates.POST("", actions.PostTemplate)
 			templates.PUT("/:id", actions.PutTemplate)
-			templates.DELETE("/:name", actions.DeleteTemplate)
+			templates.DELETE("/:id", actions.DeleteTemplate)
 		}
 
 		campaigns := authorized.Group("/campaigns")

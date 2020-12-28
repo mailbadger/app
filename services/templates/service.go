@@ -32,9 +32,11 @@ type Service interface {
 	AddTemplate(c context.Context, input *entities.Template) error
 	UpdateTemplate(c context.Context, input *entities.Template) error
 	GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error
+	DeleteTemplate(c context.Context, templateID, userID int64) error
 	GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error)
 }
 
+// service implements the Service interface
 type service struct {
 	db storage.Storage
 	s3 s3iface.S3API
@@ -123,6 +125,24 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 // templates by the specified user id.
 func (s service) GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error {
 	return s.db.GetTemplates(userID, p, scopeMap)
+}
+
+// DeleteTemplate deletes the given template
+func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) error {
+	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(templatesBucket),
+		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+	})
+	if err != nil {
+		return fmt.Errorf("delete object: %w", err)
+	}
+
+	err = s.db.DeleteTemplate(templateID, userID)
+	if err != nil {
+		return fmt.Errorf("delete template: %w", err)
+	}
+
+	return nil
 }
 
 // GetTemplate returns the template with given template id and user id

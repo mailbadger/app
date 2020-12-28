@@ -133,4 +133,6 @@ func TestTemplate(t *testing.T) {
 			assert.Equal(t, 9, len(*col))
 		}
 	}
+	err = store.DeleteTemplate(templateByID.ID, 1)
+	assert.Nil(t, err)
 }
