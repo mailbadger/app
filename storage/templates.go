@@ -27,3 +27,24 @@ func (db *store) GetTemplate(templateID, userID int64) (*entities.Template, erro
 	err := db.Where("user_id = ? and id = ?", userID, templateID).Find(template).Error
 	return template, err
 }
+
+// GetTemplates fetches templates by user id, and populates the pagination obj
+func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
+	p.SetCollection(&[]entities.TemplatesCollectionItem{})
+	p.SetResource("templates")
+
+	for k, v := range scopeMap {
+		if k == "name" {
+			p.AddScope(NameLike(v))
+		}
+	}
+
+	query := db.Table(p.Resource).
+		Where("user_id = ?", userID).
+		Order("created_at desc, id desc").
+		Limit(p.PerPage)
+
+	p.SetQuery(query)
+
+	return db.Paginate(p, userID)
+}
