@@ -21,7 +21,7 @@ var (
 	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
 
 	ErrHTMLPartNotFound = errors.New("HTML part not found")
-	ErrInvalidHTMLPart = errors.New("HTML part is in invalid state")
+	ErrInvalidHTMLPart  = errors.New("HTML part is in invalid state")
 
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
@@ -152,7 +152,7 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 		return nil, fmt.Errorf("get template: %w", err)
 	}
 
-	result, err := s.s3.GetObject(&s3.GetObjectInput{
+	resp, err := s.s3.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
@@ -170,8 +170,10 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 		return nil, fmt.Errorf("get object: %w", err)
 	}
 
+	defer resp.Body.Close()
+
 	var html []byte
-	_, err = result.Body.Read(html)
+	_, err = resp.Body.Read(html)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}
