@@ -236,14 +236,10 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	campaign := &entities.Campaign{
-		Name:   body.Name,
-		UserID: user.ID,
-		Template: entities.Template{
-			Model: entities.Model{
-				ID: template.ID,
-			},
-		},
-		Status: entities.StatusDraft,
+		Name:     body.Name,
+		UserID:   user.ID,
+		Template: template,
+		Status:   entities.StatusDraft,
 	}
 
 	err = storage.CreateCampaign(c, campaign)
