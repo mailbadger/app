@@ -43,13 +43,6 @@ func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	return campaign, err
 }
 
-// GetCampaignsByTemplateName returns a collection of campaigns by the given template id and user id
-func (db *store) GetCampaignsByTemplateName(templateName string, userID int64) ([]entities.Campaign, error) {
-	var campaigns []entities.Campaign
-	err := db.Where("user_id = ? and template_name = ?", userID, templateName).Find(&campaigns).Error
-	return campaigns, err
-}
-
 // GetCampaignByName returns the campaign by the given name and user id
 func (db *store) GetCampaignByName(name string, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)

@@ -28,7 +28,6 @@ type Storage interface {
 	GetCampaigns(int64, *PaginationCursor, map[string]string) error
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
-	GetCampaignsByTemplateName(string, int64) ([]entities.Campaign, error)
 	CreateCampaign(*entities.Campaign) error
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
@@ -182,11 +181,6 @@ func GetCampaign(c context.Context, id, userID int64) (*entities.Campaign, error
 // GetCampaignByName returns a Campaign entity by the given name and user id.
 func GetCampaignByName(c context.Context, name string, userID int64) (*entities.Campaign, error) {
 	return GetFromContext(c).GetCampaignByName(name, userID)
-}
-
-// GetCampaignsByTemplateName returns a collection of campaigns by the given template name and user id.
-func GetCampaignsByTemplateName(c context.Context, templateName string, userID int64) ([]entities.Campaign, error) {
-	return GetFromContext(c).GetCampaignsByTemplateName(templateName, userID)
 }
 
 // CreateCampaign persists a new Campaign entity in the datastore.
