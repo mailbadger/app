@@ -29,9 +29,9 @@ func GetTemplate(c *gin.Context) {
 	}
 
 	u := middleware.GetUser(c)
-	s := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
+	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
-	template, err := s.GetTemplate(c, id, u.ID)
+	template, err := service.GetTemplate(c, id, u.ID)
 	if err != nil {
 		switch {
 		case errors.Is(err, gorm.ErrRecordNotFound):
