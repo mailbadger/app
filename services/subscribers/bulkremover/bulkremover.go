@@ -38,7 +38,7 @@ func (svc *s3Remover) RemoveSubscribersFromFile(
 	userID int64,
 ) error {
 	res, err := svc.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("AWS_S3_BUCKET")),
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("subscribers/remove/%d/%s", userID, filename)),
 	})
 	if err != nil {
