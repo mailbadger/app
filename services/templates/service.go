@@ -171,7 +171,11 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 		return nil, fmt.Errorf("get object: %w", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
 
 	htmlBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
