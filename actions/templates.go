@@ -42,7 +42,7 @@ func GetTemplate(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": "HTML part not found.",
 			})
-		case errors.Is(err, templatesvc.ErrInvalidHTMLPart):
+		case errors.Is(err, templatesvc.ErrHTMLPartInvalidState):
 			c.JSON(http.StatusNotFound, gin.H{
 				"message": "The state of the HTML part is invalid.",
 			})
