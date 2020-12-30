@@ -15,11 +15,18 @@ import (
 
 func createCampaigns(store Storage) {
 	for i := 0; i < 100; i++ {
+		template := &entities.Template{
+			UserID:      1,
+			Name:        "bla" + strconv.Itoa(i),
+			HTMLPart:    "html_part",
+			TextPart:    "text_part",
+			SubjectPart: "subject_part",
+		}
 		err := store.CreateCampaign(&entities.Campaign{
-			Name:         "foo " + strconv.Itoa(i),
-			TemplateName: "Template " + strconv.Itoa(i),
-			UserID:       1,
-			Status:       "draft",
+			Name:     "foo " + strconv.Itoa(i),
+			Template: template,
+			UserID:   1,
+			Status:   "draft",
 		})
 		if err != nil {
 			logrus.Fatal(err)
@@ -40,10 +47,14 @@ func TestCampaign(t *testing.T) {
 	createCampaigns(store)
 	//Test create campaign
 	campaign := &entities.Campaign{
-		Name:         "foo",
-		TemplateName: "Template1",
-		UserID:       1,
-		Status:       "draft",
+		Name: "foo",
+		Template: &entities.Template{
+			Model: entities.Model{
+				ID: 1,
+			},
+		},
+		UserID: 1,
+		Status: "draft",
 	}
 
 	err := store.CreateCampaign(campaign)
@@ -53,7 +64,7 @@ func TestCampaign(t *testing.T) {
 	campaign, err = store.GetCampaign(campaign.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, campaign.Name, "foo")
-	assert.Equal(t, campaign.TemplateName, "Template1")
+	assert.Equal(t, campaign.Template.ID, 1)
 
 	//Test update campaign
 	now := time.Now().UTC()
