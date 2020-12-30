@@ -228,6 +228,7 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	template, err := storage.GetTemplateByName(c, body.Name, user.ID)
+	logger.From(c).Info(user.ID, "==========================================================")
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Template with that name does not exists",
