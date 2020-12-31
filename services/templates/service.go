@@ -147,8 +147,8 @@ func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) er
 }
 
 // GetTemplate returns the template with given template id and user id
-func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
-	template, err := s.db.GetTemplate(templateID, userID)
+func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (template *entities.Template, err error) {
+	template, err = s.db.GetTemplate(templateID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get template: %w", err)
 	}
@@ -184,5 +184,5 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 
 	template.HTMLPart = string(htmlBytes)
 
-	return template, nil
+	return
 }
