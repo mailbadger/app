@@ -5,9 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
@@ -17,7 +19,10 @@ import (
 )
 
 var (
-	templatesBucket = os.Getenv("TEMPLATE_BUCKET")
+	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
+
+	ErrHTMLPartNotFound     = errors.New("HTML part not found")
+	ErrHTMLPartInvalidState = errors.New("HTML part is in invalid state")
 
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
@@ -29,6 +34,7 @@ type Service interface {
 	UpdateTemplate(c context.Context, input *entities.Template) error
 	GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(c context.Context, templateID, userID int64) error
+	GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error)
 }
 
 // service implements the Service interface
@@ -37,7 +43,7 @@ type service struct {
 	s3 s3iface.S3API
 }
 
-func NewTemplateService(db storage.Storage, s3 s3iface.S3API) Service {
+func New(db storage.Storage, s3 s3iface.S3API) Service {
 	return &service{
 		db: db,
 		s3: s3,
@@ -45,7 +51,6 @@ func NewTemplateService(db storage.Storage, s3 s3iface.S3API) Service {
 }
 
 func (s service) AddTemplate(c context.Context, template *entities.Template) error {
-
 	// parse string to validate template params
 	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
@@ -62,6 +67,11 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 		return ErrParseSubjectPart
 	}
 
+	err = s.db.CreateTemplate(template)
+	if err != nil {
+		return fmt.Errorf("create template: %w", err)
+	}
+
 	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
@@ -73,16 +83,10 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 		return fmt.Errorf("upload template: put s3 object: %w", err)
 	}
 
-	err = s.db.CreateTemplate(template)
-	if err != nil {
-		return fmt.Errorf("create template: %w", err)
-	}
-
 	return nil
 }
 
 func (s service) UpdateTemplate(c context.Context, template *entities.Template) error {
-
 	// parse string to validate template params
 	_, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
@@ -140,4 +144,45 @@ func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) er
 	}
 
 	return nil
+}
+
+// GetTemplate returns the template with given template id and user id
+func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (template *entities.Template, err error) {
+	template, err = s.db.GetTemplate(templateID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get template: %w", err)
+	}
+
+	resp, err := s.s3.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(templatesBucket),
+		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+	})
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case s3.ErrCodeNoSuchKey:
+				return nil, ErrHTMLPartNotFound
+			case s3.ErrCodeInvalidObjectState:
+				return nil, ErrHTMLPartInvalidState
+			default:
+				return nil, fmt.Errorf("get object: %w", aerr)
+			}
+		}
+		return nil, fmt.Errorf("get object: %w", err)
+	}
+
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+
+	htmlBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read: %w", err)
+	}
+
+	template.HTMLPart = string(htmlBytes)
+
+	return
 }
