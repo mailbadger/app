@@ -7,7 +7,7 @@
     "@uppy/aws-s3": "^1.7.3",
     "@uppy/core": "^1.15.0",
     "axios": "^0.21.1",
-    "codemirror": "^5.59.0",
+    "codemirror": "^5.59.1",
     "date-fns": "^2.16.1",
     "dompurify": "^2.2.6",
     "es6-promise": "^4.2.8",
