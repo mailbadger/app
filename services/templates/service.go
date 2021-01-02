@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -20,8 +21,8 @@ import (
 var (
 	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
 
-	ErrHTMLPartNotFound = errors.New("HTML part not found")
-	ErrInvalidHTMLPart  = errors.New("HTML part is in invalid state")
+	ErrHTMLPartNotFound     = errors.New("HTML part not found")
+	ErrHTMLPartInvalidState = errors.New("HTML part is in invalid state")
 
 	ErrParseHTMLPart    = errors.New("failed to parse HTMLPart")
 	ErrParseTextPart    = errors.New("failed to parse TextPart")
@@ -66,6 +67,11 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 		return ErrParseSubjectPart
 	}
 
+	err = s.db.CreateTemplate(template)
+	if err != nil {
+		return fmt.Errorf("create template: %w", err)
+	}
+
 	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
@@ -75,11 +81,6 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 	_, err = s.s3.PutObject(s3Input)
 	if err != nil {
 		return fmt.Errorf("upload template: put s3 object: %w", err)
-	}
-
-	err = s.db.CreateTemplate(template)
-	if err != nil {
-		return fmt.Errorf("create template: %w", err)
 	}
 
 	return nil
@@ -146,8 +147,8 @@ func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) er
 }
 
 // GetTemplate returns the template with given template id and user id
-func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
-	template, err := s.db.GetTemplate(templateID, userID)
+func (s service) GetTemplate(c context.Context, templateID int64, userID int64) (template *entities.Template, err error) {
+	template, err = s.db.GetTemplate(templateID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("get template: %w", err)
 	}
@@ -162,7 +163,7 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 			case s3.ErrCodeNoSuchKey:
 				return nil, ErrHTMLPartNotFound
 			case s3.ErrCodeInvalidObjectState:
-				return nil, ErrInvalidHTMLPart
+				return nil, ErrHTMLPartInvalidState
 			default:
 				return nil, fmt.Errorf("get object: %w", aerr)
 			}
@@ -170,61 +171,18 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 		return nil, fmt.Errorf("get object: %w", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
 
-	var html []byte
-	_, err = resp.Body.Read(html)
+	htmlBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read: %w", err)
 	}
 
-	template.HTMLPart = string(html)
+	template.HTMLPart = string(htmlBytes)
 
-	return template, nil
+	return
 }
-
-/*func (s service) getTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error) {
-	g, _ := errgroup.WithContext(c)
-
-	var template *entities.Template
-	var html string
-	var err error
-
-	g.Go(func() error {
-		template, err = s.db.GetTemplate(templateID, userID)
-		if err != nil {
-			return fmt.Errorf("get template: %w", err)
-		}
-
-		return nil
-	})
-
-	g.Go(func() error {
-		obj, err := s.s3.GetObject(&s3.GetObjectInput{
-			Bucket: aws.String(templatesBucket),
-			Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
-		})
-		if err != nil {
-			return fmt.Errorf("get object: %w", err)
-		}
-
-		var htmlBytes []byte
-		_, err = obj.Body.Read(htmlBytes)
-		if err != nil {
-			return fmt.Errorf("read: %w", err)
-		}
-
-		html = string(htmlBytes)
-
-		return nil
-	})
-
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-
-	template.HTMLPart = html
-
-	return template, nil
-}
-*/
