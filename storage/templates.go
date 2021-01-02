@@ -22,9 +22,9 @@ func (db *store) GetTemplateByName(name string, userID int64) (*entities.Templat
 }
 
 // GetTemplate returns the template by the given id and user id
-func (db *store) GetTemplate(id, userID int64) (*entities.Template, error) {
+func (db *store) GetTemplate(templateID, userID int64) (*entities.Template, error) {
 	var template = new(entities.Template)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(template).Error
+	err := db.Where("user_id = ? and id = ?", userID, templateID).Find(template).Error
 	return template, err
 }
 

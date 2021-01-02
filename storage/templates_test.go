@@ -61,13 +61,6 @@ func TestTemplate(t *testing.T) {
 	assert.Equal(t, template.TextPart, templateByName.TextPart)
 	assert.Equal(t, template.SubjectPart, templateByName.SubjectPart)
 
-	// get template by id and user id test
-	templateByID, err := store.GetTemplate(template.ID, 1)
-	assert.Nil(t, err)
-	assert.Equal(t, template.Name, templateByID.Name)
-	assert.Equal(t, template.TextPart, templateByID.TextPart)
-	assert.Equal(t, template.SubjectPart, templateByID.SubjectPart)
-
 	// update template testing
 	template.TextPart = "asd {{.name}} and {{.surname}}"
 	template.SubjectPart = "Subject {{.update}}"
@@ -75,11 +68,16 @@ func TestTemplate(t *testing.T) {
 	err = store.UpdateTemplate(template)
 	assert.Nil(t, err)
 
-	templateByID, err = store.GetTemplate(template.ID, 1)
+	// get template by id and user id test
+	templateByID, err := store.GetTemplate(template.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, template.Name, templateByID.Name)
 	assert.Equal(t, template.TextPart, templateByID.TextPart)
 	assert.Equal(t, template.SubjectPart, templateByID.SubjectPart)
+
+	template, err = store.GetTemplate(0, 1)
+	assert.Equal(t, errors.New("record not found"), err)
+	assert.Equal(t, new(entities.Template), template)
 
 	p := NewPaginationCursor("/api/templates", 10)
 	err = store.GetTemplates(1, p, nil)

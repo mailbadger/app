@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
 )
@@ -19,16 +18,15 @@ func TestCampaigns(t *testing.T) {
 		t.FailNow()
 	}
 
-	// create template for fetching template in post/put camp
-	template := &entities.Template{
-		UserID:      2,
-		Name:        "template_test_name",
-		HTMLPart:    "",
-		TextPart:    "",
-		SubjectPart: "",
-	}
+	e.POST("/api/templates").WithForm(params.PostTemplate{Name: "", HTMLPart: "", TextPart: "", Subject: ""}).Expect().Status(http.StatusUnauthorized)
 
-	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: template.Name}).
+	// test post template
+	resp := auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test1", HTMLPart: "<html> bla </html>", TextPart: "txtpart", Subject: "subpart"}).
+		Expect().
+		Status(http.StatusCreated)
+	templateName := resp.JSON().Object().Value("name").String().Raw()
+
+	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusUnauthorized)
 
@@ -39,15 +37,15 @@ func TestCampaigns(t *testing.T) {
 		ValueEqual("errors", map[string]string{"name": "This field is required", "template_name": "This field is required"})
 
 	// test post campaign
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo1", TemplateName: template.Name}).
+	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo1", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusCreated)
 
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo2", TemplateName: template.Name}).
+	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo2", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusCreated)
 
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: template.Name}).
+	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusCreated)
 
@@ -61,7 +59,7 @@ func TestCampaigns(t *testing.T) {
 	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
 
 	auth.GET("/api/campaigns").
-		WithQuery("scopes[name]", "foo").WithQuery("scopes[template_name]", template.Name).
+		WithQuery("scopes[name]", "foo").WithQuery("scopes[template_name]", templateName).
 		Expect().
 		Status(http.StatusOK).
 		JSON().Object().ValueEqual("total", 2)
@@ -71,10 +69,10 @@ func TestCampaigns(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "foo1").
-		ValueEqual("template_name", template.Name).
+		ValueEqual("template_name", templateName).
 		ValueEqual("status", "draft")
 
-	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "djaleputtest", TemplateName: template.Name}).
+	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "djaleputtest", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusNoContent)
 
@@ -83,7 +81,7 @@ func TestCampaigns(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "djaleputtest").
-		ValueEqual("template_name", template.Name).
+		ValueEqual("template_name", templateName).
 		ValueEqual("status", "draft")
 
 	// delete campaign by id
