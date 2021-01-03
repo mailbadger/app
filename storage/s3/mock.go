@@ -5,7 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 )
 
-// Define a mock struct to be used in your unit tests of myFunc.
+// MockS3Client structure with s3API mock for testing
 type MockS3Client struct {
 	s3iface.S3API
 }
