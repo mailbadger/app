@@ -18,13 +18,23 @@ func TestCampaigns(t *testing.T) {
 		t.FailNow()
 	}
 
-	e.POST("/api/templates").WithForm(params.PostTemplate{Name: "", HTMLPart: "", TextPart: "", Subject: ""}).Expect().Status(http.StatusUnauthorized)
+	e.POST("/api/templates").WithForm(params.PostTemplate{Name: "", HTMLPart: "", TextPart: "", SubjectPart: ""}).Expect().Status(http.StatusUnauthorized)
 
 	// test post template
-	resp := auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test1", HTMLPart: "<html> bla </html>", TextPart: "txtpart", Subject: "subpart"}).
+	tempPostResp := auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test1", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
 		Expect().
 		Status(http.StatusCreated)
-	templateName := resp.JSON().Object().Value("name").String().Raw()
+	templateName := tempPostResp.JSON().Object().Value("name").String().Raw()
+
+	// create template for test put case
+	auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test2", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
+		Expect().
+		Status(http.StatusCreated)
+
+	// test put template
+	auth.PUT("/api/templates/2").WithForm(params.PutTemplate{Name: "test3", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
+		Expect().
+		Status(http.StatusOK)
 
 	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: templateName}).
 		Expect().
@@ -59,7 +69,7 @@ func TestCampaigns(t *testing.T) {
 	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
 
 	auth.GET("/api/campaigns").
-		WithQuery("scopes[name]", "foo").WithQuery("scopes[template_name]", templateName).
+		WithQuery("scopes[name]", "foo").
 		Expect().
 		Status(http.StatusOK).
 		JSON().Object().ValueEqual("total", 2)
@@ -69,10 +79,9 @@ func TestCampaigns(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "foo1").
-		ValueEqual("template_name", templateName).
 		ValueEqual("status", "draft")
 
-	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "djaleputtest", TemplateName: templateName}).
+	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "TESTputtest", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusNoContent)
 
@@ -80,8 +89,7 @@ func TestCampaigns(t *testing.T) {
 	auth.GET("/api/campaigns/1").
 		Expect().
 		Status(http.StatusOK).JSON().Object().
-		ValueEqual("name", "djaleputtest").
-		ValueEqual("template_name", templateName).
+		ValueEqual("name", "TESTputtest").
 		ValueEqual("status", "draft")
 
 	// delete campaign by id

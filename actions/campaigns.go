@@ -180,7 +180,7 @@ func GetCampaigns(c *gin.Context) {
 func GetCampaign(c *gin.Context) {
 	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
 		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID); err == nil {
-			campaign.Template, err = storage.GetTemplate(c, campaign.Template.ID, middleware.GetUser(c).ID)
+			campaign.Template, err = storage.GetTemplate(c, campaign.TemplateID, middleware.GetUser(c).ID)
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{
 					"message": "Template not found",
@@ -243,7 +243,6 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	err = storage.CreateCampaign(c, campaign)
-
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create campaign.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -288,7 +287,7 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
-		template, err := storage.GetTemplateByName(c, body.TemplateName, user.ID)
+		campaign.Template, err = storage.GetTemplateByName(c, body.TemplateName, user.ID)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Template with that name does not exists",
@@ -297,7 +296,6 @@ func PutCampaign(c *gin.Context) {
 		}
 
 		campaign.Name = body.Name
-		campaign.Template.ID = template.ID
 
 		err = storage.UpdateCampaign(c, campaign)
 
