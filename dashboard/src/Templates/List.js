@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
 import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
@@ -16,16 +16,24 @@ import {
 } from "grommet";
 import history from "../history";
 import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
+import { NotificationsContext } from "../Notifications/context";
 
 const Row = ({ template, setShowDelete }) => {
-  const d = parseISO(template.timestamp);
+  const createdAt = parseISO(template.created_at);
+  const updatedAt = parseISO(template.updated_at);
   return (
     <TableRow>
       <TableCell scope="row" size="xlarge">
         <strong>{template.name}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
-        {formatRelative(d, new Date())}
+        <strong>{template.subject_part}</strong>
+      </TableCell>
+      <TableCell scope="row" size="medium">
+        {formatRelative(createdAt, new Date())}
+      </TableCell>
+      <TableCell scope="row" size="medium">
+        {formatRelative(updatedAt, new Date())}
       </TableCell>
       <TableCell scope="row" size="xsmall">
         <Select
@@ -37,10 +45,10 @@ const Row = ({ template, setShowDelete }) => {
             (function () {
               switch (option) {
                 case "Edit":
-                  history.push(`/dashboard/templates/${template.name}/edit`);
+                  history.push(`/dashboard/templates/${template.id}/edit`);
                   break;
                 case "Delete":
-                  setShowDelete({ show: true, name: template.name });
+                  setShowDelete({ show: true, name: template.name, id: template.id });
                   break;
                 default:
                   return null;
@@ -56,8 +64,11 @@ const Row = ({ template, setShowDelete }) => {
 Row.propTypes = {
   setShowDelete: PropTypes.func,
   template: PropTypes.shape({
+    id: PropTypes.number,
     name: PropTypes.string,
-    timestamp: PropTypes.string,
+    subject_part: PropTypes.string,
+    created_at: PropTypes.string,
+    updated_at: PropTypes.string,
   }),
 };
 
@@ -68,7 +79,13 @@ const Header = () => (
         <strong>Name</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="medium">
+        <strong>Subject</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="medium">
         <strong>Created At</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="medium">
+        <strong>Updated At</strong>
       </TableCell>
       <TableCell align="end" scope="col" border="bottom" size="small">
         <strong>Action</strong>
@@ -94,9 +111,11 @@ TemplateTable.propTypes = {
   setShowDelete: PropTypes.func,
 };
 
-const DeleteForm = ({ name, callApi, hideModal }) => {
-  const deleteTemplate = async (name) => {
-    await axios.delete(`/api/templates/${name}`);
+const DeleteForm = ({ id, callApi, hideModal }) => {
+  const { createNotification } = useContext(NotificationsContext);
+
+  const deleteTemplate = async (id) => {
+    await axios.delete(`/api/templates/${id}`);
   };
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -113,10 +132,16 @@ const DeleteForm = ({ name, callApi, hideModal }) => {
           disabled={isSubmitting}
           onClick={async () => {
             setSubmitting(true);
-            await deleteTemplate(name);
-            await callApi({ url: "/api/templates" });
+            try {
+              await deleteTemplate(id);
+              await callApi({ url: "/api/templates" });
+              hideModal();
+            } catch(e) {
+              console.error(e);
+              createNotification("Unable to delete template, please try again.", "status-error");
+            }
+
             setSubmitting(false);
-            hideModal();
           }}
         />
       </Box>
@@ -125,15 +150,14 @@ const DeleteForm = ({ name, callApi, hideModal }) => {
 };
 
 DeleteForm.propTypes = {
-  name: PropTypes.string,
+  id: PropTypes.number,
   callApi: PropTypes.func,
   hideModal: PropTypes.func,
 };
 
 const List = () => {
-  const [showDelete, setShowDelete] = useState({ show: false, name: "" });
-  const [currentPage, setPage] = useState({ current: -1, tokens: [""] });
-  const hideModal = () => setShowDelete({ show: false, name: "" });
+  const [showDelete, setShowDelete] = useState({ show: false, name: "", id: null });
+  const hideModal = () => setShowDelete({ show: false, name: "", id: null });
 
   const [state, callApi] = useApi(
     {
@@ -166,7 +190,7 @@ const List = () => {
           hideModal={hideModal}
           form={
             <DeleteForm
-              id={showDelete.name}
+              id={showDelete.id}
               callApi={callApi}
               hideModal={hideModal}
             />
@@ -208,20 +232,12 @@ const List = () => {
               <Button
                 icon={<FormPreviousLink />}
                 label="Previous"
+                disabled={state.data.links.previous === null}
                 onClick={() => {
-                  const t = currentPage.tokens[currentPage.current];
                   callApi({
-                    url: `/api/templates?next_token=${encodeURIComponent(t)}`,
-                  });
-                  const removeNumOfTokens = currentPage.current > 0 ? 2 : 1;
-                  currentPage.tokens.splice(-1, removeNumOfTokens);
-
-                  setPage({
-                    current: currentPage.current - 1,
-                    tokens: currentPage.tokens,
+                    url: state.data.links.previous,
                   });
                 }}
-                disabled={currentPage.current === -1}
               />
             </Box>
             <Box>
@@ -229,21 +245,12 @@ const List = () => {
                 icon={<FormNextLink />}
                 reverse
                 label="Next"
+                disabled={state.data.links.next === null}
                 onClick={() => {
-                  const { next_token } = state.data;
                   callApi({
-                    url: `/api/templates?next_token=${encodeURIComponent(
-                      next_token
-                    )}`,
-                  });
-                  currentPage.tokens.push(next_token);
-
-                  setPage({
-                    current: currentPage.current + 1,
-                    tokens: currentPage.tokens,
+                    url: state.data.links.next,
                   });
                 }}
-                disabled={state.data.next_token === ""}
               />
             </Box>
           </Box>
