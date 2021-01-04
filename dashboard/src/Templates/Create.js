@@ -32,7 +32,7 @@ const initialHtml = `<!DOCTYPE html>
 const templateValidation = object().shape({
   name: string().required("Please enter a template name."),
   subject: string().required("Please enter a subject for the email."),
-  htmlPart: string().required("Please enter a valid HTML"),
+  html_part: string().required("Please enter a valid HTML"),
 });
 
 const Form = ({
@@ -67,7 +67,7 @@ const Form = ({
           </FormField>
         </Box>
         <Box margin={{ top: "small" }}>
-          <FormField htmlFor="htmlPart" label="HTML Content">
+          <FormField htmlFor="html_part" label="HTML Content">
             <CodeMirror
               value={html}
               options={{
@@ -79,10 +79,10 @@ const Form = ({
                 setHtml(value);
               }}
               onChange={(editor) => {
-                setFieldValue("htmlPart", editor.getValue(), true);
+                setFieldValue("html_part", editor.getValue(), true);
               }}
             />
-            <ErrorMessage name="htmlPart" />
+            <ErrorMessage name="html_part" />
           </FormField>
         </Box>
         <Box margin={{ top: "medium" }} align="start">
@@ -118,7 +118,8 @@ const CreateTemplateForm = () => {
           "/api/templates",
           qs.stringify({
             name: values.name,
-            content: values.htmlPart,
+            html_part: values.html_part,
+            text_part: values.html_part,
             subject: values.subject,
           })
         );
@@ -169,7 +170,7 @@ const CreateTemplateForm = () => {
           onSubmit={handleSubmit}
           validationSchema={templateValidation}
           initialValues={{
-            htmlPart: html,
+            html_part: html,
           }}
         >
           {(props) => <Form setHtml={setHtml} html={html} {...props} />}

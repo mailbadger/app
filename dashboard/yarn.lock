@@ -2040,7 +2040,7 @@
     exifr "^6.0.0"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.2.5", "@uppy/utils@^3.3.0":
+"@uppy/utils@^3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.3.0.tgz#c9501a4f1cd98bf91fb8f5a5651b47df40ac785f"
   integrity sha512-oPNZjjRDDBLC7763idAlzIZiaQoFq2ms/G0TOFq5YeiBv/usbvb/mcEugrwsvLAvLYum2wJzYvWzAx4tlFF/ag==
