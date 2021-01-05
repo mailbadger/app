@@ -40,8 +40,7 @@ func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	db.Preload("Template").Find(&campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Template").Find(&campaign).Error
 	return campaign, err
 }
 

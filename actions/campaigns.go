@@ -187,6 +187,7 @@ func GetCampaign(c *gin.Context) {
 	}
 	campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID)
 	if err != nil {
+		logrus.Info(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
