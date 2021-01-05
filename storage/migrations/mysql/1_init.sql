@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `id`            integer unsigned primary key AUTO_INCREMENT NOT NULL,
   `user_id`       integer unsigned NOT NULL,
   `name`          varchar(191) NOT NULL,
-  `template_id`   integer unsigned NOT NULL,
+  `template_id`   integer unsigned,
   `status`        varchar(191) NOT NULL,
   `created_at`    datetime(6) NOT NULL,
   `updated_at`    datetime(6) NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `completed_at`  datetime(6) DEFAULT NULL,
   `deleted_at`    datetime(6) DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`template_id`) REFERENCES templates(`id`),
+  FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

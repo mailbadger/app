@@ -178,28 +178,22 @@ func GetCampaigns(c *gin.Context) {
 }
 
 func GetCampaign(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID); err == nil {
-			campaign.Template, err = storage.GetTemplate(c, campaign.TemplateID, middleware.GetUser(c).ID)
-			if err != nil {
-				c.JSON(http.StatusNotFound, gin.H{
-					"message": "Template not found",
-				})
-				return
-			}
-			c.JSON(http.StatusOK, campaign)
-			return
-		}
-
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+	campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID)
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
-	})
+	c.JSON(http.StatusOK, campaign)
 }
 
 func PostCampaign(c *gin.Context) {
