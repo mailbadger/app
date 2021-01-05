@@ -4,4 +4,7 @@ set -euxo pipefail
 
 make gen
 
-eval $(egrep -v '^#' .env.local | xargs) go run mailbadger.go
+export $(egrep -v '^#' .env.local | xargs)
+trap 'kill 0' SIGINT; go run mailbadger.go & \
+  go run consumers/campaigner/main.go & \
+  go run consumers/bulksender/main.go
