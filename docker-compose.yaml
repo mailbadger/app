@@ -36,32 +36,32 @@ services:
     ports:
       - "4171:4171"
 
-  app:
-    image: mailbadger/app
-    command: /app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-      - nsqd
-    env_file: 
-    - .env.docker
+  # app:
+  #   image: mailbadger/app
+  #   command: /app
+  #   ports:
+  #     - "8080:8080"
+  #   depends_on:
+  #     - mysql
+  #     - nsqd
+  #   env_file: 
+  #   - .env.docker
 
-  bulksender:
-    image: mailbadger/app
-    command: /consumers/bulksender
-    depends_on:
-      - app
-    env_file: 
-    - .env.docker
+  # bulksender:
+  #   image: mailbadger/app
+  #   command: /consumers/bulksender
+  #   depends_on:
+  #     - app
+  #   env_file: 
+  #   - .env.docker
 
-  campaigner:
-    image: mailbadger/app
-    command: /consumers/campaigner
-    depends_on:
-      - app
-    env_file: 
-    - .env.docker
+  # campaigner:
+  #   image: mailbadger/app
+  #   command: /consumers/campaigner
+  #   depends_on:
+  #     - app
+  #   env_file: 
+  #   - .env.docker
 
 volumes:
   dbdata:

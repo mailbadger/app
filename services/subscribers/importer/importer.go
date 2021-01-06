@@ -121,5 +121,6 @@ func (i *s3Importer) ImportSubscribersFromFile(
 			return fmt.Errorf("importer: create subscriber: %w", err)
 		}
 	}
-	return nil
+
+	return
 }

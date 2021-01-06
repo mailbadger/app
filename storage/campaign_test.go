@@ -16,10 +16,9 @@ import (
 func createCampaigns(store Storage) {
 	for i := 0; i < 100; i++ {
 		err := store.CreateCampaign(&entities.Campaign{
-			Name:         "foo " + strconv.Itoa(i),
-			TemplateName: "Template " + strconv.Itoa(i),
-			UserID:       1,
-			Status:       "draft",
+			Name:     "foo " + strconv.Itoa(i),
+			UserID:   1,
+			Status:   "draft",
 		})
 		if err != nil {
 			logrus.Fatal(err)
@@ -40,10 +39,9 @@ func TestCampaign(t *testing.T) {
 	createCampaigns(store)
 	//Test create campaign
 	campaign := &entities.Campaign{
-		Name:         "foo",
-		TemplateName: "Template1",
-		UserID:       1,
-		Status:       "draft",
+		Name: "foo",
+		UserID: 1,
+		Status: "draft",
 	}
 
 	err := store.CreateCampaign(campaign)
@@ -53,7 +51,6 @@ func TestCampaign(t *testing.T) {
 	campaign, err = store.GetCampaign(campaign.ID, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, campaign.Name, "foo")
-	assert.Equal(t, campaign.TemplateName, "Template1")
 
 	//Test update campaign
 	now := time.Now().UTC()
@@ -101,10 +98,6 @@ func TestCampaign(t *testing.T) {
 		}
 	}
 
-	//Test get campaigns by template Id
-	campaigns, err := store.GetCampaignsByTemplateName("Template1", 1)
-	assert.Nil(t, err)
-	assert.NotEmpty(t, campaigns)
 
 	//Test get campaign by name
 	campaign, err = store.GetCampaignByName("bar", 1)

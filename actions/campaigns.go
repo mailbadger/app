@@ -18,7 +18,6 @@ import (
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -79,15 +78,6 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	store, err := templates.NewSesTemplateStore(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
 	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.Ids)
 	if err != nil || len(lists) == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -96,9 +86,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	_, err = store.GetTemplate(&ses.GetTemplateInput{
-		TemplateName: aws.String(campaign.TemplateName),
-	})
+	_, err = storage.GetTemplate(c, campaign.Template.ID, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found. Unable to send campaign.",
@@ -190,21 +178,23 @@ func GetCampaigns(c *gin.Context) {
 }
 
 func GetCampaign(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		if campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID); err == nil {
-			c.JSON(http.StatusOK, campaign)
-			return
-		}
-
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+	campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID)
+	if err != nil {
+		logrus.Info(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
-	})
+	c.JSON(http.StatusOK, campaign)
 }
 
 func PostCampaign(c *gin.Context) {
@@ -232,15 +222,22 @@ func PostCampaign(c *gin.Context) {
 		return
 	}
 
+	template, err := storage.GetTemplateByName(c, body.TemplateName, user.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name does not exists",
+		})
+		return
+	}
+
 	campaign := &entities.Campaign{
-		Name:         body.Name,
-		UserID:       user.ID,
-		TemplateName: body.TemplateName,
-		Status:       entities.StatusDraft,
+		Name:     body.Name,
+		UserID:   user.ID,
+		Template: template,
+		Status:   entities.StatusDraft,
 	}
 
 	err = storage.CreateCampaign(c, campaign)
-
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create campaign.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -285,8 +282,15 @@ func PutCampaign(c *gin.Context) {
 			return
 		}
 
+		campaign.Template, err = storage.GetTemplateByName(c, body.TemplateName, user.ID)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Template with that name does not exists",
+			})
+			return
+		}
+
 		campaign.Name = body.Name
-		campaign.TemplateName = body.TemplateName
 
 		err = storage.UpdateCampaign(c, campaign)
 

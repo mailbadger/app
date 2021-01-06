@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
@@ -17,49 +16,49 @@ import (
 	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
-	"github.com/mailbadger/app/storage/templates"
 	"github.com/mailbadger/app/validator"
 )
 
 func GetTemplate(c *gin.Context) {
-	u := middleware.GetUser(c)
-
-	keys, err := storage.GetSesKeys(c, u.ID)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
-
-	name := c.Param("name")
-
-	store, err := templates.NewSesTemplateStore(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create SES template store.")
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+			"message": "Id must be an integer",
 		})
 		return
 	}
 
-	res, err := store.GetTemplate(&ses.GetTemplateInput{
-		TemplateName: aws.String(name),
-	})
+	u := middleware.GetUser(c)
+	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
+	template, err := service.GetTemplate(c, id, u.ID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Template not found.",
-		})
+		switch {
+		case errors.Is(err, gorm.ErrRecordNotFound):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Template not found.",
+			})
+		case errors.Is(err, templatesvc.ErrHTMLPartNotFound):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "HTML part not found.",
+			})
+		case errors.Is(err, templatesvc.ErrHTMLPartInvalidState):
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "The state of the HTML part is invalid.",
+			})
+		default:
+			logger.From(c).WithFields(logrus.Fields{
+				"user_id":     u.ID,
+				"template_id": id,
+			}).WithError(err).Errorf("Unable to get template")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to get template",
+			})
+		}
 		return
 	}
 
-	c.JSON(http.StatusOK, entities.Template{
-		Name:        name,
-		HTMLPart:    *res.Template.HtmlPart,
-		TextPart:    *res.Template.TextPart,
-		SubjectPart: *res.Template.SubjectPart,
-	})
+	c.JSON(http.StatusOK, template)
 }
 
 func GetTemplates(c *gin.Context) {
@@ -85,7 +84,7 @@ func GetTemplates(c *gin.Context) {
 
 	scopeMap := c.QueryMap("scopes")
 
-	s := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
+	s := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 	err := s.GetTemplates(c, u.ID, p, scopeMap)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
@@ -103,7 +102,7 @@ func GetTemplates(c *gin.Context) {
 
 func PostTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
+	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	body := &params.PostTemplate{}
 	if err := c.ShouldBind(body); err != nil {
@@ -123,7 +122,7 @@ func PostTemplate(c *gin.Context) {
 		Name:        body.Name,
 		HTMLPart:    body.HTMLPart,
 		TextPart:    body.TextPart,
-		SubjectPart: body.Subject,
+		SubjectPart: body.SubjectPart,
 	}
 
 	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
@@ -166,7 +165,7 @@ func PostTemplate(c *gin.Context) {
 
 func PutTemplate(c *gin.Context) {
 	u := middleware.GetUser(c)
-	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
+	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -207,7 +206,7 @@ func PutTemplate(c *gin.Context) {
 	template.Name = body.Name
 	template.HTMLPart = body.HTMLPart
 	template.TextPart = body.TextPart
-	template.SubjectPart = body.Subject
+	template.SubjectPart = body.SubjectPart
 
 	err = service.UpdateTemplate(c, template)
 	if err != nil {
@@ -248,7 +247,7 @@ func DeleteTemplate(c *gin.Context) {
 	}
 
 	u := middleware.GetUser(c)
-	service := templatesvc.NewTemplateService(storage.GetFromContext(c), s3.GetFromContext(c))
+	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	err = service.DeleteTemplate(c, id, u.ID)
 	if err != nil {

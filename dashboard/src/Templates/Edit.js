@@ -13,8 +13,9 @@ import { NotificationsContext } from "../Notifications/context";
 import { FormPropTypes } from "../PropTypes";
 
 const templateValidation = object().shape({
+  name: string().required("Please enter a template name."),
   subject: string().required("Please enter a subject for the email."),
-  htmlPart: string().required("Please enter a valid HTML"),
+  html_part: string().required("Please enter a valid HTML"),
 });
 
 const Form = ({
@@ -30,6 +31,15 @@ const Form = ({
     <Box direction="column">
       <form onSubmit={handleSubmit}>
         <Box>
+          <FormField htmlFor="name" label="Template Name">
+            <StyledTextInput
+              value={values.name}
+              name="name"
+              onChange={handleChange}
+              placeholder="HelloWorld"
+            />
+            <ErrorMessage name="name" />
+          </FormField>
           <FormField htmlFor="subject" label="Template Subject">
             <StyledTextInput
               value={values.subject}
@@ -41,7 +51,7 @@ const Form = ({
           </FormField>
         </Box>
         <Box margin={{ top: "small" }}>
-          <FormField htmlFor="htmlPart" label="HTML Content">
+          <FormField htmlFor="html_part" label="HTML Content">
             <CodeMirror
               style={{ height: "100%" }}
               value={html}
@@ -54,10 +64,10 @@ const Form = ({
                 setHtml(value);
               }}
               onChange={(editor) => {
-                setFieldValue("htmlPart", editor.getValue(), true);
+                setFieldValue("html_part", editor.getValue(), true);
               }}
             />
-            <ErrorMessage name="htmlPart" />
+            <ErrorMessage name="html_part" />
           </FormField>
         </Box>
         <Box margin={{ top: "small" }} align="start">
@@ -97,7 +107,9 @@ const EditTemplateForm = ({ match }) => {
         await axios.put(
           `/api/templates/${id}`,
           qs.stringify({
-            content: values.htmlPart,
+            name: values.name,
+            html_part: values.html_part,
+            text_part: values.html_part,
             subject: values.subject,
           })
         );
@@ -165,6 +177,7 @@ const EditTemplateForm = ({ match }) => {
               validationSchema={templateValidation}
               initialValues={{
                 subject: state.data.subject_part,
+                name: state.data.name,
               }}
             >
               {(props) => <Form setHtml={setHtml} html={html} {...props} />}
