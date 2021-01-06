@@ -2,6 +2,7 @@ package storage
 
 import (
 	"github.com/jinzhu/gorm"
+
 	"github.com/mailbadger/app/entities"
 )
 
@@ -39,15 +40,8 @@ func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Template").Find(&campaign).Error
 	return campaign, err
-}
-
-// GetCampaignsByTemplateName returns a collection of campaigns by the given template id and user id
-func (db *store) GetCampaignsByTemplateName(templateName string, userID int64) ([]entities.Campaign, error) {
-	var campaigns []entities.Campaign
-	err := db.Where("user_id = ? and template_name = ?", userID, templateName).Find(&campaigns).Error
-	return campaigns, err
 }
 
 // GetCampaignByName returns the campaign by the given name and user id

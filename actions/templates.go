@@ -122,7 +122,7 @@ func PostTemplate(c *gin.Context) {
 		Name:        body.Name,
 		HTMLPart:    body.HTMLPart,
 		TextPart:    body.TextPart,
-		SubjectPart: body.Subject,
+		SubjectPart: body.SubjectPart,
 	}
 
 	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
@@ -206,7 +206,7 @@ func PutTemplate(c *gin.Context) {
 	template.Name = body.Name
 	template.HTMLPart = body.HTMLPart
 	template.TextPart = body.TextPart
-	template.SubjectPart = body.Subject
+	template.SubjectPart = body.SubjectPart
 
 	err = service.UpdateTemplate(c, template)
 	if err != nil {

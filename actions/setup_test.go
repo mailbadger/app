@@ -9,12 +9,15 @@ import (
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/storage/s3"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
@@ -44,10 +47,13 @@ func setup(t *testing.T, s storage.Storage) *httpexpect.Expect {
 		HttpOnly: true,
 	})
 
+	s3Mock := &s3.MockS3Client{}
+
 	handler := gin.New()
 	handler.Use(sessions.Sessions("mbsess", cookiestore))
 	handler.Use(middleware.Storage(s))
 	handler.Use(middleware.SetUser())
+	handler.Use(middleware.S3Client(s3Mock))
 
 	routes.SetGuestRoutes(handler)
 	routes.SetAuthorizedRoutes(handler)

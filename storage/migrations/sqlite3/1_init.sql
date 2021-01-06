@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "id"            integer primary key autoincrement,
   "user_id"       integer,
   "name"          varchar(191) NOT NULL,
-  "template_name" varchar(191) NOT NULL,
+  "template_id"   integer,
   "status"        varchar(191),
   "created_at"    datetime,
   "updated_at"    datetime,
