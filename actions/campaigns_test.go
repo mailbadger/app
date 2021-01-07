@@ -4,17 +4,23 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/stretchr/testify/mock"
+
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/s3"
+	s3mock "github.com/mailbadger/app/storage/s3"
 )
 
 func TestCampaigns(t *testing.T) {
 	s := storage.New("sqlite3", ":memory:")
 
-	s3mock := new(s3.MockS3Client)
+	mockS3 := new(s3mock.MockS3Client)
 
-	e := setup(t, s, s3mock)
+	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
+	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Once().Return(&s3.PutObjectAclOutput{}, nil)
+
+	e := setup(t, s, mockS3)
 	auth, err := createAuthenticatedExpect(e, s)
 	if err != nil {
 		t.Error(err)
