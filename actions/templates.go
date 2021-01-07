@@ -232,6 +232,7 @@ func PutTemplate(c *gin.Context) {
 				"message": "Unable to update template, please try again.",
 			})
 		}
+		return
 	}
 
 	c.JSON(http.StatusOK, template)

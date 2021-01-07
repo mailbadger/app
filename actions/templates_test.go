@@ -79,7 +79,38 @@ func TestTemplates(t *testing.T) {
 			"html_part":    "This field is required",
 		})*/
 
-	// TODO add tests for failing parsing mustache template on post template
+	// test filed to parse text part on post template
+	auth.POST("/api/templates").WithForm(params.PostTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>",
+		TextPart:    "template {{{number}} 223",
+		SubjectPart: "hello {{.name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to create template, failed to parse text_part")
+
+	// test filed to parse subject part on post template
+	auth.POST("/api/templates").WithForm(params.PostTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>",
+		TextPart:    "template {{number}} 223",
+		SubjectPart: "hello {{{name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to create template, failed to parse subject_part")
+
+	// test filed to parse html part on post template
+	auth.POST("/api/templates").WithForm(params.PostTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>{{{tesT}}",
+		TextPart:    "template {{number}} 223",
+		SubjectPart: "hello {{name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to create template, failed to parse html_part")
 
 	// test post subscriber with error on PutObject (this template is saved in database only the html part is not saved)
 	auth.POST("/api/templates").WithForm(params.PostTemplate{
@@ -188,7 +219,38 @@ func TestTemplates(t *testing.T) {
 			"html_part":    "This field is required",
 		})*/
 
-	// TODO add tests for failing parsing mustache template on put template
+	// test filed to parse text part on put template
+	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>",
+		TextPart:    "template {{{number}} 223",
+		SubjectPart: "hello {{.name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to update template, failed to parse text_part")
+
+	// test filed to parse subject part on put template
+	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>",
+		TextPart:    "template {{number}} 223",
+		SubjectPart: "hello {{{name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to update template, failed to parse subject_part")
+
+	// test filed to parse html part on put template
+	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+		Name:        "template 3",
+		HTMLPart:    "<span>test 2 template<span>{{{tesT}}",
+		TextPart:    "template {{number}} 223",
+		SubjectPart: "hello {{name}}",
+	}).Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Unable to update template, failed to parse html_part")
 
 	// test get template with id not integer
 	auth.GET("/api/templates/2.2").
