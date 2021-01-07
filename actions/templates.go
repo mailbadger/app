@@ -177,7 +177,7 @@ func PutTemplate(c *gin.Context) {
 
 	template, err := storage.GetTemplate(c, id, u.ID)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found",
 		})
 		return
