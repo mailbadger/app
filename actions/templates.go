@@ -91,8 +91,8 @@ func GetTemplates(c *gin.Context) {
 			"user_id":   u.ID,
 			"scope_map": scopeMap,
 		}).WithError(err).Error("Unable to list templates.")
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Templates not found, invalid page token.",
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
