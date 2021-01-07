@@ -169,6 +169,8 @@ func main() {
 
 	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
 	nsqlds := []string{addr}
+
+	logrus.Infoln("Connecting to NSQlookup...")
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		logrus.Fatal(err)
 	}
@@ -184,6 +186,7 @@ func main() {
 			return // consumer disconnected. Time to quit.
 		case <-shutdown:
 			// Synchronously drain the queue before falling out of main
+			logrus.Infoln("Stopping consumer...")
 			consumer.Stop()
 		}
 	}
