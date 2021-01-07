@@ -20,7 +20,7 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 		}
 	}
 
-	query := db.Table(p.Resource).
+	query := db.Table(p.Resource).Preload("Template").
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)

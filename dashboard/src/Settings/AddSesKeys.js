@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Layer,
@@ -25,7 +25,9 @@ import { FormPropTypes } from "../PropTypes";
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
   secret_key: string().required("Please enter your Amazon secret key."),
-  region: string().required("Please enter the Amazon region"),
+  region: object().shape({
+    code: string().required("Region code is required.")
+  }),
 });
 
 const opts = regions.filter((r) => r.public);
@@ -57,7 +59,7 @@ const Form = ({
           labelKey="name"
           placeholder="Select region"
         />
-        <ErrorMessage name="region" />
+        <ErrorMessage name="region.code" />
       </FormField>
 
       <Box margin={{ top: "medium" }}>
@@ -218,10 +220,10 @@ const AddSesKeysForm = () => {
     retries > 0 ? 1000 : null
   );
 
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+  const handleSubmit = async (values, { setErrors, setSubmitting }) => {
     const addKeys = async () => {
       try {
-        await axios.post(
+        return await axios.post(
           "/api/ses/keys",
           qs.stringify({
             access_key: values.access_key,
@@ -230,24 +232,25 @@ const AddSesKeysForm = () => {
           })
         );
 
-        setRetries(5); //reset retries
       } catch (error) {
-        if (error.response) {
-          setErrors(error.response.data);
-          const { message } = error.response.data;
-          const msg = message ? message : "Unable to add SES keys";
-
-          createNotification(msg, "status-error");
-        }
+        return error
       }
     };
 
-    await addKeys();
+    const res = await addKeys();
 
-    //done submitting, set submitting to false
     setSubmitting(false);
 
-    return;
+    if (res.response) {
+      setErrors(res.response.data.errors);
+      const { message } = res.response.data;
+      const msg = message ? message : "Unable to add SES keys";
+
+      createNotification(msg, "status-error");
+      return;
+    }
+
+    setRetries(5); //reset retries
   };
 
   let body = (
@@ -262,18 +265,21 @@ const AddSesKeysForm = () => {
     </Formik>
   );
 
-  if (retries === 0) {
-    setRetries(-1);
-    createNotification(
-      "Unable to add SES keys, check the IAM permissions and try again.",
-      "status-error"
-    );
-  }
+  useEffect(() => {
+    if (retries === 0) {
+      setRetries(-1);
+      createNotification(
+        "Unable to add SES keys, check the IAM permissions and try again.",
+        "status-error"
+      );
+    }
+  }, [retries]);
+
   if (state.isLoading || retries > 0) {
     body = <StyledSpinner size={4} />;
   }
 
-  if (!state.isError && state.data) {
+  if (!state.isError && !state.isLoading && state.data) {
     if (retries > 0) {
       setRetries(-1);
     }
