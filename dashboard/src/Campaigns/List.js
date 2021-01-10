@@ -134,6 +134,12 @@ const columns = [
   {
     property: "template_name",
     header: "Template Name",
+    render: (campaign) => campaign.template ? campaign.template.name : "/"
+  },
+  {
+    property: "subject",
+    header: "Subject",
+    render: (campaign) => campaign.template ? campaign.template.subject_part : "/"
   },
   {
     property: "created_at",
@@ -164,6 +170,9 @@ const PlaceholderHeader = () => (
         <strong>Template</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="xxsmall">
+        <strong>Subject</strong>
+      </TableCell>
+      <TableCell scope="col" border="bottom" size="xxsmall">
         <strong>Created At</strong>
       </TableCell>
       <TableCell
@@ -183,7 +192,6 @@ PlaceholderHeader.displayName = "PlaceholderHeader";
 
 const CampaignsTable = memo(
   ({ list, setShowDelete, hasSesKeys, setShowEdit }) => {
-    console.log(list);
     return (
       <StyledDataTable
         columns={columns}
