@@ -20,7 +20,6 @@ func (m *MockS3Client) PutObject(input *s3.PutObjectInput) (*s3.PutObjectOutput,
 	var obj s3.PutObjectOutput
 	objBytes, _ := json.Marshal(args.Get(0))
 
-	/* #nosec */
 	json.Unmarshal(objBytes, &obj)
 
 	return &obj, args.Error(1)
@@ -32,7 +31,6 @@ func (m *MockS3Client) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput,
 	var obj s3.GetObjectOutput
 	objBytes, _ := json.Marshal(args.Get(0))
 
-	/* #nosec */
 	json.Unmarshal(objBytes, &obj)
 
 	return &obj, args.Error(1)
@@ -44,7 +42,6 @@ func (m *MockS3Client) DeleteObject(input *s3.DeleteObjectInput) (*s3.DeleteObje
 	var obj s3.DeleteObjectOutput
 	objBytes, _ := json.Marshal(args.Get(0))
 
-	/* #nosec */
 	json.Unmarshal(objBytes, &obj)
 
 	return &obj, args.Error(1)
