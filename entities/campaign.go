@@ -19,6 +19,8 @@ const (
 	CampaignsTopic = "campaigns"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
+	// Sender topic is used by Sender Consumer
+	SenderTopic = "sender"
 )
 
 //Campaign represents the campaign entity
@@ -48,6 +50,7 @@ type BulkSendMessage struct {
 // SendCampaignParams represent the request params used
 // by the send campaign endpoint.
 type SendCampaignParams struct {
+	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
 	Source                 string            `json:"source"`
@@ -56,6 +59,18 @@ type SendCampaignParams struct {
 	ConfigurationSetExists bool              `json:"configuration_set_exists"`
 	Campaign               `json:"campaign"`
 	SesKeys                `json:"ses_keys"`
+}
+
+// SenderConsumerParams represent the request params used
+// by the sender campaign consumer.
+type SenderConsumerParams struct {
+	UUID         string `json:"uuid"`
+	SubscriberID int64  `json:"subscriber_id"`
+	CampaignID   int64  `json:"campaign_id"`
+	SesKeys
+	RenderedTemplate []byte
+	UserUUID         string `json:"user_uuid"`
+	UserID           int64  `json:"user_id"`
 }
 
 // CampaignClicksStats represents clicks stats by campaign, total number of links and stats for each link
