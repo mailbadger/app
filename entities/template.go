@@ -2,13 +2,34 @@ package entities
 
 import "time"
 
-type Template struct {
+type BaseTemplate struct {
 	Model
 	UserID      int64  `json:"user_id"`
-	Name        string `json:"name"`
+	Name        string    `json:"name"`
+	SubjectPart string    `json:"subject_part"`
+}
+
+func (c BaseTemplate) GetID() int64 {
+	return c.ID
+}
+
+type Template struct {
+	BaseTemplate
 	HTMLPart    string `json:"html_part" gorm:"-"`
 	TextPart    string `json:"text_part"`
-	SubjectPart string `json:"subject_part"`
+}
+
+func (t Template) GetBase() *BaseTemplate {
+	return &BaseTemplate{
+		Model:       Model{
+			ID:        t.ID,
+			CreatedAt: t.CreatedAt,
+			UpdatedAt: t.UpdatedAt,
+		},
+		UserID:      t.UserID,
+		Name:        t.Name,
+		SubjectPart: t.SubjectPart,
+	}
 }
 
 type TemplateCollection struct {
@@ -19,16 +40,4 @@ type TemplateCollection struct {
 type TemplateMeta struct {
 	Name      string    `json:"name"`
 	Timestamp time.Time `json:"timestamp"`
-}
-
-type TemplatesCollectionItem struct {
-	ID          int64     `json:"id"`
-	Name        string    `json:"name"`
-	SubjectPart string    `json:"subject_part"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-func (c TemplatesCollectionItem) GetID() int64 {
-	return c.ID
 }

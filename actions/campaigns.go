@@ -198,7 +198,6 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-
 	body := &params.Campaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
