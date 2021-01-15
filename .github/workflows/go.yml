@@ -14,7 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Generate migration files
-        run: make gen
+        uses: cedrickring/golang-action@1.6.0
+        with:
+          args: make gen
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
