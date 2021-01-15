@@ -149,6 +149,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	timestamp = lastSub.CreatedAt
 
 	campaign.Status = entities.StatusSent
+	campaign.CompletedAt.SetValid(time.Now().UTC())
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
 		return err
