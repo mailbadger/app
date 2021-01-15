@@ -23,7 +23,7 @@ jobs:
           GO111MODULE: "on"
         with:
           version: v1.29
-          args: --enable=gosec
+          args: --enable=gosec --out-format=colored-line-number --timeout=2m
   test:
     name: Test
     runs-on: ubuntu-latest
