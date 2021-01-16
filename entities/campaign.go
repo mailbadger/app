@@ -23,7 +23,7 @@ const (
 	SenderTopic = "sender"
 )
 
-//Campaign represents the campaign entity
+// Campaign represents the campaign entity
 type Campaign struct {
 	Model
 	UserID      int64             `json:"-" gorm:"column:user_id; index"`
