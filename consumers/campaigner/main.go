@@ -144,9 +144,22 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				textBuf bytes.Buffer
 			)
 
-			html.FRender(&htmlBuf, m)
-			txt.FRender(&subBuf, m)
-			sub.FRender(&textBuf, m)
+			err = html.FRender(&htmlBuf, m)
+			if err != nil {
+				logrus.WithError(err).Error("unable to render html_part")
+			}
+			err = txt.FRender(&subBuf, m)
+			if err != nil {
+				logrus.WithError(err).
+					WithField("subject_part", template.SubjectPart).
+					Error("unable to render text_part")
+			}
+			err = sub.FRender(&textBuf, m)
+			if err != nil {
+				logrus.WithError(err).
+					WithField("subject_part", template.SubjectPart).
+					Error("unable to render subject_part")
+			}
 
 			sender := entities.SendEmailTopicParams{
 				UUID:         uuid.New().String(),
