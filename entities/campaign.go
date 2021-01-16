@@ -61,7 +61,7 @@ type SendCampaignParams struct {
 	SesKeys                `json:"ses_keys"`
 }
 
-// SenderConsumerParams represent the request params used
+// SendEmailTopicParams represent the request params used
 // by the sender campaign consumer.
 type SendEmailTopicParams struct {
 	UUID         string `json:"uuid"`
