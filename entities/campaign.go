@@ -24,15 +24,16 @@ const (
 // Campaign represents the campaign entity
 type Campaign struct {
 	Model
-	UserID      int64             `json:"-" gorm:"column:user_id; index"`
-	Name        string            `json:"name" gorm:"not null"`
-	TemplateID  int64             `json:"-"`
-	Template    *Template         `json:"template" gorm:"foreignKey:template_id"`
-	Status      string            `json:"status"`
-	ScheduledAt NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
-	CompletedAt NullTime          `json:"completed_at" gorm:"column:completed_at"`
-	DeletedAt   NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
-	Errors      map[string]string `json:"-" sql:"-"`
+	UserID       int64             `json:"-" gorm:"column:user_id; index"`
+	Name         string            `json:"name" gorm:"not null"`
+	TemplateID   int64             `json:"-"`
+	Template     *Template         `json:"_" gorm:"foreignKey:template_id"`
+	BaseTemplate *BaseTemplate     `json:"template" sql:"-"`
+	Status       string            `json:"status"`
+	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
+	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
+	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
+	Errors       map[string]string `json:"-" sql:"-"`
 }
 
 // BulkSendMessage represents the entity used to transport the bulk send message

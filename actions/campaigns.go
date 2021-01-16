@@ -194,6 +194,8 @@ func GetCampaign(c *gin.Context) {
 		return
 	}
 
+	campaign.BaseTemplate = campaign.Template.GetBase()
+
 	c.JSON(http.StatusOK, campaign)
 }
 
@@ -230,10 +232,11 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	campaign := &entities.Campaign{
-		Name:     body.Name,
-		UserID:   user.ID,
-		Template: template,
-		Status:   entities.StatusDraft,
+		Name:         body.Name,
+		UserID:       user.ID,
+		Template:     template,
+		BaseTemplate: template.GetBase(),
+		Status:       entities.StatusDraft,
 	}
 
 	err = storage.CreateCampaign(c, campaign)
@@ -381,7 +384,6 @@ func GetCampaignOpens(c *gin.Context) {
 }
 
 func GetCampaignStats(c *gin.Context) {
-
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
