@@ -212,7 +212,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 		// exit the loop if next batch is smaller then 1k -> it's the last batch of 1k.
 		if len(subs) < 1000 {
-			continue
+			break
 		}
 	}
 
