@@ -57,8 +57,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	if campaign.Status != entities.StatusDraft {
 		logrus.WithError(err).
-			WithField("status", campaign.Status).
-			Warn("this is duplicate message in campaigner consumer")
+			WithFields(logrus.Fields{
+				"user_id":     msg.UserID,
+				"campaign_id": msg.CampaignID,
+			}).
+			Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
 		return nil
 	}
 
@@ -66,7 +69,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
 		logrus.WithError(err).
-			WithField("campaign", campaign).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"campaign_id": campaign.ID,
+				"status":      campaign.Status,
+			}).
 			Error("unable to update campaign")
 		return err
 	}
@@ -74,8 +81,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	var (
 		timestamp time.Time
 		nextID    int64
-		limit     int64 = 1000
+		limit     int64 = 1000 // fill template buffer with rendered template.
+		htmlBuf   bytes.Buffer
+		subBuf    bytes.Buffer
+		textBuf   bytes.Buffer
 	)
+
 	for {
 		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
@@ -90,7 +101,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
-			}).WithError(err).Error("Unable to fetch subscribers.")
+			}).WithError(err).Error("unable to fetch subscribers.")
 			return nil
 		}
 
@@ -101,7 +112,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
 		if err != nil {
 			logrus.WithError(err).
-				WithField("template_id", msg.TemplateID).
+				WithFields(logrus.Fields{
+					"template_id": msg.TemplateID,
+					"user_id":     msg.UserID,
+				}).
 				Error("unable to get template")
 			return nil
 		}
@@ -135,30 +149,29 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					Error("Unable to get subscriber metadata.")
 				continue
 			}
-			//  todo merge def template data with sub metadata
-
-			// fill template buffer with rendered template.
-			var (
-				htmlBuf bytes.Buffer
-				subBuf  bytes.Buffer
-				textBuf bytes.Buffer
-			)
+			// merge sub metadata with default template metadata
+			for k, v := range m {
+				msg.TemplateData[k] = v
+			}
 
 			err = html.FRender(&htmlBuf, m)
 			if err != nil {
 				logrus.WithError(err).Error("unable to render html_part")
+				// todo what to do on err?
 			}
 			err = txt.FRender(&subBuf, m)
 			if err != nil {
 				logrus.WithError(err).
 					WithField("subject_part", template.SubjectPart).
 					Error("unable to render text_part")
+				// todo what to do on err?
 			}
 			err = sub.FRender(&textBuf, m)
 			if err != nil {
 				logrus.WithError(err).
 					WithField("subject_part", template.SubjectPart).
 					Error("unable to render subject_part")
+				// todo what to do on err?
 			}
 
 			sender := entities.SendEmailTopicParams{
@@ -186,6 +199,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				continue
 			}
 		}
+
+		// clear buffers for next batch
+		htmlBuf.Reset()
+		subBuf.Reset()
+		textBuf.Reset()
 
 		// set  vars for next batches
 		lastSub := subs[len(subs)-1]
