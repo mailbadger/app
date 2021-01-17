@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,6 +38,7 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
 	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
 	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
@@ -62,6 +64,28 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	campaign.Template, err = storage.GetTemplate(c, campaign.Template.ID, u.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Template not found. Unable to send campaign.",
+		})
+		return
+	}
+
+	err = campaign.Template.ValidateData(body.DefaultTemplateData)
+	if err != nil {
+		if errors.Is(err, entities.ErrMissingDefaultData) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Incomplete default template data. Unable to send campaign.",
+			})
+			return
+		}
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Failed to parse template. Unable to send campaign.",
+		})
+		return
+	}
+
 	sesKeys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -69,6 +93,7 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
 	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
@@ -86,27 +111,19 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	_, err = storage.GetTemplate(c, campaign.Template.ID, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Template not found. Unable to send campaign.",
-		})
-		return
-	}
-
 	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
 
 	csExists := err == nil
 
-	msg, err := json.Marshal(entities.SendCampaignParams{
+	msg, err := json.Marshal(entities.CampaignerMessageBody{
+		CampaignID:             id,
 		SegmentIDs:             body.Ids,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
 		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
-		Campaign:               *campaign,
 		SesKeys:                *sesKeys,
 		ConfigurationSetExists: csExists,
 	})
@@ -117,7 +134,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	err = queue.Publish(c, entities.CampaignsTopic, msg)
+	err = queue.Publish(c, entities.CampaignerTopic, msg)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,

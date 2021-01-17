@@ -1,6 +1,16 @@
 package entities
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/cbroglie/mustache"
+)
+
+var (
+	ErrMissingDefaultData = errors.New("missing default data")
+)
 
 type Template struct {
 	Model
@@ -9,6 +19,41 @@ type Template struct {
 	HTMLPart    string `json:"html_part" gorm:"-"`
 	TextPart    string `json:"text_part"`
 	SubjectPart string `json:"subject_part"`
+}
+
+func (t Template) ValidateData(data map[string]string) error {
+	err := validateData(t.SubjectPart, data)
+	if err != nil {
+		return fmt.Errorf("validate subject part: %w", err)
+	}
+
+	err = validateData(t.TextPart, data)
+	if err != nil {
+		return fmt.Errorf("validate text part: %w", err)
+	}
+
+	err = validateData(t.HTMLPart, data)
+	if err != nil {
+		return fmt.Errorf("validate html part: %w", err)
+	}
+
+	return nil
+}
+
+func validateData(templateString string, data map[string]string) error {
+	template, err := mustache.ParseString(templateString)
+	if err != nil {
+		return fmt.Errorf("parse string: %w", err)
+	}
+
+	for _, tag := range template.Tags() {
+		_, exist := data[tag.Name()]
+		if !exist {
+			return fmt.Errorf("%s tag: %w", tag.Name(), ErrMissingDefaultData)
+		}
+	}
+
+	return nil
 }
 
 type TemplateCollection struct {

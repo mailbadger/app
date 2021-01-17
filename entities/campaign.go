@@ -15,8 +15,8 @@ const (
 	StatusSent = "sent"
 	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
-	// CampaignsTopic is the topic used by the campaigner consumer.
-	CampaignsTopic = "campaigns"
+	// CampaignerTopic is the topic used by the campaigner consumer.
+	CampaignerTopic = "campaigner"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
 )
@@ -45,16 +45,16 @@ type BulkSendMessage struct {
 	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
-// SendCampaignParams represent the request params used
+// CampaignerMessageBody represent the request params used
 // by the send campaign endpoint.
-type SendCampaignParams struct {
+type CampaignerMessageBody struct {
+	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
 	Source                 string            `json:"source"`
 	UserID                 int64             `json:"user_id"`
 	UserUUID               string            `json:"user_uuid"`
 	ConfigurationSetExists bool              `json:"configuration_set_exists"`
-	Campaign               `json:"campaign"`
 	SesKeys                `json:"ses_keys"`
 }
 
