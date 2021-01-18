@@ -94,19 +94,19 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
+	if err != nil || len(lists) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Subscriber lists are not found.",
+		})
+		return
+	}
+
 	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.Ids)
-	if err != nil || len(lists) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Subscriber lists are not found.",
 		})
 		return
 	}
@@ -119,7 +119,7 @@ func StartCampaign(c *gin.Context) {
 
 	msg, err := json.Marshal(entities.CampaignerMessageBody{
 		CampaignID:             id,
-		SegmentIDs:             body.Ids,
+		SegmentIDs:             body.SegmentIDs,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
 		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
@@ -138,7 +138,7 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
-			"segment_ids": body.Ids,
+			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
