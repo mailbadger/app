@@ -42,14 +42,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	msg := new(entities.SendCampaignParams)
 
 	err := json.Unmarshal(m.Body, msg)
-	// todo retry = true/false?
 	if err != nil {
 		logrus.WithField("body", string(m.Body)).WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
 
 	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
-	// todo retry = true/false?
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": msg.CampaignID,
@@ -100,7 +98,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			nextID,
 			limit,
 		)
-		// todo retry = true/false?
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
@@ -114,7 +111,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 
 		template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
-		// todo retry = true/false?
 		if err != nil {
 			logrus.WithError(err).
 				WithFields(logrus.Fields{
@@ -151,7 +147,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 		for _, s := range subs {
 			m, err := s.GetMetadata()
-			// todo retry = true/false?
 			if err != nil {
 				logrus.WithError(err).
 					WithField("subscriber", s).
@@ -198,7 +193,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 
 			senderBytes, err := json.Marshal(sender)
-			// todo retry = true/false?
 			if err != nil {
 				logrus.WithError(err).Error("Unable to marshal bulk message input.")
 				continue
@@ -206,7 +200,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 			// publish the message to the queue
 			err = h.p.Publish(entities.SenderTopic, senderBytes)
-			// todo retry = true/false?
 			if err != nil {
 				logrus.WithError(err).Error("Unable to publish message to send bulk topic.")
 				continue
@@ -232,7 +225,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	campaign.Status = entities.StatusSent
 	campaign.CompletedAt.SetValid(time.Now().UTC())
 	err = h.s.UpdateCampaign(campaign)
-	// todo retry = true/false?
 	if err != nil {
 		logrus.WithError(err).
 			WithField("campaign", campaign).
