@@ -312,7 +312,6 @@ func PutCampaign(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
-	return
 }
 
 func DeleteCampaign(c *gin.Context) {
