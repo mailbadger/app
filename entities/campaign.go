@@ -27,8 +27,7 @@ type Campaign struct {
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
 	Name         string            `json:"name" gorm:"not null"`
 	TemplateID   int64             `json:"-"`
-	Template     *Template         `json:"_" gorm:"foreignKey:template_id"`
-	BaseTemplate *BaseTemplate     `json:"template" sql:"-"`
+	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
 	Status       string            `json:"status"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
