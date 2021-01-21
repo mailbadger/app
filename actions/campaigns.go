@@ -64,7 +64,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	campaign.Template, err = storage.GetTemplate(c, campaign.Template.ID, u.ID)
+	template, err := storage.GetTemplate(c, campaign.Template.ID, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found. Unable to send campaign.",
@@ -72,7 +72,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	err = campaign.Template.ValidateData(body.DefaultTemplateData)
+	err = template.ValidateData(body.DefaultTemplateData)
 	if err != nil {
 		if errors.Is(err, entities.ErrMissingDefaultData) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -115,8 +115,6 @@ func StartCampaign(c *gin.Context) {
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
 
-	csExists := err == nil
-
 	msg, err := json.Marshal(entities.CampaignerMessageBody{
 		CampaignID:             id,
 		SegmentIDs:             body.SegmentIDs,
@@ -125,9 +123,14 @@ func StartCampaign(c *gin.Context) {
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
 		SesKeys:                *sesKeys,
-		ConfigurationSetExists: csExists,
+		ConfigurationSetExists: err == nil,
 	})
 	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Warn("Unable to marshal campaigner message body")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
@@ -138,6 +141,7 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": campaign.ID,
+			"user_id":     u.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
