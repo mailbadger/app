@@ -118,11 +118,13 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	template := &entities.Template{
-		UserID:      u.ID,
-		Name:        body.Name,
+		BaseTemplate: entities.BaseTemplate{
+			UserID:      u.ID,
+			Name:        body.Name,
+			SubjectPart: body.SubjectPart,
+		},
 		HTMLPart:    body.HTMLPart,
 		TextPart:    body.TextPart,
-		SubjectPart: body.SubjectPart,
 	}
 
 	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
