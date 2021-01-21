@@ -15,7 +15,7 @@ func (c BaseTemplate) GetID() int64 {
 	return c.ID
 }
 
-// TableName overrides the table name used by User to `profiles`
+// TableName overrides the table name used by BaseTemplate to `templates`
 func (BaseTemplate) TableName() string {
 	return "templates"
 }
