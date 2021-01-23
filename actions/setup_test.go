@@ -7,10 +7,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/entities/params"
-	"github.com/mailbadger/app/storage/s3"
-
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gavv/httpexpect/v2"
@@ -18,16 +14,19 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 
+	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 )
 
 func init() {
 	gin.SetMode(gin.TestMode)
 }
 
-func setup(t *testing.T, s storage.Storage) *httpexpect.Expect {
+func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect.Expect {
 	err := os.Setenv("SESSION_AUTH_KEY", "foo")
 	if err != nil {
 		t.FailNow()
@@ -46,8 +45,6 @@ func setup(t *testing.T, s storage.Storage) *httpexpect.Expect {
 		Secure:   secureCookie,
 		HttpOnly: true,
 	})
-
-	s3Mock := &s3.MockS3Client{}
 
 	handler := gin.New()
 	handler.Use(sessions.Sessions("mbsess", cookiestore))

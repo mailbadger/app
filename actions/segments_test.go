@@ -6,12 +6,15 @@ import (
 
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 )
 
 func TestSegments(t *testing.T) {
 	s := storage.New("sqlite3", ":memory:")
 
-	e := setup(t, s)
+	s3mock := new(s3.MockS3Client)
+
+	e := setup(t, s, s3mock)
 	auth, err := createAuthenticatedExpect(e, s)
 	if err != nil {
 		t.Error(err)

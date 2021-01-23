@@ -91,8 +91,8 @@ func GetTemplates(c *gin.Context) {
 			"user_id":   u.ID,
 			"scope_map": scopeMap,
 		}).WithError(err).Error("Unable to list templates.")
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Templates not found, invalid page token.",
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to fetch templates. Please try again.",
 		})
 		return
 	}
@@ -118,11 +118,13 @@ func PostTemplate(c *gin.Context) {
 	}
 
 	template := &entities.Template{
-		UserID:      u.ID,
-		Name:        body.Name,
+		BaseTemplate: entities.BaseTemplate{
+			UserID:      u.ID,
+			Name:        body.Name,
+			SubjectPart: body.SubjectPart,
+		},
 		HTMLPart:    body.HTMLPart,
 		TextPart:    body.TextPart,
-		SubjectPart: body.SubjectPart,
 	}
 
 	_, err := storage.GetTemplateByName(c, template.Name, u.ID)
@@ -177,7 +179,7 @@ func PutTemplate(c *gin.Context) {
 
 	template, err := storage.GetTemplate(c, id, u.ID)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Template not found",
 		})
 		return
@@ -232,6 +234,7 @@ func PutTemplate(c *gin.Context) {
 				"message": "Unable to update template, please try again.",
 			})
 		}
+		return
 	}
 
 	c.JSON(http.StatusOK, template)

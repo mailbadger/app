@@ -15,12 +15,9 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 		if k == "name" {
 			p.AddScope(NameLike(v))
 		}
-		if k == "template_name" {
-			p.AddScope(TemplateNameLike(v))
-		}
 	}
 
-	query := db.Table(p.Resource).
+	query := db.Table(p.Resource).Preload("BaseTemplate").
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
@@ -40,14 +37,14 @@ func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Template").Find(&campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Find(&campaign).Error
 	return campaign, err
 }
 
 // GetCampaignByName returns the campaign by the given name and user id
 func (db *store) GetCampaignByName(name string, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
+	err := db.Preload("BaseTemplate").Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
 	return campaign, err
 }
 
@@ -168,13 +165,5 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 func NameLike(name string) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("name LIKE ?", name+"%")
-	}
-}
-
-// TemplateNameLike applies a scope for campaigns by the given template name.
-// The wildcard is applied on the end of the name search.
-func TemplateNameLike(templateName string) func(*gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Where("template_name LIKE ?", templateName+"%")
 	}
 }
