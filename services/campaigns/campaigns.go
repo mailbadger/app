@@ -91,8 +91,10 @@ func (svc *service) PrepareSubscriberEmailData(
 			continue
 		}
 		// merge sub metadata with default template metadata
-		for k, v := range m {
-			msg.TemplateData[k] = v
+		for k, v := range msg.TemplateData {
+			if _, ok := m[k]; !ok {
+				m[k] = v
+			}
 		}
 
 		err = html.FRender(&htmlBuf, m)
