@@ -82,11 +82,23 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	var (
 		timestamp time.Time
 		nextID    int64
-		limit     int64 = 1000 // fill template buffer with rendered template.
-		htmlBuf   bytes.Buffer
-		subBuf    bytes.Buffer
-		textBuf   bytes.Buffer
+		limit     int64 = 1000
+		// fill templates buffer with rendered template.
+		htmlBuf bytes.Buffer
+		subBuf  bytes.Buffer
+		textBuf bytes.Buffer
 	)
+
+	template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
+	if err != nil {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"template_id": msg.TemplateID,
+				"user_id":     msg.UserID,
+			}).
+			Error("unable to get template")
+		return err
+	}
 
 	for {
 		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
@@ -109,22 +121,15 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		if len(subs) == 0 {
 			break
 		}
-
-		template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
-		if err != nil {
-			logrus.WithError(err).
-				WithFields(logrus.Fields{
-					"template_id": msg.TemplateID,
-					"user_id":     msg.UserID,
-				}).
-				Error("unable to get template")
-			return nil
-		}
 		html, err := mustache.ParseString(template.HTMLPart)
 		// todo retry = true/false?
 		if err != nil {
 			logrus.WithError(err).
-				WithField("html_part", template.HTMLPart).
+				WithFields(logrus.Fields{
+					"user_id":     campaign.UserID,
+					"campaign_id": campaign.ID,
+					"template_id": template.ID,
+				}).
 				Error("unable to parse html_part")
 			return nil
 		}
@@ -132,16 +137,24 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		// todo retry = true/false?
 		if err != nil {
 			logrus.WithError(err).
-				WithField("subject_part", template.SubjectPart).
-				Error("unable to parse subject_part")
+				WithFields(logrus.Fields{
+					"user_id":     campaign.UserID,
+					"campaign_id": campaign.ID,
+					"template_id": template.ID,
+				}).
+				Error("unable to parse text_part")
 			return nil
 		}
 		sub, err := mustache.ParseString(template.TextPart)
 		// todo retry = true/false?
 		if err != nil {
 			logrus.WithError(err).
-				WithField("text_part", template.TextPart).
-				Error("unable to parse text_part")
+				WithFields(logrus.Fields{
+					"user_id":     campaign.UserID,
+					"campaign_id": campaign.ID,
+					"template_id": template.ID,
+				}).
+				Error("unable to parse subject_part")
 			return nil
 		}
 
@@ -161,22 +174,36 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			err = html.FRender(&htmlBuf, m)
 			// todo retry = true/false?
 			if err != nil {
-				logrus.WithError(err).Error("unable to render html_part")
+				logrus.WithError(err).
+					WithFields(logrus.Fields{
+						"user_id":     campaign.UserID,
+						"campaign_id": campaign.ID,
+						"template_id": template.ID,
+					}).
+					Error("unable to render html_part")
 				// todo what to do on err?
 			}
 			err = txt.FRender(&subBuf, m)
 			// todo retry = true/false?
 			if err != nil {
 				logrus.WithError(err).
-					WithField("subject_part", template.SubjectPart).
-					Error("unable to render text_part")
+					WithFields(logrus.Fields{
+						"user_id":     campaign.UserID,
+						"campaign_id": campaign.ID,
+						"template_id": template.ID,
+					}).
+					Error("unable to render subject_part")
 				// todo what to do on err?
 			}
 			err = sub.FRender(&textBuf, m)
 			// todo retry = true/false?
 			if err != nil {
 				logrus.WithError(err).
-					WithField("subject_part", template.SubjectPart).
+					WithFields(logrus.Fields{
+						"user_id":     campaign.UserID,
+						"campaign_id": campaign.ID,
+						"template_id": template.ID,
+					}).
 					Error("unable to render subject_part")
 			}
 
