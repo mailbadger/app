@@ -80,6 +80,12 @@ func StartCampaign(c *gin.Context) {
 			})
 			return
 		}
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Warn("Unable to parse template")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Failed to parse template. Unable to send campaign.",
 		})
@@ -115,7 +121,7 @@ func StartCampaign(c *gin.Context) {
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
 
-	msg, err := json.Marshal(entities.CampaignerMessageBody{
+	msg, err := json.Marshal(entities.CampaignerTopicParams{
 		CampaignID:             id,
 		SegmentIDs:             body.SegmentIDs,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
@@ -129,8 +135,9 @@ func StartCampaign(c *gin.Context) {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
 			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
-		}).WithError(err).Warn("Unable to marshal campaigner message body")
+		}).WithError(err).Error("Unable to marshal campaigner message body")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
@@ -140,8 +147,9 @@ func StartCampaign(c *gin.Context) {
 	err = queue.Publish(c, entities.CampaignerTopic, msg)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"campaign_id": campaign.ID,
+			"campaign_id": id,
 			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -270,7 +278,7 @@ func PostCampaign(c *gin.Context) {
 }
 
 func PutCampaign(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64);
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Id must be an integer",

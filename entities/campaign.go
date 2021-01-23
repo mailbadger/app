@@ -45,9 +45,9 @@ type BulkSendMessage struct {
 	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
-// CampaignerMessageBody represent the request params used
+// CampaignerTopicParams represent the request params used
 // by the send campaign endpoint.
-type CampaignerMessageBody struct {
+type CampaignerTopicParams struct {
 	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
