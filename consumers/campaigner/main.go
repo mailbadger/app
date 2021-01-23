@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -10,8 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cbroglie/mustache"
-	"github.com/google/uuid"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 
@@ -19,6 +16,7 @@ import (
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/campaigns"
 	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
@@ -40,6 +38,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	msg := new(entities.SendCampaignParams)
+	svc := campaigns.New(h.s, h.p)
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
@@ -67,7 +66,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	campaign.Status = entities.StatusSending
 	err = h.s.UpdateCampaign(campaign)
-	// todo retry = true/false?
 	if err != nil {
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
@@ -83,10 +81,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		timestamp time.Time
 		nextID    int64
 		limit     int64 = 1000
-		// fill templates buffer with rendered template.
-		htmlBuf bytes.Buffer
-		subBuf  bytes.Buffer
-		textBuf bytes.Buffer
 	)
 
 	template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
@@ -118,125 +112,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			return nil
 		}
 
+		err = svc.PrepareSubscriberEmailData(subs, *msg, *campaign, *template)
+		if err != nil {
+			// todo what we should do on error?
+		}
+
 		if len(subs) == 0 {
 			break
 		}
-		html, err := mustache.ParseString(template.HTMLPart)
-		// todo retry = true/false?
-		if err != nil {
-			logrus.WithError(err).
-				WithFields(logrus.Fields{
-					"user_id":     campaign.UserID,
-					"campaign_id": campaign.ID,
-					"template_id": template.ID,
-				}).
-				Error("unable to parse html_part")
-			return nil
-		}
-		txt, err := mustache.ParseString(template.SubjectPart)
-		// todo retry = true/false?
-		if err != nil {
-			logrus.WithError(err).
-				WithFields(logrus.Fields{
-					"user_id":     campaign.UserID,
-					"campaign_id": campaign.ID,
-					"template_id": template.ID,
-				}).
-				Error("unable to parse text_part")
-			return nil
-		}
-		sub, err := mustache.ParseString(template.TextPart)
-		// todo retry = true/false?
-		if err != nil {
-			logrus.WithError(err).
-				WithFields(logrus.Fields{
-					"user_id":     campaign.UserID,
-					"campaign_id": campaign.ID,
-					"template_id": template.ID,
-				}).
-				Error("unable to parse subject_part")
-			return nil
-		}
-
-		for _, s := range subs {
-			m, err := s.GetMetadata()
-			if err != nil {
-				logrus.WithError(err).
-					WithField("subscriber", s).
-					Error("Unable to get subscriber metadata.")
-				continue
-			}
-			// merge sub metadata with default template metadata
-			for k, v := range m {
-				msg.TemplateData[k] = v
-			}
-
-			err = html.FRender(&htmlBuf, m)
-			// todo retry = true/false?
-			if err != nil {
-				logrus.WithError(err).
-					WithFields(logrus.Fields{
-						"user_id":     campaign.UserID,
-						"campaign_id": campaign.ID,
-						"template_id": template.ID,
-					}).
-					Error("unable to render html_part")
-				// todo what to do on err?
-			}
-			err = txt.FRender(&subBuf, m)
-			// todo retry = true/false?
-			if err != nil {
-				logrus.WithError(err).
-					WithFields(logrus.Fields{
-						"user_id":     campaign.UserID,
-						"campaign_id": campaign.ID,
-						"template_id": template.ID,
-					}).
-					Error("unable to render subject_part")
-				// todo what to do on err?
-			}
-			err = sub.FRender(&textBuf, m)
-			// todo retry = true/false?
-			if err != nil {
-				logrus.WithError(err).
-					WithFields(logrus.Fields{
-						"user_id":     campaign.UserID,
-						"campaign_id": campaign.ID,
-						"template_id": template.ID,
-					}).
-					Error("unable to render subject_part")
-			}
-
-			sender := entities.SendEmailTopicParams{
-				UUID:         uuid.New().String(),
-				SubscriberID: s.ID,
-				CampaignID:   campaign.ID,
-				SesKeys:      msg.SesKeys,
-				HTMLPart:     htmlBuf.Bytes(),
-				SubjectPart:  subBuf.Bytes(),
-				TextPart:     textBuf.Bytes(),
-				UserUUID:     msg.UserUUID,
-				UserID:       msg.UserID,
-			}
-
-			senderBytes, err := json.Marshal(sender)
-			if err != nil {
-				logrus.WithError(err).Error("Unable to marshal bulk message input.")
-				continue
-			}
-
-			// publish the message to the queue
-			err = h.p.Publish(entities.SenderTopic, senderBytes)
-			if err != nil {
-				logrus.WithError(err).Error("Unable to publish message to send bulk topic.")
-				continue
-			}
-		}
-
-		// clear buffers for next batch
-		htmlBuf.Reset()
-		subBuf.Reset()
-		textBuf.Reset()
 
 		// set  vars for next batches
 		lastSub := subs[len(subs)-1]
