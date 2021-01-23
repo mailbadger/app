@@ -115,6 +115,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		err = svc.PrepareSubscriberEmailData(subs, *msg, *campaign, *template)
 		if err != nil {
 			// todo what we should do on error?
+			return nil
 		}
 
 		if len(subs) == 0 {
