@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go v0.73.0 // indirect
 	github.com/andybalholm/brotli v1.0.1 // indirect
-	github.com/aws/aws-sdk-go v1.36.25
+	github.com/aws/aws-sdk-go v1.36.30
 	github.com/cbroglie/mustache v1.2.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -18,7 +18,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/go-github/v25 v25.1.3
-	github.com/google/uuid v1.1.4
+	github.com/google/uuid v1.1.5
 	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
@@ -35,7 +35,7 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.7.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.8
 	github.com/valyala/fasthttp v1.16.0 // indirect
