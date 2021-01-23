@@ -143,7 +143,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			// prepare message for publishing to the queue
 			input := &ses.SendBulkTemplatedEmailInput{
 				Source:              aws.String(msg.Source),
-				Template:            aws.String(c.Template.Name),
+				Template:            aws.String(c.BaseTemplate.Name),
 				Destinations:        dest,
 				DefaultTemplateData: aws.String(string(defaultData)),
 				DefaultTags: []*ses.MessageTag{

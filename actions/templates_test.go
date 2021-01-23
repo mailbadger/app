@@ -2,8 +2,10 @@ package actions_test
 
 import (
 	"errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -20,16 +22,16 @@ func TestTemplates(t *testing.T) {
 
 	mockS3 := new(s3mock.MockS3Client)
 
-	// readCloser := ioutil.NopCloser(strings.NewReader("hello world"))
+	 readCloser := ioutil.NopCloser(strings.NewReader("hello world"))
 
 	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Once().Return(nil, errors.New("error"))
 	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
 	mockS3.On("GetObject", mock.AnythingOfType("*s3.GetObjectInput")).Once().Return(nil, awserr.New(s3.ErrCodeNoSuchKey, "no such ky", errors.New("key not found")))
 	mockS3.On("GetObject", mock.AnythingOfType("*s3.GetObjectInput")).Once().Return(nil, awserr.New(s3.ErrCodeInvalidObjectState, "invalid object state", errors.New("invalid object state")))
 	mockS3.On("GetObject", mock.AnythingOfType("*s3.GetObjectInput")).Once().Return(nil, errors.New("some error"))
-	/*mockS3.On("GetObject", mock.AnythingOfType("*s3.GetObjectInput")).Once().Return(&s3.GetObjectOutput{
+	mockS3.On("GetObject", mock.AnythingOfType("*s3.GetObjectInput")).Once().Return(&s3.GetObjectOutput{
 		Body: readCloser,
-	}, nil)*/
+	}, nil)
 	mockS3.On("DeleteObject", mock.AnythingOfType("*s3.DeleteObjectInput")).Twice().Return(&s3.DeleteObjectOutput{}, nil)
 
 	e := setup(t, s, mockS3)
@@ -288,6 +290,11 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to get template")
 
 	// TODO add test for get template successfully
+	/*auth.GET("/api/templates/" + idStr).
+		Expect().
+		Status(http.StatusOK).
+		JSON().Object().
+		ValueEqual("message", "Unable to get template")*/
 
 	// test list templates
 	collection := auth.GET("/api/templates").
