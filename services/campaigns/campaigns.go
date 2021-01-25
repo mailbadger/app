@@ -16,13 +16,10 @@ type Service interface {
 	PrepareSubscriberEmailData(
 		s entities.Subscriber,
 		msg entities.SendCampaignParams,
-		campaign entities.Campaign,
+		campaignID int64,
 		html *mustache.Template,
 		sub *mustache.Template,
 		text *mustache.Template,
-		htmlBuf bytes.Buffer,
-		subBuf bytes.Buffer,
-		textBuf bytes.Buffer,
 	) (*entities.SendEmailTopicParams, error)
 	PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error
 }
@@ -43,14 +40,17 @@ func New(db storage.Storage, p queue.Producer) Service {
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
 	msg entities.SendCampaignParams,
-	campaign entities.Campaign,
+	campaignID int64,
 	html *mustache.Template,
 	sub *mustache.Template,
 	text *mustache.Template,
-	htmlBuf bytes.Buffer,
-	subBuf bytes.Buffer,
-	textBuf bytes.Buffer,
 ) (*entities.SendEmailTopicParams, error) {
+
+	var (
+		htmlBuf bytes.Buffer
+		subBuf  bytes.Buffer
+		textBuf bytes.Buffer
+	)
 
 	m, err := s.GetMetadata()
 	if err != nil {
@@ -79,7 +79,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	sender := entities.SendEmailTopicParams{
 		UUID:         uuid.New().String(),
 		SubscriberID: s.ID,
-		CampaignID:   campaign.ID,
+		CampaignID:   campaignID,
 		SesKeys:      msg.SesKeys,
 		HTMLPart:     htmlBuf.Bytes(),
 		SubjectPart:  subBuf.Bytes(),

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -88,14 +87,17 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		timestamp time.Time
 		nextID    int64
 		limit     int64 = 1000
-		htmlBuf   bytes.Buffer
-		subBuf    bytes.Buffer
-		textBuf   bytes.Buffer
 	)
 
 	template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logrus.WithError(err).
+				WithFields(logrus.Fields{
+					"template_id": msg.TemplateID,
+					"user_id":     msg.UserID,
+				}).
+				Error("unable to get template")
 			return nil
 		}
 		logrus.WithError(err).
@@ -118,7 +120,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			Error("unable to parse html_part")
 		return nil
 	}
-	text, err := mustache.ParseString(template.SubjectPart)
+	text, err := mustache.ParseString(template.TextPart)
 	if err != nil {
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
@@ -129,7 +131,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			Error("unable to parse text_part")
 		return nil
 	}
-	sub, err := mustache.ParseString(template.TextPart)
+	sub, err := mustache.ParseString(template.SubjectPart)
 	if err != nil {
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
@@ -153,6 +155,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"segment_ids": msg.SegmentIDs,
+				}).WithError(err).Error("unable to fetch subscribers.")
 				return nil
 			}
 			logrus.WithFields(logrus.Fields{
@@ -162,7 +168,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			return err
 		}
 		for _, s := range subs {
-			params, err := svc.PrepareSubscriberEmailData(s, *msg, *campaign, html, sub, text, htmlBuf, textBuf, subBuf)
+			params, err := svc.PrepareSubscriberEmailData(s, *msg, campaign.ID, html, sub, text)
 			if err != nil {
 				//  todo all errors from PrepareSubscriberEmailData are not retryable we will log in db record for each sub & error later
 				return nil
@@ -194,10 +200,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	campaign.CompletedAt.SetValid(time.Now().UTC())
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
+		// todo no retryable insert into new log db table record for failed update
 		logrus.WithError(err).
 			WithField("campaign", campaign).
 			Error("unable to update campaign")
-		return err
+		return nil
 	}
 
 	return nil
