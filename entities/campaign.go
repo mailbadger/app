@@ -15,8 +15,8 @@ const (
 	StatusSent = "sent"
 	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
-	// CampaignsTopic is the topic used by the campaigner consumer.
-	CampaignsTopic = "campaigns"
+	// CampaignerTopic is the topic used by the campaigner consumer.
+	CampaignerTopic = "campaigner"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
 	// Sender topic is used by Sender Consumer
