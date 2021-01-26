@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,6 +38,7 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
 	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
 	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
@@ -62,6 +64,34 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Template not found. Unable to send campaign.",
+		})
+		return
+	}
+
+	err = template.ValidateData(body.DefaultTemplateData)
+	if err != nil {
+		if errors.Is(err, entities.ErrMissingDefaultData) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Incomplete default template data. Unable to send campaign.",
+			})
+			return
+		}
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Warn("Unable to parse template")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Failed to parse template. Unable to send campaign.",
+		})
+		return
+	}
+
 	sesKeys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -69,6 +99,15 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
+	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
+	if err != nil || len(lists) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Subscriber lists are not found.",
+		})
+		return
+	}
+
 	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
@@ -78,63 +117,45 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.Ids)
-	if err != nil || len(lists) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Subscriber lists are not found.",
-		})
-		return
-	}
-
-	_, err = storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Template not found. Unable to send campaign.",
-		})
-		return
-	}
-
 	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
 
-	csExists := err == nil
-
-	msg, err := json.Marshal(entities.SendCampaignParams{
-		SegmentIDs:             body.Ids,
+	msg, err := json.Marshal(entities.CampaignerTopicParams{
+		CampaignID:             id,
+		SegmentIDs:             body.SegmentIDs,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
 		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
-		Campaign:               *campaign,
 		SesKeys:                *sesKeys,
-		ConfigurationSetExists: csExists,
+		ConfigurationSetExists: err == nil,
 	})
 	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to marshal campaigner message body")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
 		return
 	}
 
-	err = queue.Publish(c, entities.CampaignsTopic, msg)
+	err = queue.Publish(c, entities.CampaignerTopic, msg)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"campaign_id": campaign.ID,
-			"segment_ids": body.Ids,
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
 		return
-	}
-
-	campaign.Status = entities.StatusSending
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logger.From(c).
-			WithField("campaign_id", campaign.ID).
-			WithError(err).Error("Unable to update campaign status.")
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -249,7 +270,7 @@ func PostCampaign(c *gin.Context) {
 }
 
 func PutCampaign(c *gin.Context) {
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64);
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Id must be an integer",
