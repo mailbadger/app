@@ -179,7 +179,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 
 			// publish the message to the queue
-			err = h.p.Publish(entities.SendBulkTopic, msg)
+			err = h.p.Publish(entities.SenderTopic, msg)
 			if err != nil {
 				logrus.WithError(err).Error("Unable to publish message to send bulk topic.")
 			}

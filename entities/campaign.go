@@ -17,7 +17,7 @@ const (
 	StatusScheduled = "scheduled"
 	// CampaignerTopic is the topic used by the campaigner consumer.
 	CampaignerTopic = "campaigner"
-	// SendBulkTopic is the topic used by the bulksender consumer.
+	// SenderTopic is the topic used by the sender consumer.
 	SenderTopic = "sender"
 )
 
@@ -58,7 +58,7 @@ type CampaignerTopicParams struct {
 	SesKeys                `json:"ses_keys"`
 }
 
-// SendEmailTopicParams represent the request params used
+// SenderTopicParams represent the request params used
 // by the sender campaign consumer.
 type SenderTopicParams struct {
 	UUID                   string   `json:"uuid"`
