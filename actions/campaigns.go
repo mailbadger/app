@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,6 +38,7 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
 	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
 	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
@@ -62,6 +64,34 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Template not found. Unable to send campaign.",
+		})
+		return
+	}
+
+	err = template.ValidateData(body.DefaultTemplateData)
+	if err != nil {
+		if errors.Is(err, entities.ErrMissingDefaultData) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Incomplete default template data. Unable to send campaign.",
+			})
+			return
+		}
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Warn("Unable to parse template")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Failed to parse template. Unable to send campaign.",
+		})
+		return
+	}
+
 	sesKeys, err := storage.GetSesKeys(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -69,6 +99,15 @@ func StartCampaign(c *gin.Context) {
 		})
 		return
 	}
+
+	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
+	if err != nil || len(lists) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Subscriber lists are not found.",
+		})
+		return
+	}
+
 	sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 	if err != nil {
 		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
@@ -78,63 +117,45 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	lists, err := storage.GetSegmentsByIDs(c, u.ID, body.Ids)
-	if err != nil || len(lists) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Subscriber lists are not found.",
-		})
-		return
-	}
-
-	_, err = storage.GetTemplate(c, campaign.Template.ID, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Template not found. Unable to send campaign.",
-		})
-		return
-	}
-
 	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
 
-	csExists := err == nil
-
-	msg, err := json.Marshal(entities.SendCampaignParams{
-		SegmentIDs:             body.Ids,
+	msg, err := json.Marshal(entities.CampaignerTopicParams{
+		CampaignID:             id,
+		SegmentIDs:             body.SegmentIDs,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
 		TemplateData:           body.DefaultTemplateData,
 		UserID:                 u.ID,
 		UserUUID:               u.UUID,
-		Campaign:               *campaign,
 		SesKeys:                *sesKeys,
-		ConfigurationSetExists: csExists,
+		ConfigurationSetExists: err == nil,
 	})
 	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to marshal campaigner message body")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
 		return
 	}
 
-	err = queue.Publish(c, entities.CampaignsTopic, msg)
+	err = queue.Publish(c, entities.CampaignerTopic, msg)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
-			"campaign_id": campaign.ID,
-			"segment_ids": body.Ids,
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to publish campaign.",
 		})
 		return
-	}
-
-	campaign.Status = entities.StatusSending
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logger.From(c).
-			WithField("campaign_id", campaign.ID).
-			WithError(err).Error("Unable to update campaign status.")
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -198,7 +219,6 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-
 	body := &params.Campaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -214,7 +234,7 @@ func PostCampaign(c *gin.Context) {
 
 	user := middleware.GetUser(c)
 
-	_, err := storage.GetCampaignByName(c, body.Name, middleware.GetUser(c).ID)
+	_, err := storage.GetCampaignByName(c, body.Name, user.ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Campaign with that name already exists",
@@ -231,10 +251,10 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	campaign := &entities.Campaign{
-		Name:     body.Name,
-		UserID:   user.ID,
-		Template: template,
-		Status:   entities.StatusDraft,
+		Name:         body.Name,
+		UserID:       user.ID,
+		BaseTemplate: template.GetBase(),
+		Status:       entities.StatusDraft,
 	}
 
 	err = storage.CreateCampaign(c, campaign)
@@ -250,68 +270,69 @@ func PostCampaign(c *gin.Context) {
 }
 
 func PutCampaign(c *gin.Context) {
-	if id, err := strconv.ParseInt(c.Param("id"), 10, 64); err == nil {
-		user := middleware.GetUser(c)
-
-		campaign, err := storage.GetCampaign(c, id, user.ID)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Campaign not found",
-			})
-			return
-		}
-
-		body := &params.Campaign{}
-		if err := c.ShouldBind(body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Invalid parameters, please try again",
-			})
-			return
-		}
-
-		if err := validator.Validate(body); err != nil {
-			c.JSON(http.StatusBadRequest, err)
-			return
-		}
-
-		campaign2, err := storage.GetCampaignByName(c, body.Name, middleware.GetUser(c).ID)
-		if err == nil && campaign.ID != campaign2.ID {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Campaign with that name already exists",
-			})
-			return
-		}
-
-		campaign.Template, err = storage.GetTemplateByName(c, body.TemplateName, user.ID)
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Template with that name does not exists",
-			})
-			return
-		}
-
-		campaign.Name = body.Name
-
-		err = storage.UpdateCampaign(c, campaign)
-
-		if err != nil {
-			logger.From(c).
-				WithError(err).
-				WithField("campaign_id", id).
-				Warn("Unable to update campaign.")
-			c.JSON(http.StatusUnprocessableEntity, gin.H{
-				"message": "Unable to update campaign.",
-			})
-			return
-		}
-
-		c.Status(http.StatusNoContent)
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
 		return
 	}
 
-	c.JSON(http.StatusBadRequest, gin.H{
-		"message": "Id must be an integer",
-	})
+	user := middleware.GetUser(c)
+
+	campaign, err := storage.GetCampaign(c, id, user.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Campaign not found",
+		})
+		return
+	}
+
+	body := &params.Campaign{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	campaign2, err := storage.GetCampaignByName(c, body.Name, middleware.GetUser(c).ID)
+	if err == nil && campaign.ID != campaign2.ID {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Campaign with that name already exists",
+		})
+		return
+	}
+
+	template, err := storage.GetTemplateByName(c, body.TemplateName, user.ID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Template with that name does not exists",
+		})
+		return
+	}
+
+	campaign.Name = body.Name
+	campaign.BaseTemplate = template.GetBase()
+
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logger.From(c).
+			WithError(err).
+			WithField("campaign_id", id).
+			Warn("Unable to update campaign.")
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to update campaign.",
+		})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func DeleteCampaign(c *gin.Context) {
@@ -382,7 +403,6 @@ func GetCampaignOpens(c *gin.Context) {
 }
 
 func GetCampaignStats(c *gin.Context) {
-
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

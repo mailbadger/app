@@ -15,8 +15,8 @@ const (
 	StatusSent = "sent"
 	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
-	// CampaignsTopic is the topic used by the campaigner consumer.
-	CampaignsTopic = "campaigns"
+	// CampaignerTopic is the topic used by the campaigner consumer.
+	CampaignerTopic = "campaigner"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
 )
@@ -24,15 +24,15 @@ const (
 // Campaign represents the campaign entity
 type Campaign struct {
 	Model
-	UserID      int64             `json:"-" gorm:"column:user_id; index"`
-	Name        string            `json:"name" gorm:"not null"`
-	TemplateID  int64             `json:"-"`
-	Template    *Template         `json:"template" gorm:"foreignKey:template_id"`
-	Status      string            `json:"status"`
-	ScheduledAt NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
-	CompletedAt NullTime          `json:"completed_at" gorm:"column:completed_at"`
-	DeletedAt   NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
-	Errors      map[string]string `json:"-" sql:"-"`
+	UserID       int64             `json:"-" gorm:"column:user_id; index"`
+	Name         string            `json:"name" gorm:"not null"`
+	TemplateID   int64             `json:"-"`
+	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
+	Status       string            `json:"status"`
+	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
+	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
+	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
+	Errors       map[string]string `json:"-" sql:"-"`
 }
 
 // BulkSendMessage represents the entity used to transport the bulk send message
@@ -45,16 +45,16 @@ type BulkSendMessage struct {
 	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
-// SendCampaignParams represent the request params used
+// CampaignerTopicParams represent the request params used
 // by the send campaign endpoint.
-type SendCampaignParams struct {
+type CampaignerTopicParams struct {
+	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
 	Source                 string            `json:"source"`
 	UserID                 int64             `json:"user_id"`
 	UserUUID               string            `json:"user_uuid"`
 	ConfigurationSetExists bool              `json:"configuration_set_exists"`
-	Campaign               `json:"campaign"`
 	SesKeys                `json:"ses_keys"`
 }
 

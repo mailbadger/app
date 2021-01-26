@@ -17,7 +17,7 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 		}
 	}
 
-	query := db.Table(p.Resource).Preload("Template").
+	query := db.Table(p.Resource).Preload("BaseTemplate").
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
@@ -37,14 +37,14 @@ func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("Template").Find(&campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Find(&campaign).Error
 	return campaign, err
 }
 
 // GetCampaignByName returns the campaign by the given name and user id
 func (db *store) GetCampaignByName(name string, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
+	err := db.Preload("BaseTemplate").Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
 	return campaign, err
 }
 

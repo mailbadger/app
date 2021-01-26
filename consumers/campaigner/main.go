@@ -12,14 +12,15 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/google/uuid"
+	"github.com/nsqio/go-nsq"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
-	"github.com/nsqio/go-nsq"
-	"github.com/sirupsen/logrus"
 )
 
 // MessageHandler implements the nsq handler interface.
@@ -36,11 +37,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	msg := new(entities.SendCampaignParams)
+	msg := new(entities.CampaignerTopicParams)
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
 		logrus.WithField("body", string(m.Body)).WithError(err).Error("Malformed JSON message.")
+		return nil
+	}
+
+	c, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"campaign_id": msg.CampaignID,
+			"user_id":     msg.UserID,
+		}).WithError(err).Error("Unable to fetch campaign")
 		return nil
 	}
 
@@ -133,13 +143,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			// prepare message for publishing to the queue
 			input := &ses.SendBulkTemplatedEmailInput{
 				Source:              aws.String(msg.Source),
-				Template:            aws.String(msg.Campaign.Template.Name),
+				Template:            aws.String(c.BaseTemplate.Name),
 				Destinations:        dest,
 				DefaultTemplateData: aws.String(string(defaultData)),
 				DefaultTags: []*ses.MessageTag{
 					&ses.MessageTag{
 						Name:  aws.String("campaign_id"),
-						Value: aws.String(strconv.FormatInt(msg.Campaign.ID, 10)),
+						Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
 					},
 					&ses.MessageTag{
 						Name:  aws.String("user_id"),
@@ -157,7 +167,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			bulkMsg := entities.BulkSendMessage{
 				UUID:       uuid.String(),
 				Input:      input,
-				CampaignID: msg.Campaign.ID,
+				CampaignID: msg.CampaignID,
 				UserID:     msg.UserID,
 				SesKeys:    &msg.SesKeys,
 			}
@@ -180,12 +190,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		timestamp = lastSub.CreatedAt
 	}
 
-	c := msg.Campaign
 	c.UserID = msg.UserID
 	c.Status = entities.StatusSent
 	c.CompletedAt.SetValid(time.Now().UTC())
 
-	err = h.s.UpdateCampaign(&c)
+	err = h.s.UpdateCampaign(c)
 	if err != nil {
 		logrus.WithField("campaign", c).WithError(err).Error("Unable to update campaign.")
 	}
@@ -216,7 +225,7 @@ func main() {
 
 	config := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(entities.CampaignsTopic, entities.CampaignsTopic, config)
+	consumer, err := nsq.NewConsumer(entities.CampaignerTopic, entities.CampaignerTopic, config)
 	if err != nil {
 		logrus.Fatal(err)
 	}

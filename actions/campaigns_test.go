@@ -2,6 +2,7 @@ package actions_test
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -18,7 +19,6 @@ func TestCampaigns(t *testing.T) {
 	mockS3 := new(s3mock.MockS3Client)
 
 	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
-	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Once().Return(&s3.PutObjectAclOutput{}, nil)
 
 	e := setup(t, s, mockS3)
 	auth, err := createAuthenticatedExpect(e, s)
@@ -27,23 +27,11 @@ func TestCampaigns(t *testing.T) {
 		t.FailNow()
 	}
 
-	e.POST("/api/templates").WithForm(params.PostTemplate{Name: "", HTMLPart: "", TextPart: "", SubjectPart: ""}).Expect().Status(http.StatusUnauthorized)
-
 	// test post template
-	tempPostResp := auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test1", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
+	templateName := auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test1", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
 		Expect().
-		Status(http.StatusCreated)
-	templateName := tempPostResp.JSON().Object().Value("name").String().Raw()
-
-	// create template for test put case
-	auth.POST("/api/templates").WithForm(params.PostTemplate{Name: "test2", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
-		Expect().
-		Status(http.StatusCreated)
-
-	// test put template
-	auth.PUT("/api/templates/2").WithForm(params.PutTemplate{Name: "test3", HTMLPart: "<html> bla </html>", TextPart: "txtpart", SubjectPart: "subpart"}).
-		Expect().
-		Status(http.StatusOK)
+		Status(http.StatusCreated).
+		JSON().Object().Value("name").String().Raw()
 
 	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: templateName}).
 		Expect().
@@ -56,9 +44,12 @@ func TestCampaigns(t *testing.T) {
 		ValueEqual("errors", map[string]string{"name": "This field is required", "template_name": "This field is required"})
 
 	// test post campaign
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo1", TemplateName: templateName}).
+	id := auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo1", TemplateName: templateName}).
 		Expect().
-		Status(http.StatusCreated)
+		Status(http.StatusCreated).
+		JSON().Object().Value("id")
+
+	idStr := strconv.FormatFloat(id.Raw().(float64), 'f', 0, 64)
 
 	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo2", TemplateName: templateName}).
 		Expect().
@@ -72,7 +63,8 @@ func TestCampaigns(t *testing.T) {
 	collection := auth.GET("/api/campaigns").
 		Expect().
 		Status(http.StatusOK).
-		JSON().Object().ValueEqual("total", 3)
+		JSON().Object().
+		ValueEqual("total", 3)
 
 	collection.Value("links").Object().ContainsKey("previous").ContainsKey("next")
 	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
@@ -81,28 +73,70 @@ func TestCampaigns(t *testing.T) {
 		WithQuery("scopes[name]", "foo").
 		Expect().
 		Status(http.StatusOK).
-		JSON().Object().ValueEqual("total", 2)
+		JSON().Object().
+		ValueEqual("total", 2)
 
-	// test inserted campaign
-	auth.GET("/api/campaigns/1").
+	// test get campaign
+	auth.GET("/api/campaigns/"+idStr).
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "foo1").
 		ValueEqual("status", "draft")
 
-	auth.PUT("/api/campaigns/1").WithForm(params.Campaign{Name: "TESTputtest", TemplateName: templateName}).
+	auth.PUT("/api/campaigns/" + idStr).WithForm(params.Campaign{Name: "TESTputtest", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusNoContent)
 
 	// test updated campaign
-	auth.GET("/api/campaigns/1").
+	auth.GET("/api/campaigns/"+idStr).
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("name", "TESTputtest").
 		ValueEqual("status", "draft")
 
+	// start campaign
+	auth.POST("/api/campaigns/"+idStr+"/start").
+		Expect().
+		Status(http.StatusBadRequest).
+		JSON().Object().
+		ValueEqual("message", "Invalid parameters, please try again").
+		ValueEqual("errors", map[string]string{
+			"from_name":   "This field is required",
+			"segment_id[]": "This field is required",
+			"source":      "This field is required",
+		})
+
+	// test campaign not found
+	auth.POST("/api/campaigns/2223/start").
+		WithQuery("segment_id[]", 1).
+		WithQuery("from_name", "Gl").
+		WithQuery("source", "gudgl@me.com").
+		Expect().
+		Status(http.StatusNotFound).
+		JSON().Object().
+		ValueEqual("message", "Campaign not found")
+
+	// todo add ses keys (need mocking library methods)
+	/*auth.POST("/api/ses/keys").WithForm(params.PostSESKeys{
+		AccessKey: "testAccessKey",
+		SecretKey: "test secret key",
+		Region:    "test region",
+	}).Expect().
+		Status(http.StatusOK)*/
+
+	// test without ses keys
+	auth.POST("/api/campaigns/"+idStr+"/start").
+		WithQuery("segment_id[]", 1).
+		WithQuery("from_name", "Gl").
+		WithQuery("source", "gudgl@me.com").
+		Expect().
+		Status(http.StatusNotFound).
+		JSON().Object().
+		ValueEqual("message", "Amazon Ses keys are not set.")
+
 	// delete campaign by id
-	auth.DELETE("/api/campaigns/1").
+	auth.DELETE("/api/campaigns/" + idStr).
 		Expect().
 		Status(http.StatusNoContent)
+
 }

@@ -15,9 +15,11 @@ import (
 func createTemplates(store Storage) {
 	for i := 0; i < 100; i++ {
 		err := store.CreateTemplate(&entities.Template{
-			Name:        "foo " + strconv.Itoa(i),
-			SubjectPart: "Template {{.subject}} " + strconv.Itoa(i),
-			UserID:      1,
+			BaseTemplate: entities.BaseTemplate{
+				UserID:      1,
+				Name:        "foo " + strconv.Itoa(i),
+				SubjectPart: "Template {{.subject}} " + strconv.Itoa(i),
+			},
 			TextPart:    "draft {{.text}} " + strconv.Itoa(i),
 		})
 		if err != nil {
@@ -39,10 +41,12 @@ func TestTemplate(t *testing.T) {
 
 	// templates for insert
 	template := &entities.Template{
-		UserID:      1,
-		Name:        "template1",
+		BaseTemplate: entities.BaseTemplate{
+			UserID:      1,
+			Name:         "template1",
+			SubjectPart:"subject",
+		},
 		TextPart:    "asd {{.name}}",
-		SubjectPart: "subject",
 	}
 
 	// test insert templates
@@ -97,7 +101,7 @@ func TestTemplate(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		err := store.GetTemplates(1, p, nil)
 		assert.Nil(t, err)
-		col := p.Collection.(*[]entities.TemplatesCollectionItem)
+		col := p.Collection.(*[]entities.BaseTemplate)
 		assert.NotNil(t, col)
 		assert.NotEmpty(t, *col)
 		if p.Links.Next != nil {
@@ -116,7 +120,7 @@ func TestTemplate(t *testing.T) {
 	for i := 0; i < 8; i++ {
 		err := store.GetTemplates(1, p, nil)
 		assert.Nil(t, err)
-		col := p.Collection.(*[]entities.TemplatesCollectionItem)
+		col := p.Collection.(*[]entities.BaseTemplate)
 		assert.NotNil(t, col)
 		assert.NotEmpty(t, *col)
 		if p.Links.Previous != nil {
