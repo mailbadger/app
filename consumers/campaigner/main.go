@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/cbroglie/mustache"
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
@@ -70,6 +71,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	campaign.StartedAt.SetValid(time.Now().UTC())
 	campaign.Status = entities.StatusSending
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
@@ -80,7 +82,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"status":      campaign.Status,
 			}).
 			Error("unable to update campaign")
-		return err
+		return nil
 	}
 
 	var (
@@ -168,14 +170,47 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			return err
 		}
 		for _, s := range subs {
-			params, err := svc.PrepareSubscriberEmailData(s, *msg, campaign.ID, html, sub, text)
+			uuid := uuid.New().String()
+			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, html, sub, text)
 			if err != nil {
-				//  todo all errors from PrepareSubscriberEmailData are not retryable we will log in db record for each sub & error later
+				sendLog := &entities.SendLogs{
+					UUID:         uuid,
+					UserID:       msg.UserID,
+					SubscriberID: s.ID,
+					CampaignID:   msg.CampaignID,
+					Status:       entities.FailedSendBulkLog,
+					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
+					CreatedAt:    time.Now(),
+				}
+				err := h.s.CreateSendLogs(sendLog)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"subscriber_id": s.ID,
+						"campaign_id":   msg.CampaignID,
+						"user_id":       msg.UserID,
+					}).WithError(err).Warn("unable to insert send logs for subscriber.")
+				}
 				return nil
 			}
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
-				//  todo all errors from PublishSubscriberEmailParams are not retryable we will log in db record for each sub & error later
+				sendLog := &entities.SendLogs{
+					UUID:         uuid,
+					UserID:       msg.UserID,
+					SubscriberID: s.ID,
+					CampaignID:   msg.CampaignID,
+					Status:       entities.FailedSendBulkLog,
+					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
+					CreatedAt:    time.Now(),
+				}
+				err := h.s.CreateSendLogs(sendLog)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"subscriber_id": s.ID,
+						"campaign_id":   msg.CampaignID,
+						"user_id":       msg.UserID,
+					}).WithError(err).Warn("unable to insert send logs for subscriber.")
+				}
 				return nil
 			}
 
@@ -200,7 +235,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	campaign.CompletedAt.SetValid(time.Now().UTC())
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
-		// todo no retryable insert into new log db table record for failed update
 		logrus.WithError(err).
 			WithField("campaign", campaign).
 			Error("unable to update campaign")

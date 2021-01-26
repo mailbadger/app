@@ -113,11 +113,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	for _, s := range res.Status {
-		err := h.s.CreateSendBulkLog(&entities.SendBulkLog{
+		err := h.s.CreateSendLogs(&entities.SendLogs{
 			UUID:       msg.UUID,
 			UserID:     msg.UserID,
 			CampaignID: msg.CampaignID,
-			MessageID:  *s.MessageId,
 			Status:     *s.Status,
 		})
 		if err != nil {

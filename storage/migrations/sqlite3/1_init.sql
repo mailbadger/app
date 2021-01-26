@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "updated_at"    datetime,
   "scheduled_at"  datetime DEFAULT NULL,
   "completed_at"  datetime DEFAULT NULL,
-  "deleted_at"    datetime DEFAULT NULL
+  "deleted_at"    datetime DEFAULT NULL,
+  "started_at"    datetime DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
@@ -140,18 +141,19 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
   "created_at"             datetime
 );
 
-CREATE TABLE IF NOT EXISTS "send_bulk_logs" (
+CREATE TABLE IF NOT EXISTS "send_logs" (
   "id"            integer primary key autoincrement,
   "uuid"          varchar(36) NOT NULL,
   "user_id"       integer,
   "campaign_id"   integer,
-  "message_id"    varchar(191),
+  "subscriber_id" integer,
   "status"        varchar(191),
+  "description"   varchar(191),
   "created_at"    datetime
 );
 
-CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_bulk_logs" (user_id, campaign_id);
-CREATE INDEX IF NOT EXISTS i_uuid ON "send_bulk_logs" (uuid);
+CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_logs" (user_id, campaign_id);
+CREATE INDEX IF NOT EXISTS i_uuid ON "send_logs" (uuid);
 
 CREATE TABLE IF NOT EXISTS "sends" (
   "id"                 integer primary key autoincrement,
@@ -173,7 +175,6 @@ DROP TABLE "segments";
 DROP TABLE "subscribers";
 DROP TABLE "subscribers_segments";
 DROP TABLE "bounces";
-DROP TABLE "send_bulk_logs";
 DROP TABLE "sends";
 DROP TABLE "clicks";
 DROP TABLE "complaints";

@@ -88,8 +88,9 @@ type Storage interface {
 	CreateToken(s *entities.Token) error
 	DeleteToken(token string) error
 
-	CreateSendBulkLog(l *entities.SendBulkLog) error
+	CreateSendLogs(l *entities.SendLogs) error
 	CountLogsByUUID(uuid string) (int, error)
+	CountLogsByStatus(status string) (int, error)
 
 	CreateBounce(b *entities.Bounce) error
 	CreateComplaint(c *entities.Complaint) error
@@ -512,4 +513,9 @@ func GetTemplates(c context.Context, userID int64, p *PaginationCursor, scopeMap
 // DeleteTemplate deletes the template with given template id and user id from db
 func DeleteTemplate(c context.Context, templateID int64, userID int64) error {
 	return GetFromContext(c).DeleteTemplate(templateID, userID)
+}
+
+// CreateSendLogs creates a SendLogs entity.
+func CreateSendLogs(c context.Context, sendLogs *entities.SendLogs) error {
+	return GetFromContext(c).CreateSendLogs(sendLogs)
 }

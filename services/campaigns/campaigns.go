@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/cbroglie/mustache"
-	"github.com/google/uuid"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
@@ -15,6 +14,7 @@ import (
 type Service interface {
 	PrepareSubscriberEmailData(
 		s entities.Subscriber,
+		uuid string,
 		msg entities.SendCampaignParams,
 		campaignID int64,
 		html *mustache.Template,
@@ -39,6 +39,7 @@ func New(db storage.Storage, p queue.Producer) Service {
 
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
+	uuid string,
 	msg entities.SendCampaignParams,
 	campaignID int64,
 	html *mustache.Template,
@@ -77,7 +78,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SendEmailTopicParams{
-		UUID:         uuid.New().String(),
+		UUID:         uuid,
 		SubscriberID: s.ID,
 		CampaignID:   campaignID,
 		SesKeys:      msg.SesKeys,
