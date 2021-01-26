@@ -1,21 +1,28 @@
-package main
+package sender
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/nsqio/go-nsq"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
-	"github.com/nsqio/go-nsq"
-	"github.com/sirupsen/logrus"
+)
+
+const (
+	CharSet = "UTF-8"
 )
 
 // MessageHandler implements the nsq handler interface.
@@ -31,11 +38,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	msg := new(entities.BulkSendMessage)
-
+	msg := new(entities.SenderTopicParams)
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).Error("Malformed JSON message.")
+		logrus.WithField("body", string(m.Body)).
+			WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
 
@@ -53,6 +60,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	// TODO NOISE CHANGE ME AFTER MERGING CAMPAIGNER WITH SEND LOGS B)
 	count, err := h.s.CountLogsByUUID(msg.UUID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -68,65 +76,96 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			"user_id":     msg.UserID,
 			"campaign_id": msg.CampaignID,
 			"uuid":        msg.UUID,
-		}).Warn("Bulk already sent.")
+		}).Warn("Email already sent.")
 		return nil
 	}
 
-	res, err := client.SendBulkTemplatedEmail(msg.Input)
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(msg.SubscriberEmail)},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.HTMLPart)),
+				},
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.TextPart)),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(string(msg.SubjectPart)),
+			},
+		},
+		Source: aws.String(msg.Source),
+		Tags: []*ses.MessageTag{
+			{
+				Name:  aws.String("campaign_id"),
+				Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
+			},
+			{
+				Name:  aws.String("user_id"),
+				Value: aws.String(msg.UserUUID),
+			},
+		},
+	}
 
+	if msg.ConfigurationSetExists {
+		input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
+	}
+
+	resp, err := client.SendEmail(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
 				logrus.WithFields(logrus.Fields{
-					"user_id":     msg.UserID,
-					"campaign_id": msg.CampaignID,
-					"uuid":        msg.UUID,
+					"uuid":          msg.UUID,
+					"user_id":       msg.UserID,
+					"campaign_id":   msg.CampaignID,
+					"subscriber_id": msg.SubscriberID,
 				}).WithError(aerr).Error("Unable to send bulk templated email. Message rejected.")
 			case ses.ErrCodeMailFromDomainNotVerifiedException:
 				logrus.WithFields(logrus.Fields{
-					"user_id":     msg.UserID,
-					"campaign_id": msg.CampaignID,
-					"uuid":        msg.UUID,
+					"uuid":          msg.UUID,
+					"user_id":       msg.UserID,
+					"campaign_id":   msg.CampaignID,
+					"subscriber_id": msg.SubscriberID,
 				}).WithError(aerr).Error("Unable to send bulk templated email. Domain not verified.")
 			case ses.ErrCodeConfigurationSetDoesNotExistException:
 				logrus.WithFields(logrus.Fields{
-					"user_id":     msg.UserID,
-					"campaign_id": msg.CampaignID,
-					"uuid":        msg.UUID,
+					"uuid":          msg.UUID,
+					"user_id":       msg.UserID,
+					"campaign_id":   msg.CampaignID,
+					"subscriber_id": msg.SubscriberID,
 				}).WithError(aerr).Error("Unable to send bulk templated email. Configuration set does not exist.")
-			default:
-				logrus.WithFields(logrus.Fields{
-					"user_id":     msg.UserID,
-					"campaign_id": msg.CampaignID,
-					"uuid":        msg.UUID,
-				}).WithError(aerr).Error("Unable to send bulk templated email. Unknown status code.")
 			}
-		} else {
-			logrus.WithFields(logrus.Fields{
-				"user_id":     msg.UserID,
-				"campaign_id": msg.CampaignID,
-				"uuid":        msg.UUID,
-			}).WithError(err).Error("Unable to send bulk templated email.")
 		}
+		logrus.WithFields(logrus.Fields{
+			"user_id":     msg.UserID,
+			"campaign_id": msg.CampaignID,
+			"uuid":        msg.UUID,
+		}).WithError(err).Error("Unable to send bulk templated email. Unknown status code.")
 		return nil
 	}
 
-	for _, s := range res.Status {
-		err := h.s.CreateSendBulkLog(&entities.SendBulkLog{
-			UUID:       msg.UUID,
-			UserID:     msg.UserID,
-			CampaignID: msg.CampaignID,
-			MessageID:  *s.MessageId,
-			Status:     *s.Status,
-		})
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id":      msg.CampaignID,
-				"user_id":          msg.UserID,
-				"send_bulk_status": s.GoString(),
-			}).WithError(err).Error("Unable to add log for sent emails result.")
-		}
+	// TODO NOISE CHANGE ME AFTER MERGING CAMPAIGNER WITH SEND LOGS B)
+	err = h.s.CreateSendBulkLog(&entities.SendBulkLog{
+		UUID:       msg.UUID,
+		UserID:     msg.UserID,
+		CampaignID: msg.CampaignID,
+		MessageID:  *resp.MessageId,
+		Status:     "successful",
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"campaign_id":      msg.CampaignID,
+			"user_id":          msg.UserID,
+			"send_bulk_status": resp.GoString(),
+		}).WithError(err).Error("Unable to add log for sent emails result.")
 	}
 
 	return nil
