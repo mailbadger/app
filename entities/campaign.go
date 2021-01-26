@@ -58,7 +58,6 @@ type CampaignerTopicParams struct {
 	UserID                 int64             `json:"user_id"`
 	UserUUID               string            `json:"user_uuid"`
 	ConfigurationSetExists bool              `json:"configuration_set_exists"`
-	Campaign               `json:"campaign"`
 	SesKeys                `json:"ses_keys"`
 }
 

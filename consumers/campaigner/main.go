@@ -278,7 +278,7 @@ func main() {
 
 	config := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(entities.CampaignsTopic, entities.CampaignsTopic, config)
+	consumer, err := nsq.NewConsumer(entities.CampaignerTopic, entities.CampaignerTopic, config)
 	if err != nil {
 		logrus.Fatal(err)
 	}
