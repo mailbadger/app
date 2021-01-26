@@ -91,12 +91,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		limit     int64 = 1000
 	)
 
-	template, err := h.svc.GetTemplate(context.Background(), msg.TemplateID, msg.UserID)
+	template, err := h.svc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logrus.WithError(err).
 				WithFields(logrus.Fields{
-					"template_id": msg.TemplateID,
+					"template_id": campaign.TemplateID,
 					"user_id":     msg.UserID,
 				}).
 				Error("unable to get template")
@@ -104,7 +104,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
-				"template_id": msg.TemplateID,
+				"template_id": campaign.TemplateID,
 				"user_id":     msg.UserID,
 			}).
 			Error("unable to get template")
