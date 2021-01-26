@@ -41,7 +41,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	msg := new(entities.SendCampaignParams)
+	msg := new(entities.CampaignerTopicParams)
 	svc := campaigns.New(h.s, h.p)
 
 	err := json.Unmarshal(m.Body, msg)
