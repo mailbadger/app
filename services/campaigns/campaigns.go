@@ -78,15 +78,19 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SendEmailTopicParams{
-		UUID:         uuid,
-		SubscriberID: s.ID,
-		CampaignID:   campaignID,
-		SesKeys:      msg.SesKeys,
-		HTMLPart:     htmlBuf.Bytes(),
-		SubjectPart:  subBuf.Bytes(),
-		TextPart:     textBuf.Bytes(),
-		UserUUID:     msg.UserUUID,
-		UserID:       msg.UserID,
+		UUID:                   uuid,
+		SubscriberID:           s.ID,
+		SubscriberEmail:        s.Email,
+		Source:                 msg.Source,
+		FromName:               s.Name,
+		ConfigurationSetExists: msg.ConfigurationSetExists,
+		CampaignID:             campaignID,
+		SesKeys:                msg.SesKeys,
+		HTMLPart:               htmlBuf.Bytes(),
+		SubjectPart:            subBuf.Bytes(),
+		TextPart:               textBuf.Bytes(),
+		UserUUID:               msg.UserUUID,
+		UserID:                 msg.UserID,
 	}
 
 	// clear buffers for next subscriber

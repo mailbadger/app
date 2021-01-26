@@ -65,9 +65,13 @@ type SendCampaignParams struct {
 // SendEmailTopicParams represent the request params used
 // by the sender campaign consumer.
 type SendEmailTopicParams struct {
-	UUID         string `json:"uuid"`
-	SubscriberID int64  `json:"subscriber_id"`
-	CampaignID   int64  `json:"campaign_id"`
+	UUID                   string `json:"uuid"`
+	SubscriberID           int64  `json:"subscriber_id"`
+	SubscriberEmail        string `json:"subscriber_email"`
+	Source                 string `json:"source"`
+	FromName               string `json:"from_name"`
+	ConfigurationSetExists bool   `json:"configuration_set_exists"`
+	CampaignID             int64  `json:"campaign_id"`
 	SesKeys
 	HTMLPart    []byte `json:"html_part"`
 	SubjectPart []byte `json:"subject_part"`
