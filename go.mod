@@ -3,7 +3,6 @@ module github.com/mailbadger/app
 go 1.14
 
 require (
-	cloud.google.com/go v0.73.0 // indirect
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.36.31
 	github.com/cbroglie/mustache v1.2.0
@@ -43,12 +42,9 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c
-	golang.org/x/net v0.0.0-20201207224615-747e23833adb // indirect
 	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
-	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
-	google.golang.org/api v0.36.0
-	google.golang.org/genproto v0.0.0-20201207150747-9ee31aac76e7 // indirect
+	google.golang.org/api v0.37.0
 	google.golang.org/grpc v1.34.0 // indirect
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
