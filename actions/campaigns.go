@@ -158,14 +158,6 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	campaign.Status = entities.StatusSending
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logger.From(c).
-			WithField("campaign_id", campaign.ID).
-			WithError(err).Error("Unable to update campaign status.")
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "The campaign has started. You can track the progress in the campaign details page.",
 	})
