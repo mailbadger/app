@@ -2,7 +2,7 @@ package entities
 
 import "time"
 
-type SendLogs struct {
+type SendLog struct {
 	ID           int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UUID         string    `json:"uuid" gorm:"column:uuid; index"`
 	UserID       int64     `json:"-" gorm:"column:user_id; index"`

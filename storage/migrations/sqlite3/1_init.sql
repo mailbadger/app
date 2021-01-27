@@ -144,10 +144,10 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
 CREATE TABLE IF NOT EXISTS "send_logs" (
   "id"            integer primary key autoincrement,
   "uuid"          varchar(36) NOT NULL,
-  "user_id"       integer,
-  "campaign_id"   integer,
-  "subscriber_id" integer,
-  "status"        varchar(191),
+  "user_id"       integer NOT NULL,
+  "campaign_id"   integer NOT NULL,
+  "subscriber_id" integer NOT NULL,
+  "status"        varchar(191) NOT NULL,
   "description"   varchar(191),
   "created_at"    datetime
 );

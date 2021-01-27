@@ -99,7 +99,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					"template_id": campaign.TemplateID,
 					"user_id":     msg.UserID,
 				}).
-				Error("unable to get template")
+				Warn("unable to get template")
 			return nil
 		}
 		logrus.WithError(err).
@@ -160,7 +160,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				logrus.WithFields(logrus.Fields{
 					"user_id":     msg.UserID,
 					"segment_ids": msg.SegmentIDs,
-				}).WithError(err).Error("unable to fetch subscribers.")
+				}).WithError(err).Warn("unable to fetch subscribers.")
 				return nil
 			}
 			logrus.WithFields(logrus.Fields{
@@ -173,7 +173,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			uuid := uuid.New().String()
 			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, html, sub, text)
 			if err != nil {
-				sendLog := &entities.SendLogs{
+				sendLog := &entities.SendLog{
 					UUID:         uuid,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
@@ -194,7 +194,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
-				sendLog := &entities.SendLogs{
+				sendLog := &entities.SendLog{
 					UUID:         uuid,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
@@ -207,9 +207,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
+						"uuid":          uuid,
 						"campaign_id":   msg.CampaignID,
 						"user_id":       msg.UserID,
-					}).WithError(err).Warn("unable to insert send logs for subscriber.")
+					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 				return nil
 			}

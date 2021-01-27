@@ -3,6 +3,7 @@ package campaigns
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/cbroglie/mustache"
 
@@ -55,7 +56,7 @@ func (svc *service) PrepareSubscriberEmailData(
 
 	m, err := s.GetMetadata()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get subscriber metadata error: %w", err)
 	}
 	// merge sub metadata with default template metadata
 	for k, v := range msg.TemplateData {
@@ -66,15 +67,15 @@ func (svc *service) PrepareSubscriberEmailData(
 
 	err = html.FRender(&htmlBuf, m)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to render html template error: %w", err)
 	}
 	err = sub.FRender(&subBuf, m)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to render subject template error: %w", err)
 	}
 	err = text.FRender(&textBuf, m)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to render text template error: %w", err)
 	}
 
 	sender := entities.SendEmailTopicParams{
@@ -82,7 +83,6 @@ func (svc *service) PrepareSubscriberEmailData(
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,
-		FromName:               s.Name,
 		ConfigurationSetExists: msg.ConfigurationSetExists,
 		CampaignID:             campaignID,
 		SesKeys:                msg.SesKeys,
@@ -105,13 +105,13 @@ func (svc *service) PrepareSubscriberEmailData(
 func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error {
 	senderBytes, err := json.Marshal(params)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal params error: %w", err)
 	}
 
 	// publish the message to the queue
 	err = svc.p.Publish(entities.SenderTopic, senderBytes)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to publish data to sender topic error: %w", err)
 	}
 	return nil
 }

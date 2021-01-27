@@ -88,7 +88,7 @@ type Storage interface {
 	CreateToken(s *entities.Token) error
 	DeleteToken(token string) error
 
-	CreateSendLogs(l *entities.SendLogs) error
+	CreateSendLogs(l *entities.SendLog) error
 	CountLogsByUUID(uuid string) (int, error)
 	CountLogsByStatus(status string) (int, error)
 
@@ -516,6 +516,6 @@ func DeleteTemplate(c context.Context, templateID int64, userID int64) error {
 }
 
 // CreateSendLogs creates a SendLogs entity.
-func CreateSendLogs(c context.Context, sendLogs *entities.SendLogs) error {
+func CreateSendLogs(c context.Context, sendLogs *entities.SendLog) error {
 	return GetFromContext(c).CreateSendLogs(sendLogs)
 }

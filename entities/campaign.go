@@ -68,7 +68,6 @@ type SendEmailTopicParams struct {
 	SubscriberID           int64  `json:"subscriber_id"`
 	SubscriberEmail        string `json:"subscriber_email"`
 	Source                 string `json:"source"`
-	FromName               string `json:"from_name"`
 	ConfigurationSetExists bool   `json:"configuration_set_exists"`
 	CampaignID             int64  `json:"campaign_id"`
 	SesKeys

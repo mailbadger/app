@@ -24,7 +24,7 @@ func TestSendLogs(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	sendLogs := []entities.SendLogs{
+	sendLogs := []entities.SendLog{
 		{
 			UUID:         uuid.New().String(),
 			UserID:       1,

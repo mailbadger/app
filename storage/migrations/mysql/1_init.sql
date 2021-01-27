@@ -177,7 +177,8 @@ CREATE TABLE IF NOT EXISTS `send_logs` (
   `description`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  INDEX u_s_c_id (`user_id`, `uuid`,`campaign_id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sends` (
@@ -202,6 +203,7 @@ DROP TABLE `segments`;
 DROP TABLE `subscribers`;
 DROP TABLE `bounces`;
 DROP TABLE `sends`;
+DROP TABLE `send_logs`;
 DROP TABLE `clicks`;
 DROP TABLE `complaints`;
 DROP TABLE `deliveries`;
