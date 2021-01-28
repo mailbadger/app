@@ -55,7 +55,7 @@ func TestSendLogs(t *testing.T) {
 	}
 	// test insert opens
 	for _, i := range sendLogs {
-		err := store.CreateSendLogs(&i)
+		err := store.CreateSendLog(&i)
 		assert.Nil(t, err)
 	}
 
