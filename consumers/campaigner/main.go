@@ -110,7 +110,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"user_id":     msg.UserID,
 			}).
 			Error("unable to get template")
-		return err
+		return nil
 	}
 
 	html, err := mustache.ParseString(template.HTMLPart)
