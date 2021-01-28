@@ -53,6 +53,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id": msg.CampaignID,
+				"user_id":     msg.UserID},
+			).WithError(err).Warn("unable to find campaign")
 			return nil
 		}
 		logrus.WithFields(logrus.Fields{
