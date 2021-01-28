@@ -1927,14 +1927,14 @@
     "@uppy/utils" "^3.3.0"
     namespace-emitter "^2.0.1"
 
-"@uppy/core@^1.15.0":
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.15.0.tgz#8d67532974a754616428f4c2dd9027a60b37f7bc"
-  integrity sha512-VaB/+nzwNnA+qOYG4eD4cdkgqRBvkoxJiziMYdp8eYJvEWh+7zO9Z1L7pjTFoZ+gxv1a5raqyHW4famufDag7Q==
+"@uppy/core@^1.15.1":
+  version "1.15.1"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.15.1.tgz#efa39008f221dc2dae517e059c771f1f8a447fb5"
+  integrity sha512-TeF+iL9Izs7YiKUU2wzs+SvdocifU7qm7E2Q+ese9vqkbiVyho9Twpd28B57KCNRtuYpMQ0wCy6d/jZ/aC9GUg==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
-    "@uppy/store-default" "^1.2.4"
-    "@uppy/utils" "^3.3.0"
+    "@uppy/store-default" "^1.2.5"
+    "@uppy/utils" "^3.3.1"
     cuid "^2.1.1"
     lodash.throttle "^4.1.1"
     mime-match "^1.0.2"
@@ -2026,10 +2026,10 @@
     lodash.throttle "^4.1.1"
     preact "8.2.9"
 
-"@uppy/store-default@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-1.2.4.tgz#480f50cbf23f36158557a42b7699da0cf629d368"
-  integrity sha512-d4YTq6SeH792+vG9OXGCfmCIoo4RteLJKU2mZCzMYNjCZ1yNfU/FVw1r7heTc7f2wNls56ABor2xSybk/X+wFA==
+"@uppy/store-default@^1.2.5":
+  version "1.2.5"
+  resolved "https://registry.yarnpkg.com/@uppy/store-default/-/store-default-1.2.5.tgz#52936331d6ac4911197d256d13974d5bae93b3a6"
+  integrity sha512-jnf0U8cfb8Bhgt6yh86YRJO9EEnCyG9BgXZ8dPWWLybgC9Expw3Ah/s3T21tcdChgv4zzdhSACd0JKxCQowyYg==
 
 "@uppy/thumbnail-generator@^1.7.3":
   version "1.7.3"
@@ -2040,10 +2040,10 @@
     exifr "^6.0.0"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.3.0":
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.3.0.tgz#c9501a4f1cd98bf91fb8f5a5651b47df40ac785f"
-  integrity sha512-oPNZjjRDDBLC7763idAlzIZiaQoFq2ms/G0TOFq5YeiBv/usbvb/mcEugrwsvLAvLYum2wJzYvWzAx4tlFF/ag==
+"@uppy/utils@^3.3.0", "@uppy/utils@^3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.3.1.tgz#b674e1aa2cd64b98422e6df58a614d396ae40b13"
+  integrity sha512-EeP3LgzBorAfXQSuEfXmtDp6MjdnEAm/xnIplAQg0ywrrR5Ht3FnJdGySRQnUVjiEb1umRI7eiJoe8Av/hC4Wg==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     lodash.throttle "^4.1.1"
