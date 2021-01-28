@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 
 CREATE TABLE IF NOT EXISTS `send_logs` (
   `id`              bigint unsigned primary key AUTO_INCREMENT NOT NULL,
-  `uuid`            varchar(36) NOT NULL,
+  `uuid`            varchar(36) unique NOT NULL,
   `user_id`         integer unsigned NOT NULL,
   `subscriber_id`   integer unsigned NOT NULL,
   `campaign_id`     integer unsigned NOT NULL,
@@ -178,7 +178,6 @@ CREATE TABLE IF NOT EXISTS `send_logs` (
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
-  INDEX u_s_c_id (`user_id`, `uuid`,`campaign_id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sends` (

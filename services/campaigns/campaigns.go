@@ -93,11 +93,6 @@ func (svc *service) PrepareSubscriberEmailData(
 		UserID:                 msg.UserID,
 	}
 
-	// clear buffers for next subscriber
-	htmlBuf.Reset()
-	subBuf.Reset()
-	textBuf.Reset()
-
 	return &sender, nil
 
 }

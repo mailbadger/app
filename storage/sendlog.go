@@ -2,7 +2,7 @@ package storage
 
 import "github.com/mailbadger/app/entities"
 
-func (db *store) CreateSendLogs(l *entities.SendLog) error {
+func (db *store) CreateSendLog(l *entities.SendLog) error {
 	return db.Create(l).Error
 }
 

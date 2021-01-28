@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
 
 CREATE TABLE IF NOT EXISTS "send_logs" (
   "id"            integer primary key autoincrement,
-  "uuid"          varchar(36) NOT NULL,
+  "uuid"          varchar(36) unique NOT NULL,
   "user_id"       integer NOT NULL,
   "campaign_id"   integer NOT NULL,
   "subscriber_id" integer NOT NULL,
@@ -152,8 +152,6 @@ CREATE TABLE IF NOT EXISTS "send_logs" (
   "created_at"    datetime
 );
 
-CREATE INDEX IF NOT EXISTS i_user_campaign ON "send_logs" (user_id, campaign_id);
-CREATE INDEX IF NOT EXISTS i_uuid ON "send_logs" (uuid);
 
 CREATE TABLE IF NOT EXISTS "sends" (
   "id"                 integer primary key autoincrement,

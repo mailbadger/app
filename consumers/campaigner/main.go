@@ -66,8 +66,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"campaign_id": msg.CampaignID,
-			}).
-			Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
+			}).Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
 		return nil
 	}
 
@@ -80,8 +79,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"user_id":     campaign.UserID,
 				"campaign_id": campaign.ID,
 				"status":      campaign.Status,
-			}).
-			Error("unable to update campaign")
+			}).Error("unable to update campaign")
 		return nil
 	}
 
@@ -167,7 +165,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
 			}).WithError(err).Error("unable to fetch subscribers.")
-			return err
+			return nil
 		}
 		for _, s := range subs {
 			uuid := uuid.New().String()
@@ -180,15 +178,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					CampaignID:   msg.CampaignID,
 					Status:       entities.FailedSendBulkLog,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
-					CreatedAt:    time.Now(),
 				}
-				err := h.s.CreateSendLogs(sendLog)
+				err := h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
 						"campaign_id":   msg.CampaignID,
 						"user_id":       msg.UserID,
-					}).WithError(err).Warn("unable to insert send logs for subscriber.")
+					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 				return nil
 			}
@@ -201,9 +198,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					CampaignID:   msg.CampaignID,
 					Status:       entities.FailedSendBulkLog,
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
-					CreatedAt:    time.Now(),
 				}
-				err := h.s.CreateSendLogs(sendLog)
+				err := h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
