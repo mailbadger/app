@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `scheduled_at`  datetime(6) DEFAULT NULL,
   `completed_at`  datetime(6) DEFAULT NULL,
   `deleted_at`    datetime(6) DEFAULT NULL,
+  `started_at`    datetime(6) DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   INDEX id_created_at (`id`, `created_at`)
@@ -166,16 +167,17 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
-  `id`          bigint unsigned primary key AUTO_INCREMENT NOT NULL,
-  `uuid`        varchar(36) NOT NULL,
-  `user_id`     integer unsigned NOT NULL,
-  `campaign_id` integer unsigned NOT NULL,
-  `message_id`  varchar(191) NOT NULL,
-  `status`      varchar(191) NOT NULL,
-  `created_at`  datetime(6) NOT NULL,
+CREATE TABLE IF NOT EXISTS `send_logs` (
+  `id`              bigint unsigned primary key AUTO_INCREMENT NOT NULL,
+  `uuid`            varchar(36) unique NOT NULL,
+  `user_id`         integer unsigned NOT NULL,
+  `subscriber_id`   integer unsigned NOT NULL,
+  `campaign_id`     integer unsigned NOT NULL,
+  `status`          varchar(191) NOT NULL,
+  `description`     varchar(191) NOT NULL,
+  `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sends` (
@@ -199,8 +201,8 @@ DROP TABLE `subscriber_metadata`;
 DROP TABLE `segments`;
 DROP TABLE `subscribers`;
 DROP TABLE `bounces`;
-DROP TABLE `send_bulk_logs`;
 DROP TABLE `sends`;
+DROP TABLE `send_logs`;
 DROP TABLE `clicks`;
 DROP TABLE `complaints`;
 DROP TABLE `deliveries`;

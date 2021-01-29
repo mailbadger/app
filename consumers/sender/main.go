@@ -60,7 +60,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	// TODO NOISE CHANGE ME AFTER MERGING CAMPAIGNER WITH SEND LOGS B)
 	count, err := h.s.CountLogsByUUID(msg.UUID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -152,13 +151,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	// TODO NOISE CHANGE ME AFTER MERGING CAMPAIGNER WITH SEND LOGS B)
-	err = h.s.CreateSendBulkLog(&entities.SendBulkLog{
-		UUID:       msg.UUID,
-		UserID:     msg.UserID,
-		CampaignID: msg.CampaignID,
-		MessageID:  *resp.MessageId,
-		Status:     "successful",
+	err = h.s.CreateSendLog(&entities.SendLog{
+		UUID:         msg.UUID,
+		UserID:       msg.UserID,
+		CampaignID:   msg.CampaignID,
+		SubscriberID: msg.SubscriberID,
+		Status:       "successful",
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{

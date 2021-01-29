@@ -1,32 +1,36 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/cbroglie/mustache"
 	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/consumers"
-	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
+	"github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/campaigns"
+	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
 )
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
-	s storage.Storage
-	p queue.Producer
+	s           storage.Storage
+	templatesvc templates.Service
+	p           queue.Producer
 }
 
 // HandleMessage is the only requirement needed to fulfill the
@@ -38,6 +42,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	msg := new(entities.CampaignerTopicParams)
+	svc := campaigns.New(h.s, h.p)
 
 	err := json.Unmarshal(m.Body, msg)
 	if err != nil {
@@ -45,158 +50,192 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	c, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
+	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id": msg.CampaignID,
+				"user_id":     msg.UserID,
+			}).WithError(err).Warn("unable to find campaign")
+			return nil
+		}
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": msg.CampaignID,
 			"user_id":     msg.UserID,
-		}).WithError(err).Error("Unable to fetch campaign")
+		}).WithError(err).Error("unable to find campaign")
+		return err
+	}
+	if campaign.Status != entities.StatusDraft {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     msg.UserID,
+				"campaign_id": msg.CampaignID,
+			}).Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
+		return nil
+	}
+
+	campaign.StartedAt.SetValid(time.Now().UTC())
+	campaign.Status = entities.StatusSending
+	err = h.s.UpdateCampaign(campaign)
+	if err != nil {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"campaign_id": campaign.ID,
+				"status":      campaign.Status,
+			}).Error("unable to update campaign")
 		return nil
 	}
 
 	// fetching subs that are active and that have not been blacklisted
 	var (
-		active      = true
-		blacklisted = false
-		timestamp   time.Time
-		nextID      int64
-		limit       int64 = 1000
+		timestamp time.Time
+		nextID    int64
+		limit     int64 = 1000
 	)
+
+	template, err := h.templatesvc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logrus.WithError(err).
+				WithFields(logrus.Fields{
+					"template_id": campaign.TemplateID,
+					"user_id":     msg.UserID,
+				}).Warn("unable to get template")
+			return nil
+		}
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"template_id": campaign.TemplateID,
+				"user_id":     msg.UserID,
+			}).Error("unable to get template")
+		return nil
+	}
+
+	html, err := mustache.ParseString(template.HTMLPart)
+	if err != nil {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"campaign_id": campaign.ID,
+				"template_id": template.ID,
+			}).Error("unable to parse html_part")
+		return nil
+	}
+	text, err := mustache.ParseString(template.TextPart)
+	if err != nil {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"campaign_id": campaign.ID,
+				"template_id": template.ID,
+			}).Error("unable to parse text_part")
+		return nil
+	}
+	sub, err := mustache.ParseString(template.SubjectPart)
+	if err != nil {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"campaign_id": campaign.ID,
+				"template_id": template.ID,
+			}).Error("unable to parse subject_part")
+		return nil
+	}
+
 	for {
 		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
 			msg.UserID,
-			blacklisted,
-			active,
+			false,
+			true,
 			timestamp,
 			nextID,
 			limit,
 		)
 		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				logrus.WithFields(logrus.Fields{
+					"user_id":     msg.UserID,
+					"segment_ids": msg.SegmentIDs,
+				}).WithError(err).Warn("unable to fetch subscribers.")
+				return nil
+			}
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
-			}).WithError(err).Error("Unable to fetch subscribers.")
-			break
+			}).WithError(err).Error("unable to fetch subscribers.")
+			return nil
+		}
+		for _, s := range subs {
+			uuid := uuid.New().String()
+			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, html, sub, text)
+			if err != nil {
+				sendLog := &entities.SendLog{
+					UUID:         uuid,
+					UserID:       msg.UserID,
+					SubscriberID: s.ID,
+					CampaignID:   msg.CampaignID,
+					Status:       entities.FailedSendLogStatus,
+					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
+				}
+				err := h.s.CreateSendLog(sendLog)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"subscriber_id": s.ID,
+						"campaign_id":   msg.CampaignID,
+						"user_id":       msg.UserID,
+					}).WithError(err).Error("unable to insert send logs for subscriber.")
+				}
+				return nil
+			}
+			err = svc.PublishSubscriberEmailParams(params)
+			if err != nil {
+				sendLog := &entities.SendLog{
+					UUID:         uuid,
+					UserID:       msg.UserID,
+					SubscriberID: s.ID,
+					CampaignID:   msg.CampaignID,
+					Status:       entities.FailedSendLogStatus,
+					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
+				}
+				err := h.s.CreateSendLog(sendLog)
+				if err != nil {
+					logrus.WithFields(logrus.Fields{
+						"subscriber_id": s.ID,
+						"uuid":          uuid,
+						"campaign_id":   msg.CampaignID,
+						"user_id":       msg.UserID,
+					}).WithError(err).Error("unable to insert send logs for subscriber.")
+				}
+				return nil
+			}
+
 		}
 
 		if len(subs) == 0 {
 			break
 		}
 
-		// SES allows to send 50 emails in a bulk sending operation
-		chunkSize := 50
-		for i := 0; i < len(subs); i += chunkSize {
-			end := i + chunkSize
-			if end > len(subs) {
-				end = len(subs)
-			}
-
-			var dest []*ses.BulkEmailDestination
-			for _, s := range subs[i:end] {
-				m, err := s.GetMetadata()
-				if err != nil {
-					logrus.WithError(err).
-						WithField("subscriber", s).
-						Error("Unable to get subscriber metadata.")
-
-					continue
-				}
-
-				if s.Name != "" {
-					m["name"] = s.Name
-				}
-
-				url, err := s.GetUnsubscribeURL(msg.UserUUID)
-				if err != nil {
-					logrus.WithError(err).
-						WithField("subscriber", s).
-						Error("Unable to get unsubscribe url.")
-				} else {
-					m["unsubscribe_url"] = url
-				}
-
-				jsonMeta, err := json.Marshal(m)
-				if err != nil {
-					logrus.WithError(err).
-						WithField("subscriber", s).
-						Error("Unable to marshal metadata to json.")
-
-					continue
-				}
-				d := &ses.BulkEmailDestination{
-					Destination: &ses.Destination{
-						ToAddresses: []*string{aws.String(s.Email)},
-					},
-					ReplacementTemplateData: aws.String(string(jsonMeta)),
-				}
-
-				dest = append(dest, d)
-			}
-
-			defaultData, err := json.Marshal(msg.TemplateData)
-			if err != nil {
-				logrus.WithError(err).Error("Unable to marshal template data as JSON.")
-				continue
-			}
-
-			// prepare message for publishing to the queue
-			input := &ses.SendBulkTemplatedEmailInput{
-				Source:              aws.String(msg.Source),
-				Template:            aws.String(c.BaseTemplate.Name),
-				Destinations:        dest,
-				DefaultTemplateData: aws.String(string(defaultData)),
-				DefaultTags: []*ses.MessageTag{
-					&ses.MessageTag{
-						Name:  aws.String("campaign_id"),
-						Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
-					},
-					&ses.MessageTag{
-						Name:  aws.String("user_id"),
-						Value: aws.String(msg.UserUUID),
-					},
-				},
-			}
-
-			if msg.ConfigurationSetExists {
-				input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
-			}
-
-			uuid := uuid.New()
-
-			bulkMsg := entities.BulkSendMessage{
-				UUID:       uuid.String(),
-				Input:      input,
-				CampaignID: msg.CampaignID,
-				UserID:     msg.UserID,
-				SesKeys:    &msg.SesKeys,
-			}
-			msg, err := json.Marshal(bulkMsg)
-
-			if err != nil {
-				logrus.WithError(err).Error("Unable to marshal bulk message input.")
-				continue
-			}
-
-			// publish the message to the queue
-			err = h.p.Publish(entities.SenderTopic, msg)
-			if err != nil {
-				logrus.WithError(err).Error("Unable to publish message to send bulk topic.")
-			}
-		}
-
+		// set  vars for next batches
 		lastSub := subs[len(subs)-1]
 		nextID = lastSub.ID
 		timestamp = lastSub.CreatedAt
+
+		// exit the loop if next batch is smaller then 1k -> it's the last batch of 1k.
+		if len(subs) < 1000 {
+			break
+		}
 	}
 
-	c.UserID = msg.UserID
-	c.Status = entities.StatusSent
-	c.CompletedAt.SetValid(time.Now().UTC())
-
-	err = h.s.UpdateCampaign(c)
+	campaign.Status = entities.StatusSent
+	campaign.CompletedAt.SetValid(time.Now().UTC())
+	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
-		logrus.WithField("campaign", c).WithError(err).Error("Unable to update campaign.")
+		logrus.WithError(err).
+			WithField("campaign", campaign).
+			Error("unable to update campaign")
+		return nil
 	}
 
 	return nil
@@ -218,6 +257,17 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
+	s3Client, err := s3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	svc := templates.New(s, s3Client)
+
 	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
 	if err != nil {
 		logrus.Fatal(err)
@@ -238,7 +288,7 @@ func main() {
 	)
 
 	consumer.AddConcurrentHandlers(
-		&MessageHandler{s, p},
+		&MessageHandler{s, svc, p},
 		20,
 	)
 
