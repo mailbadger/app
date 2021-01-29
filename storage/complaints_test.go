@@ -50,8 +50,8 @@ func TestComplaints(t *testing.T) {
 		},
 	}
 	// test insert opens
-	for _, i := range complaints {
-		err = store.CreateComplaint(&i)
+	for i := range complaints {
+		err = store.CreateComplaint(&complaints[i])
 		assert.Nil(t, err)
 	}
 
