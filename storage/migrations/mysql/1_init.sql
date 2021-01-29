@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS `ses_keys` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
-<<<<<<< HEAD
   `id`            INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `user_id`       INTEGER UNSIGNED NOT NULL,
   `name`          VARCHAR(191) NOT NULL,
@@ -185,16 +184,6 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-<<<<<<< HEAD
-CREATE TABLE IF NOT EXISTS `send_bulk_logs` (
-  `id`          BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  `uuid`        VARCHAR(36) NOT NULL,
-  `user_id`     INTEGER UNSIGNED NOT NULL,
-  `campaign_id` INTEGER UNSIGNED NOT NULL,
-  `message_id`  VARCHAR(191) NOT NULL,
-  `status`      VARCHAR(191) NOT NULL,
-  `created_at`  DATETIME(6) NOT NULL,
-=======
 CREATE TABLE IF NOT EXISTS `send_logs` (
   `id`              bigint unsigned primary key AUTO_INCREMENT NOT NULL,
   `uuid`            varchar(36) unique NOT NULL,
@@ -204,7 +193,6 @@ CREATE TABLE IF NOT EXISTS `send_logs` (
   `status`          varchar(191) NOT NULL,
   `description`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
->>>>>>> 01f3a7699aa1f75bb0caf6b543a1706b78791a40
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
