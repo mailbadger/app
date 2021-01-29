@@ -19,15 +19,14 @@ func TestAPIKeys(t *testing.T) {
 	}()
 	store := From(db)
 
-	k, err := store.GetAPIKey("foobar")
+	_, err := store.GetAPIKey("foobar")
 	assert.NotNil(t, err)
-	assert.Nil(t, k)
 
 	keys, err := store.GetAPIKeys(1)
 	assert.Nil(t, err)
 	assert.Empty(t, keys)
 
-	k = &entities.APIKey{
+	k := &entities.APIKey{
 		UserID:    1,
 		Active:    true,
 		SecretKey: "foobar",
