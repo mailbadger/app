@@ -16,9 +16,9 @@ import (
 func createCampaigns(store Storage) {
 	for i := 0; i < 100; i++ {
 		err := store.CreateCampaign(&entities.Campaign{
-			Name:     "foo " + strconv.Itoa(i),
-			UserID:   1,
-			Status:   "draft",
+			Name:   "foo " + strconv.Itoa(i),
+			UserID: 1,
+			Status: "draft",
 		})
 		if err != nil {
 			logrus.Fatal(err)
@@ -39,7 +39,7 @@ func TestCampaign(t *testing.T) {
 	createCampaigns(store)
 	//Test create campaign
 	campaign := &entities.Campaign{
-		Name: "foo",
+		Name:   "foo",
 		UserID: 1,
 		Status: "draft",
 	}
@@ -98,7 +98,6 @@ func TestCampaign(t *testing.T) {
 		}
 	}
 
-
 	//Test get campaign by name
 	campaign, err = store.GetCampaignByName("bar", 1)
 	assert.Nil(t, err)
@@ -109,7 +108,7 @@ func TestCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test insert open
-	open := []entities.Open{
+	opens := []entities.Open{
 		{
 			ID:         1,
 			UserID:     1,
@@ -131,8 +130,8 @@ func TestCampaign(t *testing.T) {
 	}
 
 	// test insert open
-	for _, i := range open {
-		err = store.CreateOpen(&i)
+	for i := range opens {
+		err = store.CreateOpen(&opens[i])
 		assert.Nil(t, err)
 	}
 
@@ -148,7 +147,7 @@ func TestCampaign(t *testing.T) {
 	assert.NotEmpty(t, *campOpens)
 	assert.Equal(t, 1, len(*campOpens))
 	// campOpens[0] - order desc
-	assert.Equal(t, open[1], (*campOpens)[0])
+	assert.Equal(t, opens[1], (*campOpens)[0])
 
 	// insert complaints for test get campaign complaints stats
 	complaints := []entities.Complaint{
@@ -174,8 +173,8 @@ func TestCampaign(t *testing.T) {
 		},
 	}
 	// test insert complaints
-	for _, i := range complaints {
-		err = store.CreateComplaint(&i)
+	for i := range complaints {
+		err = store.CreateComplaint(&complaints[i])
 		assert.Nil(t, err)
 	}
 
@@ -223,8 +222,8 @@ func TestCampaign(t *testing.T) {
 		},
 	}
 	// test insert bounce
-	for _, i := range bounces {
-		err = store.CreateBounce(&i)
+	for i := range bounces {
+		err = store.CreateBounce(&bounces[i])
 		assert.Nil(t, err)
 	}
 	//Test get campaign bounces backwards

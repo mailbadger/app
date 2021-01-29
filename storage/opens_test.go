@@ -28,7 +28,7 @@ func TestOpens(t *testing.T) {
 	assert.Equal(t, &entities.OpensStats{}, opensStats)
 
 	// Test insert open
-	open := []entities.Open{
+	opens := []entities.Open{
 		{
 			ID:         1,
 			UserID:     1,
@@ -59,8 +59,8 @@ func TestOpens(t *testing.T) {
 	}
 
 	// test insert opens
-	for _, i := range open {
-		err = store.CreateOpen(&i)
+	for i := range opens {
+		err = store.CreateOpen(&opens[i])
 		assert.Nil(t, err)
 	}
 

@@ -21,6 +21,7 @@ func TestAPIKeys(t *testing.T) {
 
 	k, err := store.GetAPIKey("foobar")
 	assert.NotNil(t, err)
+	assert.Nil(t, k)
 
 	keys, err := store.GetAPIKeys(1)
 	assert.Nil(t, err)
@@ -45,6 +46,7 @@ func TestAPIKeys(t *testing.T) {
 
 	k.Active = false
 	err = store.UpdateAPIKey(k)
+	assert.Nil(t, err)
 
 	keys, err = store.GetAPIKeys(1)
 	assert.Nil(t, err)

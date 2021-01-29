@@ -21,6 +21,7 @@ func TestSessions(t *testing.T) {
 
 	sess, err := store.GetSession("foobar")
 	assert.NotNil(t, err)
+	assert.Nil(t, sess)
 
 	sess = &entities.Session{
 		UserID:    1,
