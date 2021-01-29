@@ -29,7 +29,7 @@ import (
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
 	s   storage.Storage
-	svc templates.Service
+	templatesvc templates.Service
 	p   queue.Producer
 }
 

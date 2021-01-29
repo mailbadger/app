@@ -56,7 +56,7 @@ func (svc *service) PrepareSubscriberEmailData(
 
 	m, err := s.GetMetadata()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get subscriber metadata error: %w", err)
+		return nil, fmt.Errorf("campaign service: prepare email data: get metadata: %w", err)
 	}
 	// merge sub metadata with default template metadata
 	for k, v := range msg.TemplateData {
@@ -67,15 +67,15 @@ func (svc *service) PrepareSubscriberEmailData(
 
 	err = html.FRender(&htmlBuf, m)
 	if err != nil {
-		return nil, fmt.Errorf("failed to render html template error: %w", err)
+		return nil, fmt.Errorf("campaign service: prepare email data: render html: %w", err)
 	}
 	err = sub.FRender(&subBuf, m)
 	if err != nil {
-		return nil, fmt.Errorf("failed to render subject template error: %w", err)
+		return nil, fmt.Errorf("campaign service: prepare email data: render subject: %w", err)
 	}
 	err = text.FRender(&textBuf, m)
 	if err != nil {
-		return nil, fmt.Errorf("failed to render text template error: %w", err)
+		return nil, fmt.Errorf("campaign service: prepare email data: render text: %w", err)
 	}
 
 	sender := entities.SendEmailTopicParams{
@@ -100,13 +100,13 @@ func (svc *service) PrepareSubscriberEmailData(
 func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error {
 	senderBytes, err := json.Marshal(params)
 	if err != nil {
-		return fmt.Errorf("failed to marshal params error: %w", err)
+		return fmt.Errorf("campaign service: publish to sender: marshal params: %w", err)
 	}
 
 	// publish the message to the queue
 	err = svc.p.Publish(entities.SenderTopic, senderBytes)
 	if err != nil {
-		return fmt.Errorf("failed to publish data to sender topic error: %w", err)
+		return fmt.Errorf("campaign service: publish to sender: %w", err)
 	}
 	return nil
 }
