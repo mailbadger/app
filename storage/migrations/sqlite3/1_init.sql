@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS `boundaries` (
   `updated_at`                 datetime not null
 );
 
+INSERT INTO "boundaries" (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`)
+VALUES ("nolimit", 0, 0, 0, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
+
 CREATE TABLE IF NOT EXISTS "users" (
   "id"          integer primary key autoincrement,
   "uuid"        varchar(36) not null UNIQUE,
@@ -35,6 +38,16 @@ CREATE TABLE IF NOT EXISTS "sessions" (
   `created_at` datetime not null,
   `updated_at` datetime not null,
   UNIQUE("session_id")
+);
+
+CREATE TABLE IF NOT EXISTS `api_keys` (
+  `id`         integer primary key autoincrement,
+  `user_id`    integer not null,
+  `secret_key` varchar(191) not null,
+  `active`     integer not null,
+  `created_at` datetime not null,
+  `updated_at` datetime not null,
+  UNIQUE(`secret_key`)
 );
 
 CREATE TABLE IF NOT EXISTS "ses_keys" (

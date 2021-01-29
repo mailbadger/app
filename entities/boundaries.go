@@ -11,6 +11,5 @@ type Boundaries struct {
 	GroupsLimit              int64  `json:"groups_limit"`
 	TeamMembersLimit         int64  `json:"team_members_limit"`
 	ScheduleCampaignsEnabled bool   `json:"schedule_campaigns_enabled"`
-	OrganizationsEnabled     bool   `json:"organizations_enabled"`
 	SAMLEnabled              bool   `json:"saml_enabled"`
 }

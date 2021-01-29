@@ -7,7 +7,10 @@ import (
 // GetSession returns the session by the given session id.
 func (db *store) GetSession(sessionID string) (*entities.Session, error) {
 	var s = new(entities.Session)
-	err := db.Where("session_id = ?", sessionID).Preload("User").First(s).Error
+	err := db.Debug().Where("session_id = ?", sessionID).
+		Preload("User.Boundaries").
+		First(s).
+		Error
 	if err != nil {
 		return nil, err
 	}

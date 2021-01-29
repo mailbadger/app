@@ -5,20 +5,18 @@ import (
 )
 
 // GetAPIKeys fetches api keys by user id.
-func (db *store) GetAPIKeys(userID int64) []*entities.APIKey {
+func (db *store) GetAPIKeys(userID int64) ([]*entities.APIKey, error) {
 	var keys []*entities.APIKey
-
-	db.Where("user_id = ?", userID).Find(&keys)
-
-	return keys
+	err := db.Where("user_id = ?", userID).Find(&keys).Error
+	return keys, err
 }
 
 // GetAPIKey fetches access keys by the given secret.
-func (db *store) GetAPIKey(secret string) (*entities.APIKey, error) {
+func (db *store) GetAPIKey(identifier string) (*entities.APIKey, error) {
 	var key = new(entities.APIKey)
 	err := db.
-		Where("secret_key = ? and active = ?", secret, true).
-		Preload("User").
+		Where("secret_key = ? and active = ?", identifier, true).
+		Preload("User.Boundaries").
 		Find(key).
 		Error
 
