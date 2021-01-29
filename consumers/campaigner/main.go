@@ -28,9 +28,9 @@ import (
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
-	s   storage.Storage
+	s           storage.Storage
 	templatesvc templates.Service
-	p   queue.Producer
+	p           queue.Producer
 }
 
 // HandleMessage is the only requirement needed to fulfill the
@@ -93,7 +93,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		limit     int64 = 1000
 	)
 
-	template, err := h.svc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
+	template, err := h.templatesvc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logrus.WithError(err).
@@ -180,7 +180,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
-					Status:       entities.FailedSendBulkLog,
+					Status:       entities.FailedSendLogStatus,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
 				err := h.s.CreateSendLog(sendLog)
@@ -200,7 +200,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
-					Status:       entities.FailedSendBulkLog,
+					Status:       entities.FailedSendLogStatus,
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
 				}
 				err := h.s.CreateSendLog(sendLog)

@@ -30,7 +30,7 @@ func TestSendLogs(t *testing.T) {
 			UserID:       1,
 			SubscriberID: 1,
 			CampaignID:   1,
-			Status:       entities.FailedSendBulkLog,
+			Status:       entities.FailedSendLogStatus,
 			Description:  "error: some error",
 			CreatedAt:    now,
 		},
@@ -39,7 +39,7 @@ func TestSendLogs(t *testing.T) {
 			UserID:       1,
 			SubscriberID: 2,
 			CampaignID:   1,
-			Status:       entities.FailedSendBulkLog,
+			Status:       entities.FailedSendLogStatus,
 			Description:  "error: some error",
 			CreatedAt:    now,
 		},
@@ -48,7 +48,7 @@ func TestSendLogs(t *testing.T) {
 			UserID:       1,
 			SubscriberID: 3,
 			CampaignID:   1,
-			Status:       entities.SuccessfulSendBulkLog,
+			Status:       entities.SuccessfulSendLogStatus,
 			Description:  "",
 			CreatedAt:    now,
 		},
@@ -59,7 +59,7 @@ func TestSendLogs(t *testing.T) {
 		assert.Nil(t, err)
 	}
 
-	n, err := store.CountLogsByStatus(entities.FailedSendBulkLog)
+	n, err := store.CountLogsByStatus(entities.FailedSendLogStatus)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, n)
 
