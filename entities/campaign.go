@@ -19,6 +19,8 @@ const (
 	CampaignerTopic = "campaigner"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
+	// Sender topic is used by Sender Consumer
+	SenderTopic = "send_email"
 )
 
 // Campaign represents the campaign entity
@@ -32,6 +34,7 @@ type Campaign struct {
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
+	StartedAt    NullTime          `json:"started_at" gorm:"column:started_at"`
 	Errors       map[string]string `json:"-" sql:"-"`
 }
 
@@ -56,6 +59,23 @@ type CampaignerTopicParams struct {
 	UserUUID               string            `json:"user_uuid"`
 	ConfigurationSetExists bool              `json:"configuration_set_exists"`
 	SesKeys                `json:"ses_keys"`
+}
+
+// SendEmailTopicParams represent the request params used
+// by the sender campaign consumer.
+type SendEmailTopicParams struct {
+	UUID                   string `json:"uuid"`
+	SubscriberID           int64  `json:"subscriber_id"`
+	SubscriberEmail        string `json:"subscriber_email"`
+	Source                 string `json:"source"`
+	ConfigurationSetExists bool   `json:"configuration_set_exists"`
+	CampaignID             int64  `json:"campaign_id"`
+	SesKeys
+	HTMLPart    []byte `json:"html_part"`
+	SubjectPart []byte `json:"subject_part"`
+	TextPart    []byte `json:"text_part"`
+	UserUUID    string `json:"user_uuid"`
+	UserID      int64  `json:"user_id"`
 }
 
 // CampaignClicksStats represents clicks stats by campaign, total number of links and stats for each link
