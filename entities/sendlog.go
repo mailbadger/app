@@ -14,6 +14,6 @@ type SendLog struct {
 }
 
 const (
-	FailedSendBulkLog     = "failed"
-	SuccessfulSendBulkLog = "successful"
+	FailedSendLogStatus     = "failed"
+	SuccessfulSendLogStatus = "successful"
 )
