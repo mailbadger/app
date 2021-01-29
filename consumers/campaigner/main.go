@@ -95,6 +95,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	template, err := h.templatesvc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
 	if err != nil {
+		campaign.Status = entities.StatusFailed
+		err = h.s.UpdateCampaign(campaign)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("campaign", campaign).
+				Error("unable to update campaign")
+		}
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logrus.WithError(err).
 				WithFields(logrus.Fields{
@@ -115,6 +122,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	html, err := mustache.ParseString(template.HTMLPart)
 	if err != nil {
+		campaign.Status = entities.StatusFailed
+		err = h.s.UpdateCampaign(campaign)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("campaign", campaign).
+				Error("unable to update campaign")
+		}
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
 				"user_id":     campaign.UserID,
@@ -126,6 +140,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	text, err := mustache.ParseString(template.TextPart)
 	if err != nil {
+		campaign.Status = entities.StatusFailed
+		err = h.s.UpdateCampaign(campaign)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("campaign", campaign).
+				Error("unable to update campaign")
+		}
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
 				"user_id":     campaign.UserID,
@@ -137,6 +158,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 	sub, err := mustache.ParseString(template.SubjectPart)
 	if err != nil {
+		campaign.Status = entities.StatusFailed
+		err = h.s.UpdateCampaign(campaign)
+		if err != nil {
+			logrus.WithError(err).
+				WithField("campaign", campaign).
+				Error("unable to update campaign")
+		}
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
 				"user_id":     campaign.UserID,
@@ -158,6 +186,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			limit,
 		)
 		if err != nil {
+			campaign.Status = entities.StatusFailed
+			err = h.s.UpdateCampaign(campaign)
+			if err != nil {
+				logrus.WithError(err).
+					WithField("campaign", campaign).
+					Error("unable to update campaign")
+			}
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				logrus.WithFields(logrus.Fields{
 					"user_id":     msg.UserID,
