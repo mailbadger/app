@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/cbroglie/mustache"
 )
 
 const (
@@ -76,6 +77,13 @@ type SendEmailTopicParams struct {
 	TextPart    []byte `json:"text_part"`
 	UserUUID    string `json:"user_uuid"`
 	UserID      int64  `json:"user_id"`
+}
+
+type CampaignTemplateData struct {
+	Template    *Template
+	HTMLPart    *mustache.Template
+	SubjectPart *mustache.Template
+	TextPart    *mustache.Template
 }
 
 // CampaignClicksStats represents clicks stats by campaign, total number of links and stats for each link
