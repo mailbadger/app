@@ -56,8 +56,8 @@ func TestBounces(t *testing.T) {
 		},
 	}
 	// test insert bounces
-	for _, i := range bounces {
-		err = store.CreateBounce(&i)
+	for i := range bounces {
+		err = store.CreateBounce(&bounces[i])
 		assert.Nil(t, err)
 	}
 

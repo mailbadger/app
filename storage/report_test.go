@@ -50,8 +50,8 @@ func TestReport(t *testing.T) {
 		},
 	}
 	// test insert report
-	for _, r := range reports {
-		err := store.CreateReport(&r)
+	for i := range reports {
+		err := store.CreateReport(&reports[i])
 		assert.Nil(t, err)
 	}
 

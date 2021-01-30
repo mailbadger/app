@@ -171,8 +171,8 @@ func TestClicks(t *testing.T) {
 		},
 	}
 	// test insert opens
-	for _, i := range clicks {
-		err = store.CreateClick(&i)
+	for i := range clicks {
+		err = store.CreateClick(&clicks[i])
 		assert.Nil(t, err)
 	}
 

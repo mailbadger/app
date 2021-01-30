@@ -50,8 +50,8 @@ func TestSends(t *testing.T) {
 		},
 	}
 	// test insert opens
-	for _, i := range sends {
-		err = store.CreateSend(&i)
+	for i := range sends {
+		err = store.CreateSend(&sends[i])
 		assert.Nil(t, err)
 	}
 
