@@ -47,15 +47,22 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	if msg.SesKeys == nil {
-		logrus.WithField("msg", msg).Error("SES Keys are nil.")
+		logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).Error("SES Keys are nil.")
 		return nil
 	}
 
 	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"user_id":     msg.UserID,
-			"campaign_id": msg.CampaignID,
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
 		}).WithError(err).Error("Unable to create SES sender")
 		return nil
 	}
@@ -63,18 +70,20 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	count, err := h.s.CountLogsByUUID(msg.UUID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"user_id":     msg.UserID,
-			"campaign_id": msg.CampaignID,
-			"uuid":        msg.UUID,
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
 		}).WithError(err).Error("Unable to count sent logs")
 		return nil
 	}
 
 	if count > 0 {
 		logrus.WithFields(logrus.Fields{
-			"user_id":     msg.UserID,
-			"campaign_id": msg.CampaignID,
-			"uuid":        msg.UUID,
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
 		}).Warn("Email already sent.")
 		return nil
 	}
@@ -144,9 +153,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 		}
 		logrus.WithFields(logrus.Fields{
-			"user_id":     msg.UserID,
-			"campaign_id": msg.CampaignID,
-			"uuid":        msg.UUID,
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
 		}).WithError(err).Error("Unable to send bulk templated email. Unknown status code.")
 		return nil
 	}
@@ -160,8 +170,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"campaign_id":      msg.CampaignID,
+			"uuid":             msg.UUID,
 			"user_id":          msg.UserID,
+			"campaign_id":      msg.CampaignID,
+			"subscriber_id":    msg.SubscriberID,
 			"send_bulk_status": resp.GoString(),
 		}).WithError(err).Error("Unable to add log for sent emails result.")
 	}
