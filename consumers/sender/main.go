@@ -67,24 +67,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	count, err := h.s.CountLogsByUUID(msg.UUID)
-	if err != nil {
+	_, err = h.s.GetSendLogByUUID(msg.UUID)
+	if err == nil {
 		logrus.WithFields(logrus.Fields{
 			"uuid":          msg.UUID,
 			"user_id":       msg.UserID,
 			"campaign_id":   msg.CampaignID,
 			"subscriber_id": msg.SubscriberID,
-		}).WithError(err).Error("Unable to count sent logs")
-		return nil
-	}
-
-	if count > 0 {
-		logrus.WithFields(logrus.Fields{
-			"uuid":          msg.UUID,
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).Warn("Email already sent.")
+		}).Warn("Email already sent")
 		return nil
 	}
 
