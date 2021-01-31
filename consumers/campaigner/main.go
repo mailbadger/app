@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -91,7 +92,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		limit     int64 = 1000
 	)
 
-	campaignTmp, err := svc.PrepareCampaignTemplateData(h.templatesvc, campaign.TemplateID, msg.UserID)
+	parsedTemplate, err := h.templatesvc.ParseTemplate(context.Background(), campaign.TemplateID, msg.UserID)
 	if err != nil {
 		logrus.WithError(err).
 			WithFields(logrus.Fields{
@@ -139,7 +140,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 		for _, s := range subs {
 			uuid := uuid.New().String()
-			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, campaignTmp.HTMLPart, campaignTmp.SubjectPart, campaignTmp.TextPart)
+			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				sendLog := &entities.SendLog{
 					UUID:         uuid,

@@ -35,6 +35,7 @@ type Service interface {
 	GetTemplates(c context.Context, userID int64, p *storage.PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(c context.Context, templateID, userID int64) error
 	GetTemplate(c context.Context, templateID int64, userID int64) (*entities.Template, error)
+	ParseTemplate(c context.Context, templateID int64, userID int64) (*entities.CampaignTemplateData, error)
 }
 
 // service implements the Service interface
@@ -185,4 +186,30 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 	template.HTMLPart = string(htmlBytes)
 
 	return
+}
+
+func (s *service) ParseTemplate(c context.Context, templateID int64, userID int64) (*entities.CampaignTemplateData, error) {
+	template, err := s.GetTemplate(c, templateID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: get template: %w", err)
+	}
+
+	html, err := mustache.ParseString(template.HTMLPart)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: parse html part: %w", err)
+	}
+	text, err := mustache.ParseString(template.TextPart)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: parse text part: %w", err)
+	}
+	sub, err := mustache.ParseString(template.SubjectPart)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: parse subject part: %w", err)
+	}
+	return &entities.CampaignTemplateData{
+		Template:    template,
+		HTMLPart:    html,
+		SubjectPart: sub,
+		TextPart:    text,
+	}, nil
 }

@@ -2,16 +2,13 @@ package campaigns
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/cbroglie/mustache"
-	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
-	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 )
 
@@ -26,7 +23,6 @@ type Service interface {
 		text *mustache.Template,
 	) (*entities.SendEmailTopicParams, error)
 	PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error
-	PrepareCampaignTemplateData(templateSvc templatesvc.Service, templateID int64, userID int64) (*entities.CampaignTemplateData, error)
 }
 
 // service implements the Service interface
@@ -115,52 +111,3 @@ func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopic
 	return nil
 }
 
-func (svc *service) PrepareCampaignTemplateData(templateSvc templatesvc.Service, templateID int64, userID int64) (*entities.CampaignTemplateData, error) {
-	template, err := templateSvc.GetTemplate(context.Background(), templateID, userID)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"template_id": templateID,
-				"user_id":     userID,
-			}).
-			Error("unable to get template")
-		return nil, fmt.Errorf("campaign service: get template: %w", err)
-	}
-
-	html, err := mustache.ParseString(template.HTMLPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     userID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse html_part")
-		return nil, fmt.Errorf("campaign service: parse html part: %w", err)
-	}
-	text, err := mustache.ParseString(template.TextPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     userID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse text_part")
-		return nil, fmt.Errorf("campaign service: parse text part: %w", err)
-	}
-	sub, err := mustache.ParseString(template.SubjectPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     userID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse subject_part")
-		return nil, fmt.Errorf("campaign service: parse subject part: %w", err)
-	}
-	return &entities.CampaignTemplateData{
-		Template:    template,
-		HTMLPart:    html,
-		SubjectPart: sub,
-		TextPart:    text,
-	}, nil
-}
