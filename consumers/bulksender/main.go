@@ -149,7 +149,7 @@ func main() {
 
 	config := nsq.NewConfig()
 
-	consumer, err := nsq.NewConsumer(entities.SenderTopic, entities.SenderTopic, config)
+	consumer, err := nsq.NewConsumer(entities.SendBulkTopic, entities.SendBulkTopic, config)
 	if err != nil {
 		logrus.Fatal(err)
 	}
