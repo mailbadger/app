@@ -10,7 +10,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cbroglie/mustache"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
@@ -93,57 +92,25 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		limit     int64 = 1000
 	)
 
-	template, err := h.templatesvc.GetTemplate(context.Background(), campaign.TemplateID, msg.UserID)
+	parsedTemplate, err := h.templatesvc.ParseTemplate(context.Background(), campaign.TemplateID, msg.UserID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		logrus.WithError(err).
+			WithFields(logrus.Fields{
+				"user_id":     campaign.UserID,
+				"template_id": campaign.TemplateID,
+			}).Error("unable to prepare campaign template data")
+
+		campaign.Status = entities.StatusFailed
+		err = h.s.UpdateCampaign(campaign)
+		if err != nil {
 			logrus.WithError(err).
 				WithFields(logrus.Fields{
-					"template_id": campaign.TemplateID,
-					"user_id":     msg.UserID,
-				}).
-				Warn("unable to get template")
+					"user_id":     campaign.UserID,
+					"campaign_id": campaign.ID,
+					"status":      campaign.Status,
+				}).Error("unable to update campaign")
 			return nil
 		}
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"template_id": campaign.TemplateID,
-				"user_id":     msg.UserID,
-			}).
-			Error("unable to get template")
-		return nil
-	}
-
-	html, err := mustache.ParseString(template.HTMLPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     campaign.UserID,
-				"campaign_id": campaign.ID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse html_part")
-		return nil
-	}
-	text, err := mustache.ParseString(template.TextPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     campaign.UserID,
-				"campaign_id": campaign.ID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse text_part")
-		return nil
-	}
-	sub, err := mustache.ParseString(template.SubjectPart)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     campaign.UserID,
-				"campaign_id": campaign.ID,
-				"template_id": template.ID,
-			}).
-			Error("unable to parse subject_part")
 		return nil
 	}
 
@@ -173,7 +140,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}
 		for _, s := range subs {
 			uuid := uuid.New().String()
-			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, html, sub, text)
+			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				sendLog := &entities.SendLog{
 					UUID:         uuid,
