@@ -67,7 +67,7 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.WithError(err).Fatalln("migrations failed")
 	}
 
-	// db.LogMode(utils.IsDebugMode())
+	db.LogMode(utils.IsDebugMode())
 
 	return db
 }
@@ -107,17 +107,23 @@ func initDb(config string, db *gorm.DB) error {
 	// Hashing the password with the default cost of 10
 	secret, err := utils.GenerateRandomString(12)
 	if err != nil {
-		return err
+		return fmt.Errorf("init db: gen rand string: %w", err)
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return fmt.Errorf("init db: hash password: %w", err)
 	}
 
 	uuid := uuid.New()
 
 	//Create the default user
+	nolimit := &entities.Boundaries{}
+	err = db.Where("type = ?", "nolimit").First(nolimit).Error
+	if err != nil {
+		return fmt.Errorf("init db: fetch nolimit boundaries: %w", err)
+	}
+
 	admin := entities.User{
 		Username: "admin",
 		UUID:     uuid.String(),
@@ -125,17 +131,18 @@ func initDb(config string, db *gorm.DB) error {
 			String: string(hashedPassword),
 			Valid:  true,
 		},
-		Active:   true,
-		Verified: true,
-		Source:   "mailbadger.io",
+		Active:     true,
+		Verified:   true,
+		Boundaries: nolimit,
+		Source:     "mailbadger.io",
 	}
 
 	err = db.Save(&admin).Error
 	if err != nil {
-		return err
+		return fmt.Errorf("init db: save user: %w", err)
 	}
 
-	log.WithFields(log.Fields{"user": "admin", "password": secret}).Info("Admin user credentials")
+	log.WithFields(log.Fields{"user": "admin", "password": secret}).Info("Admin user credentials..make sure to change that password!")
 
 	return nil
 }
@@ -169,6 +176,8 @@ func openTestDb() *gorm.DB {
 	return openDbConn(driver, config)
 }
 
+// MakeConfigFromEnv creates a DSN string from env variables based on the driver name.
+// List of drivers: 'sqlite3', 'mysql'.
 func MakeConfigFromEnv(driver string) string {
 	switch driver {
 	case "sqlite3":

@@ -74,7 +74,7 @@ type Storage interface {
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
 
-	GetAPIKeys(userID int64) []*entities.APIKey
+	GetAPIKeys(userID int64) ([]*entities.APIKey, error)
 	GetAPIKey(identifier string) (*entities.APIKey, error)
 	CreateAPIKey(ak *entities.APIKey) error
 	UpdateAPIKey(ak *entities.APIKey) error
@@ -386,7 +386,7 @@ func SeekSubscribersByUserID(c context.Context, userID, nextID, limit int64) ([]
 }
 
 // GetAPIKeys returns a list of APIKey entities.
-func GetAPIKeys(c context.Context, userID int64) []*entities.APIKey {
+func GetAPIKeys(c context.Context, userID int64) ([]*entities.APIKey, error) {
 	return GetFromContext(c).GetAPIKeys(userID)
 }
 

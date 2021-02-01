@@ -110,3 +110,4 @@ func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicPar
 	}
 	return nil
 }
+

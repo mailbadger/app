@@ -52,8 +52,8 @@ func TestDeliveries(t *testing.T) {
 		},
 	}
 	// test insert deliveries
-	for _, i := range deliveries {
-		err = store.CreateDelivery(&i)
+	for i := range deliveries {
+		err = store.CreateDelivery(&deliveries[i])
 		assert.Nil(t, err)
 	}
 

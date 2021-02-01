@@ -6,3 +6,4 @@ repos:
     - id: go-vet
     - id: go-imports
     - id: go-build
+    - id: golangci-lint
