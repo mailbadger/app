@@ -140,23 +140,33 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					"campaign_id":   msg.CampaignID,
 					"subscriber_id": msg.SubscriberID,
 				}).WithError(aerr).Error("Unable to send bulk templated email. Configuration set does not exist.")
+			default:
+				logrus.WithFields(logrus.Fields{
+					"uuid":          msg.UUID,
+					"user_id":       msg.UserID,
+					"campaign_id":   msg.CampaignID,
+					"subscriber_id": msg.SubscriberID,
+				}).WithError(aerr).Error("Unable to send templated email. Unknown status code.")
 			}
+		} else {
+			logrus.WithFields(logrus.Fields{
+				"uuid":          msg.UUID,
+				"user_id":       msg.UserID,
+				"campaign_id":   msg.CampaignID,
+				"subscriber_id": msg.SubscriberID,
+			}).WithError(err).Error("Unable to send templated email.")
 		}
-		logrus.WithFields(logrus.Fields{
-			"uuid":          msg.UUID,
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).WithError(err).Error("Unable to send bulk templated email. Unknown status code.")
 		return nil
 	}
 
 	err = h.s.CreateSendLog(&entities.SendLog{
 		UUID:         msg.UUID,
+		MessageID:    resp.MessageId,
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
-		Status:       "successful",
+		Status:       entities.StatusDone,
+		Description:  resp.GoString(),
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{

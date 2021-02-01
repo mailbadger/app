@@ -17,7 +17,7 @@ const (
 	StatusScheduled = "scheduled"
 	// CampaignerTopic is the topic used by the campaigner consumer.
 	CampaignerTopic = "campaigner"
-	// SendBulkTopic is the topic used by the bulksender consumer.		// SenderTopic is the topic used by the sender consumer.
+	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
 	// SenderTopic is the topic used by the sender consumer.
 	SenderTopic = "sender"
