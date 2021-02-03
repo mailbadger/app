@@ -6,4 +6,4 @@ ALTER TABLE `send_logs`
 -- +migrate Down
 
 ALTER TABLE `send_logs`
-DROP COLUMN `message_id`;
+    DROP COLUMN `message_id`;

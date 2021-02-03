@@ -30,7 +30,7 @@ var (
 
 const (
 	CacheDuration = 300000 * time.Millisecond
-	CharSet = "UTF-8"
+	CharSet       = "UTF-8"
 )
 
 // MessageHandler implements the nsq handler interface.
@@ -54,16 +54,31 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
-	if !h.cache.Exists(msg.UUID) {
-		if err := h.cache.Set(msg.UUID, m.Body, CacheDuration); err != nil {
-			logrus.WithFields(logrus.Fields{
-				"uuid":          msg.UUID,
-				"user_id":       msg.UserID,
-				"campaign_id":   msg.CampaignID,
-				"subscriber_id": msg.SubscriberID,
-			}).WithError(err).Error("Unable to write to cache")
-			return err
-		}
+
+	// check if the message is processing (if the uuid exists in redis that means it is in progress)
+	exist, err := h.cache.Exists(msg.UUID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).WithError(err).Error("Unable to check message existence")
+		return err
+	}
+
+	if exist {
+		return nil
+	}
+
+	if err := h.cache.Set(msg.UUID, m.Body, CacheDuration); err != nil {
+		logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).WithError(err).Error("Unable to write to cache")
+		return err
 	}
 
 	sendLog := &entities.SendLog{
