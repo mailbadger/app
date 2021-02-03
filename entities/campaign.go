@@ -76,7 +76,7 @@ type SenderTopicParams struct {
 	HTMLPart               []byte   `json:"html_part"`
 	SubjectPart            []byte   `json:"subject_part"`
 	TextPart               []byte   `json:"text_part"`
-	SesKeys                *SesKeys `json:"ses_keys"`
+	SesKeys                SesKeys `json:"ses_keys"`
 }
 
 type CampaignTemplateData struct {

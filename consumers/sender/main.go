@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -18,16 +20,23 @@ import (
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/redis"
 	"github.com/mailbadger/app/utils"
 )
 
+var (
+	ErrInvalidSesKeys = errors.New("invali ses keys")
+)
+
 const (
+	CacheDuration = 300000 * time.Millisecond
 	CharSet = "UTF-8"
 )
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
-	s storage.Storage
+	storage storage.Storage
+	cache   redis.Storage
 }
 
 // HandleMessage is the only requirement needed to fulfill the
@@ -45,78 +54,32 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			WithError(err).Error("Malformed JSON message.")
 		return nil
 	}
-
-	if msg.SesKeys == nil {
-		logrus.WithFields(logrus.Fields{
-			"uuid":          msg.UUID,
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).Error("SES Keys are nil.")
-		return nil
+	if !h.cache.Exists(msg.UUID) {
+		if err := h.cache.Set(msg.UUID, m.Body, CacheDuration); err != nil {
+			logrus.WithFields(logrus.Fields{
+				"uuid":          msg.UUID,
+				"user_id":       msg.UserID,
+				"campaign_id":   msg.CampaignID,
+				"subscriber_id": msg.SubscriberID,
+			}).WithError(err).Error("Unable to write to cache")
+			return err
+		}
 	}
 
-	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
+	sendLog := &entities.SendLog{
+		UUID:         msg.UUID,
+		UserID:       msg.UserID,
+		CampaignID:   msg.CampaignID,
+		SubscriberID: msg.SubscriberID,
+		Status:       entities.StatusDone,
+	}
+
+	resp, err := sendEmail(*msg)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"uuid":          msg.UUID,
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).WithError(err).Error("Unable to create SES sender")
-		return nil
-	}
+		sendLog.Status = entities.StatusFailed
 
-	_, err = h.s.GetSendLogByUUID(msg.UUID)
-	if err == nil {
-		logrus.WithFields(logrus.Fields{
-			"uuid":          msg.UUID,
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).Warn("Email already sent")
-		return nil
-	}
-
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			ToAddresses: []*string{aws.String(msg.SubscriberEmail)},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(string(msg.HTMLPart)),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(string(msg.TextPart)),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String(string(msg.SubjectPart)),
-			},
-		},
-		Source: aws.String(msg.Source),
-		Tags: []*ses.MessageTag{
-			{
-				Name:  aws.String("campaign_id"),
-				Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
-			},
-			{
-				Name:  aws.String("user_id"),
-				Value: aws.String(msg.UserUUID),
-			},
-		},
-	}
-
-	if msg.ConfigurationSetExists {
-		input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
-	}
-
-	resp, err := client.SendEmail(input)
-	if err != nil {
+		// First check errors for retrying (returning) they don't need to be inserted in send logs
+		// also if the error is retryable delete it from cache
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
@@ -156,18 +119,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"subscriber_id": msg.SubscriberID,
 			}).WithError(err).Error("Unable to send templated email.")
 		}
-		return nil
 	}
 
-	err = h.s.CreateSendLog(&entities.SendLog{
-		UUID:         msg.UUID,
-		MessageID:    resp.MessageId,
-		UserID:       msg.UserID,
-		CampaignID:   msg.CampaignID,
-		SubscriberID: msg.SubscriberID,
-		Status:       entities.StatusDone,
-		Description:  resp.GoString(),
-	})
+	if resp != nil {
+		sendLog.MessageID = resp.MessageId
+		sendLog.Description = resp.GoString()
+	}
+
+	err = h.storage.CreateSendLog(sendLog)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"uuid":             msg.UUID,
@@ -179,6 +138,56 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	return nil
+}
+
+func sendEmail(msg entities.SenderTopicParams) (*ses.SendEmailOutput, error) {
+	if msg.SesKeys.AccessKey == "" || msg.SesKeys.SecretKey == "" || msg.SesKeys.Region == "" {
+		return nil, ErrInvalidSesKeys
+	}
+
+	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
+	if err != nil {
+		return nil, fmt.Errorf("new sender: %w", err)
+	}
+
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(msg.SubscriberEmail)},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.HTMLPart)),
+				},
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.TextPart)),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(string(msg.SubjectPart)),
+			},
+		},
+		Source: aws.String(msg.Source),
+		Tags: []*ses.MessageTag{
+			{
+				Name:  aws.String("campaign_id"),
+				Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
+			},
+			{
+				Name:  aws.String("user_id"),
+				Value: aws.String(msg.UserUUID),
+			},
+		},
+	}
+
+	if msg.ConfigurationSetExists {
+		input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
+	}
+
+	return client.SendEmail(input)
 }
 
 func main() {
@@ -197,6 +206,10 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
+	cache, err := redis.NewRedisStore()
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(entities.SenderTopic, entities.SenderTopic, config)
@@ -212,7 +225,10 @@ func main() {
 	)
 
 	consumer.AddConcurrentHandlers(
-		&MessageHandler{s},
+		&MessageHandler{
+			storage: s,
+			cache:   cache,
+		},
 		20,
 	)
 
