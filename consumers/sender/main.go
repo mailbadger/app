@@ -29,6 +29,7 @@ var (
 )
 
 const (
+	CachePrefix   = "sender:"
 	CacheDuration = 300000 * time.Millisecond
 	CharSet       = "UTF-8"
 )
@@ -56,7 +57,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
-	exist, err := h.cache.Exists(msg.UUID)
+	exist, err := h.cache.Exists(genCacheKey(msg.UUID))
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"uuid":          msg.UUID,
@@ -71,7 +72,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	if err := h.cache.Set(msg.UUID, m.Body, CacheDuration); err != nil {
+	if err := h.cache.Set(genCacheKey(msg.UUID), []byte("sending"), CacheDuration); err != nil {
 		logrus.WithFields(logrus.Fields{
 			"uuid":          msg.UUID,
 			"user_id":       msg.UserID,
@@ -89,7 +90,30 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		Status:       entities.StatusDone,
 	}
 
-	resp, err := sendEmail(*msg)
+	client, err := newSesClient(msg.SesKeys)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).WithError(err).Error("Unable to create ses sender")
+
+		sendLog.Status = entities.StatusFailed
+
+		err = h.storage.CreateSendLog(sendLog)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"uuid":          msg.UUID,
+				"user_id":       msg.UserID,
+				"campaign_id":   msg.CampaignID,
+				"subscriber_id": msg.SubscriberID,
+			}).WithError(err).Error("Unable to add log for sent emails result.")
+		}
+		return nil
+	}
+
+	resp, err := sendEmail(client, *msg)
 	if err != nil {
 		sendLog.Status = entities.StatusFailed
 
@@ -153,56 +177,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	return nil
-}
-
-func sendEmail(msg entities.SenderTopicParams) (*ses.SendEmailOutput, error) {
-	if msg.SesKeys.AccessKey == "" || msg.SesKeys.SecretKey == "" || msg.SesKeys.Region == "" {
-		return nil, ErrInvalidSesKeys
-	}
-
-	client, err := emails.NewSesSender(msg.SesKeys.AccessKey, msg.SesKeys.SecretKey, msg.SesKeys.Region)
-	if err != nil {
-		return nil, fmt.Errorf("new sender: %w", err)
-	}
-
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			ToAddresses: []*string{aws.String(msg.SubscriberEmail)},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(string(msg.HTMLPart)),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(CharSet),
-					Data:    aws.String(string(msg.TextPart)),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(CharSet),
-				Data:    aws.String(string(msg.SubjectPart)),
-			},
-		},
-		Source: aws.String(msg.Source),
-		Tags: []*ses.MessageTag{
-			{
-				Name:  aws.String("campaign_id"),
-				Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
-			},
-			{
-				Name:  aws.String("user_id"),
-				Value: aws.String(msg.UserUUID),
-			},
-		},
-	}
-
-	if msg.ConfigurationSetExists {
-		input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
-	}
-
-	return client.SendEmail(input)
 }
 
 func main() {
@@ -270,4 +244,62 @@ func main() {
 			consumer.Stop()
 		}
 	}
+}
+
+func newSesClient(keys entities.SesKeys) (emails.Sender, error) {
+	if keys.AccessKey == "" || keys.SecretKey == "" || keys.Region == "" {
+		return nil, ErrInvalidSesKeys
+	}
+
+	client, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
+	if err != nil {
+		return nil, fmt.Errorf("new ses sender: %w", err)
+	}
+
+	return client, nil
+}
+
+func genCacheKey(uuid string) string {
+	return CachePrefix + uuid
+}
+
+func sendEmail(client emails.Sender, msg entities.SenderTopicParams) (*ses.SendEmailOutput, error) {
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(msg.SubscriberEmail)},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.HTMLPart)),
+				},
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(string(msg.TextPart)),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(string(msg.SubjectPart)),
+			},
+		},
+		Source: aws.String(msg.Source),
+		Tags: []*ses.MessageTag{
+			{
+				Name:  aws.String("campaign_id"),
+				Value: aws.String(strconv.FormatInt(msg.CampaignID, 10)),
+			},
+			{
+				Name:  aws.String("user_id"),
+				Value: aws.String(msg.UserUUID),
+			},
+		},
+	}
+
+	if msg.ConfigurationSetExists {
+		input.ConfigurationSetName = aws.String(emails.ConfigurationSetName)
+	}
+
+	return client.SendEmail(input)
 }
