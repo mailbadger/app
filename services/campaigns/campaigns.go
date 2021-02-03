@@ -85,7 +85,7 @@ func (svc *service) PrepareSubscriberEmailData(
 		Source:                 msg.Source,
 		ConfigurationSetExists: msg.ConfigurationSetExists,
 		CampaignID:             campaignID,
-		SesKeys:                &msg.SesKeys,
+		SesKeys:                msg.SesKeys,
 		HTMLPart:               htmlBuf.Bytes(),
 		SubjectPart:            subBuf.Bytes(),
 		TextPart:               textBuf.Bytes(),
