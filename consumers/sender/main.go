@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	ErrInvalidSesKeys = errors.New("invali ses keys")
+	ErrInvalidSesKeys = errors.New("invalid ses keys")
 )
 
 const (
