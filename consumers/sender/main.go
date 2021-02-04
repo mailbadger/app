@@ -69,6 +69,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	if exist {
+		logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).Info("Message already processed")
 		return nil
 	}
 
