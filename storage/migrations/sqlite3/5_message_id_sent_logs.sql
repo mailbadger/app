@@ -1,7 +1,7 @@
 -- +migrate Up
 
 ALTER TABLE "send_logs"
-    ADD COLUMN "message_id" varchar(191) AFTER "uuid";
+    ADD COLUMN "message_id" varchar(191);
 
 -- +migrate Down
 
