@@ -32,9 +32,16 @@ services:
     image: nsqio/nsq
     command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
     depends_on:
-      - nsqlookupd  
+      - nsqlookupd
     ports:
       - "4171:4171"
+  redis:
+    image: redis # we need to decide the version
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: [ "redis-server", "/redis.conf" ]
 
   # app:
   #   image: mailbadger/app

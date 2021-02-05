@@ -54,14 +54,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logrus.WithFields(logrus.Fields{
 				"campaign_id": msg.CampaignID,
-				"user_id":     msg.UserID},
-			).WithError(err).Warn("unable to find campaign")
+				"user_id":     msg.UserID,
+			}).WithError(err).Warn("unable to find campaign")
 			return nil
 		}
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": msg.CampaignID,
-			"user_id":     msg.UserID},
-		).WithError(err).Error("unable to find campaign")
+			"user_id":     msg.UserID,
+		}).WithError(err).Error("unable to find campaign")
 		return err
 	}
 	if campaign.Status != entities.StatusDraft {
@@ -86,6 +86,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	// fetching subs that are active and that have not been blacklisted
 	var (
 		timestamp time.Time
 		nextID    int64

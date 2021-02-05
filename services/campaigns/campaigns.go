@@ -21,8 +21,8 @@ type Service interface {
 		html *mustache.Template,
 		sub *mustache.Template,
 		text *mustache.Template,
-	) (*entities.SendEmailTopicParams, error)
-	PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error
+	) (*entities.SenderTopicParams, error)
+	PublishSubscriberEmailParams(params *entities.SenderTopicParams) error
 }
 
 // service implements the Service interface
@@ -46,7 +46,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	html *mustache.Template,
 	sub *mustache.Template,
 	text *mustache.Template,
-) (*entities.SendEmailTopicParams, error) {
+) (*entities.SenderTopicParams, error) {
 
 	var (
 		htmlBuf bytes.Buffer
@@ -78,7 +78,7 @@ func (svc *service) PrepareSubscriberEmailData(
 		return nil, fmt.Errorf("campaign service: prepare email data: render text: %w", err)
 	}
 
-	sender := entities.SendEmailTopicParams{
+	sender := entities.SenderTopicParams{
 		UUID:                   uuid,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
@@ -97,7 +97,7 @@ func (svc *service) PrepareSubscriberEmailData(
 
 }
 
-func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error {
+func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicParams) error {
 	senderBytes, err := json.Marshal(params)
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: marshal params: %w", err)

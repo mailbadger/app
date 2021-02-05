@@ -91,6 +91,7 @@ type Storage interface {
 	CreateSendLog(l *entities.SendLog) error
 	CountLogsByUUID(uuid string) (int, error)
 	CountLogsByStatus(status string) (int, error)
+	GetSendLogByUUID(uuid string) (*entities.SendLog, error)
 
 	CreateBounce(b *entities.Bounce) error
 	CreateComplaint(c *entities.Complaint) error
@@ -518,4 +519,9 @@ func DeleteTemplate(c context.Context, templateID int64, userID int64) error {
 // CreateSendLog creates a SendLogs entity.
 func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 	return GetFromContext(c).CreateSendLog(sendLogs)
+}
+
+// GetSendLogByUUID returns send log with specified uuid
+func GetSendLogByUUID(c context.Context, uuid string) (*entities.SendLog, error) {
+	return GetFromContext(c).GetSendLogByUUID(uuid)
 }

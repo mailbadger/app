@@ -17,3 +17,10 @@ func (db *store) CountLogsByStatus(status string) (int, error) {
 	err := db.Model(&entities.SendLog{}).Where("status = ?", status).Count(&count).Error
 	return count, err
 }
+
+// GetSendLogByUUID returns send log with specified uuid
+func (db *store) GetSendLogByUUID(uuid string) (*entities.SendLog, error) {
+	var log = new(entities.SendLog)
+	err := db.Where("uuid = ?",uuid).Find(log).Error
+	return log, err
+}
