@@ -65,6 +65,17 @@ func (svc *service) PrepareSubscriberEmailData(
 		}
 	}
 
+	if s.Name != "" {
+		m["name"] = s.Name
+	}
+
+	url, err := s.GetUnsubscribeURL(msg.UserUUID)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: get unsubscribe url: %w", err)
+	} else {
+		m["unsubscribe_url"] = url
+	}
+
 	err = html.FRender(&htmlBuf, m)
 	if err != nil {
 		return nil, fmt.Errorf("campaign service: prepare email data: render html: %w", err)
@@ -110,4 +121,3 @@ func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicPar
 	}
 	return nil
 }
-

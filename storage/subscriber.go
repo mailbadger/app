@@ -112,7 +112,7 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 	var subs []entities.Subscriber
 
 	err := db.Table("subscribers").
-		Select("DISTINCT(id), name, email, created_at").
+		Select("DISTINCT(id), name, email, created_at, metadata").
 		Joins("INNER JOIN subscribers_segments ON subscribers_segments.subscriber_id = subscribers.id").
 		Where(`
 			subscribers_segments.segment_id IN (?)

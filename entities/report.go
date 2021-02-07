@@ -8,7 +8,7 @@ const (
 	SubscribersResource = "subscribers"
 )
 
-//Report represents the Report entity
+// Report represents the Report entity
 type Report struct {
 	Model
 	UserID   int64  `json:"-" gorm:"column:user_id; index"`

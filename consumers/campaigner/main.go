@@ -272,6 +272,8 @@ func main() {
 		logrus.Fatal(err)
 	}
 
+	logrus.Infoln("Connected to NSQlookup")
+
 	shutdown := make(chan os.Signal, 2)
 	signal.Notify(shutdown, os.Interrupt)
 	signal.Notify(shutdown, syscall.SIGINT)

@@ -205,6 +205,7 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
+
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(entities.SenderTopic, entities.SenderTopic, config)
@@ -234,6 +235,8 @@ func main() {
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
 		logrus.Fatal(err)
 	}
+
+	logrus.Infoln("Connected to NSQlookup")
 
 	shutdown := make(chan os.Signal, 2)
 	signal.Notify(shutdown, os.Interrupt)
