@@ -2,6 +2,20 @@ package entities
 
 import "time"
 
+const (
+	// SendLogStatusFailed status used when sender consumer fails to send email
+	SendLogStatusFailed     = "failed"
+	// SendLogStatusSuccessful status used when sender consumer succeeded sending the mail
+	SendLogStatusSuccessful = "successful"
+
+	// SendLogDescriptionOnSuccessful description used when sender succeeded sending the mail
+	SendLogDescriptionOnSuccessful     = "Email sent successfully"
+	// SendLogDescriptionOnSesClientError description used when sender failed to create ses client
+	SendLogDescriptionOnSesClientError = "Unable to create ses client"
+	// SendLogDescriptionOnSendEmailError description used when ses client fails to send the email
+	SendLogDescriptionOnSendEmailError = "Unable to send email"
+)
+
 type SendLog struct {
 	ID           int64     `json:"id" gorm:"column:id; primary_key:yes"`
 	UUID         string    `json:"uuid" gorm:"column:uuid; index"`
@@ -13,8 +27,3 @@ type SendLog struct {
 	Description  string    `json:"description"`
 	CreatedAt    time.Time `json:"created_at"`
 }
-
-const (
-	FailedSendLogStatus     = "failed"
-	SuccessfulSendLogStatus = "successful"
-)
