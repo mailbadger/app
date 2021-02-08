@@ -66,14 +66,14 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	if s.Name != "" {
-		m["name"] = s.Name
+		m[entities.TagName] = s.Name
 	}
 
 	url, err := s.GetUnsubscribeURL(msg.UserUUID)
 	if err != nil {
 		return nil, fmt.Errorf("campaign service: get unsubscribe url: %w", err)
 	} else {
-		m["unsubscribe_url"] = url
+		m[entities.TagUnsubscribeUrl] = url
 	}
 
 	err = html.FRender(&htmlBuf, m)
