@@ -11,6 +11,8 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 	p.SetCollection(&[]entities.Campaign{})
 	p.SetResource("campaigns")
 
+	// scopes
+	p.AddScope(NotDeleted)
 	for k, v := range scopeMap {
 		if k == "name" {
 			p.AddScope(NameLike(v))
@@ -166,4 +168,9 @@ func NameLike(name string) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("name LIKE ?", name+"%")
 	}
+}
+
+// NotDeleted scopes a resource by deletion column.
+func NotDeleted(db *gorm.DB) *gorm.DB {
+	return db.Where("deleted_at IS NULL")
 }

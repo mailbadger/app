@@ -18,7 +18,7 @@ services:
     image: nsqio/nsq
     command: /nsqlookupd
     ports:
-      - "4160:4160"
+      - "4160"
       - "4161:4161"
   nsqd:
     image: nsqio/nsq

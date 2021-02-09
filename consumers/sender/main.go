@@ -24,15 +24,19 @@ import (
 	"github.com/mailbadger/app/utils"
 )
 
+// Sender errors
 var (
 	ErrInvalidSesKeys = errors.New("invalid ses keys")
 )
 
+// Cache prefix and duration parameters
 const (
 	CachePrefix   = "sender:"
 	CacheDuration = 300000 * time.Millisecond
-	CharSet       = "UTF-8"
 )
+
+// CharSet is used for the SES message body charset
+const CharSet = "UTF-8"
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
@@ -205,14 +209,14 @@ func main() {
 
 	cache, err := redis.NewRedisStore()
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Redis: can't establish connection")
 	}
 
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(entities.SenderTopic, entities.SenderTopic, config)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Failed to create consumer")
 	}
 
 	consumer.ChangeMaxInFlight(200)
@@ -235,7 +239,7 @@ func main() {
 
 	logrus.Infoln("Connecting to NSQlookup...")
 	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Nsqlookup: can't establish connection")
 	}
 
 	logrus.Infoln("Connected to NSQlookup")

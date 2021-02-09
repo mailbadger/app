@@ -3,7 +3,7 @@ import { Table, DataTable } from "grommet";
 
 const StyledTable = styled(Table)`
   background: white;
-  border-radius: 4px;
+  border-radius: 12px;
 
   ${this} tbody tr:hover, focus {
     background: #fafafa;

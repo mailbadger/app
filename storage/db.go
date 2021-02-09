@@ -133,7 +133,7 @@ func initDb(config string, db *gorm.DB) error {
 		},
 		Active:     true,
 		Verified:   true,
-		Boundaries: nolimit,
+		Boundaries: *nolimit,
 		Source:     "mailbadger.io",
 	}
 

@@ -38,7 +38,7 @@ const Row = ({ segment, setShowDelete }) => {
     <TableRow>
       <TableCell scope="row" size="xlarge">
         <AnchorLink
-          size="small"
+          size="medium"
           fontWeight="bold"
           to={`/dashboard/segments/${segment.id}`}
           label={segment.name}
@@ -342,7 +342,7 @@ const List = () => {
           }
         />
       )}
-      <Box gridArea="nav" direction="row">
+      <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
         <Box margin={{ right: "small" }} alignSelf="center">
           <Heading level="2">Segments</Heading>
         </Box>
