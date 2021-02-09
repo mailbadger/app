@@ -93,7 +93,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
-		Status:       entities.StatusDone,
+		Status:       entities.SendLogStatusSuccessful,
+		Description:  entities.SendLogDescriptionOnSuccessful,
 	}
 
 	client, err := newSesClient(msg.SesKeys)
@@ -106,6 +107,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		}).WithError(err).Error("Unable to create ses sender")
 
 		sendLog.Status = entities.StatusFailed
+		sendLog.Description = entities.SendLogDescriptionOnSesClientError
 
 		err = h.storage.CreateSendLog(sendLog)
 		if err != nil {
@@ -122,6 +124,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	resp, err := sendEmail(client, *msg)
 	if err != nil {
 		sendLog.Status = entities.StatusFailed
+		sendLog.Description = entities.SendLogDescriptionOnSendEmailError
 
 		// First check errors for retrying (returning) they don't need to be inserted in send logs
 		// also if the error is retryable delete it from cache
@@ -168,7 +171,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	if resp != nil {
 		sendLog.MessageID = resp.MessageId
-		sendLog.Description = resp.GoString()
 	}
 
 	err = h.storage.CreateSendLog(sendLog)

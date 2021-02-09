@@ -148,7 +148,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
-					Status:       entities.FailedSendLogStatus,
+					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
 				err := h.s.CreateSendLog(sendLog)
@@ -168,7 +168,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
-					Status:       entities.FailedSendLogStatus,
+					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
 				}
 				err := h.s.CreateSendLog(sendLog)

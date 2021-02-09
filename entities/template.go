@@ -14,6 +14,11 @@ var (
 	ErrMissingDefaultData = errors.New("missing default data")
 )
 
+const (
+	TagName           = "name"
+	TagUnsubscribeUrl = "unsubscribe_url"
+)
+
 // BaseTemplate represents the base params of each template
 type BaseTemplate struct {
 	Model
@@ -94,6 +99,10 @@ func validateData(templateString string, data map[string]string) error {
 	}
 
 	for _, tag := range template.Tags() {
+		if tag.Name() == TagName || tag.Name() == TagUnsubscribeUrl {
+			continue
+		}
+
 		_, exist := data[tag.Name()]
 		if !exist {
 			return fmt.Errorf("%s tag: %w", tag.Name(), ErrMissingDefaultData)
