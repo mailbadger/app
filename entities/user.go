@@ -14,7 +14,7 @@ type User struct {
 	Active     bool           `json:"active"`
 	Verified   bool           `json:"verified"`
 	BoundaryID int64          `json:"-"`
-	Boundaries *Boundaries    `json:"-" gorm:"foreignKey:boundary_id"`
+	Boundaries Boundaries     `json:"-" gorm:"foreignKey:boundary_id"`
 	Source     string         `json:"source,omitempty"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`

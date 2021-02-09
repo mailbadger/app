@@ -6,4 +6,4 @@ make gen
 
 export $(egrep -v '^#' .env.local | xargs)
 
-go run mailbadger.go &
+go run mailbadger.go

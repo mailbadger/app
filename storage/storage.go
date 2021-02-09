@@ -31,6 +31,7 @@ type Storage interface {
 	CreateCampaign(*entities.Campaign) error
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
+	GetTotalCampaigns(userID int64) (int64, error)
 	GetCampaignOpens(campaignID, userID int64, p *PaginationCursor) error
 	GetClicksStats(campaignID, userID int64) (*entities.ClicksStats, error)
 	GetOpensStats(campaignID, userID int64) (*entities.OpensStats, error)
@@ -228,6 +229,11 @@ func GetOpensStats(c context.Context, campaignID, userID int64) (*entities.Opens
 // open by the specified campaign id
 func GetCampaignOpens(c context.Context, campaignID, userID int64, p *PaginationCursor) error {
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
+}
+
+// GetTotalCampaigns returns the total number of campaigns for a specified user
+func GetTotalCampaigns(c context.Context, userID int64) (int64, error) {
+	return GetFromContext(c).GetTotalCampaigns(userID)
 }
 
 // GetTotalSends returns total sends for specified campaign id

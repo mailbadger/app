@@ -80,6 +80,7 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 			String: string(pass),
 			Valid:  true,
 		},
+		BoundaryID: 2, //db_test type boundary
 	}
 	err = s.CreateUser(u)
 	if err != nil {

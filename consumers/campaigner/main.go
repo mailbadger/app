@@ -249,7 +249,7 @@ func main() {
 
 	consumer, err := nsq.NewConsumer(entities.CampaignerTopic, entities.CampaignerTopic, config)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("Failed to create consumer")
 	}
 
 	consumer.ChangeMaxInFlight(200)

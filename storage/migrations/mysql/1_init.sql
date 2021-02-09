@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS `boundaries` (
   `updated_at`                 DATETIME(6) NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+INSERT INTO "boundaries" (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`)
+VALUES ("nolimit", 0, 0, 1, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
+
 CREATE TABLE IF NOT EXISTS `users` (
   `id`          INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `uuid`        VARCHAR(36) NOT NULL UNIQUE,
@@ -23,10 +26,10 @@ CREATE TABLE IF NOT EXISTS `users` (
   `source`      VARCHAR(191) NOT NULL,
   `active`      INTEGER NOT NULL,
   `verified`    INTEGER NOT NULL,
-  `boundary_id` INTEGER UNSIGNED DEFAULT NULL,
+  `boundary_id` INTEGER UNSIGNED NOT NULL,
   `created_at`  DATETIME(6) NOT NULL,
   `updated_at`  DATETIME(6) NOT NULL,
-  FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`) ON DELETE SET NULL ON UPDATE CASCADE,  
+  FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`),  
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
@@ -194,7 +197,7 @@ CREATE TABLE IF NOT EXISTS `send_logs` (
   `description`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
+  FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sends` (

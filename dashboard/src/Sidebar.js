@@ -9,8 +9,8 @@ import {
   Template,
 } from "grommet-icons";
 import { useLocation } from "react-router-dom";
-import { Box, Button, Collapsible, Layer } from "grommet";
-import { AnchorLink } from "./ui";
+import { Box, Button, Layer } from "grommet";
+import { AnchorLink, GradientBadger, UserMenu } from "./ui";
 
 const links = [
   {
@@ -46,17 +46,12 @@ const NavLinks = () => {
 
   return (
     <Fragment>
-      <Box
-        margin={{ top: "small" }}
-        pad={{ vertical: "large", horizontal: "medium" }}
-      >
         {links.map((link) => (
           <Box pad="xsmall" direction="row" key={link.label}>
             <AnchorLink
               to={link.to}
               size="medium"
               icon={link.icon}
-              label={link.label}
               active={
                 active === link.label || location.pathname.startsWith(link.to)
               }
@@ -64,7 +59,6 @@ const NavLinks = () => {
             />
           </Box>
         ))}
-      </Box>
     </Fragment>
   );
 };
@@ -75,17 +69,21 @@ const Sidebar = (props) => {
   return (
     <Fragment>
       {!showSidebar || size !== "small" ? (
-        <Collapsible direction="horizontal" open={showSidebar}>
           <Box
-            flex
-            width="256px"
-            direction="column"
+            overflow="auto"
             background="brand"
-            justify="between"
           >
-            <NavLinks />
+            <Box align="center" pad={{ vertical: 'small' }}>
+              <GradientBadger />
+            </Box>
+            <Box align="center" gap={size === 'small' ? 'medium' : 'small'}>
+              <NavLinks />
+            </Box>
+            <Box flex />
+            <Box pad={{ vertical: 'small' }}>
+              <UserMenu alignSelf="center" />
+            </Box>
           </Box>
-        </Collapsible>
       ) : (
         <Layer>
           <Box
