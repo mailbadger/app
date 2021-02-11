@@ -119,5 +119,6 @@ func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicPar
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: %w", err)
 	}
+
 	return nil
 }
