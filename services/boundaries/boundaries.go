@@ -29,7 +29,7 @@ func (svc *service) CampaignsLimitExceeded(user *entities.User) (bool, error) {
 			return true, fmt.Errorf("boundaries: get total campaigns: %w", err)
 		}
 
-		return count > limit, nil
+		return count >= limit, nil
 	}
 
 	return false, nil

@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS `boundaries` (
   `updated_at`                 DATETIME(6) NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-INSERT INTO "boundaries" (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`)
-VALUES ("nolimit", 0, 0, 1, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
+INSERT INTO `boundaries` (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`) VALUES ("nolimit", 0, 0, 1, 0, 0, 1, 1, 0, NOW(), NOW());
 
 CREATE TABLE IF NOT EXISTS `users` (
   `id`          INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -29,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `boundary_id` INTEGER UNSIGNED NOT NULL,
   `created_at`  DATETIME(6) NOT NULL,
   `updated_at`  DATETIME(6) NOT NULL,
-  FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`),  
+  FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sessions` (
@@ -60,6 +59,18 @@ CREATE TABLE IF NOT EXISTS `ses_keys` (
   `created_at` DATETIME(6) NOT NULL,
   `updated_at` DATETIME(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `templates`
+(
+    `id`           integer unsigned primary key AUTO_INCREMENT NOT NULL,
+    `user_id`      integer unsigned                            NOT NULL,
+    `name`         varchar(191)                                NOT NULL,
+    `subject_part` varchar(191)                                NOT NULL,
+    `text_part`    text,
+    `created_at`   datetime(6)                                 NOT NULL,
+    `updated_at`   datetime(6)                                 NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
@@ -229,6 +240,7 @@ DROP TABLE `deliveries`;
 DROP TABLE `ses_keys`;
 DROP TABLE `opens`;
 DROP TABLE `campaigns`;
+DROP TABLE `templates`;
 DROP TABLE `users`;
 DROP TABLE `sessions`;
 DROP TABLE `boundaries`;

@@ -19,13 +19,13 @@ The application depends on several tools and services:
     - go-bindata
     - Docker and docker-compose (optional)
 
-1. `go-bindata` is used to generate the DB migration assets (sql files)
+1. `statik` is used to generate the DB migration assets (sql files)
 
 ```
-go get -u github.com/go-bindata/go-bindata/...
+go get github.com/rakyll/statik
 ```
 
-2. Run `make gen` to generate the migration assets.
+2. Run `make driver=mysql gen` to generate the migration assets (run with driver=sqlite3 for testing).
 
 3. Run `make build` to build the executable files, the files will be located in the `bin` folder.
 

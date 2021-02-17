@@ -11,12 +11,13 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/rakyll/statik/fs"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/storage/migrations"
+	_ "github.com/mailbadger/app/statik"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -77,12 +78,15 @@ func openDbConn(driver, config string) *gorm.DB {
 func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	log.Info("Running migrations..")
 
-	var m = &migrate.AssetMigrationSource{
-		Asset:    migrations.Asset,
-		AssetDir: migrations.AssetDir,
-		Dir:      driver,
+	migrationFS, err := fs.NewWithNamespace("migrations")
+	if err != nil {
+		return fmt.Errorf("create migrations file system: %w", err)
 	}
-	_, err := migrate.Exec(db.DB(), driver, m, migrate.Up)
+
+	var m = &migrate.HttpFileSystemMigrationSource{
+		FileSystem: migrationFS,
+	}
+	_, err = migrate.Exec(db.DB(), driver, m, migrate.Up)
 	if err != nil {
 		return err
 	}

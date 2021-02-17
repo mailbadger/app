@@ -57,10 +57,6 @@ func TestCampaigns(t *testing.T) {
 
 	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: templateName}).
 		Expect().
-		Status(http.StatusCreated)
-
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: templateName}).
-		Expect().
 		Status(http.StatusForbidden).JSON().Object().
 		ValueEqual("message", "You have exceeded your campaigns limit, please upgrade to a bigger plan or contact support.")
 
@@ -69,10 +65,10 @@ func TestCampaigns(t *testing.T) {
 		Expect().
 		Status(http.StatusOK).
 		JSON().Object().
-		ValueEqual("total", 3)
+		ValueEqual("total", 2)
 
 	collection.Value("links").Object().ContainsKey("previous").ContainsKey("next")
-	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
+	collection.Value("collection").Array().NotEmpty().Length().Equal(2)
 
 	auth.GET("/api/campaigns").
 		WithQuery("scopes[name]", "foo").
