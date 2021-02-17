@@ -10,6 +10,7 @@ import (
 // Service describes the boundaries interface for checking on resource limits.
 type Service interface {
 	CampaignsLimitExceeded(user *entities.User) (bool, error)
+	SubscribersLimitExceeded(user *entities.User) (bool, int64, error)
 }
 
 type service struct {
@@ -21,10 +22,10 @@ func New(store storage.Storage) Service {
 	return &service{store}
 }
 
-func (svc *service) CampaignsLimitExceeded(user *entities.User) (bool, error) {
+func (s *service) CampaignsLimitExceeded(user *entities.User) (bool, error) {
 	limit := user.Boundaries.CampaignsLimit
 	if limit > 0 {
-		count, err := svc.store.GetTotalCampaigns(user.ID)
+		count, err := s.store.GetTotalCampaigns(user.ID)
 		if err != nil {
 			return true, fmt.Errorf("boundaries: get total campaigns: %w", err)
 		}
@@ -33,4 +34,16 @@ func (svc *service) CampaignsLimitExceeded(user *entities.User) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (s *service) SubscribersLimitExceeded(user *entities.User) (bool, int64, error) {
+	limit := user.Boundaries.SubscribersLimit
+	if limit > 0 {
+		count, err := s.store.GetTotalSubscribers(user.ID)
+		if err != nil {
+			return true, 0, fmt.Errorf("boundaries: get total subscribers: %w", err)
+		}
+		return count >= limit, count, err
+	}
+	return false, 0, nil
 }

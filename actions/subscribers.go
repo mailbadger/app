@@ -23,6 +23,7 @@ import (
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
 	awss3 "github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/services/reports"
 	"github.com/mailbadger/app/services/subscribers/bulkremover"
@@ -102,6 +103,25 @@ func PostSubscriber(c *gin.Context) {
 
 	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	boundariesvc := boundaries.New(storage.GetFromContext(c))
+
+	limitexceeded, _, err := boundariesvc.SubscribersLimitExceeded(middleware.GetUser(c))
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable to check subscribers limit for user.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to check subscribers limit. Please try again.",
+		})
+		return
+	}
+
+	if limitexceeded {
+		logger.From(c).Info("User has exceeded his subscribers limit.")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+		})
 		return
 	}
 
