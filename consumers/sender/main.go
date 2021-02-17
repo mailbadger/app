@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/nsqio/go-nsq"
 	"github.com/sirupsen/logrus"
 
@@ -101,6 +102,19 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		Description:  entities.SendLogDescriptionOnSuccessful,
 	}
 
+	defer func() {
+		err = h.storage.CreateSendLog(sendLog)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"uuid":          msg.UUID,
+				"user_id":       msg.UserID,
+				"campaign_id":   msg.CampaignID,
+				"subscriber_id": msg.SubscriberID,
+				"message_id":    sendLog.MessageID,
+			}).WithError(err).Error("Unable to add log for sent emails result.")
+		}
+	}()
+
 	client, err := newSesClient(msg.SesKeys)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -130,62 +144,39 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		sendLog.Status = entities.StatusFailed
 		sendLog.Description = entities.SendLogDescriptionOnSendEmailError
 
+		logEntry := logrus.WithFields(logrus.Fields{
+			"uuid":          msg.UUID,
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).WithError(err)
+
 		// First check errors for retrying (returning) they don't need to be inserted in send logs
 		// also if the error is retryable delete it from cache
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
-				logrus.WithFields(logrus.Fields{
-					"uuid":          msg.UUID,
-					"user_id":       msg.UserID,
-					"campaign_id":   msg.CampaignID,
-					"subscriber_id": msg.SubscriberID,
-				}).WithError(aerr).Error("Unable to send bulk templated email. Message rejected.")
+				logEntry.Error("Unable to send bulk templated email. Message rejected.")
 			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				logrus.WithFields(logrus.Fields{
-					"uuid":          msg.UUID,
-					"user_id":       msg.UserID,
-					"campaign_id":   msg.CampaignID,
-					"subscriber_id": msg.SubscriberID,
-				}).WithError(aerr).Error("Unable to send bulk templated email. Domain not verified.")
+				logEntry.Error("Unable to send bulk templated email. Domain not verified.")
 			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				logrus.WithFields(logrus.Fields{
-					"uuid":          msg.UUID,
-					"user_id":       msg.UserID,
-					"campaign_id":   msg.CampaignID,
-					"subscriber_id": msg.SubscriberID,
-				}).WithError(aerr).Error("Unable to send bulk templated email. Configuration set does not exist.")
+				logEntry.Error("Unable to send bulk templated email. Configuration set does not exist.")
+			case sns.ErrCodeThrottledException:
+				logEntry.Error("Unable to send bulk templated email. The rate at which requests have been submitted for this action exceeds the limit for your account. Slow down!")
+				return err
+			case sns.ErrCodeInternalErrorException:
+				logEntry.Error("Unable to send bulk templated email. The request processing has failed because of an unknown error, exception, or failure.")
+				return err
 			default:
-				logrus.WithFields(logrus.Fields{
-					"uuid":          msg.UUID,
-					"user_id":       msg.UserID,
-					"campaign_id":   msg.CampaignID,
-					"subscriber_id": msg.SubscriberID,
-				}).WithError(aerr).Error("Unable to send templated email. Unknown status code.")
+				logEntry.Error("Unable to send templated email. Unknown status.")
 			}
 		} else {
-			logrus.WithFields(logrus.Fields{
-				"uuid":          msg.UUID,
-				"user_id":       msg.UserID,
-				"campaign_id":   msg.CampaignID,
-				"subscriber_id": msg.SubscriberID,
-			}).WithError(err).Error("Unable to send templated email.")
+			logEntry.Error("Unable to send templated email.")
 		}
 	}
 
 	if resp != nil {
 		sendLog.MessageID = resp.MessageId
-	}
-
-	err = h.storage.CreateSendLog(sendLog)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"uuid":             msg.UUID,
-			"user_id":          msg.UserID,
-			"campaign_id":      msg.CampaignID,
-			"subscriber_id":    msg.SubscriberID,
-			"send_bulk_status": resp.GoString(),
-		}).WithError(err).Error("Unable to add log for sent emails result.")
 	}
 
 	return nil
