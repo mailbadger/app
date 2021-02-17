@@ -16,7 +16,6 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/gobuffalo/packr/v2 v2.8.1
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.2.0
@@ -27,7 +26,6 @@ require (
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/karrick/godirwalk v1.16.1 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/lib/pq v1.9.0
 	github.com/magefile/mage v1.11.0 // indirect
