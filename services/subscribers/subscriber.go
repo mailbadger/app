@@ -1,4 +1,4 @@
-package importer
+package subscribers
 
 import (
 	"context"
@@ -12,39 +12,39 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/jinzhu/gorm"
-	"github.com/mailbadger/app/storage"
-
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/jinzhu/gorm"
+
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 )
 
-const ActionImport = "import"
-
-type SubscribersImporter interface {
+type SubscriberService interface {
 	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
+	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64) error
+	DeactivateSubscriber(ctx context.Context, userID int64, email string) error
 }
 
-type s3Importer struct {
+type subscriberService struct {
 	client s3iface.S3API
 }
 
 var (
-	ErrInvalidColumnsNum = errors.New("importer: invalid number of columns")
-	ErrInvalidFormat     = errors.New("importer: csv file not formatted properly")
+	ErrInvalidColumnsNum = errors.New("invalid number of columns")
+	ErrInvalidFormat     = errors.New("csv file not formatted properly")
 )
 
-func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
-	return &s3Importer{client}
+func NewSubscriberService(client s3iface.S3API) *subscriberService {
+	return &subscriberService{client}
 }
 
-func (i *s3Importer) ImportSubscribersFromFile(
+func (s *subscriberService) ImportSubscribersFromFile(
 	ctx context.Context,
 	filename string,
 	userID int64,
 	segments []entities.Segment,
 ) (err error) {
-	res, err := i.client.GetObject(&s3.GetObjectInput{
+	res, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
 	})
@@ -123,4 +123,74 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	}
 
 	return
+}
+
+func (s *subscriberService) RemoveSubscribersFromFile(
+	ctx context.Context,
+	filename string,
+	userID int64,
+) (err error) {
+	res, err := s.client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("subscribers/remove/%d/%s", userID, filename)),
+	})
+	if err != nil {
+		return fmt.Errorf("bulkremover: get object: %w", err)
+	}
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+
+	reader := csv.NewReader(res.Body)
+	header, err := reader.Read()
+	if err == io.EOF {
+		return fmt.Errorf("bulkremover: empty file '%s': %w", filename, err)
+	}
+	if err != nil {
+		return fmt.Errorf("bulkremover: read header: %w", err)
+	}
+
+	if len(header) < 1 {
+		return ErrInvalidColumnsNum
+	}
+
+	if strings.ToLower(header[0]) != "email" {
+		return ErrInvalidFormat
+	}
+
+	for {
+		line, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("bulkremover: read line: %w", err)
+		}
+		if len(line) == 0 {
+			continue
+		}
+
+		email := strings.TrimSpace(line[0])
+		err = storage.DeleteSubscriberByEmail(ctx, email, userID)
+		if err != nil {
+			return fmt.Errorf("bulkremover: delete subscriber: %w", err)
+		}
+	}
+
+	return
+}
+
+func (s *subscriberService) DeactivateSubscriber(ctx context.Context, userID int64, email string) error {
+
+	// todo set status to inactive
+
+
+	// todo insert event log for unsubscribe
+
+
+
+	return nil
+
 }

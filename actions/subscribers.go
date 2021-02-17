@@ -25,8 +25,7 @@ import (
 	awss3 "github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/services/reports"
-	"github.com/mailbadger/app/services/subscribers/bulkremover"
-	"github.com/mailbadger/app/services/subscribers/importer"
+	"github.com/mailbadger/app/services/subscribers"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/validator"
 )
@@ -371,7 +370,7 @@ func ImportSubscribers(c *gin.Context) {
 	}
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		imp := importer.NewS3SubscribersImporter(client)
+		imp := subscribers.NewSubscriberService(client)
 		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -417,7 +416,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	}
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := bulkremover.NewS3SubscribersBulkRemover(client)
+		svc := subscribers.NewSubscriberService(client)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
