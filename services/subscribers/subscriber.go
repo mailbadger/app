@@ -194,7 +194,7 @@ func (s *subscriberService) DeactivateSubscriber(ctx context.Context, userID int
 		return fmt.Errorf("SubscriberService: deactivate subscriber: %w", err)
 	}
 
-	err = s.db.CreateUnsubscribedSubscriber(&entities.UnsubscribeEvents{Email: email, CreatedAt: time.Now()})
+	err = s.db.CreateUnsubscribeEvent(&entities.UnsubscribeEvents{Email: email, CreatedAt: time.Now()})
 	if err != nil {
 		return fmt.Errorf("SubscriberService: create unsubscribed subscriber: %w", err)
 	}
