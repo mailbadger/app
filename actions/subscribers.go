@@ -251,7 +251,7 @@ func DeleteSubscriber(c *gin.Context) {
 }
 
 func PostUnsubscribe(c *gin.Context) {
-	svc := subscribers.NewSubscriberService(nil, storage.GetFromContext(c))
+	svc := subscribers.New(nil, storage.GetFromContext(c))
 	body := &params.PostUnsubscribe{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -361,7 +361,7 @@ func ImportSubscribers(c *gin.Context) {
 	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		imp := subscribers.NewSubscriberService(client,nil)
+		imp := subscribers.New(client,nil)
 		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -396,7 +396,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := subscribers.NewSubscriberService(client,nil)
+		svc := subscribers.New(client,nil)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{

@@ -20,13 +20,13 @@ import (
 	"github.com/mailbadger/app/storage"
 )
 
-type SubscriberService interface {
+type Service interface {
 	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
 	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64) error
 	DeactivateSubscriber(ctx context.Context, userID int64, email string) error
 }
 
-type subscriberService struct {
+type service struct {
 	client s3iface.S3API
 	db     storage.Storage
 }
@@ -36,11 +36,11 @@ var (
 	ErrInvalidFormat     = errors.New("csv file not formatted properly")
 )
 
-func NewSubscriberService(client s3iface.S3API, db storage.Storage) *subscriberService {
-	return &subscriberService{client, db}
+func New(client s3iface.S3API, db storage.Storage) *service {
+	return &service{client, db}
 }
 
-func (s *subscriberService) ImportSubscribersFromFile(
+func (s *service) ImportSubscribersFromFile(
 	ctx context.Context,
 	filename string,
 	userID int64,
@@ -128,7 +128,7 @@ func (s *subscriberService) ImportSubscribersFromFile(
 	return
 }
 
-func (s *subscriberService) RemoveSubscribersFromFile(
+func (s *service) RemoveSubscribersFromFile(
 	ctx context.Context,
 	filename string,
 	userID int64,
@@ -187,7 +187,7 @@ func (s *subscriberService) RemoveSubscribersFromFile(
 	return
 }
 
-func (s *subscriberService) DeactivateSubscriber(ctx context.Context, userID int64, email string) error {
+func (s *service) DeactivateSubscriber(ctx context.Context, userID int64, email string) error {
 
 	err := s.db.DeactivateSubscriber(userID, email)
 	if err != nil {
