@@ -42,7 +42,7 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 	}
 	// test insert opens
 	for i := range unsubscribeEvents {
-		err := store.CreateUnsubscribedSubscriber(&unsubscribeEvents[i])
+		err := store.CreateUnsubscribeEvent(&unsubscribeEvents[i])
 		assert.Nil(t, err)
 	}
 

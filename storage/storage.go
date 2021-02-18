@@ -533,7 +533,7 @@ func GetSendLogByUUID(c context.Context, uuid string) (*entities.SendLog, error)
 	return GetFromContext(c).GetSendLogByUUID(uuid)
 }
 
-// CreateUnsubscribedSubscriber creates a new record for unsubscribed subscriber.
+// CreateUnsubscribeEvent creates a new record for unsubscribed subscriber.
 func CreateUnsubscribeEvent(c context.Context, us *entities.UnsubscribeEvents) error {
 	return GetFromContext(c).CreateUnsubscribeEvent(us)
 }
