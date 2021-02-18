@@ -59,10 +59,11 @@ func (s *subscriberService) ImportSubscribersFromFile(
 
 	reader := csv.NewReader(res.Body)
 	header, err := reader.Read()
-	if err == io.EOF {
-		return fmt.Errorf("importer: empty file '%s': %w", filename, err)
-	}
 	if err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("importer: empty file '%s': %w", filename, err)
+		}
+
 		return fmt.Errorf("importer: read header: %w", err)
 	}
 
@@ -145,10 +146,11 @@ func (s *subscriberService) RemoveSubscribersFromFile(
 
 	reader := csv.NewReader(res.Body)
 	header, err := reader.Read()
-	if err == io.EOF {
-		return fmt.Errorf("bulkremover: empty file '%s': %w", filename, err)
-	}
 	if err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("bulkremover: empty file '%s': %w", filename, err)
+		}
+
 		return fmt.Errorf("bulkremover: read header: %w", err)
 	}
 
@@ -186,10 +188,7 @@ func (s *subscriberService) DeactivateSubscriber(ctx context.Context, userID int
 
 	// todo set status to inactive
 
-
 	// todo insert event log for unsubscribe
-
-
 
 	return nil
 
