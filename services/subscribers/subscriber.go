@@ -79,10 +79,10 @@ func (s *subscriberService) ImportSubscribersFromFile(
 
 	for {
 		line, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return fmt.Errorf("importer: read line: %w", err)
 		}
 		if len(line) < 2 {
@@ -166,10 +166,11 @@ func (s *subscriberService) RemoveSubscribersFromFile(
 
 	for {
 		line, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
+
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return fmt.Errorf("bulkremover: read line: %w", err)
 		}
 		if len(line) == 0 {
