@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
+	s3aws "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,6 +27,7 @@ import (
 	"github.com/mailbadger/app/services/reports"
 	"github.com/mailbadger/app/services/subscribers"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -356,18 +357,7 @@ func ImportSubscribers(c *gin.Context) {
 		}
 	}
 
-	client, err := awss3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
-	)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to import subscribers. Please try again.",
-		})
-		return
-	}
+	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
 		imp := subscribers.NewSubscriberService(client)
@@ -378,7 +368,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, client, body.Filename, u.ID, segs)
+	}(c, s3Client, body.Filename, u.ID, segs)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -402,18 +392,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 		return
 	}
 
-	client, err := awss3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
-	)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Remove subs: unable to create s3 client.")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to import subscribers. Please try again.",
-		})
-		return
-	}
+	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
 		svc := subscribers.NewSubscriberService(client)
@@ -423,7 +402,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 				"filename": filename,
 			}).WithError(err).Warn("Unable to remove subscribers.")
 		}
-	}(c, client, body.Filename, u.ID)
+	}(c, s3Client, body.Filename, u.ID)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly.",
@@ -533,20 +512,9 @@ func DownloadSubscribersReport(c *gin.Context) {
 	}
 
 	if report.Status == entities.StatusDone {
-		client, err := awss3.NewS3Client(
-			os.Getenv("AWS_S3_ACCESS_KEY"),
-			os.Getenv("AWS_S3_SECRET_KEY"),
-			os.Getenv("AWS_S3_REGION"),
-		)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to create s3 client.")
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"message": "Unable to sign url.",
-			})
-			return
-		}
+		s3Client := s3.GetFromContext(c)
 
-		req, _ := client.GetObjectRequest(&s3.GetObjectInput{
+		req, _ := s3Client.GetObjectRequest(&s3aws.GetObjectInput{
 			Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 			Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", u.ID, fileName)),
 		})
