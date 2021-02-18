@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -27,6 +28,7 @@ type SubscriberService interface {
 
 type subscriberService struct {
 	client s3iface.S3API
+	db     storage.Storage
 }
 
 var (
@@ -34,8 +36,8 @@ var (
 	ErrInvalidFormat     = errors.New("csv file not formatted properly")
 )
 
-func NewSubscriberService(client s3iface.S3API) *subscriberService {
-	return &subscriberService{client}
+func NewSubscriberService(client s3iface.S3API, db storage.Storage) *subscriberService {
+	return &subscriberService{client, db}
 }
 
 func (s *subscriberService) ImportSubscribersFromFile(
@@ -186,10 +188,15 @@ func (s *subscriberService) RemoveSubscribersFromFile(
 
 func (s *subscriberService) DeactivateSubscriber(ctx context.Context, userID int64, email string) error {
 
-	// todo set status to inactive
+	err := s.db.DeactivateSubscriber(userID, email)
+	if err != nil {
+		return fmt.Errorf("SubscriberService: deactivate subscriber: %w", err)
+	}
 
-	// todo insert event log for unsubscribe
+	err = s.db.CreateUnsubscribedSubscriber(&entities.UnsubscribedSubscriber{Email: email, CreatedAt: time.Now()})
+	if err != nil {
+		return fmt.Errorf("SubscriberService: create unsubscribed subscriber: %w", err)
+	}
 
 	return nil
-
 }

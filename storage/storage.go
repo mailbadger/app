@@ -74,6 +74,7 @@ type Storage interface {
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
+	CreateUnsubscribedSubscriber(us *entities.UnsubscribedSubscriber) error
 
 	GetAPIKeys(userID int64) ([]*entities.APIKey, error)
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -530,4 +531,9 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 // GetSendLogByUUID returns send log with specified uuid
 func GetSendLogByUUID(c context.Context, uuid string) (*entities.SendLog, error) {
 	return GetFromContext(c).GetSendLogByUUID(uuid)
+}
+
+// CreateUnsubscribedSubscriber creates a new record for unsubscribed subscriber.
+func CreateUnsubscribedSubscriber(c context.Context, us *entities.UnsubscribedSubscriber) error {
+	return GetFromContext(c).CreateUnsubscribedSubscriber(us)
 }

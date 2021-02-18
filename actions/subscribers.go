@@ -251,6 +251,7 @@ func DeleteSubscriber(c *gin.Context) {
 }
 
 func PostUnsubscribe(c *gin.Context) {
+	svc := subscribers.NewSubscriberService(nil, storage.GetFromContext(c))
 	body := &params.PostUnsubscribe{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -313,12 +314,12 @@ func PostUnsubscribe(c *gin.Context) {
 		return
 	}
 
-	err = storage.DeactivateSubscriber(c, u.ID, sub.Email)
+	err = svc.DeactivateSubscriber(c, u.ID, sub.Email)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": body.Email,
 			"uuid":  body.UUID,
-		}).WithError(err).Warn("Unsubscribe: unable to update subscriber's status.")
+		}).WithError(err).Warn("Unsubscribe: unable to deactivate subscriber")
 		c.Redirect(http.StatusPermanentRedirect, redirWithError)
 		return
 	}
@@ -360,7 +361,7 @@ func ImportSubscribers(c *gin.Context) {
 	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		imp := subscribers.NewSubscriberService(client)
+		imp := subscribers.NewSubscriberService(client,nil)
 		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -395,7 +396,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	s3Client := s3.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := subscribers.NewSubscriberService(client)
+		svc := subscribers.NewSubscriberService(client,nil)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
