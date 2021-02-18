@@ -105,12 +105,13 @@ func PostSubscriber(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	user := middleware.GetUser(c)
 
 	boundariesvc := boundaries.New(storage.GetFromContext(c))
 
-	limitexceeded, _, err := boundariesvc.SubscribersLimitExceeded(middleware.GetUser(c))
+	limitexceeded, _, err := boundariesvc.SubscribersLimitExceeded(user)
 	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to check subscribers limit for user.")
+		logger.From(c).WithError(err).WithField("user_id", user.ID).Error("Unable to check subscribers limit for user.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to check subscribers limit. Please try again.",
 		})
