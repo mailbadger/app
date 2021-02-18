@@ -23,7 +23,7 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	unsubscribedSubscribers := []entities.UnsubscribedSubscriber{
+	unsubscribeEvents := []entities.UnsubscribeEvents{
 		{
 			ID:        1,
 			Email:     "email1@bla.com",
@@ -41,8 +41,8 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 		},
 	}
 	// test insert opens
-	for i := range unsubscribedSubscribers {
-		err := store.CreateUnsubscribedSubscriber(&unsubscribedSubscribers[i])
+	for i := range unsubscribeEvents {
+		err := store.CreateUnsubscribedSubscriber(&unsubscribeEvents[i])
 		assert.Nil(t, err)
 	}
 
