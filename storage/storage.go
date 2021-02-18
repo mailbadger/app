@@ -31,7 +31,7 @@ type Storage interface {
 	CreateCampaign(*entities.Campaign) error
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
-	GetTotalCampaigns(userID int64) (int64, error)
+	GetMonthlyTotalCampaigns(userID int64) (int64, error)
 	GetCampaignOpens(campaignID, userID int64, p *PaginationCursor) error
 	GetClicksStats(campaignID, userID int64) (*entities.ClicksStats, error)
 	GetOpensStats(campaignID, userID int64) (*entities.OpensStats, error)
@@ -231,9 +231,9 @@ func GetCampaignOpens(c context.Context, campaignID, userID int64, p *Pagination
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
 }
 
-// GetTotalCampaigns returns the total number of campaigns for a specified user
-func GetTotalCampaigns(c context.Context, userID int64) (int64, error) {
-	return GetFromContext(c).GetTotalCampaigns(userID)
+// GetMonthlyTotalCampaigns returns the total number of campaigns for a specified user in the current month
+func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
+	return GetFromContext(c).GetMonthlyTotalCampaigns(userID)
 }
 
 // GetTotalSends returns total sends for specified campaign id
@@ -492,6 +492,7 @@ func GetReportByFilename(c context.Context, filename string, userID int64) (*ent
 	return GetFromContext(c).GetReportByFilename(filename, userID)
 }
 
+// GetRunningReportForUser returns a report that is currently being generated for the specified user
 func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report, error) {
 	return GetFromContext(c).GetRunningReportForUser(userID)
 }
