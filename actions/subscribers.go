@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	s3aws "github.com/aws/aws-sdk-go/service/s3"
+	 "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -27,7 +27,7 @@ import (
 	"github.com/mailbadger/app/services/reports"
 	"github.com/mailbadger/app/services/subscribers"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/s3"
+	s3storage "github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -358,7 +358,7 @@ func ImportSubscribers(c *gin.Context) {
 		}
 	}
 
-	s3Client := s3.GetFromContext(c)
+	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
 		imp := subscribers.New(client,nil)
@@ -393,7 +393,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 		return
 	}
 
-	s3Client := s3.GetFromContext(c)
+	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
 		svc := subscribers.New(client,nil)
@@ -513,9 +513,9 @@ func DownloadSubscribersReport(c *gin.Context) {
 	}
 
 	if report.Status == entities.StatusDone {
-		s3Client := s3.GetFromContext(c)
+		s3Client := s3storage.GetFromContext(c)
 
-		req, _ := s3Client.GetObjectRequest(&s3aws.GetObjectInput{
+		req, _ := s3Client.GetObjectRequest(&s3.GetObjectInput{
 			Bucket: aws.String(os.Getenv("FILES_BUCKET")),
 			Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", u.ID, fileName)),
 		})
