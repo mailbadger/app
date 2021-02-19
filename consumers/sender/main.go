@@ -62,14 +62,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"uuid":          msg.UUID,
+		"uid":           msg.UID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
 	})
 
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
-	exist, err := h.cache.Exists(genCacheKey(msg.UUID))
+	exist, err := h.cache.Exists(genCacheKey(msg.UID))
 	if err != nil {
 		logEntry.WithError(err).Error("Unable to check message existence")
 		return err
@@ -80,13 +80,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	if err := h.cache.Set(genCacheKey(msg.UUID), []byte("sending"), CacheDuration); err != nil {
+	if err := h.cache.Set(genCacheKey(msg.UID), []byte("sending"), CacheDuration); err != nil {
 		logEntry.WithError(err).Error("Unable to write to cache")
 		return err
 	}
 
 	sendLog := &entities.SendLog{
-		UUID:         msg.UUID,
+		UID:          msg.UID,
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
@@ -98,7 +98,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		err = h.storage.CreateSendLog(sendLog)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"uuid":          msg.UUID,
+				"uuid":          msg.UID,
 				"user_id":       msg.UserID,
 				"campaign_id":   msg.CampaignID,
 				"subscriber_id": msg.SubscriberID,

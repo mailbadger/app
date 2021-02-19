@@ -24,11 +24,8 @@ func TestSendLogs(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	id := ksuid.New()
-
 	sendLogs := []entities.SendLog{
 		{
-			ID:           id.String(),
 			UserID:       1,
 			SubscriberID: 1,
 			CampaignID:   1,
@@ -37,7 +34,6 @@ func TestSendLogs(t *testing.T) {
 			CreatedAt:    now,
 		},
 		{
-			ID:           id.Next().String(),
 			UserID:       1,
 			SubscriberID: 2,
 			CampaignID:   1,
@@ -46,7 +42,6 @@ func TestSendLogs(t *testing.T) {
 			CreatedAt:    now,
 		},
 		{
-			ID:           id.Next().String(),
 			UserID:       1,
 			SubscriberID: 3,
 			CampaignID:   1,
@@ -55,10 +50,15 @@ func TestSendLogs(t *testing.T) {
 			CreatedAt:    now,
 		},
 	}
+
+	uid := ksuid.New()
+
 	// test insert opens
-	for i := range sendLogs {
-		err := store.CreateSendLog(&sendLogs[i])
+	for _, sl := range sendLogs {
+		sl.UID = uid.Next().String()
+		err := store.CreateSendLog(&sl)
 		assert.Nil(t, err)
+		uid = uid.Next()
 	}
 
 	n, err := store.CountLogsByStatus(entities.SendLogStatusFailed)

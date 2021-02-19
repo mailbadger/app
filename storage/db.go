@@ -16,8 +16,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mailbadger/app/entities"
 	_ "github.com/mailbadger/app/statik"
+
+	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/utils"
 )
 

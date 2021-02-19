@@ -19,7 +19,7 @@ const (
 )
 
 type SendLog struct {
-	ID           string    `json:"id" gorm:"column:id; primary_key:yes"`
+	UID          string    `json:"uid" gorm:"column:uid; primary_key:yes"`
 	MessageID    *string   `json:"message_id" gorm:"message_id; index"`
 	UserID       int64     `json:"-" gorm:"column:user_id; index"`
 	SubscriberID int64     `json:"-" gorm:"column:subscriber_id"`
