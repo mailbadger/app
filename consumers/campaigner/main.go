@@ -83,7 +83,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"campaign_id": campaign.ID,
 				"status":      campaign.Status,
 			}).Error("unable to update campaign")
-		return nil
+		return err
 	}
 
 	// fetching subs that are active and that have not been blacklisted
@@ -110,8 +110,9 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					"campaign_id": campaign.ID,
 					"status":      campaign.Status,
 				}).Error("unable to update campaign")
-			return nil
+			return err
 		}
+
 		return nil
 	}
 
@@ -143,6 +144,12 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			uuid := uuid.New().String()
 			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"subscriber_id": s.ID,
+					"campaign_id":   msg.CampaignID,
+					"user_id":       msg.UserID,
+				}).WithError(err).Error("unable to prepare subscriber email data")
+
 				sendLog := &entities.SendLog{
 					UUID:         uuid,
 					UserID:       msg.UserID,
@@ -151,6 +158,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
+
 				err := h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
@@ -159,10 +167,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 						"user_id":       msg.UserID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
-				return nil
+
+				continue
 			}
+
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"subscriber_id": s.ID,
+					"campaign_id":   msg.CampaignID,
+					"user_id":       msg.UserID,
+				}).WithError(err).Error("unable to publish subscriber email params")
+
 				sendLog := &entities.SendLog{
 					UUID:         uuid,
 					UserID:       msg.UserID,
@@ -180,7 +196,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 						"user_id":       msg.UserID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
-				return nil
+
+				continue
 			}
 
 		}
