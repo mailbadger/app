@@ -119,7 +119,7 @@ func PostSubscriber(c *gin.Context) {
 	}
 
 	if limitexceeded {
-		logger.From(c).Info("User has exceeded his subscribers limit.")
+		logger.From(c).WithField("user_id", user.ID).Info("User has exceeded his subscribers limit.")
 		c.JSON(http.StatusForbidden, gin.H{
 			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
 		})
