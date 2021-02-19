@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -98,7 +97,7 @@ func (s *service) ImportSubscribersFromFile(
 			return fmt.Errorf("importer: get subscriber by email: %w", err)
 		}
 
-		s := &entities.Subscriber{
+		sub := &entities.Subscriber{
 			UserID:   userID,
 			Email:    email,
 			Name:     name,
@@ -116,10 +115,10 @@ func (s *service) ImportSubscribersFromFile(
 			if err != nil {
 				return fmt.Errorf("importer: marshal metadata: %w", err)
 			}
-			s.MetaJSON = metaJSON
+			sub.MetaJSON = metaJSON
 		}
 
-		err = storage.CreateSubscriber(ctx, s)
+		err = s.db.CreateSubscriber(sub)
 		if err != nil {
 			return fmt.Errorf("importer: create subscriber: %w", err)
 		}
@@ -178,7 +177,7 @@ func (s *service) RemoveSubscribersFromFile(
 		}
 
 		email := strings.TrimSpace(line[0])
-		err = storage.DeleteSubscriberByEmail(ctx, email, userID)
+		err = s.db.DeleteSubscriberByEmail(email, userID)
 		if err != nil {
 			return fmt.Errorf("bulkremover: delete subscriber: %w", err)
 		}
@@ -194,7 +193,7 @@ func (s *service) DeactivateSubscriber(ctx context.Context, userID int64, email 
 		return fmt.Errorf("SubscriberService: deactivate subscriber: %w", err)
 	}
 
-	err = s.db.CreateUnsubscribeEvent(&entities.UnsubscribeEvents{Email: email, CreatedAt: time.Now()})
+	err = s.db.CreateUnsubscribeEvent(&entities.UnsubscribeEvents{Email: email})
 	if err != nil {
 		return fmt.Errorf("SubscriberService: create unsubscribed subscriber: %w", err)
 	}

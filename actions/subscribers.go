@@ -361,8 +361,8 @@ func ImportSubscribers(c *gin.Context) {
 	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		imp := subscribers.New(client,nil)
-		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
+		svc := subscribers.New(client,nil)
+		err := svc.ImportSubscribersFromFile(ctx, filename, userID, segs)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": filename,
