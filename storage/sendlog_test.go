@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -24,9 +24,11 @@ func TestSendLogs(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
+	id := ksuid.New()
+
 	sendLogs := []entities.SendLog{
 		{
-			UUID:         uuid.New().String(),
+			ID:           id.String(),
 			UserID:       1,
 			SubscriberID: 1,
 			CampaignID:   1,
@@ -35,7 +37,7 @@ func TestSendLogs(t *testing.T) {
 			CreatedAt:    now,
 		},
 		{
-			UUID:         uuid.New().String(),
+			ID:           id.Next().String(),
 			UserID:       1,
 			SubscriberID: 2,
 			CampaignID:   1,
@@ -44,7 +46,7 @@ func TestSendLogs(t *testing.T) {
 			CreatedAt:    now,
 		},
 		{
-			UUID:         uuid.New().String(),
+			ID:           id.Next().String(),
 			UserID:       1,
 			SubscriberID: 3,
 			CampaignID:   1,

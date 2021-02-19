@@ -174,8 +174,7 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
 );
 
 CREATE TABLE IF NOT EXISTS "send_logs" (
-  "id"            integer primary key autoincrement,
-  "uuid"          varchar(36) unique NOT NULL,
+  "id"            varchar(100) primary key autoincrement,
   "user_id"       integer NOT NULL,
   "campaign_id"   integer NOT NULL,
   "subscriber_id" integer NOT NULL,
