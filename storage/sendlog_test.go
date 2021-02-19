@@ -24,7 +24,7 @@ func TestSendLogs(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	sendLogs := []entities.SendLog{
+	sendLogs := []*entities.SendLog{
 		{
 			UserID:       1,
 			SubscriberID: 1,
@@ -56,7 +56,7 @@ func TestSendLogs(t *testing.T) {
 	// test insert opens
 	for _, sl := range sendLogs {
 		sl.UID = uid.Next().String()
-		err := store.CreateSendLog(&sl)
+		err := store.CreateSendLog(sl)
 		assert.Nil(t, err)
 		uid = uid.Next()
 	}
