@@ -25,7 +25,7 @@ func New(store storage.Storage) Service {
 func (s *service) CampaignsLimitExceeded(user *entities.User) (bool, error) {
 	limit := user.Boundaries.CampaignsLimit
 	if limit > 0 {
-		count, err := s.store.GetTotalCampaigns(user.ID)
+		count, err := s.store.GetMonthlyTotalCampaigns(user.ID)
 		if err != nil {
 			return true, fmt.Errorf("boundaries: get total campaigns: %w", err)
 		}
