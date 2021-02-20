@@ -142,13 +142,13 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			return nil
 		}
 
-		uid := ksuid.New()
+		id := ksuid.New()
 
 		for _, s := range subs {
-			params, err := svc.PrepareSubscriberEmailData(s, uid.String(), *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
+			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UID:          uid.String(),
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
@@ -158,7 +158,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"uid":           uid.String(),
+						"id":           id.String(),
 						"user_id":       msg.UserID,
 						"segment_ids":   msg.SegmentIDs,
 						"campaign_id":   msg.CampaignID,
@@ -171,7 +171,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UID:          uid.String(),
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
@@ -182,7 +182,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"uid":           uid.String(),
+						"id":           id.String(),
 						"user_id":       msg.UserID,
 						"segment_ids":   msg.SegmentIDs,
 						"campaign_id":   msg.CampaignID,
@@ -193,7 +193,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				return nil
 			}
 
-			uid = uid.Next()
+			id = id.Next()
 		}
 
 		if len(subs) == 0 {

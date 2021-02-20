@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
 );
 
 CREATE TABLE IF NOT EXISTS "send_logs" (
-  "uid"           varchar(100) primary key,
+  "id"           varchar(27) primary key,
   "user_id"       integer NOT NULL,
   "campaign_id"   integer NOT NULL,
   "subscriber_id" integer NOT NULL,

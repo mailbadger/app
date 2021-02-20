@@ -55,7 +55,7 @@ func TestSendLogs(t *testing.T) {
 
 	// test insert opens
 	for _, sl := range sendLogs {
-		sl.UID = uid.Next().String()
+		sl.ID = uid.Next()
 		err := store.CreateSendLog(sl)
 		assert.Nil(t, err)
 		uid = uid.Next()

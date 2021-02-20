@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/cbroglie/mustache"
+	"github.com/segmentio/ksuid"
 )
 
 const (
@@ -65,18 +66,18 @@ type CampaignerTopicParams struct {
 // SenderTopicParams represent the request params used
 // by the sender campaign consumer.
 type SenderTopicParams struct {
-	UID                    string  `json:"uuid"`
-	UserID                 int64   `json:"user_id"`
-	UserUUID               string  `json:"user_uuid"`
-	CampaignID             int64   `json:"campaign_id"`
-	SubscriberID           int64   `json:"subscriber_id"`
-	SubscriberEmail        string  `json:"subscriber_email"`
-	Source                 string  `json:"source"`
-	ConfigurationSetExists bool    `json:"configuration_set_exists"`
-	HTMLPart               []byte  `json:"html_part"`
-	SubjectPart            []byte  `json:"subject_part"`
-	TextPart               []byte  `json:"text_part"`
-	SesKeys                SesKeys `json:"ses_keys"`
+	UID                    ksuid.KSUID `json:"uid"`
+	UserID                 int64       `json:"user_id"`
+	UserUUID               string      `json:"user_uuid"`
+	CampaignID             int64       `json:"campaign_id"`
+	SubscriberID           int64       `json:"subscriber_id"`
+	SubscriberEmail        string      `json:"subscriber_email"`
+	Source                 string      `json:"source"`
+	ConfigurationSetExists bool        `json:"configuration_set_exists"`
+	HTMLPart               []byte      `json:"html_part"`
+	SubjectPart            []byte      `json:"subject_part"`
+	TextPart               []byte      `json:"text_part"`
+	SesKeys                SesKeys     `json:"ses_keys"`
 }
 
 type CampaignTemplateData struct {

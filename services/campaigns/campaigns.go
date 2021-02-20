@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/cbroglie/mustache"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
@@ -15,7 +16,7 @@ import (
 type Service interface {
 	PrepareSubscriberEmailData(
 		s entities.Subscriber,
-		uid string,
+		id ksuid.KSUID,
 		msg entities.CampaignerTopicParams,
 		campaignID int64,
 		html *mustache.Template,
@@ -40,7 +41,7 @@ func New(db storage.Storage, p queue.Producer) Service {
 
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
-	uid string,
+	id ksuid.KSUID,
 	msg entities.CampaignerTopicParams,
 	campaignID int64,
 	html *mustache.Template,
@@ -90,7 +91,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SenderTopicParams{
-		UID:                   uid,
+		UID:                    id,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,
