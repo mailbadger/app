@@ -1,21 +1,17 @@
 package importer
 
 import (
-	"bytes"
 	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/jinzhu/gorm"
 
-	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/storage"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
@@ -44,42 +40,21 @@ func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
 
 func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
-	filename string,
 	user *entities.User,
 	segments []entities.Segment,
-	boundariesSvc boundaries.Service,
+	res *s3.GetObjectOutput,
 ) (err error) {
-	res, err := i.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", user.ID, filename)),
-	})
-	if err != nil {
-		return fmt.Errorf("importer: get object: %w", err)
-	}
+
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
 			err = cerr
 		}
 	}()
 
-	csvCount, err := lineCounter(res.Body)
-	if err != nil {
-		// todo do smth on err
-	}
-
-	_, limitCount, err := boundariesSvc.SubscribersLimitExceeded(user)
-	if err != nil {
-		// todo do smth on err
-	}
-
-	if int64(csvCount) >= limitCount {
-		// todo what to do if limit is exceeded
-	}
-
 	reader := csv.NewReader(res.Body)
 	header, err := reader.Read()
 	if err == io.EOF {
-		return fmt.Errorf("importer: empty file '%s': %w", filename, err)
+		return fmt.Errorf("importer: empty file: %w", err)
 	}
 	if err != nil {
 		return fmt.Errorf("importer: read header: %w", err)
@@ -142,23 +117,4 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	}
 
 	return
-}
-
-func lineCounter(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-	lineSep := []byte{'\n'}
-
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
-	}
 }

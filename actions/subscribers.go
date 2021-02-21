@@ -1,11 +1,13 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -391,17 +393,47 @@ func ImportSubscribers(c *gin.Context) {
 		})
 		return
 	}
+	res, err := client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, body.Filename)),
+	})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
 
-	go func(ctx context.Context, client s3iface.S3API, filename string, user *entities.User, segs []entities.Segment, boundariesSvc boundaries.Service) {
+	csvCount, err := lineCounter(res.Body)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+	}
+
+	_, limitCount, err := boundariesSvc.SubscribersLimitExceeded(u)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+	}
+
+	if limitCount+int64(csvCount) >= u.Boundaries.SubscribersLimit {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+		})
+	}
+
+	go func(ctx context.Context, user *entities.User, segs []entities.Segment, res *s3.GetObjectOutput) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, filename, user, segs, boundariesSvc)
+		err := imp.ImportSubscribersFromFile(ctx, user, segs, res)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
-				"filename": filename,
+				"filename": body.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, client, body.Filename, u, segs, boundariesSvc)
+	}(c, u, segs, res)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -589,4 +621,23 @@ func DownloadSubscribersReport(c *gin.Context) {
 
 	}
 
+}
+
+func lineCounter(r io.Reader) (int, error) {
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSep := []byte{'\n'}
+
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
+
+		switch {
+		case err == io.EOF:
+			return count, nil
+
+		case err != nil:
+			return count, err
+		}
+	}
 }
