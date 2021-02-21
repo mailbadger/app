@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"bytes"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -13,9 +14,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/jinzhu/gorm"
+
+	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/storage"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+
 	"github.com/mailbadger/app/entities"
 )
 
@@ -41,12 +45,13 @@ func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
 func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
 	filename string,
-	userID int64,
+	user *entities.User,
 	segments []entities.Segment,
+	boundariesSvc boundaries.Service,
 ) (err error) {
 	res, err := i.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
+		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", user.ID, filename)),
 	})
 	if err != nil {
 		return fmt.Errorf("importer: get object: %w", err)
@@ -56,6 +61,20 @@ func (i *s3Importer) ImportSubscribersFromFile(
 			err = cerr
 		}
 	}()
+
+	csvCount, err := lineCounter(res.Body)
+	if err != nil {
+		// todo do smth on err
+	}
+
+	_, limitCount, err := boundariesSvc.SubscribersLimitExceeded(user)
+	if err != nil {
+		// todo do smth on err
+	}
+
+	if int64(csvCount) >= limitCount {
+		// todo what to do if limit is exceeded
+	}
 
 	reader := csv.NewReader(res.Body)
 	header, err := reader.Read()
@@ -88,7 +107,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 		email := strings.TrimSpace(line[0])
 		name := strings.TrimSpace(line[1])
 
-		_, err = storage.GetSubscriberByEmail(ctx, email, userID)
+		_, err = storage.GetSubscriberByEmail(ctx, email, user.ID)
 		if err == nil {
 			continue
 		} else if !gorm.IsRecordNotFoundError(err) {
@@ -96,7 +115,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 		}
 
 		s := &entities.Subscriber{
-			UserID:   userID,
+			UserID:   user.ID,
 			Email:    email,
 			Name:     name,
 			Segments: segments,
@@ -123,4 +142,23 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	}
 
 	return
+}
+
+func lineCounter(r io.Reader) (int, error) {
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSep := []byte{'\n'}
+
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
+
+		switch {
+		case err == io.EOF:
+			return count, nil
+
+		case err != nil:
+			return count, err
+		}
+	}
 }

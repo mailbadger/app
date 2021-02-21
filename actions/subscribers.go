@@ -349,6 +349,7 @@ func PostUnsubscribe(c *gin.Context) {
 
 func ImportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
+	boundariesSvc := boundaries.New(storage.GetFromContext(c))
 
 	body := &params.ImportSubscribers{}
 	err := c.ShouldBind(body)
@@ -391,16 +392,16 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
+	go func(ctx context.Context, client s3iface.S3API, filename string, user *entities.User, segs []entities.Segment, boundariesSvc boundaries.Service) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, filename, userID, segs)
+		err := imp.ImportSubscribersFromFile(ctx, filename, user, segs, boundariesSvc)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, client, body.Filename, u.ID, segs)
+	}(c, client, body.Filename, u, segs, boundariesSvc)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
