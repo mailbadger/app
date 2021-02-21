@@ -61,7 +61,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		logrus.WithFields(logrus.Fields{
 			"campaign_id": msg.CampaignID,
 			"user_id":     msg.UserID,
-		}).WithError(err).Error("unable to find campaign")
+		}).WithError(err).Warn("unable to find campaign")
 		return err
 	}
 	if campaign.Status != entities.StatusDraft {
@@ -82,7 +82,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"user_id":     campaign.UserID,
 				"campaign_id": campaign.ID,
 				"status":      campaign.Status,
-			}).Error("unable to update campaign")
+			}).Warn("unable to update campaign")
 		return err
 	}
 
@@ -110,7 +110,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 					"campaign_id": campaign.ID,
 					"status":      campaign.Status,
 				}).Error("unable to update campaign")
-			return err
+			return nil
 		}
 
 		return nil
