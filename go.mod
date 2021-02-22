@@ -8,7 +8,6 @@ require (
 	github.com/cbroglie/mustache v1.2.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
-	github.com/fatih/structs v1.1.0 // indirect; indirectg
 	github.com/gavv/httpexpect/v2 v2.1.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
