@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/consumers"
@@ -115,6 +115,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	id := ksuid.New()
+
 	for {
 		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
@@ -130,59 +132,68 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				logrus.WithFields(logrus.Fields{
 					"user_id":     msg.UserID,
 					"segment_ids": msg.SegmentIDs,
+					"campaign_id": msg.CampaignID,
 				}).WithError(err).Warn("unable to fetch subscribers.")
 				return nil
 			}
 			logrus.WithFields(logrus.Fields{
 				"user_id":     msg.UserID,
 				"segment_ids": msg.SegmentIDs,
+				"campaign_id": msg.CampaignID,
 			}).WithError(err).Error("unable to fetch subscribers.")
 			return nil
 		}
+
 		for _, s := range subs {
-			uuid := uuid.New().String()
-			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
+			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UUID:         uuid,
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
-				err := h.s.CreateSendLog(sendLog)
+				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"subscriber_id": s.ID,
-						"campaign_id":   msg.CampaignID,
+						"id":            id.String(),
 						"user_id":       msg.UserID,
+						"segment_ids":   msg.SegmentIDs,
+						"campaign_id":   msg.CampaignID,
+						"subscriber_id": s.ID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 				return nil
 			}
+
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UUID:         uuid,
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
 				}
-				err := h.s.CreateSendLog(sendLog)
+
+				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"subscriber_id": s.ID,
-						"uuid":          uuid,
-						"campaign_id":   msg.CampaignID,
+						"id":            id.String(),
 						"user_id":       msg.UserID,
+						"segment_ids":   msg.SegmentIDs,
+						"campaign_id":   msg.CampaignID,
+						"subscriber_id": s.ID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
+
 				return nil
 			}
 
+			id = id.Next()
 		}
 
 		if len(subs) == 0 {
@@ -202,11 +213,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	campaign.Status = entities.StatusSent
 	campaign.CompletedAt.SetValid(time.Now().UTC())
+
 	err = h.s.UpdateCampaign(campaign)
 	if err != nil {
-		logrus.WithError(err).
-			WithField("campaign", campaign).
-			Error("unable to update campaign")
+		logrus.WithFields(logrus.Fields{
+			"user_id":     msg.UserID,
+			"segment_ids": msg.SegmentIDs,
+			"campaign_id": msg.CampaignID,
+		}).WithError(err).Error("unable to update campaign")
 		return nil
 	}
 
