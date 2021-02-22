@@ -29,6 +29,7 @@ import (
 	"github.com/mailbadger/app/services/subscribers/bulkremover"
 	"github.com/mailbadger/app/services/subscribers/importer"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/utils"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -415,7 +416,7 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	csvCount, err := boundariesSvc.CSVLineCounter(res.Body)
+	csvCount, err := utils.CSVLineCounter(res.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",

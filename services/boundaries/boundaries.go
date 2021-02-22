@@ -1,9 +1,7 @@
 package boundaries
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
@@ -13,7 +11,6 @@ import (
 type Service interface {
 	CampaignsLimitExceeded(user *entities.User) (bool, error)
 	SubscribersLimitExceeded(user *entities.User) (bool, int64, error)
-	CSVLineCounter(r io.Reader) (int, error)
 }
 
 type service struct {
@@ -49,23 +46,4 @@ func (s *service) SubscribersLimitExceeded(user *entities.User) (bool, int64, er
 		return count >= limit, count, err
 	}
 	return false, 0, nil
-}
-
-func (s *service) CSVLineCounter(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-	lineSep := []byte{'\n'}
-
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
-	}
 }
