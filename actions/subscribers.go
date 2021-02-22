@@ -1,13 +1,11 @@
 package actions
 
 import (
-	"bytes"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -417,7 +415,7 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	csvCount, err := lineCounter(res.Body)
+	csvCount, err := boundariesSvc.CSVLineCounter(res.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
@@ -629,23 +627,4 @@ func DownloadSubscribersReport(c *gin.Context) {
 
 	}
 
-}
-
-func lineCounter(r io.Reader) (int, error) {
-	buf := make([]byte, 32*1024)
-	count := 0
-	lineSep := []byte{'\n'}
-
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
-	}
 }
