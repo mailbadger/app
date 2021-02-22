@@ -66,7 +66,7 @@ type CampaignerTopicParams struct {
 // SenderTopicParams represent the request params used
 // by the sender campaign consumer.
 type SenderTopicParams struct {
-	UID                    ksuid.KSUID `json:"uid"`
+	ID                     ksuid.KSUID `json:"id"`
 	UserID                 int64       `json:"user_id"`
 	UserUUID               string      `json:"user_uuid"`
 	CampaignID             int64       `json:"campaign_id"`

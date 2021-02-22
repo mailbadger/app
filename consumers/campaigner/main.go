@@ -158,7 +158,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"id":           id.String(),
+						"id":            id.String(),
 						"user_id":       msg.UserID,
 						"segment_ids":   msg.SegmentIDs,
 						"campaign_id":   msg.CampaignID,
@@ -182,7 +182,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				err = h.s.CreateSendLog(sendLog)
 				if err != nil {
 					logrus.WithFields(logrus.Fields{
-						"id":           id.String(),
+						"id":            id.String(),
 						"user_id":       msg.UserID,
 						"segment_ids":   msg.SegmentIDs,
 						"campaign_id":   msg.CampaignID,
@@ -218,7 +218,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"user_id":     msg.UserID,
-			"segment_ids":   msg.SegmentIDs,
+			"segment_ids": msg.SegmentIDs,
 			"campaign_id": msg.CampaignID,
 		}).WithError(err).Error("unable to update campaign")
 		return nil

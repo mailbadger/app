@@ -91,7 +91,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SenderTopicParams{
-		UID:                    id,
+		ID:                     id,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,
