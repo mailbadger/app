@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
+	"github.com/pkg/profile"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/consumers"
@@ -245,10 +246,23 @@ func processSubscribers(
 	return nil
 }
 
-var traceFlag = flag.Bool("trace", false, "trace the execution of message handling, traces are sent to stderr")
-
 func main() {
+	mode := flag.String("profile.mode", "", "enable profiling mode, one of [cpu, mem, mutex, block, trace]")
 	flag.Parse()
+	switch *mode {
+	case "cpu":
+		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	case "mem":
+		defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+	case "mutex":
+		defer profile.Start(profile.MutexProfile, profile.ProfilePath(".")).Stop()
+	case "block":
+		defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
+	case "trace":
+		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
+	default:
+		// do nothing
+	}
 
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
@@ -260,20 +274,6 @@ func main() {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 	logrus.SetOutput(os.Stdout)
-
-	if *traceFlag {
-		f, err := os.Create("trace.out")
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		defer f.Close()
-
-		err = trace.Start(f)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-		defer trace.Stop()
-	}
 
 	driver := os.Getenv("DATABASE_DRIVER")
 	conf := storage.MakeConfigFromEnv(driver)
