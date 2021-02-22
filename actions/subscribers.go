@@ -404,14 +404,20 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	csvCount, err := lineCounter(res.Body)
+	limitExceeded, limitCount, err := boundariesSvc.SubscribersLimitExceeded(u)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
 		})
 	}
+	if limitExceeded {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+		})
+		return
+	}
 
-	_, limitCount, err := boundariesSvc.SubscribersLimitExceeded(u)
+	csvCount, err := lineCounter(res.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
@@ -420,7 +426,9 @@ func ImportSubscribers(c *gin.Context) {
 
 	if limitCount+int64(csvCount) >= u.Boundaries.SubscribersLimit {
 		c.JSON(http.StatusForbidden, gin.H{
-			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+			"message":            "You will have exceeded your subscribers limit with this import, please upgrade to a bigger plan or contact support.",
+			"your_limit":         limitCount,
+			"to_be_exceeded_for": limitCount + int64(csvCount) - u.Boundaries.SubscribersLimit,
 		})
 	}
 
