@@ -115,6 +115,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	id := ksuid.New()
+
 	for {
 		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
@@ -141,8 +143,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}).WithError(err).Error("unable to fetch subscribers.")
 			return nil
 		}
-
-		id := ksuid.New()
 
 		for _, s := range subs {
 			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)

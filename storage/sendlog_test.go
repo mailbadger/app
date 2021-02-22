@@ -51,14 +51,14 @@ func TestSendLogs(t *testing.T) {
 		},
 	}
 
-	uid := ksuid.New()
+	id := ksuid.New()
 
 	// test insert opens
 	for _, sl := range sendLogs {
-		sl.ID = uid.Next()
+		sl.ID = id
 		err := store.CreateSendLog(sl)
 		assert.Nil(t, err)
-		uid = uid.Next()
+		id = id.Next()
 	}
 
 	n, err := store.CountLogsByStatus(entities.SendLogStatusFailed)

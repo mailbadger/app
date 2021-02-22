@@ -90,9 +90,9 @@ type Storage interface {
 	DeleteToken(token string) error
 
 	CreateSendLog(l *entities.SendLog) error
-	CountLogsByUUID(uid string) (int, error)
+	CountLogsByUUID(id string) (int, error)
 	CountLogsByStatus(status string) (int, error)
-	GetSendLogByUUID(uid string) (*entities.SendLog, error)
+	GetSendLogByUUID(id string) (*entities.SendLog, error)
 
 	CreateBounce(b *entities.Bounce) error
 	CreateComplaint(c *entities.Complaint) error
@@ -529,6 +529,6 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 }
 
 // GetSendLogByUUID returns send log with specified uuid
-func GetSendLogByUUID(c context.Context, uid string) (*entities.SendLog, error) {
-	return GetFromContext(c).GetSendLogByUUID(uid)
+func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
+	return GetFromContext(c).GetSendLogByUUID(id)
 }
