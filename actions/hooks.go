@@ -233,7 +233,6 @@ func HandleHook(c *gin.Context) {
 				}).WithError(err).Error("Unable to create click record.")
 			}
 		}
-
 	case emails.OpenType:
 		if msg.Open == nil {
 			logger.From(c).WithField("message", msg).Error("OpenType: open is nil.")

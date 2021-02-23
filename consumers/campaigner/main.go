@@ -4,15 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime/trace"
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/nsqio/go-nsq"
+	"github.com/pkg/profile"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/consumers"
@@ -34,89 +37,123 @@ type MessageHandler struct {
 
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
-func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
+func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
+	ctx, task := trace.NewTask(context.Background(), "handleMessage")
+	defer task.End()
+
 	if len(m.Body) == 0 {
 		logrus.Error("Empty message, unable to proceed.")
 		return nil
 	}
 
-	msg := new(entities.CampaignerTopicParams)
 	svc := campaigns.New(h.s, h.p)
 
-	err := json.Unmarshal(m.Body, msg)
+	msg := new(entities.CampaignerTopicParams)
+	trace.WithRegion(ctx, "unmarshalBody", func() {
+		err = json.Unmarshal(m.Body, msg)
+	})
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).WithError(err).Error("Malformed JSON message.")
+		logrus.WithField("body", string(m.Body)).WithError(err).Error("malformed JSON message")
 		return nil
 	}
 
-	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
+	logEntry := logrus.WithFields(logrus.Fields{
+		"campaign_id": msg.CampaignID,
+		"user_id":     msg.UserID,
+	})
+
+	var campaign *entities.Campaign
+	trace.WithRegion(ctx, "getCampaign", func() {
+		campaign, err = h.s.GetCampaign(msg.CampaignID, msg.UserID)
+	})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": msg.CampaignID,
-				"user_id":     msg.UserID,
-			}).WithError(err).Warn("unable to find campaign")
+			logEntry.WithError(err).Warn("unable to find campaign")
 			return nil
 		}
-		logrus.WithFields(logrus.Fields{
-			"campaign_id": msg.CampaignID,
-			"user_id":     msg.UserID,
-		}).WithError(err).Error("unable to find campaign")
+		logEntry.WithError(err).Error("unable to find campaign")
 		return err
 	}
 	if campaign.Status != entities.StatusDraft {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     msg.UserID,
-				"campaign_id": msg.CampaignID,
-			}).Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
+		logEntry.WithError(err).Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
 		return nil
 	}
 
-	campaign.StartedAt.SetValid(time.Now().UTC())
-	campaign.Status = entities.StatusSending
-	err = h.s.UpdateCampaign(campaign)
+	trace.WithRegion(ctx, "setStatusSending", func() {
+		campaign.StartedAt.SetValid(time.Now().UTC())
+		campaign.Status = entities.StatusSending
+		err = h.s.UpdateCampaign(campaign)
+	})
 	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     campaign.UserID,
-				"campaign_id": campaign.ID,
-				"status":      campaign.Status,
-			}).Error("unable to update campaign")
+		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSending)
+		return err
+	}
+
+	var parsedTemplate *entities.CampaignTemplateData
+	trace.WithRegion(ctx, "parseTemplate", func() {
+		parsedTemplate, err = h.templatesvc.ParseTemplate(context.Background(), campaign.TemplateID, msg.UserID)
+	})
+	if err != nil {
+		logEntry.WithField("template_id", campaign.TemplateID).WithError(err).Error("unable to prepare campaign template data")
+
+		trace.WithRegion(ctx, "setStatusFailed", func() {
+			campaign.Status = entities.StatusFailed
+			err = h.s.UpdateCampaign(campaign)
+		})
+		if err != nil {
+			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
+		}
 		return nil
 	}
 
-	// fetching subs that are active and that have not been blacklisted
+	trace.WithRegion(ctx, "processSubscribers", func() {
+		err = processSubscribers(msg, campaign, parsedTemplate, h.s, svc, logEntry)
+	})
+	if err != nil {
+		//TODO return wrapped errors and do the logging here instead of inside processSubscribers
+		trace.WithRegion(ctx, "setStatusFailed", func() {
+			campaign.Status = entities.StatusFailed
+			campaign.CompletedAt.SetValid(time.Now().UTC())
+			err = h.s.UpdateCampaign(campaign)
+		})
+		if err != nil {
+			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
+			return nil
+		}
+		return nil
+	}
+
+	trace.WithRegion(ctx, "setStatusSent", func() {
+		campaign.Status = entities.StatusSent
+		campaign.CompletedAt.SetValid(time.Now().UTC())
+		err = h.s.UpdateCampaign(campaign)
+	})
+	if err != nil {
+		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
+		return nil
+	}
+
+	return nil
+}
+
+func processSubscribers(
+	msg *entities.CampaignerTopicParams,
+	campaign *entities.Campaign,
+	parsedTemplate *entities.CampaignTemplateData,
+	store storage.Storage,
+	svc campaigns.Service,
+	logEntry *logrus.Entry,
+) error {
 	var (
 		timestamp time.Time
 		nextID    int64
 		limit     int64 = 1000
 	)
 
-	parsedTemplate, err := h.templatesvc.ParseTemplate(context.Background(), campaign.TemplateID, msg.UserID)
-	if err != nil {
-		logrus.WithError(err).
-			WithFields(logrus.Fields{
-				"user_id":     campaign.UserID,
-				"template_id": campaign.TemplateID,
-			}).Error("unable to prepare campaign template data")
-
-		campaign.Status = entities.StatusFailed
-		err = h.s.UpdateCampaign(campaign)
-		if err != nil {
-			logrus.WithError(err).
-				WithFields(logrus.Fields{
-					"user_id":     campaign.UserID,
-					"campaign_id": campaign.ID,
-					"status":      campaign.Status,
-				}).Error("unable to update campaign")
-			return nil
-		}
-		return nil
-	}
+	id := ksuid.New()
 
 	for {
-		subs, err := h.s.GetDistinctSubscribersBySegmentIDs(
+		subs, err := store.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
 			msg.UserID,
 			false,
@@ -127,65 +164,60 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logrus.WithFields(logrus.Fields{
-					"user_id":     msg.UserID,
-					"segment_ids": msg.SegmentIDs,
-				}).WithError(err).Warn("unable to fetch subscribers.")
-				return nil
+				logEntry.WithField("segment_ids", msg.SegmentIDs).WithError(err).Warn("unable to fetch subscribers")
+				return err
 			}
-			logrus.WithFields(logrus.Fields{
-				"user_id":     msg.UserID,
-				"segment_ids": msg.SegmentIDs,
-			}).WithError(err).Error("unable to fetch subscribers.")
-			return nil
+			logEntry.WithField("segment_ids", msg.SegmentIDs).WithError(err).Error("unable to fetch subscribers")
+			return err
 		}
+
 		for _, s := range subs {
-			uuid := uuid.New().String()
-			params, err := svc.PrepareSubscriberEmailData(s, uuid, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
+			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UUID:         uuid,
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
-				err := h.s.CreateSendLog(sendLog)
+				err := store.CreateSendLog(sendLog)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
+					logEntry.WithFields(logrus.Fields{
+						"id":            id.String(),
+						"segment_ids":   msg.SegmentIDs,
 						"subscriber_id": s.ID,
-						"campaign_id":   msg.CampaignID,
-						"user_id":       msg.UserID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
-				return nil
+				return err
 			}
+
 			err = svc.PublishSubscriberEmailParams(params)
 			if err != nil {
 				sendLog := &entities.SendLog{
-					UUID:         uuid,
+					ID:           id,
 					UserID:       msg.UserID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
 				}
-				err := h.s.CreateSendLog(sendLog)
+				err := store.CreateSendLog(sendLog)
 				if err != nil {
-					logrus.WithFields(logrus.Fields{
+					logEntry.WithFields(logrus.Fields{
+						"id":            id.String(),
+						"segment_ids":   msg.SegmentIDs,
 						"subscriber_id": s.ID,
-						"uuid":          uuid,
-						"campaign_id":   msg.CampaignID,
-						"user_id":       msg.UserID,
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
-				return nil
+				return err
 			}
 
+			id = id.Next()
 		}
 
-		if len(subs) == 0 {
+		if len(subs) < 1000 {
 			break
 		}
 
@@ -193,27 +225,29 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		lastSub := subs[len(subs)-1]
 		nextID = lastSub.ID
 		timestamp = lastSub.CreatedAt
-
-		// exit the loop if next batch is smaller then 1k -> it's the last batch of 1k.
-		if len(subs) < 1000 {
-			break
-		}
-	}
-
-	campaign.Status = entities.StatusSent
-	campaign.CompletedAt.SetValid(time.Now().UTC())
-	err = h.s.UpdateCampaign(campaign)
-	if err != nil {
-		logrus.WithError(err).
-			WithField("campaign", campaign).
-			Error("unable to update campaign")
-		return nil
 	}
 
 	return nil
 }
 
 func main() {
+	mode := flag.String("profile.mode", "", "enable profiling mode, one of [cpu, mem, mutex, block, trace]")
+	flag.Parse()
+	switch *mode {
+	case "cpu":
+		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	case "mem":
+		defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+	case "mutex":
+		defer profile.Start(profile.MutexProfile, profile.ProfilePath(".")).Stop()
+	case "block":
+		defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
+	case "trace":
+		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
+	default:
+		// do nothing
+	}
+
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		lvl = logrus.InfoLevel
