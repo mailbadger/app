@@ -22,7 +22,6 @@ import (
 type Service interface {
 	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
 	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64) error
-	DeactivateSubscriber(ctx context.Context, userID int64, email string) error
 }
 
 type service struct {
@@ -184,19 +183,4 @@ func (s *service) RemoveSubscribersFromFile(
 	}
 
 	return
-}
-
-func (s *service) DeactivateSubscriber(ctx context.Context, userID int64, email string) error {
-
-	err := s.db.DeactivateSubscriber(userID, email)
-	if err != nil {
-		return fmt.Errorf("SubscriberService: deactivate subscriber: %w", err)
-	}
-
-	err = s.db.CreateUnsubscribeEvent(&entities.UnsubscribeEvents{Email: email})
-	if err != nil {
-		return fmt.Errorf("SubscriberService: create unsubscribed subscriber: %w", err)
-	}
-
-	return nil
 }

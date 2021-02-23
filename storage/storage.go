@@ -68,13 +68,12 @@ type Storage interface {
 	) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
-	DeactivateSubscriber(userID int64, email string) error
+	DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvents) error
 	DeleteSubscriber(int64, int64) error
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
-	CreateUnsubscribeEvent(us *entities.UnsubscribeEvents) error
 
 	GetAPIKeys(userID int64) ([]*entities.APIKey, error)
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -363,8 +362,8 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 }
 
 // DeactivateSubscriber blacklists a Subscriber entity by the given email.
-func DeactivateSubscriber(c context.Context, userID int64, email string) error {
-	return GetFromContext(c).DeactivateSubscriber(userID, email)
+func DeactivateSubscriber(c context.Context, userID int64, us *entities.UnsubscribeEvents) error {
+	return GetFromContext(c).DeactivateSubscriber(userID, us)
 }
 
 // DeleteSubscriber deletes a Subscriber entity by the given id.
@@ -531,9 +530,4 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 // GetSendLogByUUID returns send log with specified uuid
 func GetSendLogByUUID(c context.Context, uuid string) (*entities.SendLog, error) {
 	return GetFromContext(c).GetSendLogByUUID(uuid)
-}
-
-// CreateUnsubscribeEvent creates a new record for unsubscribed subscriber.
-func CreateUnsubscribeEvent(c context.Context, us *entities.UnsubscribeEvents) error {
-	return GetFromContext(c).CreateUnsubscribeEvent(us)
 }

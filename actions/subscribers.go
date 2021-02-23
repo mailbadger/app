@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	 "github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -251,7 +251,6 @@ func DeleteSubscriber(c *gin.Context) {
 }
 
 func PostUnsubscribe(c *gin.Context) {
-	svc := subscribers.New(nil, storage.GetFromContext(c))
 	body := &params.PostUnsubscribe{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -314,7 +313,7 @@ func PostUnsubscribe(c *gin.Context) {
 		return
 	}
 
-	err = svc.DeactivateSubscriber(c, u.ID, sub.Email)
+	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvents{Email: body.Email})
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": body.Email,
@@ -361,7 +360,7 @@ func ImportSubscribers(c *gin.Context) {
 	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		svc := subscribers.New(client,nil)
+		svc := subscribers.New(client, nil)
 		err := svc.ImportSubscribersFromFile(ctx, filename, userID, segs)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -396,7 +395,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := subscribers.New(client,nil)
+		svc := subscribers.New(client, nil)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
