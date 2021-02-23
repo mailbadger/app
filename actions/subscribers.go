@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
@@ -313,7 +314,7 @@ func PostUnsubscribe(c *gin.Context) {
 		return
 	}
 
-	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvents{Email: body.Email})
+	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvents{ID: ksuid.New(), Email: body.Email})
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": body.Email,

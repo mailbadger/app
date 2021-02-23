@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -22,28 +23,28 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 
 	store := From(db)
 	now := time.Now().UTC()
+	id := ksuid.New()
 
 	unsubscribeEvents := []entities.UnsubscribeEvents{
 		{
-			ID:        1,
 			Email:     "email1@bla.com",
 			CreatedAt: now,
 		},
 		{
-			ID:        2,
 			Email:     "email2@bla.com",
 			CreatedAt: now,
 		},
 		{
-			ID:        3,
 			Email:     "email3@bla.com",
 			CreatedAt: now,
 		},
 	}
 	// test insert opens
-	for i := range unsubscribeEvents {
+	for i, k := range unsubscribeEvents {
+		k.ID = id
 		err := store.CreateUnsubscribeEvent(&unsubscribeEvents[i])
 		assert.Nil(t, err)
+		id.Next()
 	}
 
 }

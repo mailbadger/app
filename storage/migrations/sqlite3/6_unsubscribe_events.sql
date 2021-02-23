@@ -2,9 +2,9 @@
 
 CREATE TABLE IF NOT EXISTS `unsubscribe_events`
 (
-    `id`         integer primary key autoincrement,
+    `id`         varbinary primary key,
     `email`      varchar(191) NOT NULL,
-    `created_at` datetime  NOT NULL
+    `created_at` datetime     NOT NULL
 );
 
 -- +migrate Down
