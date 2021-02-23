@@ -25,7 +25,7 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 	now := time.Now().UTC()
 	id := ksuid.New()
 
-	unsubscribeEvents := []entities.UnsubscribeEvents{
+	unsubscribeEvents := []*entities.UnsubscribeEvents{
 		{
 			Email:     "email1@bla.com",
 			CreatedAt: now,
@@ -42,9 +42,9 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 	// test insert opens
 	for i, k := range unsubscribeEvents {
 		k.ID = id
-		err := store.CreateUnsubscribeEvent(&unsubscribeEvents[i])
+		err := store.CreateUnsubscribeEvent(unsubscribeEvents[i])
 		assert.Nil(t, err)
-		id.Next()
+		id = id.Next()
 	}
 
 }

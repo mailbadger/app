@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS `unsubscribe_events`
 (
-    `id`         varbinary primary key,
+    `id`         varchar(27) primary key,
     `email`      varchar(191) NOT NULL,
     `created_at` datetime     NOT NULL
 );
