@@ -182,7 +182,6 @@ func processSubscribers(
 					Status:       entities.SendLogStatusFailed,
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
-
 				err := store.CreateSendLog(sendLog)
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
