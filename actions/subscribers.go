@@ -380,30 +380,7 @@ func ImportSubscribers(c *gin.Context) {
 		}
 	}
 
-	client, err := awss3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
-	)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to import subscribers. Please try again.",
-		})
-		return
-	}
-	res, err := client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, body.Filename)),
-	})
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to import subscribers. Please try again.",
-		})
-		return
-	}
-
-	limitExceeded, limitCount, err := boundariesSvc.SubscribersLimitExceeded(u)
+	limitExceeded, count, err := boundariesSvc.SubscribersLimitExceeded(u)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
@@ -416,6 +393,30 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
+	client, err := awss3.NewS3Client(
+		os.Getenv("AWS_S3_ACCESS_KEY"),
+		os.Getenv("AWS_S3_SECRET_KEY"),
+		os.Getenv("AWS_S3_REGION"),
+	)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	res, err := client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, body.Filename)),
+	})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
 	csvCount, err := utils.CSVLineCounter(res.Body)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -423,11 +424,11 @@ func ImportSubscribers(c *gin.Context) {
 		})
 	}
 
-	if limitCount+int64(csvCount) >= u.Boundaries.SubscribersLimit {
+	if count+int64(csvCount) > u.Boundaries.SubscribersLimit {
 		c.JSON(http.StatusForbidden, gin.H{
 			"message":            "You will have exceeded your subscribers limit with this import, please upgrade to a bigger plan or contact support.",
-			"your_limit":         limitCount,
-			"to_be_exceeded_for": limitCount + int64(csvCount) - u.Boundaries.SubscribersLimit,
+			"your_limit":         count,
+			"to_be_exceeded_for": count + int64(csvCount) - u.Boundaries.SubscribersLimit,
 		})
 	}
 

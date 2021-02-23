@@ -9,13 +9,15 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/nsqio/go-nsq"
+	"github.com/segmentio/ksuid"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
-	"github.com/nsqio/go-nsq"
-	"github.com/sirupsen/logrus"
 )
 
 // MessageHandler implements the nsq handler interface.
@@ -73,7 +75,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	res, err := client.SendBulkTemplatedEmail(msg.Input)
-
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -112,9 +113,11 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
+	id := ksuid.New()
+
 	for _, s := range res.Status {
 		err := h.s.CreateSendLog(&entities.SendLog{
-			UUID:       msg.UUID,
+			ID:         id,
 			UserID:     msg.UserID,
 			CampaignID: msg.CampaignID,
 			Status:     *s.Status,
@@ -126,6 +129,8 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				"send_bulk_status": s.GoString(),
 			}).WithError(err).Error("Unable to add log for sent emails result.")
 		}
+
+		id = id.Next()
 	}
 
 	return nil

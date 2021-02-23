@@ -199,12 +199,12 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `send_logs` (
-  `id`              bigint unsigned primary key AUTO_INCREMENT NOT NULL,
-  `uuid`            varchar(36) unique NOT NULL,
+  `id`              varbinary(27) primary key NOT NULL,
   `user_id`         integer unsigned NOT NULL,
   `subscriber_id`   integer unsigned NOT NULL,
   `campaign_id`     integer unsigned NOT NULL,
   `status`          varchar(191) NOT NULL,
+  `message_id`      varchar(191) NOT NULL,
   `description`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
