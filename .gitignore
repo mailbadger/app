@@ -24,6 +24,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
+*.pprof
 *.db
 
 bin

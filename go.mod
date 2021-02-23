@@ -8,7 +8,6 @@ require (
 	github.com/cbroglie/mustache v1.2.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
-	github.com/fatih/structs v1.1.0 // indirect; indirectg
 	github.com/gavv/httpexpect/v2 v2.1.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
@@ -32,6 +31,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351

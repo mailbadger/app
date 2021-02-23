@@ -62,7 +62,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"id":           msg.ID.String(),
+		"id":            msg.ID.String(),
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
@@ -104,7 +104,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		err = h.storage.CreateSendLog(sendLog)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"id":          msg.ID.String(),
+				"id":            msg.ID.String(),
 				"user_id":       msg.UserID,
 				"campaign_id":   msg.CampaignID,
 				"subscriber_id": msg.SubscriberID,
@@ -159,7 +159,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	err = h.storage.CreateSendLog(sendLog)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
-			"id":          msg.ID.String(),
+			"id":            msg.ID.String(),
 			"user_id":       msg.UserID,
 			"campaign_id":   msg.CampaignID,
 			"subscriber_id": msg.SubscriberID,
