@@ -10,13 +10,11 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/jinzhu/gorm"
 
-	"github.com/mailbadger/app/storage"
-
-	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 )
 
 const ActionImport = "import"
