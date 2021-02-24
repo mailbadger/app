@@ -426,7 +426,7 @@ func ImportSubscribers(c *gin.Context) {
 
 	if count+int64(csvCount) > u.Boundaries.SubscribersLimit {
 		c.JSON(http.StatusForbidden, gin.H{
-			"message":            "You will have exceeded your subscribers limit with this import, please upgrade to a bigger plan or contact support.",
+			"message":            "With this import you will exceed the limit of your subscribers, update your plan or contact the support team.",
 			"your_limit":         count,
 			"to_be_exceeded_for": count + int64(csvCount) - u.Boundaries.SubscribersLimit,
 		})
