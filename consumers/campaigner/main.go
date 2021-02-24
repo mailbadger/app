@@ -63,10 +63,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		"segment_ids": msg.SegmentIDs,
 	})
 
-	var campaign *entities.Campaign
-	trace.WithRegion(ctx, "getCampaign", func() {
-		campaign, err = h.s.GetCampaign(msg.CampaignID, msg.UserID)
-	})
+	campaign, err := getCampaign(ctx, h.s, msg.CampaignID, msg.UserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logEntry.WithError(err).Warn("unable to find campaign")
@@ -81,11 +78,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return nil
 	}
 
-	trace.WithRegion(ctx, "setStatusSending", func() {
-		campaign.StartedAt.SetValid(time.Now().UTC())
-		campaign.Status = entities.StatusSending
-		err = h.s.UpdateCampaign(campaign)
-	})
+	err = setStatusSending(ctx, h.s, campaign)
 	if err != nil {
 		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSending)
 		return err
@@ -93,45 +86,31 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 
 	logEntry.WithField("template_id", campaign.TemplateID)
 
-	var parsedTemplate *entities.CampaignTemplateData
-	trace.WithRegion(ctx, "parseTemplate", func() {
-		parsedTemplate, err = h.templatesvc.ParseTemplate(context.Background(), campaign.TemplateID, msg.UserID)
-	})
+	parsedTemplate, err := parseTemplate(ctx, h.templatesvc, campaign.TemplateID, msg.UserID)
 	if err != nil {
 		logEntry.WithError(err).Error("unable to prepare campaign template data")
 
-		trace.WithRegion(ctx, "setStatusFailed", func() {
-			campaign.Status = entities.StatusFailed
-			err = h.s.UpdateCampaign(campaign)
-		})
+		err = setStatusFailed(ctx, h.s, campaign)
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 		}
+
 		return nil
 	}
 
-	trace.WithRegion(ctx, "processSubscribers", func() {
-		err = processSubscribers(msg, campaign, parsedTemplate, h.s, svc, logEntry)
-	})
+	err = processSubscribers(ctx, msg, campaign, parsedTemplate, h.s, svc, logEntry)
 	if err != nil {
 		// TODO return wrapped errors and do the logging here instead of inside processSubscribers
-		trace.WithRegion(ctx, "setStatusFailed", func() {
-			campaign.Status = entities.StatusFailed
-			campaign.CompletedAt.SetValid(time.Now().UTC())
-			err = h.s.UpdateCampaign(campaign)
-		})
+		err = setStatusFailed(ctx, h.s, campaign)
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 			return nil
 		}
+
 		return nil
 	}
 
-	trace.WithRegion(ctx, "setStatusSent", func() {
-		campaign.Status = entities.StatusSent
-		campaign.CompletedAt.SetValid(time.Now().UTC())
-		err = h.s.UpdateCampaign(campaign)
-	})
+	err = setStatusSent(ctx, h.s, campaign)
 	if err != nil {
 		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
 		return nil
@@ -140,7 +119,29 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	return nil
 }
 
+func getCampaign(ctx context.Context, store storage.Storage, userID, campaignID int64) (*entities.Campaign, error) {
+	defer trace.StartRegion(ctx, "getCampaign").End()
+
+	return store.GetCampaign(campaignID, userID)
+}
+
+func setStatusSending(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
+	defer trace.StartRegion(ctx, "setStatusSending").End()
+
+	campaign.StartedAt.SetValid(time.Now().UTC())
+	campaign.Status = entities.StatusSending
+
+	return store.UpdateCampaign(campaign)
+}
+
+func parseTemplate(ctx context.Context, templatesvc templates.Service, userID, templateID int64) (*entities.CampaignTemplateData, error) {
+	defer trace.StartRegion(ctx, "getCampaign").End()
+
+	return templatesvc.ParseTemplate(ctx, templateID, userID)
+}
+
 func processSubscribers(
+	ctx context.Context,
 	msg *entities.CampaignerTopicParams,
 	campaign *entities.Campaign,
 	parsedTemplate *entities.CampaignTemplateData,
@@ -148,6 +149,8 @@ func processSubscribers(
 	svc campaigns.Service,
 	logEntry *logrus.Entry,
 ) error {
+	defer trace.StartRegion(ctx, "processSubscribers").End()
+
 	var (
 		timestamp time.Time
 		nextID    int64
@@ -176,6 +179,8 @@ func processSubscribers(
 		}
 
 		for _, s := range subs {
+			id = id.Next()
+
 			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
 			if err != nil {
 				logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to prepare subscriber email data")
@@ -223,8 +228,6 @@ func processSubscribers(
 
 				continue
 			}
-
-			id = id.Next()
 		}
 
 		if len(subs) < 1000 {
@@ -238,6 +241,22 @@ func processSubscribers(
 	}
 
 	return nil
+}
+
+func setStatusFailed(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
+	defer trace.StartRegion(ctx, "setStatusFailed").End()
+
+	campaign.Status = entities.StatusFailed
+	campaign.CompletedAt.SetValid(time.Now().UTC())
+	return store.UpdateCampaign(campaign)
+}
+
+func setStatusSent(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
+	defer trace.StartRegion(ctx, "setStatusSent").End()
+
+	campaign.Status = entities.StatusSent
+	campaign.CompletedAt.SetValid(time.Now().UTC())
+	return store.UpdateCampaign(campaign)
 }
 
 func main() {
