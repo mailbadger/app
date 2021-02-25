@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func CSVLineCounter(r io.Reader) (int, error) {
+func CountLines(r io.Reader) (int, error) {
 	buf := make([]byte, 32*1024)
 	count := 0
 	lineSep := []byte{'\n'}
