@@ -9,7 +9,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/jinzhu/gorm"
 
@@ -40,16 +39,16 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
 	userID int64,
 	segments []entities.Segment,
-	res *s3.GetObjectOutput,
+	r io.ReadCloser,
 ) (err error) {
 
 	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
+		if cerr := r.Close(); cerr != nil {
 			err = cerr
 		}
 	}()
 
-	reader := csv.NewReader(res.Body)
+	reader := csv.NewReader(r)
 	header, err := reader.Read()
 	if err == io.EOF {
 		return fmt.Errorf("importer: empty file: %w", err)
