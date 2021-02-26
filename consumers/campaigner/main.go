@@ -63,7 +63,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		"segment_ids": msg.SegmentIDs,
 	})
 
-	campaign, err := getCampaign(ctx, h.s, msg.CampaignID, msg.UserID)
+	campaign, err := getCampaign(ctx, h.s, msg.UserID, msg.CampaignID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logEntry.WithError(err).Warn("unable to find campaign")
@@ -86,7 +86,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 
 	logEntry.WithField("template_id", campaign.TemplateID)
 
-	parsedTemplate, err := parseTemplate(ctx, h.templatesvc, campaign.TemplateID, msg.UserID)
+	parsedTemplate, err := parseTemplate(ctx, h.templatesvc, msg.UserID, campaign.TemplateID)
 	if err != nil {
 		logEntry.WithError(err).Error("unable to prepare campaign template data")
 
