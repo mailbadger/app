@@ -385,6 +385,7 @@ func ImportSubscribers(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
 		})
+		return
 	}
 	if limitExceeded {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -422,6 +423,7 @@ func ImportSubscribers(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
 		})
+		return
 	}
 
 	if count+int64(csvCount) > u.Boundaries.SubscribersLimit {
@@ -430,18 +432,19 @@ func ImportSubscribers(c *gin.Context) {
 			"total":              count,
 			"to_be_exceeded_for": count + int64(csvCount) - u.Boundaries.SubscribersLimit,
 		})
+		return
 	}
 
-	go func(ctx context.Context, user *entities.User, segs []entities.Segment, res *s3.GetObjectOutput) {
+	go func(ctx context.Context, userID int64, segs []entities.Segment, res *s3.GetObjectOutput) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, user, segs, res)
+		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, res)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": body.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, u, segs, res)
+	}(c, u.ID, segs, res)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",

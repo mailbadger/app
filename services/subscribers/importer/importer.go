@@ -38,7 +38,7 @@ func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
 
 func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
-	user *entities.User,
+	userID int64,
 	segments []entities.Segment,
 	res *s3.GetObjectOutput,
 ) (err error) {
@@ -80,7 +80,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 		email := strings.TrimSpace(line[0])
 		name := strings.TrimSpace(line[1])
 
-		_, err = storage.GetSubscriberByEmail(ctx, email, user.ID)
+		_, err = storage.GetSubscriberByEmail(ctx, email, userID)
 		if err == nil {
 			continue
 		} else if !gorm.IsRecordNotFoundError(err) {
@@ -88,7 +88,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 		}
 
 		s := &entities.Subscriber{
-			UserID:   user.ID,
+			UserID:   userID,
 			Email:    email,
 			Name:     name,
 			Segments: segments,
