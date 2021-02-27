@@ -353,8 +353,8 @@ func ImportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 	boundariesSvc := boundaries.New(storage.GetFromContext(c))
 
-	body := &params.ImportSubscribers{}
-	err := c.ShouldBind(body)
+	reqParams := &params.ImportSubscribers{}
+	err := c.ShouldBind(reqParams)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -362,14 +362,14 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	if err := validator.Validate(body); err != nil {
+	if err := validator.Validate(reqParams); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	var segs []entities.Segment
-	if len(body.SegmentIDs) > 0 {
-		segs, err = storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
+	if len(reqParams.SegmentIDs) > 0 {
+		segs, err = storage.GetSegmentsByIDs(c, u.ID, reqParams.SegmentIDs)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
@@ -410,7 +410,7 @@ func ImportSubscribers(c *gin.Context) {
 
 	res, err := client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, body.Filename)),
+		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, reqParams.Filename)),
 	})
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
@@ -429,19 +429,19 @@ func ImportSubscribers(c *gin.Context) {
 
 	if count+int64(csvCount) > u.Boundaries.SubscribersLimit {
 		c.JSON(http.StatusForbidden, gin.H{
-			"message":            "With this import you will exceed the limit of your subscribers, update your plan or contact the support team.",
-			"total":              count,
-			"to_be_exceeded_for": count + int64(csvCount) - u.Boundaries.SubscribersLimit,
+			"message": "With this import you will exceed the limit of your subscribers, update your plan or contact the support team.",
+			"total":   count,
+			"count":   csvCount,
 		})
 		return
 	}
 
-	go func(ctx context.Context, userID int64, segs []entities.Segment, r io.Reader) {
+	go func(ctx context.Context, userID int64, segs []entities.Segment, r io.ReadCloser) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, res.Body)
+		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
-				"filename": body.Filename,
+				"filename": reqParams.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
