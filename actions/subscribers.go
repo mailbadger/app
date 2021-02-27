@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -23,12 +24,13 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
-	awss3 "github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/services/reports"
 	"github.com/mailbadger/app/services/subscribers"
 	"github.com/mailbadger/app/storage"
 	s3storage "github.com/mailbadger/app/storage/s3"
+	"github.com/mailbadger/app/utils"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -103,6 +105,26 @@ func PostSubscriber(c *gin.Context) {
 
 	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	user := middleware.GetUser(c)
+
+	boundariesvc := boundaries.New(storage.GetFromContext(c))
+
+	limitexceeded, _, err := boundariesvc.SubscribersLimitExceeded(user)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable to check subscribers limit for user.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to check subscribers limit. Please try again.",
+		})
+		return
+	}
+
+	if limitexceeded {
+		logger.From(c).Info("User has exceeded his subscribers limit.")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+		})
 		return
 	}
 
@@ -329,9 +351,10 @@ func PostUnsubscribe(c *gin.Context) {
 
 func ImportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
+	boundariesSvc := boundaries.New(storage.GetFromContext(c))
 
-	body := &params.ImportSubscribers{}
-	err := c.ShouldBind(body)
+	reqParams := &params.ImportSubscribers{}
+	err := c.ShouldBind(reqParams)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -339,14 +362,14 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	if err := validator.Validate(body); err != nil {
+	if err := validator.Validate(reqParams); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
 	var segs []entities.Segment
-	if len(body.SegmentIDs) > 0 {
-		segs, err = storage.GetSegmentsByIDs(c, u.ID, body.SegmentIDs)
+	if len(reqParams.SegmentIDs) > 0 {
+		segs, err = storage.GetSegmentsByIDs(c, u.ID, reqParams.SegmentIDs)
 		if err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Invalid data",
@@ -358,18 +381,59 @@ func ImportSubscribers(c *gin.Context) {
 		}
 	}
 
-	s3Client := s3storage.GetFromContext(c)
+	limitExceeded, count, err := boundariesSvc.SubscribersLimitExceeded(u)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+	if limitExceeded {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your subscribers limit, please upgrade to a bigger plan or contact support.",
+		})
+		return
+	}
 
-	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, segs []entities.Segment) {
-		svc := subscribers.New(client, nil)
-		err := svc.ImportSubscribersFromFile(ctx, filename, userID, segs)
+	s3Client := s3storage.GetFromContext(c)
+	res, err := s3Client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", u.ID, reqParams.Filename)),
+	})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	csvCount, err := utils.CountLines(res.Body)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to import subscribers. Please try again.",
+		})
+		return
+	}
+
+	if count+int64(csvCount) > u.Boundaries.SubscribersLimit {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "With this import you will exceed the limit of your subscribers, update your plan or contact the support team.",
+			"total":   count,
+			"count":   csvCount,
+		})
+		return
+	}
+
+	go func(ctx context.Context, filename string, userID int64, segs []entities.Segment, r io.ReadCloser) {
+		svc := subscribers.New(s3Client, nil)
+		err := svc.ImportSubscribersFromFile(ctx, filename, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
-				"filename": filename,
+				"filename": reqParams.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, s3Client, body.Filename, u.ID, segs)
+	}(c, reqParams.Filename, u.ID, segs, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -413,20 +477,9 @@ func BulkRemoveSubscribers(c *gin.Context) {
 func ExportSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
-	s3, err := awss3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
-	)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Import subs: unable to create s3 client.")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to export subscribers. Please try again.",
-		})
-		return
-	}
+	s3Client := s3storage.GetFromContext(c)
 
-	exporter, err := exporters.NewExporter("subscribers", s3)
+	exporter, err := exporters.NewExporter("subscribers", s3Client)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable do create subscribers exporter")
 		c.JSON(http.StatusInternalServerError, gin.H{

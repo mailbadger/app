@@ -30,8 +30,8 @@ type service struct {
 }
 
 var (
-	ErrInvalidColumnsNum = errors.New("invalid number of columns")
-	ErrInvalidFormat     = errors.New("csv file not formatted properly")
+	ErrInvalidColumnsNum = errors.New("importer: invalid number of columns")
+	ErrInvalidFormat     = errors.New("importer: csv file not formatted properly")
 )
 
 func New(client s3iface.S3API, db storage.Storage) *service {
@@ -43,21 +43,16 @@ func (s *service) ImportSubscribersFromFile(
 	filename string,
 	userID int64,
 	segments []entities.Segment,
+	r io.ReadCloser,
 ) (err error) {
-	res, err := s.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
-	})
-	if err != nil {
-		return fmt.Errorf("importer: get object: %w", err)
-	}
+
 	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
+		if cerr := r.Close(); cerr != nil {
 			err = cerr
 		}
 	}()
 
-	reader := csv.NewReader(res.Body)
+	reader := csv.NewReader(r)
 	header, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {
