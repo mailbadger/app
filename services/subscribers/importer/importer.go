@@ -7,16 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/jinzhu/gorm"
-	"github.com/mailbadger/app/storage"
-
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/jinzhu/gorm"
+
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 )
 
 const ActionImport = "import"
@@ -40,27 +37,21 @@ func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
 
 func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
-	filename string,
 	userID int64,
 	segments []entities.Segment,
+	r io.ReadCloser,
 ) (err error) {
-	res, err := i.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
-	})
-	if err != nil {
-		return fmt.Errorf("importer: get object: %w", err)
-	}
+
 	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
+		if cerr := r.Close(); cerr != nil {
 			err = cerr
 		}
 	}()
 
-	reader := csv.NewReader(res.Body)
+	reader := csv.NewReader(r)
 	header, err := reader.Read()
 	if err == io.EOF {
-		return fmt.Errorf("importer: empty file '%s': %w", filename, err)
+		return fmt.Errorf("importer: empty file: %w", err)
 	}
 	if err != nil {
 		return fmt.Errorf("importer: read header: %w", err)
