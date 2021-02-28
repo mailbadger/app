@@ -1,24 +1,24 @@
 -- +migrate Up
 
-CREATE TABLE IF NOT EXISTS `boundaries` (
-  `id`                         integer primary key autoincrement,
-  `type`                       varchar(191) not null,
-  `stats_retention`            integer not null,
-  `subscribers_limit`          integer not null,
-  `campaigns_limit`            integer not null,
-  `templates_limit`            integer not null,
-  `groups_limit`               integer not null,
-  `schedule_campaigns_enabled` integer not null,
-  `saml_enabled`               integer not null,
-  `team_members_limit`         integer not null,
-  `created_at`                 datetime not null,
-  `updated_at`                 datetime not null
+CREATE TABLE IF NOT EXISTS "boundaries" (
+  "id"                         integer primary key autoincrement,
+  "type"                       varchar(191) not null,
+  "stats_retention"            integer not null,
+  "subscribers_limit"          integer not null,
+  "campaigns_limit"            integer not null,
+  "templates_limit"            integer not null,
+  "groups_limit"               integer not null,
+  "schedule_campaigns_enabled" integer not null,
+  "saml_enabled"               integer not null,
+  "team_members_limit"         integer not null,
+  "created_at"                 datetime not null,
+  "updated_at"                 datetime not null
 );
 
-INSERT INTO "boundaries" (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`)
+INSERT INTO "boundaries" ("type", "stats_retention", "subscribers_limit", "campaigns_limit", "templates_limit", "groups_limit", "schedule_campaigns_enabled", "saml_enabled", "team_members_limit", "created_at", "updated_at")
 VALUES ("nolimit", 0, 0, 0, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
 
-INSERT INTO "boundaries" (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`)
+INSERT INTO "boundaries" ("type", "stats_retention", "subscribers_limit", "campaigns_limit", "templates_limit", "groups_limit", "schedule_campaigns_enabled", "saml_enabled", "team_members_limit", "created_at", "updated_at")
 VALUES ("db_test", 0, 0, 2, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
 
 CREATE TABLE IF NOT EXISTS "users" (
@@ -65,22 +65,22 @@ CREATE INDEX IF NOT EXISTS i_role ON "roles_permissions" (role_id);
 CREATE INDEX IF NOT EXISTS i_permission ON "roles_permissions" (permission_id);
 
 CREATE TABLE IF NOT EXISTS "sessions" (
-  `id`         integer primary key autoincrement,
-  `user_id`    integer not null,
-  `session_id` varchar(191) not null,
-  `created_at` datetime not null,
-  `updated_at` datetime not null,
+  "id"         integer primary key autoincrement,
+  "user_id"    integer not null,
+  "session_id" varchar(191) not null,
+  "created_at" datetime not null,
+  "updated_at" datetime not null,
   UNIQUE("session_id")
 );
 
-CREATE TABLE IF NOT EXISTS `api_keys` (
-  `id`         integer primary key autoincrement,
-  `user_id`    integer not null,
-  `secret_key` varchar(191) not null,
-  `active`     integer not null,
-  `created_at` datetime not null,
-  `updated_at` datetime not null,
-  UNIQUE(`secret_key`)
+CREATE TABLE IF NOT EXISTS "api_keys" (
+  "id"         integer primary key autoincrement,
+  "user_id"    integer not null,
+  "secret_key" varchar(191) not null,
+  "active"     integer not null,
+  "created_at" datetime not null,
+  "updated_at" datetime not null,
+  UNIQUE("secret_key")
 );
 
 CREATE TABLE IF NOT EXISTS "ses_keys" (
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS "opens" (
   "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
-  `recipient`       varchar(191),
+  "recipient"       varchar(191),
   "ip_address"      varchar(50),
   "user_agent"      varchar(191),
   "created_at"      datetime
@@ -227,8 +227,6 @@ CREATE TABLE IF NOT EXISTS "sends" (
 
 -- +migrate Down
 
-DROP TABLE "boundaries";
-DROP TABLE "users";
 DROP TABLE "sessions";
 DROP TABLE "campaigns";
 DROP TABLE "segments";
@@ -241,3 +239,9 @@ DROP TABLE "complaints";
 DROP TABLE "deliveries";
 DROP TABLE "ses_keys";
 DROP TABLE "opens";
+DROP TABLE "boundaries";
+DROP TABLE "roles_permissions";
+DROP TABLE "users_roles";
+DROP TABLE "permissions";
+DROP TABLE "roles";
+DROP TABLE "users";
