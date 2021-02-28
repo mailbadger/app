@@ -429,7 +429,7 @@ func ImportSubscribers(c *gin.Context) {
 		err := svc.ImportSubscribersFromFile(ctx, filename, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
-				"filename": reqParams.Filename,
+				"filename": filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
