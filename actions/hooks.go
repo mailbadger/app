@@ -137,7 +137,6 @@ func HandleHook(c *gin.Context) {
 						"recipient": recipient,
 					}).WithError(err).Error("Unable to blacklist bounced recipient.")
 				}
-
 			}
 		}
 	case emails.ComplaintType:
