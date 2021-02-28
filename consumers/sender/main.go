@@ -125,20 +125,23 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
-				logEntry.WithError(aerr).Error("Unable to send bulk templated email. Message rejected.")
+				sendLog.Description = "Unable to send email, message rejected."
+				logEntry.WithError(aerr).Error("Unable to send templated email. Message rejected.")
 			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				logEntry.WithError(aerr).Error("Unable to send bulk templated email. Domain not verified.")
+				sendLog.Description = "Unable to send email, domain not verified."
+				logEntry.WithError(aerr).Error("Unable to send templated email. Domain not verified.")
 			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				logEntry.WithError(aerr).Error("Unable to send bulk templated email. Configuration set does not exist.")
+				sendLog.Description = "Unable to send email, configuration set does not exist."
+				logEntry.WithError(aerr).Error("Unable to send templated email. Configuration set does not exist.")
 			case sns.ErrCodeThrottledException:
-				logEntry.WithError(aerr).Error("Unable to send bulk templated email. The rate at which requests have been submitted for this action exceeds the limit for your account. Slow down!")
+				logEntry.WithError(aerr).Error("Unable to send templated email. The rate at which requests have been submitted for this action exceeds the limit for your account. Slow down!")
 				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
 				if rerr != nil {
 					logEntry.WithError(rerr).Error("Unable to delete cached id")
 				}
 				return err
 			case sns.ErrCodeInternalErrorException:
-				logEntry.WithError(aerr).Error("Unable to send bulk templated email. The request processing has failed because of an unknown error, exception, or failure.")
+				logEntry.WithError(aerr).Error("Unable to send templated email. The request processing has failed because of an unknown error, exception, or failure.")
 				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
 				if rerr != nil {
 					logEntry.WithError(rerr).Error("Unable to delete cached id")
