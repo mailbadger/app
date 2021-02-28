@@ -45,6 +45,40 @@ type MessageHandler struct {
 	cache   redis.Storage
 }
 
+// LogFailedMessage is for overriding the nsq.FailedMessageLogger
+// interface which handles the last failing retry
+func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
+	if len(m.Body) == 0 {
+		logrus.Error("Empty message, unable to proceed.")
+		return
+	}
+
+	msg := new(entities.SenderTopicParams)
+	err := json.Unmarshal(m.Body, msg)
+	if err != nil {
+		logrus.WithField("body", string(m.Body)).
+			WithError(err).Error("Malformed JSON message.")
+		return
+	}
+
+	err = h.storage.CreateSendLog(&entities.SendLog{
+		ID:           msg.ID,
+		UserID:       msg.UserID,
+		CampaignID:   msg.CampaignID,
+		SubscriberID: msg.SubscriberID,
+		Status:       entities.SendLogStatusFailed,
+		Description:  "Failed to send email five times",
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"id":            msg.ID.String(),
+			"user_id":       msg.UserID,
+			"campaign_id":   msg.CampaignID,
+			"subscriber_id": msg.SubscriberID,
+		}).WithError(err).Error("Unable to add log for sent emails result.")
+	}
+}
+
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
 func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
