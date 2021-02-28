@@ -129,7 +129,7 @@ func HandleHook(c *gin.Context) {
 			}
 
 			if msg.Bounce.BounceType == "Permanent" {
-				err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvents{Email: recipient.EmailAddress})
+				err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvent{Email: recipient.EmailAddress})
 				if err != nil {
 					logger.From(c).WithFields(logrus.Fields{
 						"message":   msg,

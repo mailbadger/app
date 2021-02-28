@@ -25,17 +25,20 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 	now := time.Now().UTC()
 	id := ksuid.New()
 
-	unsubscribeEvents := []*entities.UnsubscribeEvents{
+	unsubscribeEvents := []*entities.UnsubscribeEvent{
 		{
 			Email:     "email1@bla.com",
+			UserID:    1,
 			CreatedAt: now,
 		},
 		{
 			Email:     "email2@bla.com",
+			UserID:    1,
 			CreatedAt: now,
 		},
 		{
 			Email:     "email3@bla.com",
+			UserID:    1,
 			CreatedAt: now,
 		},
 	}

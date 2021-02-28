@@ -336,7 +336,7 @@ func PostUnsubscribe(c *gin.Context) {
 		return
 	}
 
-	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvents{ID: ksuid.New(), Email: body.Email})
+	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvent{ID: ksuid.New(), Email: body.Email})
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": body.Email,
@@ -425,7 +425,7 @@ func ImportSubscribers(c *gin.Context) {
 	}
 
 	go func(ctx context.Context, filename string, userID int64, segs []entities.Segment, r io.ReadCloser) {
-		svc := subscribers.New(s3Client, nil)
+		svc := subscribers.New(s3Client, storage.GetFromContext(c))
 		err := svc.ImportSubscribersFromFile(ctx, filename, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -460,7 +460,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := subscribers.New(client, nil)
+		svc := subscribers.New(client, storage.GetFromContext(c))
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{

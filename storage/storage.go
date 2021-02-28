@@ -68,7 +68,7 @@ type Storage interface {
 	) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
-	DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvents) error
+	DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvent) error
 	DeleteSubscriber(int64, int64) error
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
@@ -114,7 +114,7 @@ type Storage interface {
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
 
-	CreateUnsubscribeEvent(us *entities.UnsubscribeEvents) error
+	CreateUnsubscribeEvent(us *entities.UnsubscribeEvent) error
 }
 
 // SetToContext sets the storage to the context
@@ -364,7 +364,7 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 }
 
 // DeactivateSubscriber blacklists a Subscriber entity by the given email.
-func DeactivateSubscriber(c context.Context, userID int64, us *entities.UnsubscribeEvents) error {
+func DeactivateSubscriber(c context.Context, userID int64, us *entities.UnsubscribeEvent) error {
 	return GetFromContext(c).DeactivateSubscriber(userID, us)
 }
 

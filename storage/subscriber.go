@@ -165,7 +165,7 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 }
 
 // DeactivateSubscriber de-activates a subscriber by the given user and email.
-func (db *store) DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvents) error {
+func (db *store) DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvent) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -180,6 +180,7 @@ func (db *store) DeactivateSubscriber(userID int64, us *entities.UnsubscribeEven
 		tx.Rollback()
 		return fmt.Errorf("store: update subscriber: %w", err)
 	}
+	us.UserID = userID
 	err = tx.Create(us).Error
 	if err != nil {
 		tx.Rollback()
