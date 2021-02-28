@@ -49,7 +49,7 @@ type MessageHandler struct {
 // interface which handles the last failing retry
 func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 	if len(m.Body) == 0 {
-		logrus.Error("Empty message, unable to proceed.")
+		logrus.Error("Empty message, unable to proceed with failed message.")
 		return
 	}
 
