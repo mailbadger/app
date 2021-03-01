@@ -424,8 +424,8 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, filename string, userID int64, segs []entities.Segment, r io.ReadCloser) {
-		svc := subscribers.New(s3Client, storage.GetFromContext(c))
+	go func(ctx context.Context, s3Client s3iface.S3API, filename string, userID int64, segs []entities.Segment, r io.ReadCloser) {
+		svc := subscribers.New(s3Client, storage.GetFromContext(ctx))
 		err := svc.ImportSubscribersFromFile(ctx, filename, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
@@ -433,7 +433,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, reqParams.Filename, u.ID, segs, res.Body)
+	}(c, s3Client, reqParams.Filename, u.ID, segs, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -460,7 +460,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	s3Client := s3storage.GetFromContext(c)
 
 	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
-		svc := subscribers.New(client, storage.GetFromContext(c))
+		svc := subscribers.New(client, storage.GetFromContext(ctx))
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{

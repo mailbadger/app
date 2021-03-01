@@ -50,4 +50,33 @@ func TestUnsubscribedSubscriber(t *testing.T) {
 		id = id.Next()
 	}
 
+	sub := &entities.Subscriber{
+		UserID:      1,
+		Name:        "bla",
+		Email:       "bla@email.com",
+		MetaJSON:    nil,
+		Segments:    nil,
+		Blacklisted: false,
+		Active:      true,
+		Errors:      nil,
+		Metadata:    nil,
+	}
+
+	err := store.CreateSubscriber(sub)
+	assert.Nil(t, err)
+
+	us := &entities.UnsubscribeEvent{
+		ID:     ksuid.New(),
+		UserID: sub.UserID,
+		Email:  sub.Email,
+	}
+
+	err = store.DeactivateSubscriber(sub.UserID, us)
+	assert.Nil(t, err)
+
+	s, err := store.GetSubscriber(sub.UserID, sub.ID)
+	assert.Nil(t, err)
+
+	assert.Equal(t, s.Active, false)
+
 }
