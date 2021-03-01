@@ -27,7 +27,7 @@
     "react-scripts": "4.0.3",
     "recharts": "^2.0.8",
     "styled-components": "^4.4.1",
-    "whatwg-fetch": "^3.6.1",
+    "whatwg-fetch": "^3.6.2",
     "yup": "^0.32.9"
   },
   "scripts": {
