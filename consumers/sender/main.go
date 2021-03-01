@@ -48,7 +48,7 @@ type MessageHandler struct {
 // LogFailedMessage is for overriding the nsq.FailedMessageLogger
 // interface which handles the last failing retry
 func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
-	if len(m.Body) == 0 {
+	if m == nil || len(m.Body) == 0 {
 		logrus.Error("Empty message, unable to proceed with failed message.")
 		return
 	}
