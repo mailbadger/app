@@ -61,13 +61,20 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		return
 	}
 
+	logrus.WithFields(logrus.Fields{
+		"send_log_id":   msg.ID.String(),
+		"user_id":       msg.UserID,
+		"campaign_id":   msg.CampaignID,
+		"subscriber_id": msg.SubscriberID,
+	}).Error("Exceeded max attempts for sending the e-mail.")
+
 	err = h.storage.CreateSendLog(&entities.SendLog{
 		ID:           msg.ID,
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
 		Status:       entities.SendLogStatusFailed,
-		Description:  "Failed to send email five times",
+		Description:  "Exceeded max attempts for sending the e-mail.",
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -96,7 +103,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"id":            msg.ID.String(),
+		"send_log_id":   msg.ID.String(),
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
@@ -183,9 +190,19 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				return err
 			default:
 				logEntry.WithError(aerr).Error("Unable to send templated email. Unknown status.")
+				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+				if rerr != nil {
+					logEntry.WithError(rerr).Error("Unable to delete cached id")
+				}
+				return err
 			}
 		} else {
 			logEntry.WithError(err).Error("Unable to send templated email.")
+			rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+			if rerr != nil {
+				logEntry.WithError(rerr).Error("Unable to delete cached id")
+			}
+			return err
 		}
 	}
 
