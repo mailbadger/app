@@ -61,12 +61,14 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		return
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"send_log_id":   msg.ID.String(),
+	logEntry := logrus.WithFields(logrus.Fields{
+		"send_log_id":   msg.ID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
-	}).Error("Exceeded max attempts for sending the e-mail.")
+	})
+
+	logEntry.Error("Exceeded max attempts for sending the e-mail.")
 
 	err = h.storage.CreateSendLog(&entities.SendLog{
 		ID:           msg.ID,
@@ -77,12 +79,7 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		Description:  "Exceeded max attempts for sending the e-mail.",
 	})
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"id":            msg.ID.String(),
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-		}).WithError(err).Error("Unable to add log for sent emails result.")
+		logEntry.WithError(err).Error("Unable to add log for sent emails result.")
 	}
 }
 
@@ -103,7 +100,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"send_log_id":   msg.ID.String(),
+		"send_log_id":   msg.ID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
