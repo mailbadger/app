@@ -265,7 +265,13 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		Description: "Exceeded max attempts for preparing the campaign",
 		CreatedAt:   time.Time{},
 	}
-	err = storage.CreateCampaignFailedLog(context.Background(), log)
+	campaign, err := storage.GetCampaign(context.Background(), msg.CampaignID, msg.UserID)
+	if err != nil {
+		logrus.WithField("campaign_id", msg.CampaignID).
+			WithError(err).Error("Failed to get campaign.")
+		return
+	}
+	err = storage.LogFailedCampaign(context.Background(), campaign, log)
 	if err != nil {
 		logrus.WithField("log", log).
 			WithError(err).Error("Failed to store campaign failed log.")
@@ -279,7 +285,14 @@ func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *ent
 
 	campaign.Status = entities.StatusFailed
 	campaign.CompletedAt.SetValid(time.Now().UTC())
-	return store.LogFailedCampaign(campaign)
+	log := &entities.CampaignFailedLog{
+		ID:          ksuid.New(),
+		UserID:      campaign.UserID,
+		CampaignID:  campaign.ID,
+		Description: "Failed to prepare campaign",
+	}
+
+	return store.LogFailedCampaign(campaign, log)
 }
 
 func setStatusSent(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
