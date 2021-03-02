@@ -258,6 +258,11 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 			WithError(err).Error("Malformed JSON message.")
 		return
 	}
+	logrus.WithFields(logrus.Fields{
+		"user_id":     msg.UserID,
+		"campaign_id": msg.CampaignID,
+	}).Error("Exceeded max attempts for sending the e-mail.")
+
 	log := &entities.CampaignFailedLog{
 		ID:          ksuid.New(),
 		UserID:      msg.UserID,
