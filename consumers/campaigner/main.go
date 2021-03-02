@@ -263,19 +263,13 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		"campaign_id": msg.CampaignID,
 	}).Error("exceeded max attempts for sending the campaign")
 
-	log := &entities.CampaignFailedLog{
-		ID:          ksuid.New(),
-		UserID:      msg.UserID,
-		CampaignID:  msg.CampaignID,
-		Description: "Exceeded max attempts for preparing the campaign",
-	}
 	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{"campaign_id": msg.CampaignID, "user_id": msg.UserID}).
 			WithError(err).Error("Failed to get campaign.")
 		return
 	}
-	err = h.s.LogFailedCampaign(campaign, log)
+	err = h.s.LogFailedCampaign(campaign, "Exceeded max attempts for preparing the campaign")
 	if err != nil {
 		logrus.WithField("campaign_id", campaign.ID).
 			WithError(err).Error("Failed to store campaign failed log.")
@@ -289,14 +283,7 @@ func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *ent
 
 	campaign.Status = entities.StatusFailed
 	campaign.CompletedAt.SetValid(time.Now().UTC())
-	log := &entities.CampaignFailedLog{
-		ID:          ksuid.New(),
-		UserID:      campaign.UserID,
-		CampaignID:  campaign.ID,
-		Description: description,
-	}
-
-	return store.LogFailedCampaign(campaign, log)
+	return store.LogFailedCampaign(campaign, description)
 }
 
 func setStatusSent(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {

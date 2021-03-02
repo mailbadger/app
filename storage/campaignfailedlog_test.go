@@ -65,14 +65,7 @@ func TestCampaignFailedLog(t *testing.T) {
 		id = id.Next()
 	}
 
-	log := &entities.CampaignFailedLog{
-		ID:          id.Next(),
-		UserID:      1,
-		CampaignID:  1,
-		Description: "asd",
-	}
-
-	err = store.LogFailedCampaign(campaign1, log)
+	err = store.LogFailedCampaign(campaign1, "asd")
 	assert.Nil(t, err)
 
 	c, err := store.GetCampaign(campaign1.ID, campaign1.UserID)

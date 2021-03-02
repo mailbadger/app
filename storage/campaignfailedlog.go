@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 
+	"github.com/segmentio/ksuid"
+
 	"github.com/mailbadger/app/entities"
 )
 
@@ -11,7 +13,7 @@ func (db *store) CreateCampaignFailedLog(l *entities.CampaignFailedLog) error {
 	return db.Create(l).Error
 }
 
-func (db *store) LogFailedCampaign(c *entities.Campaign, log *entities.CampaignFailedLog) error {
+func (db *store) LogFailedCampaign(c *entities.Campaign, description string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -25,6 +27,13 @@ func (db *store) LogFailedCampaign(c *entities.Campaign, log *entities.CampaignF
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("store: update campaign: %w", err)
+	}
+
+	log := entities.CampaignFailedLog{
+		ID:          ksuid.New(),
+		UserID:      c.UserID,
+		CampaignID:  c.ID,
+		Description: description,
 	}
 
 	err = tx.Create(log).Error
