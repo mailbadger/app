@@ -7,11 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/jinzhu/gorm"
 
@@ -40,7 +37,6 @@ func New(client s3iface.S3API, db storage.Storage) *service {
 
 func (s *service) ImportSubscribersFromFile(
 	ctx context.Context,
-	filename string,
 	userID int64,
 	segments []entities.Segment,
 	r io.ReadCloser,
@@ -56,7 +52,7 @@ func (s *service) ImportSubscribersFromFile(
 	header, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {
-			return fmt.Errorf("importer: empty file '%s': %w", filename, err)
+			return fmt.Errorf("importer: empty file : %w", err)
 		}
 
 		return fmt.Errorf("importer: read header: %w", err)
@@ -125,21 +121,16 @@ func (s *service) RemoveSubscribersFromFile(
 	ctx context.Context,
 	filename string,
 	userID int64,
+	r io.ReadCloser,
 ) (err error) {
-	res, err := s.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/remove/%d/%s", userID, filename)),
-	})
-	if err != nil {
-		return fmt.Errorf("bulkremover: get object: %w", err)
-	}
+
 	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
+		if cerr := r.Close(); cerr != nil {
 			err = cerr
 		}
 	}()
 
-	reader := csv.NewReader(res.Body)
+	reader := csv.NewReader(r)
 	header, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {

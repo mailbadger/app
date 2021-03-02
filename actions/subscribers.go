@@ -424,16 +424,15 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, s3Client s3iface.S3API, filename string, userID int64, segs []entities.Segment, r io.ReadCloser) {
+	go func(ctx context.Context, s3Client s3iface.S3API, userID int64, segs []entities.Segment, r io.ReadCloser) {
 		svc := subscribers.New(s3Client, storage.GetFromContext(ctx))
-		err := svc.ImportSubscribersFromFile(ctx, filename, u.ID, segs, r)
+		err := svc.ImportSubscribersFromFile(ctx, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
-				"filename": filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, s3Client, reqParams.Filename, u.ID, segs, res.Body)
+	}(c, s3Client, u.ID, segs, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
@@ -459,15 +458,26 @@ func BulkRemoveSubscribers(c *gin.Context) {
 
 	s3Client := s3storage.GetFromContext(c)
 
-	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64) {
+	res, err := s3Client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+		Key:    aws.String(fmt.Sprintf("subscribers/remove/%d/%s", u.ID, body.Filename)),
+	})
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to remove subscribers. Please try again.",
+		})
+		return
+	}
+
+	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, r io.ReadCloser) {
 		svc := subscribers.New(client, storage.GetFromContext(ctx))
-		err := svc.RemoveSubscribersFromFile(ctx, filename, userID)
+		err := svc.RemoveSubscribersFromFile(ctx, filename, userID, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": filename,
 			}).WithError(err).Warn("Unable to remove subscribers.")
 		}
-	}(c, s3Client, body.Filename, u.ID)
+	}(c, s3Client, body.Filename, u.ID, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly.",
