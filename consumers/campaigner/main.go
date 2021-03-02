@@ -90,7 +90,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	if err != nil {
 		logEntry.WithError(err).Error("unable to prepare campaign template data")
 
-		err = logFailedCampaign(ctx, h.s, campaign)
+		err = logFailedCampaign(ctx, h.s, campaign, "failed to prepare campaign: parseTemplate")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 		}
@@ -101,7 +101,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	err = processSubscribers(ctx, m, msg, campaign, parsedTemplate, h.s, svc, logEntry)
 	if err != nil {
 		// TODO return wrapped errors and do the logging here instead of inside processSubscribers
-		err = logFailedCampaign(ctx, h.s, campaign)
+		err = logFailedCampaign(ctx, h.s, campaign, "failed to prepare campaign: processSubscribers")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 			return nil
@@ -268,24 +268,23 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 		UserID:      msg.UserID,
 		CampaignID:  msg.CampaignID,
 		Description: "Exceeded max attempts for preparing the campaign",
-		CreatedAt:   time.Time{},
 	}
-	campaign, err := storage.GetCampaign(context.Background(), msg.CampaignID, msg.UserID)
+	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
 	if err != nil {
-		logrus.WithField("campaign_id", msg.CampaignID).
+		logrus.WithFields(logrus.Fields{"campaign_id": msg.CampaignID, "user_id": msg.UserID}).
 			WithError(err).Error("Failed to get campaign.")
 		return
 	}
-	err = storage.LogFailedCampaign(context.Background(), campaign, log)
+	err = h.s.LogFailedCampaign(campaign, log)
 	if err != nil {
-		logrus.WithField("log", log).
+		logrus.WithField("campaign_id", campaign.ID).
 			WithError(err).Error("Failed to store campaign failed log.")
 		return
 	}
 }
 
 // logFailedCampaign updates campaign status to failed & inserts campaign  failed log.
-func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
+func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *entities.Campaign, description string) error {
 	defer trace.StartRegion(ctx, "setStatusFailed").End()
 
 	campaign.Status = entities.StatusFailed
@@ -294,7 +293,7 @@ func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *ent
 		ID:          ksuid.New(),
 		UserID:      campaign.UserID,
 		CampaignID:  campaign.ID,
-		Description: "Failed to prepare campaign",
+		Description: description,
 	}
 
 	return store.LogFailedCampaign(campaign, log)
