@@ -261,7 +261,7 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 	logrus.WithFields(logrus.Fields{
 		"user_id":     msg.UserID,
 		"campaign_id": msg.CampaignID,
-	}).Error("Exceeded max attempts for sending the e-mail.")
+	}).Error("exceeded max attempts for sending the campaign")
 
 	log := &entities.CampaignFailedLog{
 		ID:          ksuid.New(),
