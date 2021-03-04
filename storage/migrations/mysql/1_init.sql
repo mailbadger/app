@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `send_logs` (
   `subscriber_id`   integer unsigned NOT NULL,
   `campaign_id`     integer unsigned NOT NULL,
   `status`          varchar(191) NOT NULL,
-  `message_id`      varchar(191) NOT NULL,
+  `message_id`      varchar(191),
   `description`     varchar(191) NOT NULL,
   `created_at`      datetime(6) NOT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
