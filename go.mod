@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
-	github.com/aws/aws-sdk-go v1.37.21
+	github.com/aws/aws-sdk-go v1.37.23
 	github.com/cbroglie/mustache v1.2.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
