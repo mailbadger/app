@@ -83,6 +83,17 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
   UNIQUE("secret_key")
 );
 
+
+CREATE TABLE IF NOT EXISTS "templates" (
+    "id"           integer primary key autoincrement,
+    `user_id`      integer unsigned NOT NULL,
+    `name`         varchar(191)     NOT NULL,
+    "subject_part" varchar(191)     NOT NULL,
+    `text_part`    text,
+    "created_at"   datetime,
+    "updated_at"   datetime
+);
+
 CREATE TABLE IF NOT EXISTS "ses_keys" (
   "id"         integer primary key autoincrement,
   "user_id"    integer,
@@ -209,6 +220,7 @@ CREATE TABLE IF NOT EXISTS "send_logs" (
   "campaign_id"   integer NOT NULL,
   "subscriber_id" integer NOT NULL,
   "status"        varchar(191) NOT NULL,
+  "message_id"    varchar(191),
   "description"   varchar(191),
   "created_at"    datetime
 );
@@ -228,6 +240,7 @@ CREATE TABLE IF NOT EXISTS "sends" (
 -- +migrate Down
 
 DROP TABLE "sessions";
+DROP TABLE "templates";
 DROP TABLE "campaigns";
 DROP TABLE "segments";
 DROP TABLE "subscribers";

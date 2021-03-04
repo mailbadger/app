@@ -8,7 +8,7 @@ import (
 func (db *store) GetSession(sessionID string) (*entities.Session, error) {
 	var s = new(entities.Session)
 	err := db.Where("session_id = ?", sessionID).
-		Preload("User.Boundaries").
+		Preload("User.Boundaries").Preload("User.Roles.Permissions").
 		First(s).
 		Error
 	if err != nil {
