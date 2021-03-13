@@ -29,7 +29,7 @@ func (db *store) LogFailedCampaign(c *entities.Campaign, description string) err
 		return fmt.Errorf("store: update campaign: %w", err)
 	}
 
-	log := entities.CampaignFailedLog{
+	log := &entities.CampaignFailedLog{
 		ID:          ksuid.New(),
 		UserID:      c.UserID,
 		CampaignID:  c.ID,
