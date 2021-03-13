@@ -135,7 +135,7 @@ func setStatusSending(ctx context.Context, store storage.Storage, campaign *enti
 }
 
 func parseTemplate(ctx context.Context, templatesvc templates.Service, userID, templateID int64) (*entities.CampaignTemplateData, error) {
-	defer trace.StartRegion(ctx, "getCampaign").End()
+	defer trace.StartRegion(ctx, "parseTemplate").End()
 
 	return templatesvc.ParseTemplate(ctx, templateID, userID)
 }
