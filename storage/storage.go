@@ -42,7 +42,6 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
-	CreateCampaignFailedLog(log *entities.CampaignFailedLog) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
 
 	GetSegments(int64, *PaginationCursor) error
@@ -238,10 +237,6 @@ func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
 	return GetFromContext(c).GetMonthlyTotalCampaigns(userID)
 }
 
-// CreateCampaignFailedLog creates failed campaign log.
-func CreateCampaignFailedLog(c context.Context, l *entities.CampaignFailedLog) error {
-	return GetFromContext(c).CreateCampaignFailedLog(l)
-}
 
 // LogFailedCampaign updates campaign status to failed & stores campaign failed log record.
 func LogFailedCampaign(c context.Context, ca *entities.Campaign, description string) error {

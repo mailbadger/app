@@ -2,9 +2,7 @@ package storage
 
 import (
 	"testing"
-	"time"
 
-	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
@@ -19,30 +17,8 @@ func TestCampaignFailedLog(t *testing.T) {
 			logrus.Error(err)
 		}
 	}()
-	now := time.Now()
-
 	store := From(db)
 
-	logs := []*entities.CampaignFailedLog{
-		{
-			UserID:      1,
-			CampaignID:  1,
-			Description: "reason",
-			CreatedAt:   now,
-		},
-		{
-			UserID:      1,
-			CampaignID:  2,
-			Description: "reason",
-			CreatedAt:   now,
-		},
-		{
-			UserID:      1,
-			CampaignID:  3,
-			Description: "reason",
-			CreatedAt:   now,
-		},
-	}
 	campaign1 := &entities.Campaign{
 		Model:        entities.Model{ID: 1},
 		UserID:       1,
@@ -54,16 +30,6 @@ func TestCampaignFailedLog(t *testing.T) {
 	}
 	err := store.CreateCampaign(campaign1)
 	assert.Nil(t, err)
-
-	id := ksuid.New()
-
-	// test insert campaign failed log
-	for _, k := range logs {
-		k.ID = id
-		err := store.CreateCampaignFailedLog(k)
-		assert.Nil(t, err)
-		id = id.Next()
-	}
 
 	err = store.LogFailedCampaign(campaign1, "asd")
 	assert.Nil(t, err)

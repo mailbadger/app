@@ -8,10 +8,6 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-// CreateReport creates a report.
-func (db *store) CreateCampaignFailedLog(l *entities.CampaignFailedLog) error {
-	return db.Create(l).Error
-}
 
 func (db *store) LogFailedCampaign(c *entities.Campaign, description string) error {
 	tx := db.Begin()
