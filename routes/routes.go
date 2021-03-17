@@ -264,7 +264,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			segments.DELETE("/:id", actions.DeleteSegment)
 			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
 			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers)
-			segments.DELETE("/:id/subscribers", actions.DetachSegmentSubscribers)
+			segments.POST("/:id/subscribers", actions.DetachSegmentSubscribers)
 			segments.DELETE("/:id/subscribers/:sub_id", actions.DetachSubscriber)
 		}
 

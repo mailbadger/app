@@ -143,13 +143,15 @@ func PutSegment(c *gin.Context) {
 			return
 		}
 
-		l2, err := storage.GetSegmentByName(c, l.Name, middleware.GetUser(c).ID)
+		l2, err := storage.GetSegmentByName(c, body.Name, middleware.GetUser(c).ID)
 		if err == nil && l2.ID != l.ID {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Segment with that name already exists",
 			})
 			return
 		}
+
+		l.Name = body.Name
 
 		if err = storage.UpdateSegment(c, l); err != nil {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
