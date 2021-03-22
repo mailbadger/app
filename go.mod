@@ -26,7 +26,7 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/compress v1.11.1 // indirect
-	github.com/lib/pq v1.9.0
+	github.com/lib/pq v1.10.0
 	github.com/magefile/mage v1.11.0 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
@@ -37,7 +37,7 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sergi/go-diff v1.1.0 // indirect
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.8
