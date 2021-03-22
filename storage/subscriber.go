@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -165,7 +166,7 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 }
 
 // DeactivateSubscriber de-activates a subscriber by the given user and email.
-func (db *store) DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvent) error {
+func (db *store) DeactivateSubscriber(userID int64, email string) error {
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -174,13 +175,17 @@ func (db *store) DeactivateSubscriber(userID int64, us *entities.UnsubscribeEven
 	}()
 
 	err := tx.Model(&entities.Subscriber{}).
-		Where("user_id = ? AND email = ?", userID, us.Email).
+		Where("user_id = ? AND email = ?", userID, email).
 		Update("active", false).Error
 	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("store: update subscriber: %w", err)
 	}
-	us.UserID = userID
+	us := &entities.UnsubscribeEvent{
+		ID:     ksuid.New(),
+		UserID: userID,
+		Email:  email,
+	}
 	err = tx.Create(us).Error
 	if err != nil {
 		tx.Rollback()

@@ -69,7 +69,7 @@ type Storage interface {
 	) ([]entities.Subscriber, error)
 	CreateSubscriber(*entities.Subscriber) error
 	UpdateSubscriber(*entities.Subscriber) error
-	DeactivateSubscriber(userID int64, us *entities.UnsubscribeEvent) error
+	DeactivateSubscriber(userID int64, email string) error
 	DeleteSubscriber(int64, int64) error
 	DeleteSubscriberByEmail(string, int64) error
 	GetTotalSubscribers(int64) (int64, error)
@@ -239,7 +239,6 @@ func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
 	return GetFromContext(c).GetMonthlyTotalCampaigns(userID)
 }
 
-
 // LogFailedCampaign updates campaign status to failed & stores campaign failed log record.
 func LogFailedCampaign(c context.Context, ca *entities.Campaign, description string) error {
 	return GetFromContext(c).LogFailedCampaign(ca, description)
@@ -371,8 +370,8 @@ func UpdateSubscriber(c context.Context, s *entities.Subscriber) error {
 }
 
 // DeactivateSubscriber blacklists a Subscriber entity by the given email.
-func DeactivateSubscriber(c context.Context, userID int64, us *entities.UnsubscribeEvent) error {
-	return GetFromContext(c).DeactivateSubscriber(userID, us)
+func DeactivateSubscriber(c context.Context, userID int64, email string) error {
+	return GetFromContext(c).DeactivateSubscriber(userID, email)
 }
 
 // DeleteSubscriber deletes a Subscriber entity by the given id.

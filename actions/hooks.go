@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	sns "github.com/robbiet480/go.sns"
-	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/emails"
@@ -130,7 +129,7 @@ func HandleHook(c *gin.Context) {
 			}
 
 			if msg.Bounce.BounceType == "Permanent" {
-				err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvent{ID: ksuid.New(), Email: recipient.EmailAddress})
+				err = storage.DeactivateSubscriber(c, u.ID, recipient.EmailAddress)
 				if err != nil {
 					logger.From(c).WithFields(logrus.Fields{
 						"message":   msg,

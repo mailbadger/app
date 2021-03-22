@@ -17,7 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-gonic/gin"
-	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/entities"
@@ -336,7 +335,7 @@ func PostUnsubscribe(c *gin.Context) {
 		return
 	}
 
-	err = storage.DeactivateSubscriber(c, u.ID, &entities.UnsubscribeEvent{ID: ksuid.New(), Email: body.Email})
+	err = storage.DeactivateSubscriber(c, u.ID, body.Email)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"email": body.Email,
@@ -424,15 +423,15 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, s3Client s3iface.S3API, userID int64, segs []entities.Segment, r io.ReadCloser) {
-		svc := subscribers.New(s3Client, storage.GetFromContext(ctx))
+	go func(ctx context.Context, s3Client s3iface.S3API, storage storage.Storage, userID int64, segs []entities.Segment, r io.ReadCloser) {
+		svc := subscribers.New(s3Client, storage)
 		err := svc.ImportSubscribersFromFile(ctx, u.ID, segs, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, s3Client, u.ID, segs, res.Body)
+	}(c, s3Client, storage.GetFromContext(c), u.ID, segs, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
