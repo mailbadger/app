@@ -36,27 +36,12 @@ CREATE TABLE IF NOT EXISTS `roles` (
   `name`  VARCHAR(100) NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `permissions` (
-  `id`        INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  `name`      VARCHAR(100) NOT NULL,
-  `object`    VARCHAR(100) NOT NULL,
-  `operation` VARCHAR(100) NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS `users_roles` (
   `user_id` INTEGER UNSIGNED NOT NULL,
   `role_id` INTEGER UNSIGNED NOT NULL,
   PRIMARY KEY (`user_id`, `role_id`),
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`role_id`) REFERENCES roles(`id`)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `roles_permissions` (
-  `role_id`       INTEGER UNSIGNED NOT NULL,
-  `permission_id` INTEGER UNSIGNED NOT NULL,
-  PRIMARY KEY (`role_id`, `permission_id`),
-  FOREIGN KEY (`role_id`) REFERENCES roles(`id`),
-  FOREIGN KEY (`permission_id`) REFERENCES permissions(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `sessions` (

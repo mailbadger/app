@@ -39,13 +39,6 @@ CREATE TABLE IF NOT EXISTS "roles" (
   "name"  varchar(100)
 );
 
-CREATE TABLE IF NOT EXISTS "permissions" (
-  "id"          integer primary key autoincrement,
-  "name"        varchar(100),
-  "object"      varchar(100),
-  "operation"   varchar(100)
-);
-
 CREATE TABLE IF NOT EXISTS "users_roles" (
   "user_id" integer,
   "role_id" integer,
@@ -54,15 +47,6 @@ CREATE TABLE IF NOT EXISTS "users_roles" (
 
 CREATE INDEX IF NOT EXISTS i_user ON "users_roles" (user_id);
 CREATE INDEX IF NOT EXISTS i_role ON "users_roles" (role_id);
-
-CREATE TABLE IF NOT EXISTS "roles_permissions" (
-  "role_id" integer,
-  "permission_id" integer,
-  UNIQUE("role_id", "permission_id")
-);
-
-CREATE INDEX IF NOT EXISTS i_role ON "roles_permissions" (role_id);
-CREATE INDEX IF NOT EXISTS i_permission ON "roles_permissions" (permission_id);
 
 CREATE TABLE IF NOT EXISTS "sessions" (
   "id"         integer primary key autoincrement,
