@@ -440,7 +440,7 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, userID int64, segs []entities.Segment, buf bytes.Buffer) {
+	go func(ctx context.Context, userID int64, segs []entities.Segment, r io.Reader) {
 		imp := importer.NewS3SubscribersImporter(client)
 		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, &buf)
 		if err != nil {
@@ -449,7 +449,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, u.ID, segs, buf)
+	}(c, u.ID, segs, &buf)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
