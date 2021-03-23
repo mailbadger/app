@@ -113,8 +113,6 @@ type Storage interface {
 	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
-
-	CreateSubscribersEvent(se *entities.SubscribersEvent) error
 }
 
 // SetToContext sets the storage to the context
@@ -533,9 +531,4 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 // GetSendLogByUUID returns send log with specified uuid
 func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
 	return GetFromContext(c).GetSendLogByUUID(id)
-}
-
-// CreateSubscribersEvent adds new subscribers event record in database
-func CreateSubscribersEvent(c context.Context, se *entities.SubscribersEvent) error {
-	return GetFromContext(c).CreateSubscribersEvent(se)
 }
