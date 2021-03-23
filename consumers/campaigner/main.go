@@ -90,7 +90,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	if err != nil {
 		logEntry.WithError(err).Error("unable to prepare campaign template data")
 
-		err = setStatusFailed(ctx, h.s, campaign)
+		err = logFailedCampaign(ctx, h.s, campaign, "failed to parse template")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 		}
@@ -98,10 +98,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return nil
 	}
 
-	err = processSubscribers(ctx, msg, campaign, parsedTemplate, h.s, svc, logEntry)
+	err = processSubscribers(ctx, m, msg, campaign, parsedTemplate, h.s, svc, logEntry)
 	if err != nil {
 		// TODO return wrapped errors and do the logging here instead of inside processSubscribers
-		err = setStatusFailed(ctx, h.s, campaign)
+		err = logFailedCampaign(ctx, h.s, campaign, "failed to process subscribers")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 			return nil
@@ -135,13 +135,14 @@ func setStatusSending(ctx context.Context, store storage.Storage, campaign *enti
 }
 
 func parseTemplate(ctx context.Context, templatesvc templates.Service, userID, templateID int64) (*entities.CampaignTemplateData, error) {
-	defer trace.StartRegion(ctx, "getCampaign").End()
+	defer trace.StartRegion(ctx, "parseTemplate").End()
 
 	return templatesvc.ParseTemplate(ctx, templateID, userID)
 }
 
 func processSubscribers(
 	ctx context.Context,
+	m *nsq.Message,
 	msg *entities.CampaignerTopicParams,
 	campaign *entities.Campaign,
 	parsedTemplate *entities.CampaignTemplateData,
@@ -177,6 +178,8 @@ func processSubscribers(
 			logEntry.WithError(err).Error("unable to fetch subscribers")
 			return err
 		}
+		// reset timeout timer for campaigner.
+		m.Touch()
 
 		for _, s := range subs {
 			id = id.Next()
@@ -243,12 +246,44 @@ func processSubscribers(
 	return nil
 }
 
-func setStatusFailed(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
+// overwriting the callback func for max attempts reached to insert into campaign failed logs.
+func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
+	if m == nil {
+		return
+	}
+	msg := new(entities.CampaignerTopicParams)
+	err := json.Unmarshal(m.Body, &msg)
+	if err != nil {
+		logrus.WithField("body", string(m.Body)).
+			WithError(err).Error("Malformed JSON message.")
+		return
+	}
+	logrus.WithFields(logrus.Fields{
+		"user_id":     msg.UserID,
+		"campaign_id": msg.CampaignID,
+	}).Error("exceeded max attempts for sending the campaign")
+
+	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"campaign_id": msg.CampaignID, "user_id": msg.UserID}).
+			WithError(err).Error("Failed to get campaign.")
+		return
+	}
+	err = h.s.LogFailedCampaign(campaign, "Exceeded max attempts for preparing the campaign")
+	if err != nil {
+		logrus.WithField("campaign_id", campaign.ID).
+			WithError(err).Error("Failed to store campaign failed log.")
+		return
+	}
+}
+
+// logFailedCampaign updates campaign status to failed & inserts campaign  failed log.
+func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *entities.Campaign, description string) error {
 	defer trace.StartRegion(ctx, "setStatusFailed").End()
 
 	campaign.Status = entities.StatusFailed
 	campaign.CompletedAt.SetValid(time.Now().UTC())
-	return store.UpdateCampaign(campaign)
+	return store.LogFailedCampaign(campaign, description)
 }
 
 func setStatusSent(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
