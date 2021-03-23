@@ -137,7 +137,7 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 	return subs, err
 }
 
-// CreateSubscriber creates a new subscriber in the database.
+// CreateSubscriber creates a new subscriber and create subscribers event in the database.
 func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 	tx := db.Begin()
 
@@ -187,11 +187,35 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 	return tx.Commit().Error
 }
 
-// DeactivateSubscriber de-activates a subscriber by the given user and email.
+// DeactivateSubscriber de-activates a subscriber by the given user and email
+// and adds unsubscribed subscriber event.
 func (db *store) DeactivateSubscriber(userID int64, email string) error {
-	return db.Model(&entities.Subscriber{}).
+	tx := db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&entities.Subscriber{}).
 		Where("user_id = ? AND email = ?", userID, email).
-		Update("active", false).Error
+		Update("active", false).Error; err != nil {
+			tx.Rollback()
+			return err
+	}
+
+	if err := tx.Create(&entities.SubscribersEvent{
+		ID:              ksuid.New(),
+		UserID:          userID,
+		SubscriberEmail: email,
+		EventType:       entities.SubscriberEventTypeUnsubscribed,
+	}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 // DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
