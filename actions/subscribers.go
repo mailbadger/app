@@ -440,16 +440,16 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, userID int64, segs []entities.Segment, body []byte) {
+	go func(ctx context.Context, userID int64, segs []entities.Segment, buf bytes.Buffer) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, body)
+		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, buf)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": reqParams.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, u.ID, segs, buf.Bytes())
+	}(c, u.ID, segs, buf)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",

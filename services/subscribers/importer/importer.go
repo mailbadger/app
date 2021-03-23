@@ -40,10 +40,10 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
 	userID int64,
 	segments []entities.Segment,
-	body []byte,
+	buf bytes.Buffer,
 ) (err error) {
 
-	r := bytes.NewReader(body)
+	r := bytes.NewReader(buf.Bytes())
 
 	reader := csv.NewReader(r)
 	header, err := reader.Read()
