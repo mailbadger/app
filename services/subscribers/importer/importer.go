@@ -1,7 +1,6 @@
 package importer
 
 import (
-	"bytes"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -40,10 +39,8 @@ func (i *s3Importer) ImportSubscribersFromFile(
 	ctx context.Context,
 	userID int64,
 	segments []entities.Segment,
-	buf bytes.Buffer,
+	r io.Reader,
 ) (err error) {
-
-	r := bytes.NewReader(buf.Bytes())
 
 	reader := csv.NewReader(r)
 	header, err := reader.Read()

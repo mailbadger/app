@@ -442,7 +442,7 @@ func ImportSubscribers(c *gin.Context) {
 
 	go func(ctx context.Context, userID int64, segs []entities.Segment, buf bytes.Buffer) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, buf)
+		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, &buf)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": reqParams.Filename,
