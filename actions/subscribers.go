@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
@@ -418,8 +419,11 @@ func ImportSubscribers(c *gin.Context) {
 		})
 		return
 	}
+	// duplicate stream read.
+	var buf bytes.Buffer
+	tee := io.TeeReader(res.Body, &buf)
 
-	csvCount, err := utils.CountLines(res.Body)
+	csvCount, err := utils.CountLines(tee)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
@@ -436,16 +440,16 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, userID int64, segs []entities.Segment, r io.ReadCloser) {
+	go func(ctx context.Context, userID int64, segs []entities.Segment, body []byte) {
 		imp := importer.NewS3SubscribersImporter(client)
-		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, r)
+		err := imp.ImportSubscribersFromFile(ctx, u.ID, segs, body)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": reqParams.Filename,
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, u.ID, segs, res.Body)
+	}(c, u.ID, segs, buf.Bytes())
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",
