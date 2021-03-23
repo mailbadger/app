@@ -218,7 +218,8 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 	return tx.Commit().Error
 }
 
-// DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
+// DeleteSubscriber deletes an existing subscriber from the database along with
+// all his metadata and adds deleted subscriber event.
 func (db *store) DeleteSubscriber(id, userID int64) error {
 	s, err := db.GetSubscriber(id, userID)
 	if err != nil {
@@ -238,6 +239,16 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 	}
 
 	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Create(&entities.SubscribersEvent{
+		ID:              ksuid.New(),
+		UserID:          userID,
+		SubscriberEmail: s.Email,
+		EventType:       entities.SubscriberEventTypeDeleted,
+	}).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
