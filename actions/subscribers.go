@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"crypto/subtle"
 	"encoding/json"
@@ -405,8 +406,11 @@ func ImportSubscribers(c *gin.Context) {
 		})
 		return
 	}
+	// duplicate stream read.
+	var buf bytes.Buffer
+	tee := io.TeeReader(res.Body, &buf)
 
-	csvCount, err := utils.CountLines(res.Body)
+	csvCount, err := utils.CountLines(tee)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to import subscribers. Please try again.",
@@ -423,7 +427,7 @@ func ImportSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, s3Client s3iface.S3API, storage storage.Storage, userID int64, segs []entities.Segment, r io.ReadCloser) {
+	go func(ctx context.Context, s3Client s3iface.S3API, storage storage.Storage, userID int64, segs []entities.Segment, r io.Reader) {
 		svc := subscribers.New(s3Client, storage)
 		err := svc.ImportSubscribersFromFile(ctx, u.ID, segs, r)
 		if err != nil {
@@ -431,7 +435,7 @@ func ImportSubscribers(c *gin.Context) {
 				"segments": segs,
 			}).WithError(err).Warn("Unable to import subscribers.")
 		}
-	}(c, s3Client, storage.GetFromContext(c), u.ID, segs, res.Body)
+	}(c, s3Client, storage.GetFromContext(c), u.ID, segs, &buf)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly. As we import the subscribers, you will see them in the dashboard.",

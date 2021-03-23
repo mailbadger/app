@@ -39,14 +39,8 @@ func (s *service) ImportSubscribersFromFile(
 	ctx context.Context,
 	userID int64,
 	segments []entities.Segment,
-	r io.ReadCloser,
+	r io.Reader,
 ) (err error) {
-
-	defer func() {
-		if cerr := r.Close(); cerr != nil {
-			err = cerr
-		}
-	}()
 
 	reader := csv.NewReader(r)
 	header, err := reader.Read()
