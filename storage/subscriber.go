@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -138,7 +139,30 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 
 // CreateSubscriber creates a new subscriber in the database.
 func (db *store) CreateSubscriber(s *entities.Subscriber) error {
-	return db.Create(s).Error
+	tx := db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Create(s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Create(&entities.SubscribersEvent{
+		ID:              ksuid.New(),
+		UserID:          s.UserID,
+		SubscriberEmail: s.Email,
+		EventType:       entities.SubscriberEventTypeCreated,
+	}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 // UpdateSubscriber edits an existing subscriber in the database.
