@@ -265,7 +265,6 @@ CREATE TABLE IF NOT EXISTS `subscribers_events`
 (
     `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
     `user_id`          INTEGER UNSIGNED          NOT NULL,
-    `subscriber_id`    INTEGER UNSIGNED          NOT NULL,
     `subscriber_email` VARCHAR(191)              NOT NULL,
     `event_type`             VARCHAR(50)               NOT NULL,
     `created_at`       DATETIME(6)               NOT NULL,
