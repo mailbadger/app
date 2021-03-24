@@ -472,15 +472,15 @@ func BulkRemoveSubscribers(c *gin.Context) {
 		return
 	}
 
-	go func(ctx context.Context, client s3iface.S3API, filename string, userID int64, r io.ReadCloser) {
-		svc := subscribers.New(client, storage.GetFromContext(ctx))
+	go func(ctx context.Context, client s3iface.S3API, storage storage.Storage, filename string, userID int64, r io.ReadCloser) {
+		svc := subscribers.New(client, storage)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID, r)
 		if err != nil {
 			logger.From(ctx).WithFields(logrus.Fields{
 				"filename": filename,
 			}).WithError(err).Warn("Unable to remove subscribers.")
 		}
-	}(c, s3Client, body.Filename, u.ID, res.Body)
+	}(c, s3Client, storage.GetFromContext(c), body.Filename, u.ID, res.Body)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "We will begin processing the file shortly.",
