@@ -29,6 +29,7 @@ _testmain.go
 
 bin
 static
+statik/statik.go
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
