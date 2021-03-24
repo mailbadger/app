@@ -31,6 +31,19 @@ CREATE TABLE IF NOT EXISTS `users` (
   FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `roles` (
+  `id`    INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `name`  VARCHAR(100) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `users_roles` (
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `role_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`user_id`, `role_id`),
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  FOREIGN KEY (`role_id`) REFERENCES roles(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `sessions` (
   `id`         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `user_id`    INTEGER UNSIGNED NOT NULL,
@@ -241,6 +254,8 @@ DROP TABLE `ses_keys`;
 DROP TABLE `opens`;
 DROP TABLE `campaigns`;
 DROP TABLE `templates`;
-DROP TABLE `users`;
 DROP TABLE `sessions`;
 DROP TABLE `boundaries`;
+DROP TABLE `users_roles`;
+DROP TABLE `roles`;
+DROP TABLE `users`;
