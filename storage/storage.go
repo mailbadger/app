@@ -114,8 +114,6 @@ type Storage interface {
 	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
-
-	CreateUnsubscribeEvent(us *entities.UnsubscribeEvent) error
 }
 
 // SetToContext sets the storage to the context
