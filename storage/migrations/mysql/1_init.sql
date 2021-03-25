@@ -238,6 +238,18 @@ CREATE TABLE IF NOT EXISTS `sends` (
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `subscribers_events`
+(
+    `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
+    `user_id`          INTEGER UNSIGNED NOT NULL,
+    `subscriber_email` VARCHAR(191) NOT NULL,
+    `event_type`       VARCHAR(50) NOT NULL,
+    `created_at`       DATETIME(6) NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES users (`id`),
+    FOREIGN KEY (`subscriber_id`) REFERENCES subscribers (`id`),
+    INDEX user_id_created_at (`user_id`, `created_at`)
+) CHARACTER SET utf8mb4COLLATE utf8mb4_unicode_ci;
+
 -- +migrate Down
 
 DROP TABLE `subscribers_segments`;
