@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS `sends` (
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `subscribers_events`
+CREATE TABLE IF NOT EXISTS `subscriber_events`
 (
     `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
     `user_id`          INTEGER UNSIGNED NOT NULL,

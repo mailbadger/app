@@ -12,8 +12,8 @@ const (
 	SubscriberEventTypeUnsubscribed EventType = "unsubscribed"
 )
 
-// SubscribersEvent represents an event saved on subscriber's change
-type SubscribersEvent struct {
+// SubscriberEvent represents an event saved on subscriber's change
+type SubscriberEvent struct {
 	ID              ksuid.KSUID `json:"id" gorm:"column:id; primary_key:yes"`
 	UserID          int64       `json:"user_id"`
 	SubscriberEmail string      `json:"subscriber_email"`

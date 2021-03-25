@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS "sends" (
   "created_at"         datetime
 );
 
-CREATE TABLE IF NOT EXISTS `subscribers_events` (
+CREATE TABLE IF NOT EXISTS `subscriber_events` (
     `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
     `user_id`          INTEGER UNSIGNED NOT NULL,
     `subscriber_email` VARCHAR(191) NOT NULL,
