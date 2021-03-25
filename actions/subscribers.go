@@ -480,6 +480,13 @@ func BulkRemoveSubscribers(c *gin.Context) {
 		return
 	}
 
+	defer func() {
+		err = res.Body.Close()
+		if err != nil {
+			logger.From(c).WithError(err).Error("unable to close body")
+		}
+	}()
+
 	go func(ctx context.Context, client s3iface.S3API, storage storage.Storage, filename string, userID int64, r io.ReadCloser) {
 		svc := subscribers.New(client, storage)
 		err := svc.RemoveSubscribersFromFile(ctx, filename, userID, r)
