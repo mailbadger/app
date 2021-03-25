@@ -73,7 +73,6 @@ CREATE TABLE IF NOT EXISTS `ses_keys`
     FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
-=======
 CREATE TABLE IF NOT EXISTS `boundaries` (
   `id`                         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `type`                       VARCHAR(191) NOT NULL,

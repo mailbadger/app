@@ -86,7 +86,6 @@ CREATE TABLE IF NOT EXISTS "campaigns"
     "completed_at" datetime DEFAULT NULL,
     "deleted_at"   datetime DEFAULT NULL,
     "started_at"   datetime DEFAULT NULL
-=======
 CREATE TABLE IF NOT EXISTS "boundaries" (
   "id"                         integer primary key autoincrement,
   "type"                       varchar(191) not null,
