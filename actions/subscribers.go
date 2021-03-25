@@ -406,6 +406,14 @@ func ImportSubscribers(c *gin.Context) {
 		})
 		return
 	}
+
+	defer func() {
+		err = res.Body.Close()
+		if err != nil {
+			logger.From(c).WithError(err).Error("unable to close body")
+		}
+	}()
+
 	// duplicate stream read.
 	var buf bytes.Buffer
 	tee := io.TeeReader(res.Body, &buf)
