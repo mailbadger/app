@@ -6380,17 +6380,17 @@ grommet-styles@^0.2.0:
   resolved "https://registry.yarnpkg.com/grommet-styles/-/grommet-styles-0.2.0.tgz#b2eac2b7e2747cb523434d21728ce5234f8ce4f4"
   integrity sha512-0OMSYuGeyifYKpg4Gv2HzL8rUdd0ddnJ5LbCBKgDuloC71XIwr9g/Fxa6rs737MbPV7OZ4pEm4wvrjH4epzf1A==
 
-grommet@^2.16.3:
-  version "2.16.3"
-  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.16.3.tgz#f3680d100e6150195b60a7f14433eef744d5a4d2"
-  integrity sha512-q/je53d5AoCpokqXIJHzIIXpRMej9cjsdGt/BkWbTizF+36OWQ67Aqw8f4kK8YfAOxZ267gRj1Y1mDFva3duYw==
+grommet@^2.17.0:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/grommet/-/grommet-2.17.0.tgz#0e2a35a3534da5e7b7739c00e61a7f9fd5bea540"
+  integrity sha512-WsliEQ5NuF55WuiDx1G5QfpjW+DZ1VLp669LB3S/MpYVqckjwh+mFUvYpDhFbwkbOc/wX32puO82E9d0HZ8AkA==
   dependencies:
     grommet-icons "^4.5.0"
     hoist-non-react-statics "^3.2.0"
     markdown-to-jsx "^6.11.4"
     polished "^3.4.1"
     prop-types "^15.7.2"
-    react-desc "^4.1.2"
+    react-desc "^4.1.3"
 
 growly@^1.3.0:
   version "1.3.0"
@@ -10233,10 +10233,10 @@ react-content-loader@^6.0.1:
   resolved "https://registry.yarnpkg.com/react-content-loader/-/react-content-loader-6.0.1.tgz#1c5ce4a6256d974fcd3ac85460eca24b33226920"
   integrity sha512-djJUgGNze7YdWzJA1kYO1eKXAMpP+Z4sMulmEuTVi6vEXzfuQCJs6yD8hhgWj23vvJPZL5b8NyabxteyF8Hq/g==
 
-react-desc@^4.1.2:
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/react-desc/-/react-desc-4.1.2.tgz#83fc4ede66b2d45ae4ef63c18421474d55972966"
-  integrity sha512-JAVe89uaLr0HZ0IKodnpTPNgNyJ/SPDQnl3VJPVwI+SpebmHvJiBNZEOwX201QmSbsVGqRY8ql/VFPlAx85WzA==
+react-desc@^4.1.3:
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/react-desc/-/react-desc-4.1.3.tgz#197b56b7b55aba702e0c912f372dea5fee86f53b"
+  integrity sha512-XqfNsg+nvAO77ja5+v3J6bMS7drnWozpiA64bUTyhqvSCJRkq45FiONl7/+74OjPw4Id6qbqVX6xkER/yTU8+w==
 
 react-dev-utils@^11.0.3:
   version "11.0.3"
