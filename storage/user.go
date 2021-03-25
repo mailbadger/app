@@ -18,14 +18,22 @@ func (db *store) UpdateUser(user *entities.User) error {
 //GetUser returns an active user by id. If no user is found, an error is returned
 func (db *store) GetUser(id int64) (*entities.User, error) {
 	var user = new(entities.User)
-	err := db.Where("id = ? and active = ?", id, true).First(user).Error
+	err := db.
+		Preload("Boundaries").
+		Preload("Roles").
+		Where("id = ? and active = ?", id, true).
+		First(user).Error
 	return user, err
 }
 
 //GetUserByUUID returns an user by uuid. If no user is found, an error is returned
 func (db *store) GetUserByUUID(uuid string) (*entities.User, error) {
 	var user = new(entities.User)
-	err := db.Where("uuid = ?", uuid).First(user).Error
+	err := db.
+		Preload("Boundaries").
+		Preload("Roles").
+		Where("uuid = ?", uuid).
+		First(user).Error
 	return user, err
 }
 
@@ -33,7 +41,11 @@ func (db *store) GetUserByUUID(uuid string) (*entities.User, error) {
 //an error is returned
 func (db *store) GetUserByUsername(username string) (*entities.User, error) {
 	var user = new(entities.User)
-	err := db.Where("username = ?", username).First(user).Error
+	err := db.
+		Preload("Boundaries").
+		Preload("Roles").
+		Where("username = ?", username).
+		First(user).Error
 	return user, err
 }
 
@@ -41,7 +53,11 @@ func (db *store) GetUserByUsername(username string) (*entities.User, error) {
 //an error is returned
 func (db *store) GetActiveUserByUsername(username string) (*entities.User, error) {
 	var user = new(entities.User)
-	err := db.Where("username = ? and active = ?", username, true).First(user).Error
+	err := db.
+		Preload("Boundaries").
+		Preload("Roles").
+		Where("username = ? and active = ?", username, true).
+		First(user).Error
 	return user, err
 }
 

@@ -73,6 +73,80 @@ CREATE TABLE IF NOT EXISTS `ses_keys`
     FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
+=======
+CREATE TABLE IF NOT EXISTS `boundaries` (
+  `id`                         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `type`                       VARCHAR(191) NOT NULL,
+  `stats_retention`            INTEGER NOT NULL,
+  `subscribers_limit`          INTEGER NOT NULL,
+  `campaigns_limit`            INTEGER NOT NULL,
+  `templates_limit`            INTEGER NOT NULL,
+  `groups_limit`               INTEGER NOT NULL,
+  `schedule_campaigns_enabled` TINYINT(1) NOT NULL,
+  `saml_enabled`               TINYINT(1) NOT NULL,
+  `team_members_limit`         INTEGER NOT NULL,
+  `created_at`                 DATETIME(6) NOT NULL,
+  `updated_at`                 DATETIME(6) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+INSERT INTO `boundaries` (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`) VALUES ("nolimit", 0, 0, 1, 0, 0, 1, 1, 0, NOW(), NOW());
+
+CREATE TABLE IF NOT EXISTS `users` (
+  `id`          INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `uuid`        VARCHAR(36) NOT NULL UNIQUE,
+  `username`    VARCHAR(191) NOT NULL UNIQUE,
+  `password`    VARCHAR(191) NOT NULL,
+  `source`      VARCHAR(191) NOT NULL,
+  `active`      INTEGER NOT NULL,
+  `verified`    INTEGER NOT NULL,
+  `boundary_id` INTEGER UNSIGNED NOT NULL,
+  `created_at`  DATETIME(6) NOT NULL,
+  `updated_at`  DATETIME(6) NOT NULL,
+  FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `roles` (
+  `id`    INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `name`  VARCHAR(100) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `users_roles` (
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `role_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`user_id`, `role_id`),
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  FOREIGN KEY (`role_id`) REFERENCES roles(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id`         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `user_id`    INTEGER UNSIGNED NOT NULL,
+  `session_id` VARCHAR(191) NOT NULL UNIQUE,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `api_keys` (
+  `id`         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `user_id`    INTEGER UNSIGNED NOT NULL,
+  `secret_key` VARCHAR(191) NOT NULL UNIQUE,
+  `active`     TINYINT(1) NOT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `ses_keys` (
+  `id`         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `user_id`    INTEGER UNSIGNED NOT NULL UNIQUE,
+  `access_key` VARCHAR(191) NOT NULL,
+  `secret_key` VARCHAR(191) NOT NULL,
+  `region`     VARCHAR(30) NOT NULL,
+  `created_at` DATETIME(6) NOT NULL,
+  `updated_at` DATETIME(6) NOT NULL,
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `templates`
 (
@@ -288,6 +362,8 @@ DROP TABLE `ses_keys`;
 DROP TABLE `opens`;
 DROP TABLE `campaigns`;
 DROP TABLE `templates`;
-DROP TABLE `users`;
 DROP TABLE `sessions`;
 DROP TABLE `boundaries`;
+DROP TABLE `users_roles`;
+DROP TABLE `roles`;
+DROP TABLE `users`;

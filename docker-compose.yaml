@@ -13,7 +13,7 @@ services:
       - MYSQL_DATABASE=mailbadger
     volumes:
       - dbdata:/var/lib/mysql
-      - ./my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./config/my.cnf:/etc/mysql/conf.d/my.cnf
   nsqlookupd:
     image: nsqio/nsq
     command: /nsqlookupd
@@ -42,7 +42,6 @@ services:
     volumes:
       - ./config/redis.conf:/redis.conf
     command: [ "redis-server", "/redis.conf" ]
-
   # app:
   #   image: mailbadger/app
   #   command: /app

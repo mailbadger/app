@@ -13,7 +13,7 @@ driver ?= sqlite3
 gen: gen_migrations
 
 gen_migrations:
-	statik -ns=migrations -src=./storage/migrations/$(driver)
+	statik -ns=migrations -src=./storage/migrations/$(driver) -f
 
 test: 
 	go test -cover $(PACKAGES)
