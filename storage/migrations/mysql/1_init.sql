@@ -246,8 +246,8 @@ CREATE TABLE IF NOT EXISTS `subscriber_events`
     `event_type`       VARCHAR(50) NOT NULL,
     `created_at`       DATETIME(6) NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users (`id`),
-    FOREIGN KEY (`subscriber_id`) REFERENCES subscribers (`id`),
-    INDEX user_id_created_at (`user_id`, `created_at`)
+    INDEX idx_user_id_created_at (`user_id`, `created_at`),
+    INDEX idx_event_type (`event_type`)
 ) CHARACTER SET utf8mb4COLLATE utf8mb4_unicode_ci;
 
 -- +migrate Down
