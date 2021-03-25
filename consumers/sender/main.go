@@ -45,6 +45,44 @@ type MessageHandler struct {
 	cache   redis.Storage
 }
 
+// LogFailedMessage is for overriding the nsq.FailedMessageLogger
+// interface which handles the last failing retry
+func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
+	if m == nil || len(m.Body) == 0 {
+		logrus.Error("Empty message, unable to proceed with failed message.")
+		return
+	}
+
+	msg := new(entities.SenderTopicParams)
+	err := json.Unmarshal(m.Body, msg)
+	if err != nil {
+		logrus.WithField("body", string(m.Body)).
+			WithError(err).Error("Malformed JSON message.")
+		return
+	}
+
+	logEntry := logrus.WithFields(logrus.Fields{
+		"send_log_id":   msg.ID,
+		"user_id":       msg.UserID,
+		"campaign_id":   msg.CampaignID,
+		"subscriber_id": msg.SubscriberID,
+	})
+
+	logEntry.Error("Exceeded max attempts for sending the e-mail.")
+
+	err = h.storage.CreateSendLog(&entities.SendLog{
+		ID:           msg.ID,
+		UserID:       msg.UserID,
+		CampaignID:   msg.CampaignID,
+		SubscriberID: msg.SubscriberID,
+		Status:       entities.SendLogStatusFailed,
+		Description:  "Exceeded max attempts for sending the e-mail.",
+	})
+	if err != nil {
+		logEntry.WithError(err).Error("Unable to add log for sent emails result.")
+	}
+}
+
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
 func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
@@ -62,7 +100,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"id":            msg.ID.String(),
+		"send_log_id":   msg.ID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
@@ -149,9 +187,19 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				return err
 			default:
 				logEntry.WithError(aerr).Error("Unable to send templated email. Unknown status.")
+				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+				if rerr != nil {
+					logEntry.WithError(rerr).Error("Unable to delete cached id")
+				}
+				return err
 			}
 		} else {
 			logEntry.WithError(err).Error("Unable to send templated email.")
+			rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+			if rerr != nil {
+				logEntry.WithError(rerr).Error("Unable to delete cached id")
+			}
+			return err
 		}
 	}
 
