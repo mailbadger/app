@@ -410,7 +410,7 @@ func ImportSubscribers(c *gin.Context) {
 	defer func() {
 		err = res.Body.Close()
 		if err != nil {
-			logger.From(c).WithError(err).Error("unable to close body")
+			logger.From(c).WithError(err).Error("import subscribers: unable to close body")
 		}
 	}()
 
