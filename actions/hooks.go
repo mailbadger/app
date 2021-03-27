@@ -7,12 +7,13 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	sns "github.com/robbiet480/go.sns"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/storage"
-	sns "github.com/robbiet480/go.sns"
-	"github.com/sirupsen/logrus"
 )
 
 func HandleHook(c *gin.Context) {

@@ -31,6 +31,19 @@ CREATE TABLE IF NOT EXISTS `users` (
   FOREIGN KEY (`boundary_id`) REFERENCES boundaries(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `roles` (
+  `id`    INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+  `name`  VARCHAR(100) NOT NULL
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `users_roles` (
+  `user_id` INTEGER UNSIGNED NOT NULL,
+  `role_id` INTEGER UNSIGNED NOT NULL,
+  PRIMARY KEY (`user_id`, `role_id`),
+  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+  FOREIGN KEY (`role_id`) REFERENCES roles(`id`)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `sessions` (
   `id`         INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `user_id`    INTEGER UNSIGNED NOT NULL,
@@ -225,6 +238,18 @@ CREATE TABLE IF NOT EXISTS `sends` (
   INDEX id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `subscriber_events`
+(
+    `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
+    `user_id`          INTEGER UNSIGNED NOT NULL,
+    `subscriber_email` VARCHAR(191) NOT NULL,
+    `event_type`       VARCHAR(50) NOT NULL,
+    `created_at`       DATETIME(6) NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES users (`id`),
+    INDEX idx_user_id_created_at (`user_id`, `created_at`),
+    INDEX idx_event_type (`event_type`)
+) CHARACTER SET utf8mb4COLLATE utf8mb4_unicode_ci;
+
 -- +migrate Down
 
 DROP TABLE `subscribers_segments`;
@@ -241,6 +266,8 @@ DROP TABLE `ses_keys`;
 DROP TABLE `opens`;
 DROP TABLE `campaigns`;
 DROP TABLE `templates`;
-DROP TABLE `users`;
 DROP TABLE `sessions`;
 DROP TABLE `boundaries`;
+DROP TABLE `users_roles`;
+DROP TABLE `roles`;
+DROP TABLE `users`;
