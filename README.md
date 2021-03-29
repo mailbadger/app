@@ -2,7 +2,7 @@
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mailbadger/app)
 [![codecov](https://codecov.io/gh/mailbadger/app/branch/master/graph/badge.svg)](https://codecov.io/gh/mailbadger/app)
 
-# mailbadger
+![Mailbadger Logo](https://github.com/mailbadger/app/blob/assets/Mailbadger_MascotWordMarkOutline_Black.png?raw=true "Mailbadger Logo")
 
 Self hosted newsletter mail system written in go.
 
