@@ -12,7 +12,7 @@
     "dompurify": "^2.2.7",
     "es6-promise": "^4.2.8",
     "formik": "^2.2.6",
-    "grommet": "^2.17.0",
+    "grommet": "^2.17.1",
     "grommet-icons": "^4.4.0",
     "history": "^4.10.1",
     "prop-types": "^15.7.2",
