@@ -18,6 +18,7 @@ import (
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/validator"
 )
@@ -233,8 +234,26 @@ func PostCampaign(c *gin.Context) {
 	}
 
 	user := middleware.GetUser(c)
+	boundariesvc := boundaries.New(storage.GetFromContext(c))
 
-	_, err := storage.GetCampaignByName(c, body.Name, user.ID)
+	limitexceeded, err := boundariesvc.CampaignsLimitExceeded(user)
+	if err != nil {
+		logger.From(c).WithError(err).Error("Unable to check campaigns limit for user.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to check campaigns limit. Please try again.",
+		})
+		return
+	}
+
+	if limitexceeded {
+		logger.From(c).Info("User has exceeded his campaigns limit.")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You have exceeded your campaigns limit, please upgrade to a bigger plan or contact support.",
+		})
+		return
+	}
+
+	_, err = storage.GetCampaignByName(c, body.Name, user.ID)
 	if err == nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Campaign with that name already exists",
@@ -259,7 +278,7 @@ func PostCampaign(c *gin.Context) {
 
 	err = storage.CreateCampaign(c, campaign)
 	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create campaign.")
+		logger.From(c).WithError(err).Error("Unable to create campaign.")
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Unable to create the campaign.",
 		})

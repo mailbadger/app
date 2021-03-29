@@ -90,14 +90,12 @@ func Authorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, ok := c.Get("user")
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
 			return
 		}
 		_, ok = val.(*entities.User)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
 			return
 		}
 

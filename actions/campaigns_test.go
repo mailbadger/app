@@ -57,17 +57,18 @@ func TestCampaigns(t *testing.T) {
 
 	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: templateName}).
 		Expect().
-		Status(http.StatusCreated)
+		Status(http.StatusForbidden).JSON().Object().
+		ValueEqual("message", "You have exceeded your campaigns limit, please upgrade to a bigger plan or contact support.")
 
 	// test scopes
 	collection := auth.GET("/api/campaigns").
 		Expect().
 		Status(http.StatusOK).
 		JSON().Object().
-		ValueEqual("total", 3)
+		ValueEqual("total", 2)
 
 	collection.Value("links").Object().ContainsKey("previous").ContainsKey("next")
-	collection.Value("collection").Array().NotEmpty().Length().Equal(3)
+	collection.Value("collection").Array().NotEmpty().Length().Equal(2)
 
 	auth.GET("/api/campaigns").
 		WithQuery("scopes[name]", "foo").
@@ -101,9 +102,9 @@ func TestCampaigns(t *testing.T) {
 		JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
 		ValueEqual("errors", map[string]string{
-			"from_name":   "This field is required",
+			"from_name":    "This field is required",
 			"segment_id[]": "This field is required",
-			"source":      "This field is required",
+			"source":       "This field is required",
 		})
 
 	// test campaign not found

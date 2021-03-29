@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Box, ResponsiveContext } from "grommet";
+import { Box, ResponsiveContext, Grid } from "grommet";
 
 import Notification from "./Notifications";
 import { NotificationsProvider } from "./Notifications/context";
@@ -50,19 +50,28 @@ const Dashboard = () => {
   const size = useContext(ResponsiveContext);
 
   return (
-    <Box flex direction="row">
+    <Grid
+        fill
+        rows={['auto']}
+        columns={['auto', 'flex']}
+        areas={[
+          { name: 'sidebar', start: [0, 0], end: [0, 0] },
+          { name: 'main', start: [1, 0], end: [1, 0] },
+        ]}
+      >
       <Sidebar
+        gridArea="sidebar"
         showSidebar={showSidebar}
         size={size}
         closeSidebar={() => setSidebar(false)}
       />
-      <Box fill animation="fadeIn" overflow={{ horizontal: "hidden" }}>
+      <Box gridArea="main" overflow="auto" animation="fadeIn">
         <NotificationsProvider>
           <Routes />
           <Notification />
         </NotificationsProvider>
       </Box>
-    </Box>
+    </Grid>
   );
 };
 

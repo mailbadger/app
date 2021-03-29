@@ -31,6 +31,7 @@ type Storage interface {
 	CreateCampaign(*entities.Campaign) error
 	UpdateCampaign(*entities.Campaign) error
 	DeleteCampaign(int64, int64) error
+	GetMonthlyTotalCampaigns(userID int64) (int64, error)
 	GetCampaignOpens(campaignID, userID int64, p *PaginationCursor) error
 	GetClicksStats(campaignID, userID int64) (*entities.ClicksStats, error)
 	GetOpensStats(campaignID, userID int64) (*entities.OpensStats, error)
@@ -41,6 +42,7 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
+	LogFailedCampaign(c *entities.Campaign, description string) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -89,8 +91,9 @@ type Storage interface {
 	DeleteToken(token string) error
 
 	CreateSendLog(l *entities.SendLog) error
-	CountLogsByUUID(uuid string) (int, error)
+	CountLogsByUUID(id string) (int, error)
 	CountLogsByStatus(status string) (int, error)
+	GetSendLogByUUID(id string) (*entities.SendLog, error)
 
 	CreateBounce(b *entities.Bounce) error
 	CreateComplaint(c *entities.Complaint) error
@@ -229,6 +232,16 @@ func GetCampaignOpens(c context.Context, campaignID, userID int64, p *Pagination
 	return GetFromContext(c).GetCampaignOpens(campaignID, userID, p)
 }
 
+// GetMonthlyTotalCampaigns returns the total number of campaigns for a specified user in the current month
+func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
+	return GetFromContext(c).GetMonthlyTotalCampaigns(userID)
+}
+
+// LogFailedCampaign updates campaign status to failed & stores campaign failed log record.
+func LogFailedCampaign(c context.Context, ca *entities.Campaign, description string) error {
+	return GetFromContext(c).LogFailedCampaign(ca, description)
+}
+
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalSends(campaignID, userID)
@@ -244,7 +257,7 @@ func GetTotalBounces(c context.Context, campaignID, userID int64) (int64, error)
 	return GetFromContext(c).GetTotalBounces(campaignID, userID)
 }
 
-//GetTotalComplaints returns total complaints for specified campaign id
+// GetTotalComplaints returns total complaints for specified campaign id
 func GetTotalComplaints(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalComplaints(campaignID, userID)
 }
@@ -485,6 +498,7 @@ func GetReportByFilename(c context.Context, filename string, userID int64) (*ent
 	return GetFromContext(c).GetReportByFilename(filename, userID)
 }
 
+// GetRunningReportForUser returns a report that is currently being generated for the specified user
 func GetRunningReportForUser(c context.Context, userID int64) (*entities.Report, error) {
 	return GetFromContext(c).GetRunningReportForUser(userID)
 }
@@ -518,4 +532,9 @@ func DeleteTemplate(c context.Context, templateID int64, userID int64) error {
 // CreateSendLog creates a SendLogs entity.
 func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 	return GetFromContext(c).CreateSendLog(sendLogs)
+}
+
+// GetSendLogByUUID returns send log with specified uuid
+func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
+	return GetFromContext(c).GetSendLogByUUID(id)
 }

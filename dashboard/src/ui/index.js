@@ -15,6 +15,9 @@ import StatusIcons from "./StatusIcons";
 import Notice from "./Notice";
 import ListGrid from "./ListGrid";
 import Emoji from "./Emoji";
+import GradientBadger from "./GradientBadger";
+import Avatar from "./Avatar";
+import UserMenu from "./UserMenu";
 
 export {
   Badge,
@@ -35,4 +38,7 @@ export {
   Notice,
   ListGrid,
   Emoji,
+  GradientBadger,
+  Avatar,
+  UserMenu,
 };

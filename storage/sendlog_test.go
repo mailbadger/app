@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
@@ -24,42 +24,44 @@ func TestSendLogs(t *testing.T) {
 	store := From(db)
 	now := time.Now().UTC()
 
-	sendLogs := []entities.SendLog{
+	sendLogs := []*entities.SendLog{
 		{
-			UUID:         uuid.New().String(),
 			UserID:       1,
 			SubscriberID: 1,
 			CampaignID:   1,
-			Status:       entities.FailedSendLogStatus,
+			Status:       entities.SendLogStatusFailed,
 			Description:  "error: some error",
 			CreatedAt:    now,
 		},
 		{
-			UUID:         uuid.New().String(),
 			UserID:       1,
 			SubscriberID: 2,
 			CampaignID:   1,
-			Status:       entities.FailedSendLogStatus,
+			Status:       entities.SendLogStatusFailed,
 			Description:  "error: some error",
 			CreatedAt:    now,
 		},
 		{
-			UUID:         uuid.New().String(),
 			UserID:       1,
 			SubscriberID: 3,
 			CampaignID:   1,
-			Status:       entities.SuccessfulSendLogStatus,
+			Status:       entities.SendLogStatusSuccessful,
 			Description:  "",
 			CreatedAt:    now,
 		},
 	}
+
+	id := ksuid.New()
+
 	// test insert opens
-	for i := range sendLogs {
-		err := store.CreateSendLog(&sendLogs[i])
+	for _, sl := range sendLogs {
+		sl.ID = id
+		err := store.CreateSendLog(sl)
 		assert.Nil(t, err)
+		id = id.Next()
 	}
 
-	n, err := store.CountLogsByStatus(entities.FailedSendLogStatus)
+	n, err := store.CountLogsByStatus(entities.SendLogStatusFailed)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, n)
 

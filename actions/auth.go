@@ -174,9 +174,10 @@ func PostSignup(c *gin.Context) {
 			String: string(hashedPassword),
 			Valid:  true,
 		},
-		Active:   true,
-		Verified: false,
-		Source:   "mailbadger.io",
+		Active:     true,
+		Verified:   false,
+		BoundaryID: 1,
+		Source:     "mailbadger.io",
 	}
 
 	err = storage.CreateUser(c, user)

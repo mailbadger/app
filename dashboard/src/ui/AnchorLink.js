@@ -39,7 +39,7 @@ const AnchorLink = (props) => {
             textDecoration: "none",
             fontWeight: hfw,
             extend: {
-              color: hcolor,
+              color: "accent-1",
             },
           },
         },

@@ -14,7 +14,8 @@ type User struct {
 	Active     bool           `json:"active"`
 	Verified   bool           `json:"verified"`
 	BoundaryID int64          `json:"-"`
-	Boundaries *Boundaries    `json:"-" gorm:"foreignKey:boundary_id"`
+	Boundaries Boundaries     `json:"boundaries" gorm:"foreignKey:boundary_id"`
+	Roles      []Role         `json:"roles" gorm:"many2many:users_roles;"`
 	Source     string         `json:"source,omitempty"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`

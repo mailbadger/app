@@ -20,13 +20,14 @@ const theme = deepMerge(grommet, {
     font: {
       family:
         "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Ubuntu', sans-serif;",
-      size: "14px",
-      height: "20px",
     },
     colors: {
-      background: "light-3",
+      background: "#ffffff",
       brand: "#390099",
     },
+    size: {
+      avatar: '45px',
+    }
   },
   tabs: {
     header: {

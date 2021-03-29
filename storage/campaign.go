@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"os"
+
 	"github.com/jinzhu/gorm"
 
 	"github.com/mailbadger/app/entities"
@@ -11,6 +13,8 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 	p.SetCollection(&[]entities.Campaign{})
 	p.SetResource("campaigns")
 
+	// scopes
+	p.AddScope(NotDeleted)
 	for k, v := range scopeMap {
 		if k == "name" {
 			p.AddScope(NameLike(v))
@@ -27,11 +31,32 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 	return db.Paginate(p, userID)
 }
 
-// GetTotalCampaigns fetches the total count by user id
-func (db *store) GetTotalCampaigns(userID int64) (int64, error) {
+// GetMonthlyTotalCampaigns fetches the total count by user id in the current month
+func (db *store) GetMonthlyTotalCampaigns(userID int64) (int64, error) {
 	var count int64
-	err := db.Model(entities.Campaign{}).Where("user_id = ?", userID).Count(&count).Error
+	err := db.Model(entities.Campaign{}).
+		Scopes(currentMonthScope()).
+		Where("user_id = ?", userID).
+		Count(&count).Error
 	return count, err
+}
+
+func currentMonthScope() func(db *gorm.DB) *gorm.DB {
+	driver := os.Getenv("DATABASE_DRIVER")
+	switch driver {
+	case "mysql":
+		return currentMonthMySQLDialect
+	default:
+		return currentMonthSqlite3Dialect
+	}
+}
+
+func currentMonthMySQLDialect(db *gorm.DB) *gorm.DB {
+	return db.Where("YEAR(created_at) = YEAR(NOW()) AND MONTH(created_at) = MONTH(NOW())")
+}
+
+func currentMonthSqlite3Dialect(db *gorm.DB) *gorm.DB {
+	return db.Where("strftime('%Y', created_at) = strftime('%Y', date('now')) AND strftime('%m', created_at) = strftime('%m',date('now'))")
 }
 
 // GetCampaign returns the campaign by the given id and user id
@@ -166,4 +191,9 @@ func NameLike(name string) func(*gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("name LIKE ?", name+"%")
 	}
+}
+
+// NotDeleted scopes a resource by deletion column.
+func NotDeleted(db *gorm.DB) *gorm.DB {
+	return db.Where("deleted_at IS NULL")
 }

@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/cbroglie/mustache"
+	"github.com/segmentio/ksuid"
 )
 
 const (
@@ -19,8 +21,8 @@ const (
 	CampaignerTopic = "campaigner"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
-	// Sender topic is used by Sender Consumer
-	SenderTopic = "send_email"
+	// SenderTopic is the topic used by the sender consumer.
+	SenderTopic = "sender"
 )
 
 // Campaign represents the campaign entity
@@ -61,21 +63,28 @@ type CampaignerTopicParams struct {
 	SesKeys                `json:"ses_keys"`
 }
 
-// SendEmailTopicParams represent the request params used
+// SenderTopicParams represent the request params used
 // by the sender campaign consumer.
-type SendEmailTopicParams struct {
-	UUID                   string `json:"uuid"`
-	SubscriberID           int64  `json:"subscriber_id"`
-	SubscriberEmail        string `json:"subscriber_email"`
-	Source                 string `json:"source"`
-	ConfigurationSetExists bool   `json:"configuration_set_exists"`
-	CampaignID             int64  `json:"campaign_id"`
-	SesKeys
-	HTMLPart    []byte `json:"html_part"`
-	SubjectPart []byte `json:"subject_part"`
-	TextPart    []byte `json:"text_part"`
-	UserUUID    string `json:"user_uuid"`
-	UserID      int64  `json:"user_id"`
+type SenderTopicParams struct {
+	ID                     ksuid.KSUID `json:"id"`
+	UserID                 int64       `json:"user_id"`
+	UserUUID               string      `json:"user_uuid"`
+	CampaignID             int64       `json:"campaign_id"`
+	SubscriberID           int64       `json:"subscriber_id"`
+	SubscriberEmail        string      `json:"subscriber_email"`
+	Source                 string      `json:"source"`
+	ConfigurationSetExists bool        `json:"configuration_set_exists"`
+	HTMLPart               []byte      `json:"html_part"`
+	SubjectPart            []byte      `json:"subject_part"`
+	TextPart               []byte      `json:"text_part"`
+	SesKeys                SesKeys     `json:"ses_keys"`
+}
+
+type CampaignTemplateData struct {
+	Template    *Template
+	HTMLPart    *mustache.Template
+	SubjectPart *mustache.Template
+	TextPart    *mustache.Template
 }
 
 // CampaignClicksStats represents clicks stats by campaign, total number of links and stats for each link

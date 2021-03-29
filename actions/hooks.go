@@ -7,12 +7,13 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	sns "github.com/robbiet480/go.sns"
+	"github.com/sirupsen/logrus"
+
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/storage"
-	sns "github.com/robbiet480/go.sns"
-	"github.com/sirupsen/logrus"
 )
 
 func HandleHook(c *gin.Context) {
@@ -232,7 +233,6 @@ func HandleHook(c *gin.Context) {
 				}).WithError(err).Error("Unable to create click record.")
 			}
 		}
-
 	case emails.OpenType:
 		if msg.Open == nil {
 			logger.From(c).WithField("message", msg).Error("OpenType: open is nil.")

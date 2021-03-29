@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/cbroglie/mustache"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
@@ -15,14 +16,14 @@ import (
 type Service interface {
 	PrepareSubscriberEmailData(
 		s entities.Subscriber,
-		uuid string,
+		id ksuid.KSUID,
 		msg entities.CampaignerTopicParams,
 		campaignID int64,
 		html *mustache.Template,
 		sub *mustache.Template,
 		text *mustache.Template,
-	) (*entities.SendEmailTopicParams, error)
-	PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error
+	) (*entities.SenderTopicParams, error)
+	PublishSubscriberEmailParams(params *entities.SenderTopicParams) error
 }
 
 // service implements the Service interface
@@ -40,13 +41,13 @@ func New(db storage.Storage, p queue.Producer) Service {
 
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
-	uuid string,
+	id ksuid.KSUID,
 	msg entities.CampaignerTopicParams,
 	campaignID int64,
 	html *mustache.Template,
 	sub *mustache.Template,
 	text *mustache.Template,
-) (*entities.SendEmailTopicParams, error) {
+) (*entities.SenderTopicParams, error) {
 
 	var (
 		htmlBuf bytes.Buffer
@@ -65,6 +66,17 @@ func (svc *service) PrepareSubscriberEmailData(
 		}
 	}
 
+	if s.Name != "" {
+		m[entities.TagName] = s.Name
+	}
+
+	url, err := s.GetUnsubscribeURL(msg.UserUUID)
+	if err != nil {
+		return nil, fmt.Errorf("campaign service: get unsubscribe url: %w", err)
+	} else {
+		m[entities.TagUnsubscribeUrl] = url
+	}
+
 	err = html.FRender(&htmlBuf, m)
 	if err != nil {
 		return nil, fmt.Errorf("campaign service: prepare email data: render html: %w", err)
@@ -78,8 +90,8 @@ func (svc *service) PrepareSubscriberEmailData(
 		return nil, fmt.Errorf("campaign service: prepare email data: render text: %w", err)
 	}
 
-	sender := entities.SendEmailTopicParams{
-		UUID:                   uuid,
+	sender := entities.SenderTopicParams{
+		ID:                     id,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,
@@ -97,7 +109,7 @@ func (svc *service) PrepareSubscriberEmailData(
 
 }
 
-func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopicParams) error {
+func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicParams) error {
 	senderBytes, err := json.Marshal(params)
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: marshal params: %w", err)
@@ -108,5 +120,6 @@ func (svc *service) PublishSubscriberEmailParams(params *entities.SendEmailTopic
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: %w", err)
 	}
+
 	return nil
 }

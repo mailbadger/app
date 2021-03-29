@@ -1,4 +1,4 @@
-package importer
+package subscribers
 
 import (
 	"context"
@@ -7,26 +7,23 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/jinzhu/gorm"
-	"github.com/mailbadger/app/storage"
-
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/jinzhu/gorm"
+
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/storage"
 )
 
-const ActionImport = "import"
-
-type SubscribersImporter interface {
+type Service interface {
 	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
+	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64) error
 }
 
-type s3Importer struct {
+type service struct {
 	client s3iface.S3API
+	db     storage.Storage
 }
 
 var (
@@ -34,35 +31,24 @@ var (
 	ErrInvalidFormat     = errors.New("importer: csv file not formatted properly")
 )
 
-func NewS3SubscribersImporter(client s3iface.S3API) *s3Importer {
-	return &s3Importer{client}
+func New(client s3iface.S3API, db storage.Storage) *service {
+	return &service{client, db}
 }
 
-func (i *s3Importer) ImportSubscribersFromFile(
+func (s *service) ImportSubscribersFromFile(
 	ctx context.Context,
-	filename string,
 	userID int64,
 	segments []entities.Segment,
+	r io.Reader,
 ) (err error) {
-	res, err := i.client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
-		Key:    aws.String(fmt.Sprintf("subscribers/import/%d/%s", userID, filename)),
-	})
-	if err != nil {
-		return fmt.Errorf("importer: get object: %w", err)
-	}
-	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
-			err = cerr
-		}
-	}()
 
-	reader := csv.NewReader(res.Body)
+	reader := csv.NewReader(r)
 	header, err := reader.Read()
-	if err == io.EOF {
-		return fmt.Errorf("importer: empty file '%s': %w", filename, err)
-	}
 	if err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("importer: empty file : %w", err)
+		}
+
 		return fmt.Errorf("importer: read header: %w", err)
 	}
 
@@ -76,10 +62,10 @@ func (i *s3Importer) ImportSubscribersFromFile(
 
 	for {
 		line, err := reader.Read()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return fmt.Errorf("importer: read line: %w", err)
 		}
 		if len(line) < 2 {
@@ -95,7 +81,7 @@ func (i *s3Importer) ImportSubscribersFromFile(
 			return fmt.Errorf("importer: get subscriber by email: %w", err)
 		}
 
-		s := &entities.Subscriber{
+		sub := &entities.Subscriber{
 			UserID:   userID,
 			Email:    email,
 			Name:     name,
@@ -113,12 +99,66 @@ func (i *s3Importer) ImportSubscribersFromFile(
 			if err != nil {
 				return fmt.Errorf("importer: marshal metadata: %w", err)
 			}
-			s.MetaJSON = metaJSON
+			sub.MetaJSON = metaJSON
 		}
 
-		err = storage.CreateSubscriber(ctx, s)
+		err = s.db.CreateSubscriber(sub)
 		if err != nil {
 			return fmt.Errorf("importer: create subscriber: %w", err)
+		}
+	}
+
+	return
+}
+
+func (s *service) RemoveSubscribersFromFile(
+	ctx context.Context,
+	filename string,
+	userID int64,
+	r io.ReadCloser,
+) (err error) {
+
+	defer func() {
+		if cerr := r.Close(); cerr != nil {
+			err = cerr
+		}
+	}()
+
+	reader := csv.NewReader(r)
+	header, err := reader.Read()
+	if err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("bulkremover: empty file '%s': %w", filename, err)
+		}
+
+		return fmt.Errorf("bulkremover: read header: %w", err)
+	}
+
+	if len(header) < 1 {
+		return ErrInvalidColumnsNum
+	}
+
+	if strings.ToLower(header[0]) != "email" {
+		return ErrInvalidFormat
+	}
+
+	for {
+		line, err := reader.Read()
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return fmt.Errorf("bulkremover: read line: %w", err)
+		}
+		if len(line) == 0 {
+			continue
+		}
+
+		email := strings.TrimSpace(line[0])
+		err = s.db.DeleteSubscriberByEmail(email, userID)
+		if err != nil {
+			return fmt.Errorf("bulkremover: delete subscriber: %w", err)
 		}
 	}
 

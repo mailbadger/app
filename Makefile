@@ -7,12 +7,13 @@ else
 endif
 
 PACKAGES = $(shell go list ./... | grep -v /vendor/)
+driver ?= sqlite3
 
 
 gen: gen_migrations
 
 gen_migrations:
-	go generate github.com/mailbadger/app/storage/migrations
+	statik -ns=migrations -src=./storage/migrations/$(driver) -f
 
 test: 
 	go test -cover $(PACKAGES)
