@@ -20,6 +20,7 @@ type Storage interface {
 	GetActiveUserByUsername(string) (*entities.User, error)
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
+	DeleteUser(user *entities.User) error
 
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
@@ -114,6 +115,8 @@ type Storage interface {
 	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
+
+	DeleteAllEventsForUser(userID int64) error
 }
 
 // SetToContext sets the storage to the context
