@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -136,9 +138,32 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 	return subs, err
 }
 
-// CreateSubscriber creates a new subscriber in the database.
+// CreateSubscriber creates a new subscriber and create subscribers event in the database.
 func (db *store) CreateSubscriber(s *entities.Subscriber) error {
-	return db.Create(s).Error
+	tx := db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Create(s).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: create subscriber: %w" ,err)
+	}
+
+	if err := tx.Create(&entities.SubscriberEvent{
+		ID:              ksuid.New(),
+		UserID:          s.UserID,
+		SubscriberEmail: s.Email,
+		EventType:       entities.SubscriberEventTypeCreated,
+	}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: add subscriber event (created): %w" ,err)
+	}
+
+	return tx.Commit().Error
 }
 
 // UpdateSubscriber edits an existing subscriber in the database.
@@ -152,25 +177,50 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 
 	if err := tx.Model(s).Association("Segments").Replace(s.Segments).Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("subscription store: update subscriber's segment: %w" ,err)
 	}
 
 	if err := tx.Where("id = ? and user_id = ?", s.ID, s.UserID).Save(s).Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("subscription store: update subscriber: %w" ,err)
 	}
 
 	return tx.Commit().Error
 }
 
-// DeactivateSubscriber de-activates a subscriber by the given user and email.
+// DeactivateSubscriber de-activates a subscriber by the given user and email
+// and adds unsubscribed subscriber event.
 func (db *store) DeactivateSubscriber(userID int64, email string) error {
-	return db.Model(&entities.Subscriber{}).
+	tx := db.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&entities.Subscriber{}).
 		Where("user_id = ? AND email = ?", userID, email).
-		Update("active", false).Error
+		Update("active", false).Error; err != nil {
+			tx.Rollback()
+		return fmt.Errorf("subscription store: deactivate subscriber: %w" ,err)
+	}
+
+	if err := tx.Create(&entities.SubscriberEvent{
+		ID:              ksuid.New(),
+		UserID:          userID,
+		SubscriberEmail: email,
+		EventType:       entities.SubscriberEventTypeUnsubscribed,
+	}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: add subscriber event (unsubscribed): %w" ,err)
+	}
+
+	return tx.Commit().Error
 }
 
-// DeleteSubscriber deletes an existing subscriber from the database along with all his metadata.
+// DeleteSubscriber deletes an existing subscriber from the database along with
+// all his metadata and adds deleted subscriber event.
 func (db *store) DeleteSubscriber(id, userID int64) error {
 	s, err := db.GetSubscriber(id, userID)
 	if err != nil {
@@ -186,12 +236,22 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 
 	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w" ,err)
 	}
 
 	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
 		tx.Rollback()
-		return err
+		return fmt.Errorf("subscription store: delete subscriber: %w" ,err)
+	}
+
+	if err := tx.Create(&entities.SubscriberEvent{
+		ID:              ksuid.New(),
+		UserID:          userID,
+		SubscriberEmail: s.Email,
+		EventType:       entities.SubscriberEventTypeDeleted,
+	}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: add subscriber event (deleted): %w" ,err)
 	}
 
 	return tx.Commit().Error

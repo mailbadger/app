@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS `campaign_failed_logs`
 
 -- +migrate Down
 
-DROP TABLE "campaign_failed_logs";
+DROP TABLE `campaign_failed_logs`;

@@ -237,7 +237,6 @@ func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
 	return GetFromContext(c).GetMonthlyTotalCampaigns(userID)
 }
 
-
 // LogFailedCampaign updates campaign status to failed & stores campaign failed log record.
 func LogFailedCampaign(c context.Context, ca *entities.Campaign, description string) error {
 	return GetFromContext(c).LogFailedCampaign(ca, description)
@@ -258,7 +257,7 @@ func GetTotalBounces(c context.Context, campaignID, userID int64) (int64, error)
 	return GetFromContext(c).GetTotalBounces(campaignID, userID)
 }
 
-//GetTotalComplaints returns total complaints for specified campaign id
+// GetTotalComplaints returns total complaints for specified campaign id
 func GetTotalComplaints(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalComplaints(campaignID, userID)
 }
