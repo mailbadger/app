@@ -25,6 +25,7 @@ type Storage interface {
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
+	DeleteAllSessionsForUser(userID int64) error
 
 	GetCampaigns(int64, *PaginationCursor, map[string]string) error
 	GetCampaign(int64, int64) (*entities.Campaign, error)
@@ -43,7 +44,9 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
+	DeleteAllCampaignsForUser(userID int64) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
+	DeleteAllCampaignFailedLogsForUser(userID int64) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -55,6 +58,7 @@ type Storage interface {
 	DeleteSegment(int64, int64) error
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
+	DeleteAllSegmentsForUser(userID int64) error
 
 	GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	GetSubscribersBySegmentID(int64, int64, *PaginationCursor) error
@@ -76,6 +80,7 @@ type Storage interface {
 	GetTotalSubscribers(int64) (int64, error)
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
+	GetAllSubscribersForUser(userID int64) ([]entities.Subscriber, error)
 
 	GetAPIKeys(userID int64) ([]*entities.APIKey, error)
 	GetAPIKey(identifier string) (*entities.APIKey, error)
@@ -90,24 +95,33 @@ type Storage interface {
 	GetToken(token string) (*entities.Token, error)
 	CreateToken(s *entities.Token) error
 	DeleteToken(token string) error
+	DeleteAllTokensForUser(userID int64) error
 
 	CreateSendLog(l *entities.SendLog) error
 	CountLogsByUUID(id string) (int, error)
 	CountLogsByStatus(status string) (int, error)
 	GetSendLogByUUID(id string) (*entities.SendLog, error)
+	DeleteAllSendLogsForUser(userID int64) error
 
 	CreateBounce(b *entities.Bounce) error
+	DeleteAllBouncesForUSer(userID int64) error
 	CreateComplaint(c *entities.Complaint) error
+	DeleteAllComplaintsForUser(userID int64) error
 	CreateSend(s *entities.Send) error
+	DeleteAllSendsForUser(userID int64) error
 	CreateClick(c *entities.Click) error
+	DeleteAllClicksForUser(userID int64) error
 	CreateOpen(o *entities.Open) error
+	DeleteAllOpensForUser(userID int64) error
 	CreateDelivery(d *entities.Delivery) error
+	DeleteAllDeliveriesForUser(userID int64) error
 
 	CreateReport(r *entities.Report) error
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
+	DeleteAllReportsForUser(userID int64) error
 
 	CreateTemplate(t *entities.Template) error
 	UpdateTemplate(t *entities.Template) error
@@ -115,6 +129,7 @@ type Storage interface {
 	GetTemplate(templateID int64, userID int64) (*entities.Template, error)
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
+	GetAllTemplatesForUser(userID int64) ([]entities.Template, error)
 
 	DeleteAllEventsForUser(userID int64) error
 }
