@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	awss3 "github.com/aws/aws-sdk-go/service/s3"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +30,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
 )
@@ -51,19 +53,34 @@ func Execute() {
 }
 
 var (
-	// db keeps the connection to the database
+	// db represents the connection to the database
 	db storage.Storage
+	// s3Client represents the s3 client
+	s3Client *awss3.S3
 )
 
 func init() {
+	// viper reads conf file app.env located in fixtures
 	initConfig()
 
 	// Connecting to database
 	driver := viper.GetString("DATABASE_DRIVER")
 	conf := makeConfigFromEnv(driver)
 	db = storage.From(openDbConn(driver, conf))
+
+	var err error
+	// Creating s3 client
+	s3Client, err = s3.NewS3Client(
+		viper.GetString("AWS_S3_ACCESS_KEY"),
+		viper.GetString("AWS_S3_SECRET_KEY"),
+		viper.GetString("AWS_S3_REGION"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
+// initConfig reads configuration file
 func initConfig() {
 	viper.AddConfigPath(".")
 	viper.SetConfigType("env")
@@ -77,6 +94,7 @@ func initConfig() {
 	}
 }
 
+// makeConfigFromEnv creates configuration string for db connection
 func makeConfigFromEnv(driver string) string {
 	switch driver {
 	case "sqlite3":

@@ -16,13 +16,14 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/jinzhu/gorm"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/mailbadger/app/services/templates"
 )
 
 // clearCmd represents the clear command
@@ -43,34 +44,110 @@ func clear() error {
 		return fmt.Errorf("failed to fetch 'badger' user: %w", err)
 	}
 
-	for i := 1; i <= 100; i++ {
-		email := "subscriber" + strconv.Itoa(i) + "@mail.com"
-		err = db.DeleteSubscriberByEmail(email, u.ID)
+	apiKeys, err := db.GetAPIKeys(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch api keys for user: %w", err)
+	}
+
+	for _, apiKey := range apiKeys {
+		err = db.DeleteAPIKey(apiKey.ID, u.ID)
 		if err != nil {
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"user_id":          u.ID,
-				"subscriber_email": email,
-			}).Error("failed to delete subscriber")
+			return fmt.Errorf("failed to delete ai key: %w", err)
+		}
+	}
+
+	subscribers, err := db.GetAllSubscribersForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch subscribers for user: %w", err)
+	}
+
+	for _, s := range subscribers {
+		err = db.DeleteSubscriber(s.ID, u.ID)
+		if err != nil {
 			return fmt.Errorf("failed to delete subscriber: %w", err)
 		}
 	}
 
-	fullSegment, err := db.GetSegmentByName("full segment", u.ID)
+	err = db.DeleteAllSegmentsForUser(u.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		return fmt.Errorf("failed to fetch 'full segment' segment: %w", err)
-	}
-
-	err = db.DeleteSegment(fullSegment.ID, u.ID)
-	if err != nil {
-		return fmt.Errorf("failed to delete 'full segment' segment: %w", err)
+		return fmt.Errorf("failed to delete all segments for user: %w", err)
 	}
 
 	err = db.DeleteAllEventsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete subscriber events for 'badger' user: %w", err)
+	}
+
+	err = db.DeleteAllBouncesForUSer(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all bounces for user: %w", err)
+	}
+
+	err = db.DeleteAllCampaignFailedLogsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all campaign failed logs for user: %w", err)
+	}
+
+	err = db.DeleteAllClicksForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all clicks for user: %w", err)
+	}
+
+	err = db.DeleteAllComplaintsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all complaints for user: %w", err)
+	}
+
+	err = db.DeleteAllDeliveriesForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all deliveries for user: %w", err)
+	}
+
+	err = db.DeleteAllOpensForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all opens for user: %w", err)
+	}
+
+	err = db.DeleteAllSendsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all sends for user: %w", err)
+	}
+
+	err = db.DeleteAllCampaignsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all campaigns for user: %w", err)
+	}
+
+	allTemplates, err := db.GetAllTemplatesForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch all tmeplates for user: %w", err)
+	}
+
+	for _, t := range allTemplates {
+		err = templates.New(db, s3Client).DeleteTemplate(context.Background(), t.ID, u.ID)
+		if err != nil {
+			return fmt.Errorf("failed to delete template	: %w", err)
+		}
+	}
+
+	err = db.DeleteAllReportsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all reports for user: %w", err)
+	}
+
+	err = db.DeleteSesKeys(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete ses keys: %w", err)
+	}
+
+	err = db.DeleteAllSessionsForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all sessions for user: %w", err)
+	}
+
+	err = db.DeleteAllTokensForUser(u.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete all tokens for user: %w", err)
 	}
 
 	err = db.DeleteUser(u)
