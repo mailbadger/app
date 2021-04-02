@@ -53,3 +53,10 @@ func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[st
 func (db *store) DeleteTemplate(templateID int64, userID int64) error {
 	return db.Where("user_id = ?", userID).Delete(entities.Template{BaseTemplate: entities.BaseTemplate{ Model:entities.Model{ID: templateID}}}).Error
 }
+
+// GetAllTemplatesForUser fetches all templates for user
+func (db *store) GetAllTemplatesForUser(userID int64) ([]entities.Template, error) {
+	var t []entities.Template
+	err := db.Where("user_id = ?", userID).Find(&t).Error
+	return t, err
+}
