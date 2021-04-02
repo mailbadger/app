@@ -8,7 +8,6 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-
 func (db *store) LogFailedCampaign(c *entities.Campaign, description string) error {
 	tx := db.Begin()
 	defer func() {
@@ -39,4 +38,9 @@ func (db *store) LogFailedCampaign(c *entities.Campaign, description string) err
 	}
 
 	return tx.Commit().Error
+}
+
+// DeleteAllCampaignFailedLogsForUser deletes all campaign failed logs for user
+func (db *store) DeleteAllCampaignFailedLogsForUser(userID int64) error {
+	return db.Where("user_id = ?", userID).Delete(&entities.CampaignFailedLog{}).Error
 }
