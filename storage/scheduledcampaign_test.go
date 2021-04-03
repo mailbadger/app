@@ -37,6 +37,6 @@ func TestScheduledCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test delete scheduled campaign
-	err = store.DeleteScheduledCampaign(c.ID, c.CampaignID)
+	err = store.DeleteScheduledCampaign(c.CampaignID)
 	assert.Nil(t, err)
 }
