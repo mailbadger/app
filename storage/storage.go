@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -43,6 +44,8 @@ type Storage interface {
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
+	CreateScheduledCampaign(c *entities.ScheduledCampaign) error
+	DeleteScheduledCampaign(id ksuid.KSUID, userID int64) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)

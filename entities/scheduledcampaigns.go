@@ -6,7 +6,7 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-type ScheduledCampaigns struct {
+type ScheduledCampaign struct {
 	ID          ksuid.KSUID `json:"id" gorm:"column:id; primary_key:yes"`
 	CampaignID  int64       `json:"campaign_id"`
 	ScheduledAt time.Time   `json:"scheduled_at"`
