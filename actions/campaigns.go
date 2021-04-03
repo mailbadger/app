@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/emails"
@@ -588,14 +589,13 @@ func DeleteScheduledCampaign(c *gin.Context) {
 	}
 	campaign, err := storage.GetCampaign(c, id, user.ID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "This campaign does not belong to you.",
+			})
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Campaign not found.",
-		})
-		return
-	}
-	if campaign.ID != id {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "This campaign does not belong to you.",
+			"message": "Campaign not found, please try again.",
 		})
 		return
 	}
