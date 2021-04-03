@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestScheduledCampaign(t *testing.T) {
