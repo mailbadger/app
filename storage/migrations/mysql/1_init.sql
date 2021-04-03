@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS `templates`
 CREATE TABLE IF NOT EXISTS `campaigns` (
   `id`            INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `user_id`       INTEGER UNSIGNED NOT NULL,
+  `event_id`      VARBINARY(27) UNIQUE,
   `name`          VARCHAR(191) NOT NULL,
   `template_id`   INTEGER UNSIGNED,
   `status`        VARCHAR(191) NOT NULL,

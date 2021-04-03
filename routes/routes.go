@@ -153,7 +153,7 @@ func New() http.Handler {
 	// Assets
 	handler.Static("/static", appDir+"/static")
 
-	//rate limiter
+	// rate limiter
 	lmt := tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
 	lmt.SetMessageContentType("application/json; charset=utf-8")

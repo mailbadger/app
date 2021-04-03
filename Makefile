@@ -31,3 +31,12 @@ build_static:
 
 image:
 	docker build -t mailbadger/app:latest .
+
+run-mailbadger:
+	./scripts/run-mailbadger.sh
+
+run-campaigner:
+	./scripts/run-campaigner.sh
+
+run-sender:
+	./scripts/run-sender.sh

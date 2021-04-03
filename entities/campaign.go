@@ -29,6 +29,7 @@ const (
 type Campaign struct {
 	Model
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
+	EventID      *ksuid.KSUID      `json:"-"`
 	Name         string            `json:"name" gorm:"not null"`
 	TemplateID   int64             `json:"-"`
 	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
@@ -103,6 +104,17 @@ func (c Campaign) GetCreatedAt() time.Time {
 
 func (c Campaign) GetUpdatedAt() time.Time {
 	return c.Model.UpdatedAt
+}
+
+// SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
+func (c *Campaign) SetCampaignEventID(sc *ScheduledCampaign) {
+	uid := ksuid.New()
+
+	if sc != nil && len(sc.ID) > 0 {
+		uid = sc.ID
+	}
+
+	c.EventID = &uid
 }
 
 type OpensStats struct {

@@ -43,9 +43,12 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
+
 	LogFailedCampaign(c *entities.Campaign, description string) error
+
 	CreateScheduledCampaign(c *entities.ScheduledCampaign) error
 	DeleteScheduledCampaign(id ksuid.KSUID, campaignID int64) error
+	GetScheduledCampaign(campaignID int64) (*entities.ScheduledCampaign, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -540,4 +543,9 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 // GetSendLogByUUID returns send log with specified uuid
 func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
 	return GetFromContext(c).GetSendLogByUUID(id)
+}
+
+// GetScheduledCampaign fetches the schedule record for campaign
+func GetScheduledCampaign(c context.Context, campaignID int64) (*entities.ScheduledCampaign, error) {
+	return GetFromContext(c).GetScheduledCampaign(campaignID)
 }
