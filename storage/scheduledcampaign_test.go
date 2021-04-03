@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestScheduledCampaign(t *testing.T) {
@@ -36,6 +37,6 @@ func TestScheduledCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test delete scheduled campaign
-	err = store.DeleteScheduledCampaign(c.ID, c.CampaignID)
+	err = store.DeleteScheduledCampaign(c.CampaignID)
 	assert.Nil(t, err)
 }
