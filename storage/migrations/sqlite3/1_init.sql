@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
 CREATE TABLE IF NOT EXISTS "campaigns" (
   "id"            integer primary key ,
   "user_id"       integer,
+  "event_id"      varchar(27),
   "name"          varchar(191) not null,
   "template_id"   integer,
   "status"        varchar(191),
