@@ -132,6 +132,18 @@ func StartCampaign(c *gin.Context) {
 	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to describe configuration set.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to start campaign.",
+		})
+		return
+	}
 
 	campaign.Status = entities.StatusSending
 
