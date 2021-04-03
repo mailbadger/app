@@ -45,7 +45,7 @@ type Storage interface {
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
 	CreateScheduledCampaign(c *entities.ScheduledCampaign) error
-	DeleteScheduledCampaign(id ksuid.KSUID, userID int64) error
+	DeleteScheduledCampaign(id ksuid.KSUID, campaignID int64) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
