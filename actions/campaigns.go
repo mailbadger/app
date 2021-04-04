@@ -600,7 +600,7 @@ func DeleteScheduledCampaign(c *gin.Context) {
 		return
 	}
 
-	err = storage.DeleteScheduledCampaign(c, campaign.ID)
+	err = storage.DeleteCampaignSchedule(c, campaign.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to delete campaign, please try again.",
