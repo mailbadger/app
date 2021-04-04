@@ -25,7 +25,7 @@ func TestScheduledCampaign(t *testing.T) {
 
 	store := From(db)
 
-	cs, err := store.GetScheduledCampaign(123)
+	cs, err := store.GetCampaignSchedule(123)
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
 	assert.Equal(t, &entities.CampaignSchedule{}, cs)
 
@@ -38,16 +38,16 @@ func TestScheduledCampaign(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
-	err = store.CreateScheduledCampaign(c)
+	err = store.CreateCampaignSchedule(c)
 	assert.Nil(t, err)
 
-	cs, err = store.GetScheduledCampaign(1)
+	cs, err = store.GetCampaignSchedule(1)
 	assert.Nil(t, err)
 	assert.Equal(t, c.ID, cs.ID)
 	assert.Equal(t, c.CampaignID, cs.CampaignID)
 	assert.Equal(t, c.ScheduledAt.UTC(), cs.ScheduledAt.UTC())
 
 	// Test delete scheduled campaign
-	err = store.DeleteScheduledCampaign(c.CampaignID)
+	err = store.DeleteCampaignSchedule(c.CampaignID)
 	assert.Nil(t, err)
 }

@@ -95,7 +95,6 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `status`        VARCHAR(191) NOT NULL,
   `created_at`    DATETIME(6) NOT NULL,
   `updated_at`    DATETIME(6) NOT NULL,
-  `scheduled_at`  DATETIME(6) DEFAULT NULL,
   `completed_at`  DATETIME(6) DEFAULT NULL,
   `deleted_at`    DATETIME(6) DEFAULT NULL,
   `started_at`    DATETIME(6) DEFAULT NULL,

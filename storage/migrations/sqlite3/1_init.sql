@@ -1,7 +1,7 @@
 -- +migrate Up
 
 CREATE TABLE IF NOT EXISTS "boundaries" (
-  "id"                         integer primary key ,
+  "id"                         integer primary key autoincrement,
   "type"                       varchar(191) not null,
   "stats_retention"            integer not null,
   "subscribers_limit"          integer not null,
@@ -22,7 +22,7 @@ INSERT INTO "boundaries" ("type", "stats_retention", "subscribers_limit", "campa
 VALUES ("db_test", 0, 0, 2, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
 
 CREATE TABLE IF NOT EXISTS "users" (
-  "id"          integer primary key ,
+  "id"          integer primary key autoincrement,
   "uuid"        varchar(36) not null UNIQUE,
   "username"    varchar(191) not null UNIQUE,
   "password"    varchar(191),
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 );
 
 CREATE TABLE IF NOT EXISTS "roles" (
-  "id"    integer primary key ,
+  "id"    integer primary key autoincrement,
   "name"  varchar(100)
 );
 
@@ -49,7 +49,7 @@ CREATE INDEX IF NOT EXISTS i_user ON "users_roles" (user_id);
 CREATE INDEX IF NOT EXISTS i_role ON "users_roles" (role_id);
 
 CREATE TABLE IF NOT EXISTS "sessions" (
-  "id"         integer primary key ,
+  "id"         integer primary key autoincrement,
   "user_id"    integer not null,
   "session_id" varchar(191) not null,
   "created_at" datetime not null,
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 );
 
 CREATE TABLE IF NOT EXISTS "api_keys" (
-  "id"         integer primary key ,
+  "id"         integer primary key autoincrement,
   "user_id"    integer not null,
   "secret_key" varchar(191) not null,
   "active"     integer not null,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
 
 
 CREATE TABLE IF NOT EXISTS "templates" (
-    "id"           integer primary key ,
+    "id"           integer primary key autoincrement,
     `user_id`      integer unsigned NOT NULL,
     `name`         varchar(191)     NOT NULL,
     "subject_part" varchar(191)     NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS "templates" (
 );
 
 CREATE TABLE IF NOT EXISTS "ses_keys" (
-  "id"         integer primary key ,
+  "id"         integer primary key autoincrement,
   "user_id"    integer,
   "access_key" varchar(191) not null,
   "secret_key" varchar(191) not null,
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
 );
 
 CREATE TABLE IF NOT EXISTS "campaigns" (
-  "id"            integer primary key ,
+  "id"            integer primary key autoincrement,
   "user_id"       integer,
   "event_id"      varchar(27),
   "name"          varchar(191) not null,
@@ -98,7 +98,6 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "status"        varchar(191),
   "created_at"    datetime,
   "updated_at"    datetime,
-  "scheduled_at"  datetime DEFAULT NULL,
   "completed_at"  datetime DEFAULT NULL,
   "deleted_at"    datetime DEFAULT NULL,
   "started_at"    datetime DEFAULT NULL
@@ -107,7 +106,7 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
 CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
 
 CREATE TABLE IF NOT EXISTS "subscribers" (
-  "id"          integer primary key ,
+  "id"          integer primary key autoincrement,
   "user_id"     integer,
   "name"        varchar(191),
   "email"       varchar(191) not null,
@@ -123,7 +122,7 @@ CREATE INDEX IF NOT EXISTS i_user ON "subscribers" (user_id);
 CREATE INDEX IF NOT EXISTS i_user_blacklist_active ON "subscribers" (user_id, blacklisted, active);
 
 CREATE TABLE IF NOT EXISTS "segments" (
-  "id"          integer primary key ,
+  "id"          integer primary key autoincrement,
   "user_id"     integer,
   "name"        varchar(191),
   "created_at"  datetime,
@@ -142,7 +141,7 @@ CREATE INDEX IF NOT EXISTS i_segment    ON "subscribers_segments" (segment_id);
 CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_segments" (subscriber_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
-  "id"              integer primary key ,
+  "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
   "recipient"       varchar(191),
@@ -156,7 +155,7 @@ CREATE TABLE IF NOT EXISTS "bounces" (
 );
 
 CREATE TABLE IF NOT EXISTS "complaints" (
-  "id"              integer primary key ,
+  "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
   "recipient"       varchar(191),
@@ -167,7 +166,7 @@ CREATE TABLE IF NOT EXISTS "complaints" (
 );
 
 CREATE TABLE IF NOT EXISTS "clicks" (
-  "id"              integer primary key ,
+  "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
   "recipient"       varchar(191),
@@ -178,7 +177,7 @@ CREATE TABLE IF NOT EXISTS "clicks" (
 );
 
 CREATE TABLE IF NOT EXISTS "opens" (
-  "id"              integer primary key ,
+  "id"              integer primary key autoincrement,
   "campaign_id"     integer,
   "user_id"         integer,
   "recipient"       varchar(191),
@@ -188,7 +187,7 @@ CREATE TABLE IF NOT EXISTS "opens" (
 );
 
 CREATE TABLE IF NOT EXISTS "deliveries" (
-  "id"                     integer primary key ,
+  "id"                     integer primary key autoincrement,
   "campaign_id"            integer,
   "user_id"                integer,
   "recipient"              varchar(191),
@@ -211,7 +210,7 @@ CREATE TABLE IF NOT EXISTS "send_logs" (
 );
 
 CREATE TABLE IF NOT EXISTS "sends" (
-  "id"                 integer primary key ,
+  "id"                 integer primary key autoincrement,
   "user_id"            integer,
   "campaign_id"        integer,
   "message_id"         varchar(191) not null,
