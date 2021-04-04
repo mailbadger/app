@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `campaign_schedules`
     `created_at`    datetime(6)         NOT NULL,
     `updated_at`    datetime(6)         NOT NULL,
     FOREIGN KEY (`campaign_id`) REFERENCES campaigns (`id`)
-    );
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- +migrate Down
 
