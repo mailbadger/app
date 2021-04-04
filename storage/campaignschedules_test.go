@@ -27,10 +27,10 @@ func TestScheduledCampaign(t *testing.T) {
 
 	cs, err := store.GetScheduledCampaign(123)
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
-	assert.Equal(t, &entities.CampaignSchedules{}, cs)
+	assert.Equal(t, &entities.CampaignSchedule{}, cs)
 
 	// Test create scheduled campaign
-	c := &entities.CampaignSchedules{
+	c := &entities.CampaignSchedule{
 		ID:          ksuid.New(),
 		CampaignID:  1,
 		ScheduledAt: now,
