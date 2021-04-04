@@ -7,10 +7,10 @@ CREATE TABLE IF NOT EXISTS `reports`
     `resource`   varchar(191) NOT NULL,
     `file_name`  varchar(191) NOT NULL,
     `type`       varchar(191) NOT NULL,
-    "status"     varchar(191) NOT NULL,
+    `status`     varchar(191) NOT NULL,
     `note`       varchar(191),
-    "created_at" datetime,
-    "updated_at" datetime
+    `created_at` datetime,
+    `updated_at` datetime
 );
 CREATE INDEX IF NOT EXISTS i_user ON `reports` (user_id);
 
