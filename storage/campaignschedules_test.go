@@ -25,7 +25,7 @@ func TestScheduledCampaign(t *testing.T) {
 	store := From(db)
 
 	//Test create scheduled campaign
-	c := &entities.CampaignSchedules{
+	c := &entities.CampaignSchedule{
 		ID:          ksuid.New(),
 		CampaignID:  1,
 		ScheduledAt: now,
@@ -33,10 +33,10 @@ func TestScheduledCampaign(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
-	err := store.CreateScheduledCampaign(c)
+	err := store.CreateCampaignSchedule(c)
 	assert.Nil(t, err)
 
 	// Test delete scheduled campaign
-	err = store.DeleteScheduledCampaign(c.CampaignID)
+	err = store.DeleteCampaignSchedule(c.CampaignID)
 	assert.Nil(t, err)
 }
