@@ -615,10 +615,22 @@ func PatchScheduledCampaign(c *gin.Context) {
 		})
 	}
 
-	sc := &entities.ScheduledCampaign{
+	var sc *entities.CampaignSchedules
+	sc = &entities.CampaignSchedules{
 		ID:          ksuid.New(),
 		CampaignID:  campaign.ID,
 		ScheduledAt: schAt,
+	}
+
+	// if schedule exist update.
+	if campaign.Schedules != nil {
+		sc = &entities.CampaignSchedules{
+			ID:          campaign.Schedules.ID,
+			CampaignID:  campaignID,
+			ScheduledAt: schAt,
+			CreatedAt:   campaign.Schedules.CreatedAt,
+			UpdatedAt:   time.Now(),
+		}
 	}
 
 	err = storage.CreateScheduledCampaign(c, sc)

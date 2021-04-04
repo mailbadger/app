@@ -9,7 +9,7 @@ import (
 )
 
 // CreateScheduledCampaign creates a scheduled campaign.
-func (db *store) CreateScheduledCampaign(c *entities.ScheduledCampaign) error {
+func (db *store) CreateScheduledCampaign(c *entities.CampaignSchedules) error {
 	err := db.Where("campaign_id = ?", c.CampaignID).Save(c).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -22,5 +22,5 @@ func (db *store) CreateScheduledCampaign(c *entities.ScheduledCampaign) error {
 
 // DeleteScheduledCampaign deletes a scheduled campaign.
 func (db *store) DeleteScheduledCampaign(campaignID int64) error {
-	return db.Where("campaign_id = ?", campaignID).Delete(entities.ScheduledCampaign{}).Error
+	return db.Where("campaign_id = ?", campaignID).Delete(entities.CampaignSchedules{}).Error
 }
