@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/emails"
@@ -59,22 +58,8 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	if campaign.Status != entities.StatusDraft {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
-		})
-		return
-	}
-
-	sc, err := storage.GetScheduledCampaign(c, campaign.ID)
-	if err != nil && err != gorm.ErrRecordNotFound {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to start campaign.",
-		})
-		return
-	}
-
-	campaign.SetCampaignEventID(sc)
+	campaign.Status = entities.StatusSending
+	campaign.SetCampaignEventID()
 
 	template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
 	if err != nil {
@@ -132,34 +117,6 @@ func StartCampaign(c *gin.Context) {
 	_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
 		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
 	})
-	if err != nil {
-		logger.From(c).WithFields(logrus.Fields{
-			"campaign_id": id,
-			"user_id":     u.ID,
-			"template_id": campaign.BaseTemplate.ID,
-			"segment_ids": body.SegmentIDs,
-		}).WithError(err).Error("Unable to describe configuration set.")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to start campaign.",
-		})
-		return
-	}
-
-	campaign.Status = entities.StatusSending
-
-	err = storage.UpdateCampaign(c, campaign)
-	if err != nil {
-		logger.From(c).WithFields(logrus.Fields{
-			"campaign_id": id,
-			"user_id":     u.ID,
-			"template_id": campaign.BaseTemplate.ID,
-			"segment_ids": body.SegmentIDs,
-		}).WithError(err).Error("Unable to update campaign.")
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to start campaign.",
-		})
-		return
-	}
 
 	msg, err := json.Marshal(entities.CampaignerTopicParams{
 		CampaignID:             id,
@@ -192,6 +149,20 @@ func StartCampaign(c *gin.Context) {
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to start campaign.",
+		})
+		return
+	}
+
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"user_id":     u.ID,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to update campaign.")
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Unable to start campaign.",
 		})
