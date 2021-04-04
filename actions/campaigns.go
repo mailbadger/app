@@ -59,7 +59,7 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	campaign.Status = entities.StatusSending
-	campaign.SetCampaignEventID()
+	campaign.SetEventID()
 
 	template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
 	if err != nil {

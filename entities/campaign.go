@@ -107,7 +107,7 @@ func (c Campaign) GetUpdatedAt() time.Time {
 }
 
 // SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
-func (c *Campaign) SetCampaignEventID() {
+func (c *Campaign) SetEventID() {
 	if c.Schedule != nil {
 		c.EventID = &c.Schedule.ID
 		return
