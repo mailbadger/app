@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -46,9 +45,9 @@ type Storage interface {
 
 	LogFailedCampaign(c *entities.Campaign, description string) error
 
-	CreateScheduledCampaign(c *entities.ScheduledCampaign) error
-	DeleteScheduledCampaign(id ksuid.KSUID, campaignID int64) error
-	GetScheduledCampaign(campaignID int64) (*entities.ScheduledCampaign, error)
+	CreateScheduledCampaign(c *entities.CampaignSchedules) error
+	DeleteScheduledCampaign(campaignID int64) error
+	GetScheduledCampaign(campaignID int64) (*entities.CampaignSchedules, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -546,6 +545,6 @@ func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
 }
 
 // GetScheduledCampaign fetches the schedule record for campaign
-func GetScheduledCampaign(c context.Context, campaignID int64) (*entities.ScheduledCampaign, error) {
+func GetScheduledCampaign(c context.Context, campaignID int64) (*entities.CampaignSchedules, error) {
 	return GetFromContext(c).GetScheduledCampaign(campaignID)
 }

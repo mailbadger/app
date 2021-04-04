@@ -33,6 +33,7 @@ type Campaign struct {
 	Name         string            `json:"name" gorm:"not null"`
 	TemplateID   int64             `json:"-"`
 	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
+	Schedules    *CampaignSchedules `json:"campaign_schedules" gorm:"foreignKey:campaign_id"`
 	Status       string            `json:"status"`
 	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
@@ -107,11 +108,11 @@ func (c Campaign) GetUpdatedAt() time.Time {
 }
 
 // SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
-func (c *Campaign) SetCampaignEventID(sc *ScheduledCampaign) {
+func (c *Campaign) SetCampaignEventID(cs *CampaignSchedules) {
 	uid := ksuid.New()
 
-	if sc != nil && len(sc.ID) > 0 {
-		uid = sc.ID
+	if cs != nil && len(cs.ID) > 0 {
+		uid = cs.ID
 	}
 
 	c.EventID = &uid
