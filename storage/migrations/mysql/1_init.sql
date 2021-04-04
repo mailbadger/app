@@ -97,7 +97,6 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
   `scheduled_at`  DATETIME(6) DEFAULT NULL,
   `completed_at`  DATETIME(6) DEFAULT NULL,
   `deleted_at`    DATETIME(6) DEFAULT NULL,
-  `started_at`    DATETIME(6) DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES users(`id`),
   FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   INDEX id_created_at (`id`, `created_at`)

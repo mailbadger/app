@@ -62,7 +62,7 @@ func currentMonthSqlite3Dialect(db *gorm.DB) *gorm.DB {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Preload("Schedules").Find(&campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Preload("Schedule").Find(&campaign).Error
 	return campaign, err
 }
 

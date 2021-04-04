@@ -616,25 +616,25 @@ func PatchScheduledCampaign(c *gin.Context) {
 		return
 	}
 
-	var sc *entities.CampaignSchedules
-	sc = &entities.CampaignSchedules{
+	var sc *entities.CampaignSchedule
+	sc = &entities.CampaignSchedule{
 		ID:          ksuid.New(),
 		CampaignID:  campaign.ID,
 		ScheduledAt: schAt,
 	}
 
 	// if schedule exist update.
-	if campaign.Schedules != nil {
-		sc = &entities.CampaignSchedules{
-			ID:          campaign.Schedules.ID,
+	if campaign.Schedule != nil {
+		sc = &entities.CampaignSchedule{
+			ID:          campaign.Schedule.ID,
 			CampaignID:  campaignID,
 			ScheduledAt: schAt,
-			CreatedAt:   campaign.Schedules.CreatedAt,
+			CreatedAt:   campaign.Schedule.CreatedAt,
 			UpdatedAt:   time.Now(),
 		}
 	}
 
-	err = storage.CreateScheduledCampaign(c, sc)
+	err = storage.CreateCampaignSchedule(c, sc)
 	if err != nil {
 		logrus.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{
