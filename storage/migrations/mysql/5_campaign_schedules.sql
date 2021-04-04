@@ -1,6 +1,6 @@
 -- +migrate Up
 
-CREATE TABLE IF NOT EXISTS `scheduled_campaigns`
+CREATE TABLE IF NOT EXISTS `campaign_schedules`
 (
     `id`            varbinary(27)       primary key,
     `campaign_id`   integer unsigned    NOT NULL,
@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS `scheduled_campaigns`
 
 -- +migrate Down
 
-DROP TABLE `scheduled_campaigns`;
+DROP TABLE `campaign_schedules`;
