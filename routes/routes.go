@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -75,8 +74,7 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
-	handler.Use(middleware.S3Client(s3Client),
-	)
+	handler.Use(middleware.S3Client(s3Client))
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
@@ -117,7 +115,7 @@ func New() http.Handler {
 		logrus.Panic("app directory not set")
 	}
 
-	handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
+//	handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
 
 	handler.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/api") {
@@ -253,6 +251,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
 			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints)
 			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces)
+			campaigns.PATCH("/:id/schedule", actions.PatchScheduledCampaign)
 		}
 
 		segments := authorized.Group("/segments")

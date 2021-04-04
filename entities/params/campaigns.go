@@ -1,6 +1,8 @@
 package params
 
-import "strings"
+import (
+	"strings"
+)
 
 // Campaign represents request body for POST /api/campaigns
 type Campaign struct {
@@ -23,4 +25,11 @@ type SendCampaign struct {
 
 func (p *SendCampaign) TrimSpaces() {
 	p.FromName = strings.TrimSpace(p.FromName)
+}
+
+type ScheduledCampaign struct {
+	ScheduledAt string `form:"scheduled_at" validate:"required,max=191"`
+}
+
+func (p *ScheduledCampaign) TrimSpaces() {
 }

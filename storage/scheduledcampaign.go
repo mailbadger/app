@@ -10,7 +10,7 @@ import (
 
 // CreateScheduledCampaign creates a scheduled campaign.
 func (db *store) CreateScheduledCampaign(c *entities.ScheduledCampaign) error {
-	err := db.Where("campaign_id = ?", c.ID, c.CampaignID).Save(c).Error
+	err := db.Where("campaign_id = ?", c.CampaignID).Save(c).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return db.Create(c).Error

@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/emails"
@@ -574,4 +576,62 @@ func GetCampaignBounces(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{
 		"message": "Campaign bounces not found",
 	})
+}
+
+func PatchScheduledCampaign(c *gin.Context) {
+	campaignID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	campaign, err := storage.GetCampaign(c, campaignID, middleware.GetUser(c).ID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign not found",
+		})
+		return
+	}
+
+	body := &params.ScheduledCampaign{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	schAt, err := time.Parse("2006-02-01 15:04:05", body.ScheduledAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, scheduled_at should be format: 2006-02-01 15:04:05",
+		})
+	}
+
+	sc := &entities.ScheduledCampaign{
+		ID:          ksuid.New(),
+		CampaignID:  campaign.ID,
+		ScheduledAt: schAt,
+	}
+
+	err = storage.CreateScheduledCampaign(c, sc)
+	if err != nil {
+		logrus.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to patch scheduled campaign, please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Campaign %s successfully scheduled at %v", campaign.Name, body.ScheduledAt),
+	})
+
 }

@@ -244,6 +244,11 @@ func LogFailedCampaign(c context.Context, ca *entities.Campaign, description str
 	return GetFromContext(c).LogFailedCampaign(ca, description)
 }
 
+// CreateScheduledCampaign persists a new User entity in the datastore.
+func CreateScheduledCampaign(c context.Context, sc *entities.ScheduledCampaign) error {
+	return GetFromContext(c).CreateScheduledCampaign(sc)
+}
+
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalSends(campaignID, userID)
