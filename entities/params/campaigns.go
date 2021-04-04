@@ -27,9 +27,9 @@ func (p *SendCampaign) TrimSpaces() {
 	p.FromName = strings.TrimSpace(p.FromName)
 }
 
-type ScheduledCampaign struct {
+type CampaignSchedule struct {
 	ScheduledAt string `form:"scheduled_at" validate:"required,max=191"`
 }
 
-func (p *ScheduledCampaign) TrimSpaces() {
+func (p *CampaignSchedule) TrimSpaces() {
 }

@@ -595,7 +595,7 @@ func PatchScheduledCampaign(c *gin.Context) {
 		return
 	}
 
-	body := &params.ScheduledCampaign{}
+	body := &params.CampaignSchedule{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -613,6 +613,7 @@ func PatchScheduledCampaign(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, scheduled_at should be format: 2006-02-01 15:04:05",
 		})
+		return
 	}
 
 	var sc *entities.CampaignSchedules
