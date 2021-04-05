@@ -579,6 +579,15 @@ func GetCampaignBounces(c *gin.Context) {
 }
 
 func PatchCampaignSchedule(c *gin.Context) {
+
+	u := middleware.GetUser(c)
+
+	if !u.Boundaries.ScheduleCampaignsEnabled {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You do not have permission to schedule campaign, please upgrade to a bigger plan or contact support.",
+		})
+	}
+
 	campaignID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -586,10 +595,10 @@ func PatchCampaignSchedule(c *gin.Context) {
 		})
 		return
 	}
-	u := middleware.GetUser(c)
 
 	campaign, err := storage.GetCampaign(c, campaignID, u.ID)
 	if err != nil {
+		logrus.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
@@ -609,7 +618,7 @@ func PatchCampaignSchedule(c *gin.Context) {
 		return
 	}
 
-	schAt, err := time.Parse("2006-02-01 15:04:05", body.ScheduledAt)
+	schAt, err := time.Parse("2006-01-02 15:04:05", body.ScheduledAt)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, scheduled_at should be format: 2006-02-01 15:04:05",
@@ -630,8 +639,6 @@ func PatchCampaignSchedule(c *gin.Context) {
 			ID:          campaign.Schedule.ID,
 			CampaignID:  campaignID,
 			ScheduledAt: schAt,
-			CreatedAt:   campaign.Schedule.CreatedAt,
-			UpdatedAt:   time.Now(),
 		}
 	}
 

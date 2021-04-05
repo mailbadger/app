@@ -28,7 +28,7 @@ func (p *SendCampaign) TrimSpaces() {
 }
 
 type CampaignSchedule struct {
-	ScheduledAt string `form:"scheduled_at" validate:"required,max=191"`
+	ScheduledAt string `form:"scheduled_at" validate:"required,datetime=2006-01-02 15:04:05,max=191"`
 }
 
 func (p *CampaignSchedule) TrimSpaces() {
