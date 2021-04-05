@@ -578,6 +578,42 @@ func GetCampaignBounces(c *gin.Context) {
 	})
 }
 
+func DeleteCampaignSchedule(c *gin.Context) {
+	u := middleware.GetUser(c)
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer.",
+		})
+		return
+	}
+	campaign, err := storage.GetCampaign(c, id, u.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Campaign not found, please try again.",
+		})
+		return
+	}
+
+	err = storage.DeleteCampaignSchedule(c, campaign.ID)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"campaign_id": campaign.ID,
+			"user_id":     u.ID,
+		}).WithError(err).Error("unable to delete campaign schedule")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to delete campaign, please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Campaign schedule removed successfully",
+	})
+
+}
+
 func PatchCampaignSchedule(c *gin.Context) {
 
 	u := middleware.GetUser(c)

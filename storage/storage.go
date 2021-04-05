@@ -249,6 +249,11 @@ func CreateCampaignSchedule(c context.Context, sc *entities.CampaignSchedule) er
 	return GetFromContext(c).CreateCampaignSchedule(sc)
 }
 
+// DeleteCampaignSchedule deletes campaign schedule.
+func DeleteCampaignSchedule(c context.Context, campaignID int64) error {
+	return GetFromContext(c).DeleteCampaignSchedule(campaignID)
+}
+
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalSends(campaignID, userID)
