@@ -577,8 +577,8 @@ func GetCampaignBounces(c *gin.Context) {
 	})
 }
 
-func DeleteScheduledCampaign(c *gin.Context) {
-	user := middleware.GetUser(c)
+func DeleteCampaignSchedule(c *gin.Context) {
+	u := middleware.GetUser(c)
 
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -587,7 +587,7 @@ func DeleteScheduledCampaign(c *gin.Context) {
 		})
 		return
 	}
-	campaign, err := storage.GetCampaign(c, id, user.ID)
+	campaign, err := storage.GetCampaign(c, id, u.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -602,6 +602,10 @@ func DeleteScheduledCampaign(c *gin.Context) {
 
 	err = storage.DeleteCampaignSchedule(c, campaign.ID)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"campaign_id": campaign.ID,
+			"user_id":     u.ID,
+		}).WithError(err).Error("unable to delete campaign schedule")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to delete campaign, please try again.",
 		})
