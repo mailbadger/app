@@ -97,7 +97,6 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "status"        varchar(191),
   "created_at"    datetime,
   "updated_at"    datetime,
-  "scheduled_at"  datetime DEFAULT NULL,
   "completed_at"  datetime DEFAULT NULL,
   "deleted_at"    datetime DEFAULT NULL,
   "started_at"    datetime DEFAULT NULL

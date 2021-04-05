@@ -43,6 +43,8 @@ type Storage interface {
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
+	CreateCampaignSchedule(c *entities.CampaignSchedule) error
+	DeleteCampaignSchedule(campaignID int64) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)

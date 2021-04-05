@@ -32,8 +32,8 @@ type Campaign struct {
 	Name         string            `json:"name" gorm:"not null"`
 	TemplateID   int64             `json:"-"`
 	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
+	Schedule     *CampaignSchedule `json:"campaign_schedules" gorm:"foreignKey:campaign_id"`
 	Status       string            `json:"status"`
-	ScheduledAt  NullTime          `json:"scheduled_at" gorm:"column:scheduled_at"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
 	StartedAt    NullTime          `json:"started_at" gorm:"column:started_at"`

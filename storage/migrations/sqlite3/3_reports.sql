@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS "reports"
     "user_id"    integer,
     "resource"   varchar(191) NOT NULL,
     "file_name"  varchar(191) NOT NULL,
-    `type`       varchar(191) NOT NULL,
+    "type"       varchar(191) NOT NULL,
     "status"     varchar(191) NOT NULL,
-    `note`       varchar(191),
+    "note"       varchar(191),
     "created_at" datetime,
     "updated_at" datetime
 );
