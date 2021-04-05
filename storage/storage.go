@@ -244,6 +244,11 @@ func LogFailedCampaign(c context.Context, ca *entities.Campaign, description str
 	return GetFromContext(c).LogFailedCampaign(ca, description)
 }
 
+// DeleteCampaignSchedule deletes campaign schedule.
+func DeleteCampaignSchedule(c context.Context, campaignID int64) error {
+	return GetFromContext(c).DeleteCampaignSchedule(campaignID)
+}
+
 // GetTotalSends returns total sends for specified campaign id
 func GetTotalSends(c context.Context, campaignID, userID int64) (int64, error) {
 	return GetFromContext(c).GetTotalSends(campaignID, userID)
