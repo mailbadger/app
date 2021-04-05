@@ -578,7 +578,7 @@ func GetCampaignBounces(c *gin.Context) {
 	})
 }
 
-func PatchScheduledCampaign(c *gin.Context) {
+func PatchCampaignSchedule(c *gin.Context) {
 	campaignID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -586,8 +586,9 @@ func PatchScheduledCampaign(c *gin.Context) {
 		})
 		return
 	}
+	u := middleware.GetUser(c)
 
-	campaign, err := storage.GetCampaign(c, campaignID, middleware.GetUser(c).ID)
+	campaign, err := storage.GetCampaign(c, campaignID, u.ID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
@@ -636,7 +637,11 @@ func PatchScheduledCampaign(c *gin.Context) {
 
 	err = storage.CreateCampaignSchedule(c, sc)
 	if err != nil {
-		logrus.Error(err)
+		logrus.WithFields(logrus.Fields{
+			"schedule_id": sc.ID,
+			"campaign_id": sc.CampaignID,
+			"user_id":     u.ID,
+		}).WithError(err).Error("unable to create campaign schedule")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Unable to patch scheduled campaign, please try again.",
 		})
