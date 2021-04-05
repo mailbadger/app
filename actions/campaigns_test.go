@@ -145,7 +145,7 @@ func TestCampaigns(t *testing.T) {
 	auth.PATCH("/api/campaigns/1/schedule").WithForm(params.CampaignSchedule{ScheduledAt: "202s0-04-04 15:04:03"}).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
-		ValueEqual("message", "Invalid parameters, scheduled_at should be format: 2006-02-01 15:04:05")
+		ValueEqual("message", "Invalid parameters, please try again")
 
 	// delete campaign by id
 	auth.DELETE("/api/campaigns/" + idStr).
