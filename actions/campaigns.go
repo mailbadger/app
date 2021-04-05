@@ -662,21 +662,14 @@ func PatchCampaignSchedule(c *gin.Context) {
 		return
 	}
 
-	var sc *entities.CampaignSchedule
-	sc = &entities.CampaignSchedule{
-		ID:          ksuid.New(),
-		CampaignID:  campaign.ID,
-		ScheduledAt: schAt,
-	}
-
 	// if schedule exist update.
 	if campaign.Schedule != nil {
 		campaign.Schedule.ScheduledAt = schAt
 		err = storage.CreateCampaignSchedule(c, campaign.Schedule)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
-				"schedule_id": sc.ID,
-				"campaign_id": sc.CampaignID,
+				"schedule_id": campaign.Schedule.ID,
+				"campaign_id": campaign.Schedule.CampaignID,
 				"user_id":     u.ID,
 			}).WithError(err).Error("unable to update campaign schedule")
 			c.JSON(http.StatusBadRequest, gin.H{
@@ -688,6 +681,13 @@ func PatchCampaignSchedule(c *gin.Context) {
 			"message": fmt.Sprintf("Successfully updated campaign schedule for %s, scheduled at %v", campaign.Name, body.ScheduledAt),
 		})
 		return
+	}
+
+	// else create new campaign schedule
+	sc := &entities.CampaignSchedule{
+		ID:          ksuid.New(),
+		CampaignID:  campaign.ID,
+		ScheduledAt: schAt,
 	}
 
 	err = storage.CreateCampaignSchedule(c, sc)
