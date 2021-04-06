@@ -25,12 +25,20 @@ import (
 	"github.com/mailbadger/app/services/campaigns"
 	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/redis"
 	"github.com/mailbadger/app/utils"
+)
+
+// Cache prefix and duration parameters
+const (
+	cachePrefix   = "campaigner:"
+	cacheDuration = 300000 * time.Millisecond
 )
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
 	s           storage.Storage
+	cache       redis.Storage
 	templatesvc templates.Service
 	p           queue.Producer
 }
@@ -73,14 +81,26 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return err
 	}
 
-	if campaign.Status != entities.StatusDraft {
-		logEntry.WithError(err).Errorf("potentially duplicate message: campaign status is '%s', it should be 'draft'", campaign.Status)
+	if campaign.EventID == nil {
+		logEntry.WithError(err).Error("event id not found")
+		return err
+	}
+
+	campaignerKey := redis.GenCacheKey(cachePrefix, campaign.EventID.String())
+
+	exist, err := h.cache.Exists(campaignerKey)
+	if err != nil {
+		logEntry.WithError(err).Error("Unable to check message existence")
+		return err
+	}
+
+	if exist {
+		logEntry.WithError(err).Info("Message already processed")
 		return nil
 	}
 
-	err = setStatusSending(ctx, h.s, campaign)
-	if err != nil {
-		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSending)
+	if err := h.cache.Set(campaignerKey, []byte("sending"), cacheDuration); err != nil {
+		logEntry.WithError(err).Error("Unable to write to cache")
 		return err
 	}
 
@@ -158,7 +178,7 @@ func processSubscribers(
 		limit     int64 = 1000
 	)
 
-	id := ksuid.New()
+	id := ksuid.New() // this id will be only used for saving failed send logs
 
 	for {
 		subs, err := store.GetDistinctSubscribersBySegmentIDs(
@@ -191,6 +211,7 @@ func processSubscribers(
 				sendLog := &entities.SendLog{
 					ID:           id,
 					UserID:       msg.UserID,
+					EventID:      *campaign.EventID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
@@ -201,7 +222,7 @@ func processSubscribers(
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
-						"send_log_id":   id.String(),
+						"event_id":      campaign.EventID.String(),
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 
@@ -215,6 +236,7 @@ func processSubscribers(
 				sendLog := &entities.SendLog{
 					ID:           id,
 					UserID:       msg.UserID,
+					EventID:      *campaign.EventID, // We check the event id after fetching the campaign
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
@@ -225,7 +247,7 @@ func processSubscribers(
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
-						"send_log_id":   id.String(),
+						"event_id":      campaign.EventID.String(),
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 
@@ -327,6 +349,11 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
+	cache, err := redis.NewRedisStore()
+	if err != nil {
+		logrus.WithError(err).Fatal("Redis: can't establish connection")
+	}
+
 	s3Client, err := s3.NewS3Client(
 		os.Getenv("AWS_S3_ACCESS_KEY"),
 		os.Getenv("AWS_S3_SECRET_KEY"),
@@ -358,7 +385,12 @@ func main() {
 	)
 
 	consumer.AddConcurrentHandlers(
-		&MessageHandler{s, svc, p},
+		&MessageHandler{
+			s:           s,
+			cache:       cache,
+			templatesvc: svc,
+			p:           p,
+		},
 		20,
 	)
 

@@ -27,6 +27,10 @@ func NewRedisStore() (Storage, error) {
 	return &redisStore{r}, nil
 }
 
+func GenCacheKey(prefix string, key string) string {
+	return prefix + key
+}
+
 // newRedisClient creates new redis client
 func newRedisClient() (*redis.Client, error) {
 	opts := &redis.Options{

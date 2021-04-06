@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -117,7 +116,7 @@ func New() http.Handler {
 		logrus.Panic("app directory not set")
 	}
 
-	handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
+	// handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
 
 	handler.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/api") {
