@@ -252,6 +252,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
 			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints)
 			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces)
+			campaigns.PATCH("/:id/schedule", actions.PatchCampaignSchedule)
 			campaigns.DELETE("/:id/schedule", actions.DeleteCampaignSchedule)
 		}
 

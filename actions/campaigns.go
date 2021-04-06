@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/emails"
@@ -608,6 +610,85 @@ func DeleteCampaignSchedule(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Campaign schedule removed successfully",
+	})
+
+}
+
+func PatchCampaignSchedule(c *gin.Context) {
+
+	u := middleware.GetUser(c)
+
+	if !u.Boundaries.ScheduleCampaignsEnabled {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "You do not have permission to schedule campaign, please upgrade to a bigger plan or contact support.",
+		})
+	}
+
+	campaignID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Id must be an integer",
+		})
+		return
+	}
+
+	campaign, err := storage.GetCampaign(c, campaignID, u.ID)
+	if err != nil {
+		logrus.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Campaign not found",
+		})
+		return
+	}
+
+	body := &params.CampaignSchedule{}
+	if err := c.ShouldBind(body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, please try again",
+		})
+		return
+	}
+
+	if err := validator.Validate(body); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	schAt, err := time.Parse("2006-01-02 15:04:05", body.ScheduledAt)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Invalid parameters, scheduled_at should be format: 2006-02-01 15:04:05",
+		})
+		return
+	}
+
+	// if schedule exist update.
+	if campaign.Schedule != nil {
+		campaign.Schedule.ScheduledAt = schAt
+	} else {
+		// else create new campaign schedule
+		campaign.Schedule = &entities.CampaignSchedule{
+			ID:          ksuid.New(),
+			CampaignID:  campaign.ID,
+			ScheduledAt: schAt,
+		}
+	}
+
+	err = storage.CreateCampaignSchedule(c, campaign.Schedule)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"schedule_id": campaign.Schedule.ID,
+			"campaign_id": campaign.Schedule.CampaignID,
+			"user_id":     u.ID,
+		}).WithError(err).Error("unable to create campaign schedule")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Unable to patch scheduled campaign, please try again.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Campaign %s successfully scheduled at %v", campaign.Name, body.ScheduledAt),
 	})
 
 }

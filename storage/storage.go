@@ -244,6 +244,11 @@ func LogFailedCampaign(c context.Context, ca *entities.Campaign, description str
 	return GetFromContext(c).LogFailedCampaign(ca, description)
 }
 
+// CreateCampaignSchedule creates new schedule for campaign.
+func CreateCampaignSchedule(c context.Context, sc *entities.CampaignSchedule) error {
+	return GetFromContext(c).CreateCampaignSchedule(sc)
+}
+
 // DeleteCampaignSchedule deletes campaign schedule.
 func DeleteCampaignSchedule(c context.Context, campaignID int64) error {
 	return GetFromContext(c).DeleteCampaignSchedule(campaignID)
