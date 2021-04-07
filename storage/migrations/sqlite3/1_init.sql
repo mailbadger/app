@@ -70,10 +70,10 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
 
 CREATE TABLE IF NOT EXISTS "templates" (
     "id"           integer primary key autoincrement,
-    `user_id`      integer unsigned NOT NULL,
-    `name`         varchar(191)     NOT NULL,
+    "user_id"      integer unsigned NOT NULL,
+    "name"         varchar(191)     NOT NULL,
     "subject_part" varchar(191)     NOT NULL,
-    `text_part`    text,
+    "text_part"    text,
     "created_at"   datetime,
     "updated_at"   datetime
 );
@@ -220,12 +220,12 @@ CREATE TABLE IF NOT EXISTS "sends" (
   "created_at"         datetime
 );
 
-CREATE TABLE IF NOT EXISTS `subscriber_events` (
-    `id`               VARBINARY(27) PRIMARY KEY NOT NULL,
-    `user_id`          INTEGER UNSIGNED NOT NULL,
-    `subscriber_email` VARCHAR(191) NOT NULL,
-    `event_type`       VARCHAR(50) NOT NULL,
-    `created_at`       DATETIME(6) NOT NULL
+CREATE TABLE IF NOT EXISTS "subscriber_events" (
+    "id"               VARBINARY(27) PRIMARY KEY NOT NULL,
+    "user_id"          INTEGER UNSIGNED NOT NULL,
+    "subscriber_email" VARCHAR(191) NOT NULL,
+    "event_type"       VARCHAR(50) NOT NULL,
+    "created_at"       DATETIME(6) NOT NULL
     );
 
 -- +migrate Down
