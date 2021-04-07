@@ -39,4 +39,4 @@ statik/statik.go
 .idea
 
 .env.*
-/fixtures/app.env
+fixtures/app.env
