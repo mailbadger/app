@@ -145,15 +145,6 @@ func getCampaign(ctx context.Context, store storage.Storage, userID, campaignID 
 	return store.GetCampaign(campaignID, userID)
 }
 
-func setStatusSending(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
-	defer trace.StartRegion(ctx, "setStatusSending").End()
-
-	campaign.StartedAt.SetValid(time.Now().UTC())
-	campaign.Status = entities.StatusSending
-
-	return store.UpdateCampaign(campaign)
-}
-
 func parseTemplate(ctx context.Context, templatesvc templates.Service, userID, templateID int64) (*entities.CampaignTemplateData, error) {
 	defer trace.StartRegion(ctx, "parseTemplate").End()
 
