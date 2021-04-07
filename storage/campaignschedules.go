@@ -24,10 +24,3 @@ func (db *store) CreateCampaignSchedule(c *entities.CampaignSchedule) error {
 func (db *store) DeleteCampaignSchedule(campaignID int64) error {
 	return db.Where("campaign_id = ?", campaignID).Delete(entities.CampaignSchedule{}).Error
 }
-
-// GetCampaignSchedule fetches the schedule record for campaign
-func (db *store) GetCampaignSchedule(campaignID int64) (*entities.CampaignSchedule, error) {
-	var sc = new(entities.CampaignSchedule)
-	err := db.Where("campaign_id = ?", campaignID).Find(&sc).Error
-	return sc, err
-}

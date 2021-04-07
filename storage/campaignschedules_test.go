@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -25,10 +24,6 @@ func TestScheduledCampaign(t *testing.T) {
 
 	store := From(db)
 
-	cs, err := store.GetCampaignSchedule(123)
-	assert.Equal(t, gorm.ErrRecordNotFound, err)
-	assert.Equal(t, &entities.CampaignSchedule{}, cs)
-
 	// Test create scheduled campaign
 	c := &entities.CampaignSchedule{
 		ID:          ksuid.New(),
@@ -38,14 +33,8 @@ func TestScheduledCampaign(t *testing.T) {
 		UpdatedAt:   now,
 	}
 
-	err = store.CreateCampaignSchedule(c)
+	err := store.CreateCampaignSchedule(c)
 	assert.Nil(t, err)
-
-	cs, err = store.GetCampaignSchedule(1)
-	assert.Nil(t, err)
-	assert.Equal(t, c.ID, cs.ID)
-	assert.Equal(t, c.CampaignID, cs.CampaignID)
-	assert.Equal(t, c.ScheduledAt.UTC(), cs.ScheduledAt.UTC())
 
 	// Test delete scheduled campaign
 	err = store.DeleteCampaignSchedule(c.CampaignID)
