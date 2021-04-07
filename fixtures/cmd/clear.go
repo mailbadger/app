@@ -78,7 +78,7 @@ func clear() error {
 		return fmt.Errorf("failed to delete subscriber events for 'badger' user: %w", err)
 	}
 
-	err = db.DeleteAllBouncesForUSer(u.ID)
+	err = db.DeleteAllBouncesForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all bounces for user: %w", err)
 	}

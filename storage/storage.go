@@ -104,7 +104,7 @@ type Storage interface {
 	DeleteAllSendLogsForUser(userID int64) error
 
 	CreateBounce(b *entities.Bounce) error
-	DeleteAllBouncesForUSer(userID int64) error
+	DeleteAllBouncesForUser(userID int64) error
 	CreateComplaint(c *entities.Complaint) error
 	DeleteAllComplaintsForUser(userID int64) error
 	CreateSend(s *entities.Send) error
