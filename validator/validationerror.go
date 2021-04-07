@@ -54,6 +54,8 @@ func (q *ValidationError) FormatErrors() {
 			q.Errors[err.Field()] = "Content must be html"
 		case tagAlphanumericHyphen:
 			q.Errors[err.Field()] = "Must consist only of alphanumeric and hyphen characters"
+		case "datetime":
+			q.Errors[err.Field()] = "Must be of format: " + err.Param()
 		default:
 			q.Errors[err.Field()] = "Validation failed on condition: " + err.ActualTag()
 		}

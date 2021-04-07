@@ -75,8 +75,7 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
-	handler.Use(middleware.S3Client(s3Client),
-	)
+	handler.Use(middleware.S3Client(s3Client))
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
@@ -253,6 +252,8 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
 			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints)
 			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces)
+			campaigns.PATCH("/:id/schedule", actions.PatchCampaignSchedule)
+			campaigns.DELETE("/:id/schedule", actions.DeleteCampaignSchedule)
 		}
 
 		segments := authorized.Group("/segments")
