@@ -47,7 +47,6 @@ type Storage interface {
 
 	CreateCampaignSchedule(c *entities.CampaignSchedule) error
 	DeleteCampaignSchedule(campaignID int64) error
-	GetCampaignSchedule(campaignID int64) (*entities.CampaignSchedule, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -542,9 +541,4 @@ func CreateSendLog(c context.Context, sendLogs *entities.SendLog) error {
 // GetSendLogByUUID returns send log with specified uuid
 func GetSendLogByUUID(c context.Context, id string) (*entities.SendLog, error) {
 	return GetFromContext(c).GetSendLogByUUID(id)
-}
-
-// GetCampaignSchedule fetches the schedule record for campaign
-func GetCampaignSchedule(c context.Context, campaignID int64) (*entities.CampaignSchedule, error) {
-	return GetFromContext(c).GetCampaignSchedule(campaignID)
 }
