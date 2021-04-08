@@ -8,7 +8,7 @@
     "@uppy/react": "^1.11.5",
     "axios": "^0.21.1",
     "codemirror": "^5.60.0",
-    "date-fns": "^2.19.0",
+    "date-fns": "^2.20.0",
     "dompurify": "^2.2.7",
     "es6-promise": "^4.2.8",
     "formik": "^2.2.6",
