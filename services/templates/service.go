@@ -19,8 +19,6 @@ import (
 )
 
 var (
-	templatesBucket = os.Getenv("TEMPLATES_BUCKET")
-
 	ErrHTMLPartNotFound     = errors.New("HTML part not found")
 	ErrHTMLPartInvalidState = errors.New("HTML part is in invalid state")
 
@@ -38,17 +36,34 @@ type Service interface {
 	ParseTemplate(c context.Context, templateID int64, userID int64) (*entities.CampaignTemplateData, error)
 }
 
-// service implements the Service interface
-type service struct {
-	db storage.Storage
-	s3 s3iface.S3API
+type Opts func(s *service)
+
+// SetTemplateBucket this is optionally adding template bucket for testing or for the fixture cli
+func SetTemplateBucket(bucket string) Opts {
+	return func(s *service) {
+		s.templatesBucket = bucket
+	}
 }
 
-func New(db storage.Storage, s3 s3iface.S3API) Service {
-	return &service{
-		db: db,
-		s3: s3,
+// service implements the Service interface
+type service struct {
+	db              storage.Storage
+	s3              s3iface.S3API
+	templatesBucket string
+}
+
+func New(db storage.Storage, s3 s3iface.S3API, opts ...Opts) Service {
+	s := &service{
+		db:              db,
+		s3:              s3,
+		templatesBucket: os.Getenv("TEMPLATES_BUCKET"),
 	}
+
+	for _, option := range opts {
+		option(s)
+	}
+
+	return s
 }
 
 func (s service) AddTemplate(c context.Context, template *entities.Template) error {
@@ -74,7 +89,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(templatesBucket),
+		Bucket: aws.String(s.templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -105,7 +120,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 	}
 
 	s3Input := &s3.PutObjectInput{
-		Bucket: aws.String(templatesBucket),
+		Bucket: aws.String(s.templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
@@ -132,7 +147,7 @@ func (s service) GetTemplates(c context.Context, userID int64, p *storage.Pagina
 // DeleteTemplate deletes the given template
 func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) error {
 	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
-		Bucket: aws.String(templatesBucket),
+		Bucket: aws.String(s.templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
 	if err != nil {
@@ -155,7 +170,7 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 	}
 
 	resp, err := s.s3.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(templatesBucket),
+		Bucket: aws.String(s.templatesBucket),
 		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
 	})
 	if err != nil {
