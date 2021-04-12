@@ -45,6 +45,7 @@ type Storage interface {
 	LogFailedCampaign(c *entities.Campaign, description string) error
 	CreateCampaignSchedule(c *entities.CampaignSchedule) error
 	DeleteCampaignSchedule(campaignID int64) error
+	GetScheduledCampaigns(time time.Time) ([]*entities.CampaignSchedule, error)
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -252,6 +253,11 @@ func CreateCampaignSchedule(c context.Context, sc *entities.CampaignSchedule) er
 // DeleteCampaignSchedule deletes campaign schedule.
 func DeleteCampaignSchedule(c context.Context, campaignID int64) error {
 	return GetFromContext(c).DeleteCampaignSchedule(campaignID)
+}
+
+// GetScheduledCampaigns returns all scheduled campaigns < time
+func GetScheduledCampaigns(c context.Context, time time.Time) ([]*entities.CampaignSchedule, error) {
+	return GetFromContext(c).GetScheduledCampaigns(time)
 }
 
 // GetTotalSends returns total sends for specified campaign id
