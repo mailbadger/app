@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS "campaign_schedules"
     "campaign_id"  integer,
     "scheduled_at" datetime,
     "created_at"   datetime,
-    "updated_at"   datetime
+    "updated_at"   datetime,
+    foreign key ("campaign_id") references campaigns("id")
     );
 
 -- +migrate Down
