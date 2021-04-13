@@ -8,7 +8,6 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-
 func (db *store) LogFailedCampaign(c *entities.Campaign, description string) error {
 	tx := db.Begin()
 	defer func() {

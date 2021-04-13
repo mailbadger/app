@@ -33,7 +33,11 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 	}
 
 	for _, cs := range scheduledCampaigns {
-		campaign, err := s.GetCampaign(1, cs.CampaignID)
+		u, err := s.GetUser(cs.UserID)
+		if err != nil {
+			return err
+		}
+		campaign, err := s.GetCampaign(u.ID, cs.CampaignID)
 		if err != nil {
 			panic(err)
 		}
@@ -41,23 +45,31 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		// todo get template
+		template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
+		if err != nil {
+			return err
+		}
 
-		// todo validate template data
+		// fixme: default template data missing
+		err = template.ValidateData(nil)
+		if err != nil {
+			return err
+		}
 
-		// todo get ses keys
-
-		// todo get segment ids
+		sesKeys, err := storage.GetSesKeys(c, u.ID)
+		if err != nil {
+			return nil
+		}
 
 		params := &entities.CampaignerTopicParams{
-			CampaignID:             0,
+			CampaignID:             cs.CampaignID,
 			SegmentIDs:             nil,
 			TemplateData:           nil,
-			Source:                 "",
-			UserID:                 0,
-			UserUUID:               "",
+			Source:                 "job_scheduler",
+			UserID:                 u.ID,
+			UserUUID:               u.UUID,
 			ConfigurationSetExists: false,
-			SesKeys:                entities.SesKeys{},
+			SesKeys:                *sesKeys,
 		}
 		paramsByte, err := json.Marshal(params)
 		if err != nil {

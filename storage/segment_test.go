@@ -44,7 +44,6 @@ func TestSegment(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, l.Name, "bar")
 
-
 	//Test get lists
 	p := NewPaginationCursor("/api/segments", 10)
 	err = store.GetSegments(1, p)

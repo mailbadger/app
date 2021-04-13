@@ -123,8 +123,8 @@ func PostTemplate(c *gin.Context) {
 			Name:        body.Name,
 			SubjectPart: body.SubjectPart,
 		},
-		HTMLPart:    body.HTMLPart,
-		TextPart:    body.TextPart,
+		HTMLPart: body.HTMLPart,
+		TextPart: body.TextPart,
 	}
 
 	_, err := storage.GetTemplateByName(c, template.Name, u.ID)

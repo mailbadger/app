@@ -671,6 +671,7 @@ func PatchCampaignSchedule(c *gin.Context) {
 			ID:          ksuid.New(),
 			CampaignID:  campaign.ID,
 			ScheduledAt: schAt,
+			UserID:      u.ID,
 		}
 	}
 

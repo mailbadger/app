@@ -155,7 +155,6 @@ func sendForgotPasswordEmail(token, email string, sender emails.Sender) error {
 	return err
 }
 
-
 func PutForgotPassword(c *gin.Context) {
 	tokenStr := c.Param("token")
 
@@ -179,7 +178,6 @@ func PutForgotPassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-
 
 	user, err := storage.GetUser(c, t.UserID)
 	if err != nil {

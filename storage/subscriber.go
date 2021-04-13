@@ -150,7 +150,7 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 
 	if err := tx.Create(s).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: create subscriber: %w" ,err)
+		return fmt.Errorf("subscription store: create subscriber: %w", err)
 	}
 
 	if err := tx.Create(&entities.SubscriberEvent{
@@ -160,7 +160,7 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 		EventType:       entities.SubscriberEventTypeCreated,
 	}).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: add subscriber event (created): %w" ,err)
+		return fmt.Errorf("subscription store: add subscriber event (created): %w", err)
 	}
 
 	return tx.Commit().Error
@@ -177,12 +177,12 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 
 	if err := tx.Model(s).Association("Segments").Replace(s.Segments).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: update subscriber's segment: %w" ,err)
+		return fmt.Errorf("subscription store: update subscriber's segment: %w", err)
 	}
 
 	if err := tx.Where("id = ? and user_id = ?", s.ID, s.UserID).Save(s).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: update subscriber: %w" ,err)
+		return fmt.Errorf("subscription store: update subscriber: %w", err)
 	}
 
 	return tx.Commit().Error
@@ -202,8 +202,8 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 	if err := tx.Model(&entities.Subscriber{}).
 		Where("user_id = ? AND email = ?", userID, email).
 		Update("active", false).Error; err != nil {
-			tx.Rollback()
-		return fmt.Errorf("subscription store: deactivate subscriber: %w" ,err)
+		tx.Rollback()
+		return fmt.Errorf("subscription store: deactivate subscriber: %w", err)
 	}
 
 	if err := tx.Create(&entities.SubscriberEvent{
@@ -213,7 +213,7 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 		EventType:       entities.SubscriberEventTypeUnsubscribed,
 	}).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: add subscriber event (unsubscribed): %w" ,err)
+		return fmt.Errorf("subscription store: add subscriber event (unsubscribed): %w", err)
 	}
 
 	return tx.Commit().Error
@@ -236,12 +236,12 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 
 	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w" ,err)
+		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w", err)
 	}
 
 	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: delete subscriber: %w" ,err)
+		return fmt.Errorf("subscription store: delete subscriber: %w", err)
 	}
 
 	if err := tx.Create(&entities.SubscriberEvent{
@@ -251,7 +251,7 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		EventType:       entities.SubscriberEventTypeDeleted,
 	}).Error; err != nil {
 		tx.Rollback()
-		return fmt.Errorf("subscription store: add subscriber event (deleted): %w" ,err)
+		return fmt.Errorf("subscription store: add subscriber event (deleted): %w", err)
 	}
 
 	return tx.Commit().Error

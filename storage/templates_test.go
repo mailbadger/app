@@ -20,7 +20,7 @@ func createTemplates(store Storage) {
 				Name:        "foo " + strconv.Itoa(i),
 				SubjectPart: "Template {{.subject}} " + strconv.Itoa(i),
 			},
-			TextPart:    "draft {{.text}} " + strconv.Itoa(i),
+			TextPart: "draft {{.text}} " + strconv.Itoa(i),
 		})
 		if err != nil {
 			logrus.Fatal(err)
@@ -43,10 +43,10 @@ func TestTemplate(t *testing.T) {
 	template := &entities.Template{
 		BaseTemplate: entities.BaseTemplate{
 			UserID:      1,
-			Name:         "template1",
-			SubjectPart:"subject",
+			Name:        "template1",
+			SubjectPart: "subject",
 		},
-		TextPart:    "asd {{.name}}",
+		TextPart: "asd {{.name}}",
 	}
 
 	// test insert templates
