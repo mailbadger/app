@@ -272,8 +272,8 @@ CREATE TABLE IF NOT EXISTS "subscriber_events" (
     foreign key ("user_id") references users("id")
 );
 
-CREATE INDEX IF NOT EXISTS idx_id_created_at ON "subscribers_event" (id, created_at);
-CREATE INDEX IF NOT EXISTS idx_event_type ON "subscribers_event" (event_type);
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "subscriber_events" (id, created_at);
+CREATE INDEX IF NOT EXISTS idx_event_type ON "subscriber_events" (event_type);
 
 -- +migrate Down
 
