@@ -32,6 +32,8 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
 	}
 
+	//fixme: Missing body params from StartCampaign -- Source/FromName/DefTemplateData/SegmentIDS
+
 	for _, cs := range scheduledCampaigns {
 		u, err := s.GetUser(cs.UserID)
 		if err != nil {
