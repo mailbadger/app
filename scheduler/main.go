@@ -10,6 +10,7 @@ import (
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/utils"
 )
 
 func main() {
@@ -32,12 +33,10 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
 	}
 
-	//fixme: Missing body params from StartCampaign -- Source/FromName/DefTemplateData/SegmentIDS
-
 	for _, cs := range scheduledCampaigns {
 		u, err := s.GetUser(cs.UserID)
 		if err != nil {
-			return err
+			continue
 		}
 		campaign, err := s.GetCampaign(u.ID, cs.CampaignID)
 		if err != nil {
@@ -49,25 +48,30 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 
 		template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
 		if err != nil {
-			return err
+			continue
 		}
-
-		// fixme: default template data missing
-		err = template.ValidateData(nil)
+		var templateData map[string]string
+		err = json.Unmarshal(cs.DefaultTemplateData, &templateData)
 		if err != nil {
-			return err
+			continue
+		}
+		err = template.ValidateData(templateData)
+		if err != nil {
+			continue
 		}
 
 		sesKeys, err := storage.GetSesKeys(c, u.ID)
 		if err != nil {
-			return nil
+			continue
 		}
+
+		segmentIDs := utils.StringToIntSlice(cs.SegmentIDs)
 
 		params := &entities.CampaignerTopicParams{
 			CampaignID:             cs.CampaignID,
-			SegmentIDs:             nil,
-			TemplateData:           nil,
-			Source:                 "job_scheduler",
+			SegmentIDs:             segmentIDs,
+			TemplateData:           templateData,
+			Source:                 cs.Source,
 			UserID:                 u.ID,
 			UserUUID:               u.UUID,
 			ConfigurationSetExists: false,
@@ -75,11 +79,16 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		}
 		paramsByte, err := json.Marshal(params)
 		if err != nil {
-
+			continue
 		}
 		err = queue.Publish(c, entities.CampaignerTopic, paramsByte)
 		if err != nil {
-			panic(err)
+			continue
+		}
+		campaign.Status = entities.StatusSending
+		err = storage.UpdateCampaign(c, campaign)
+		if err != nil {
+			continue
 		}
 	}
 
