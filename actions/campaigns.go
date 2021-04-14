@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
+	"github.com/mailbadger/app/utils"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
@@ -648,6 +649,8 @@ func PatchCampaignSchedule(c *gin.Context) {
 		})
 		return
 	}
+	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
+	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -662,16 +665,34 @@ func PatchCampaignSchedule(c *gin.Context) {
 		return
 	}
 
+	defMetadata, err := json.Marshal(body.DefaultTemplateData)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to schedule campaign, invalid default metdata.",
+		})
+		return
+	}
+
+	segmentIDstring := utils.SliceIntToString(body.SegmentIDs, ",")
+
 	// if schedule exist update.
 	if campaign.Schedule != nil {
 		campaign.Schedule.ScheduledAt = schAt
+		campaign.Schedule.FromName = body.FromName
+		campaign.Schedule.Source = body.Source
+		campaign.Schedule.SegmentIDs = segmentIDstring
+		campaign.Schedule.DefaultTemplateData = defMetadata
 	} else {
 		// else create new campaign schedule
 		campaign.Schedule = &entities.CampaignSchedule{
-			ID:          ksuid.New(),
-			CampaignID:  campaign.ID,
-			ScheduledAt: schAt,
-			UserID:      u.ID,
+			ID:                  ksuid.New(),
+			CampaignID:          campaign.ID,
+			ScheduledAt:         schAt,
+			UserID:              u.ID,
+			SegmentIDs:          segmentIDstring,
+			FromName:            body.FromName,
+			Source:              body.Source,
+			DefaultTemplateData: defMetadata,
 		}
 	}
 

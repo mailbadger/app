@@ -136,7 +136,12 @@ func TestCampaigns(t *testing.T) {
 		ValueEqual("message", "Amazon Ses keys are not set.")
 
 	// successful patch campaign schedule.
-	auth.PATCH("/api/campaigns/1/schedule").WithForm(params.CampaignSchedule{ScheduledAt: "2020-04-04 15:04:03"}).
+	auth.PATCH("/api/campaigns/1/schedule").WithForm(params.CampaignSchedule{
+		ScheduledAt:         "202s0-04-04 15:04:03",
+		FromName:            "from name",
+		Source:              "source@email.com",
+		DefaultTemplateData: map[string]string{"def": "key"},
+		SegmentIDs:          []int64{1, 2, 3}}).
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("message", "Campaign TESTputtest successfully scheduled at 2020-04-04 15:04:03")

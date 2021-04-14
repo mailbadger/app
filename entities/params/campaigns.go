@@ -28,7 +28,11 @@ func (p *SendCampaign) TrimSpaces() {
 }
 
 type CampaignSchedule struct {
-	ScheduledAt string `form:"scheduled_at" validate:"required,datetime=2006-01-02 15:04:05,max=191"`
+	ScheduledAt         string            `form:"scheduled_at" validate:"required,datetime=2006-01-02 15:04:05,max=191"`
+	FromName            string            `form:"from_name" validate:"required,max=191"`
+	DefaultTemplateData map[string]string `form:"default_template_data" validate:"dive,keys,required,alphanumhyphen,endkeys,required"`
+	Source              string            `form:"source" validate:"required,email,max=191"`
+	SegmentIDs          []int64           `form:"segment_id[]" validate:"required,gt=0,dive,required"`
 }
 
 func (p *CampaignSchedule) TrimSpaces() {

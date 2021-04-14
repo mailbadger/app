@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS `campaign_schedules`
     `user_id`       integer unsigned        NOT NULL,
     `campaign_id`   integer unsigned UNIQUE NOT NULL,
     `scheduled_at`  datetime(6)         NOT NULL,
+    `source`        varchar(191)        NOT NULL,
+    `from_name`     varchar(60)         NOT NULL,
+    `segment_ids`   varchar(50)         NOT NULL,
+    `default_template_data` JSON NOT NULL,
     `created_at`    datetime(6)         NOT NULL,
     `updated_at`    datetime(6)         NOT NULL,
     FOREIGN KEY (`campaign_id`) REFERENCES campaigns (`id`)
