@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS "campaign_schedules"
     "segment_ids"           varchar,
     "default_template_data" varchar,
     "created_at"            datetime,
-    "updated_at"            datetime
+    "updated_at"            datetime,
+    foreign key ("campaign_id") references campaigns("id")
     );
 
 -- +migrate Down

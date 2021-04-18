@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS "campaign_failed_logs"
     "user_id"     integer unsigned NOT NULL,
     "campaign_id" integer unsigned NOT NULL,
     "description" varchar(191)     NOT NULL,
-    "created_at"  datetime
+    "created_at"  datetime,
+    foreign key ("user_id") references users("id")
 );
 
 -- +migrate Down
