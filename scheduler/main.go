@@ -65,7 +65,10 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		segmentIDs := utils.StringToIntSlice(cs.SegmentIDs)
+		segmentIDs, err := utils.StringToIntSlice(cs.SegmentIDs)
+		if err != nil {
+			continue
+		}
 
 		params := &entities.CampaignerTopicParams{
 			CampaignID:             cs.CampaignID,

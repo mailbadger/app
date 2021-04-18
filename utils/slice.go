@@ -12,8 +12,11 @@ func SliceIntToString(a []int64, delim string) string {
 }
 
 // StringToIntSlice returns string into slice of int64
-func StringToIntSlice(a string) []int64 {
+func StringToIntSlice(a string) ([]int64, error) {
 	var is []int64
-	json.Unmarshal([]byte(a), &is)
-	return is
+	err := json.Unmarshal([]byte(a), &is)
+	if err != nil {
+		return nil, fmt.Errorf("utils: StringToIntSlice: unmarshal string to slice %w", err)
+	}
+	return is, nil
 }
