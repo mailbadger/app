@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS "users" (
   "verified"    integer,
   "boundary_id" integer,
   "created_at"  datetime,
-  "updated_at"  datetime
+  "updated_at"  datetime,
+  foreign key ("boundary_id") references boundaries("id")
 );
 
 CREATE TABLE IF NOT EXISTS "roles" (
@@ -42,11 +43,13 @@ CREATE TABLE IF NOT EXISTS "roles" (
 CREATE TABLE IF NOT EXISTS "users_roles" (
   "user_id" integer,
   "role_id" integer,
-  UNIQUE("user_id", "role_id")
+  primary key ("user_id", "role_id"),
+  foreign key ("user_id") references users("id"),
+  foreign key ("role_id") references roles("id")
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "users_roles" (user_id);
-CREATE INDEX IF NOT EXISTS i_role ON "users_roles" (role_id);
+CREATE INDEX IF NOT EXISTS idx_user ON "users_roles" (user_id);
+CREATE INDEX IF NOT EXISTS idx_role ON "users_roles" (role_id);
 
 CREATE TABLE IF NOT EXISTS "sessions" (
   "id"         integer primary key autoincrement,
@@ -54,7 +57,8 @@ CREATE TABLE IF NOT EXISTS "sessions" (
   "session_id" varchar(191) not null,
   "created_at" datetime not null,
   "updated_at" datetime not null,
-  UNIQUE("session_id")
+  UNIQUE("session_id"),
+  foreign key ("user_id") references users("id")
 );
 
 CREATE TABLE IF NOT EXISTS "api_keys" (
@@ -64,7 +68,8 @@ CREATE TABLE IF NOT EXISTS "api_keys" (
   "active"     integer not null,
   "created_at" datetime not null,
   "updated_at" datetime not null,
-  UNIQUE("secret_key")
+  UNIQUE("secret_key"),
+  foreign key ("user_id") references users("id")
 );
 
 
@@ -75,7 +80,8 @@ CREATE TABLE IF NOT EXISTS "templates" (
     "subject_part" varchar(191)     NOT NULL,
     "text_part"    text,
     "created_at"   datetime,
-    "updated_at"   datetime
+    "updated_at"   datetime,
+    foreign key ("user_id") references users("id")
 );
 
 CREATE TABLE IF NOT EXISTS "ses_keys" (
@@ -86,7 +92,8 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
   "region"     varchar(30) not null,
   "created_at" datetime,
   "updated_at" datetime,
-  UNIQUE("user_id")
+  UNIQUE("user_id"),
+  foreign key ("user_id") references users("id")
 );
 
 CREATE TABLE IF NOT EXISTS "campaigns" (
@@ -100,10 +107,13 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
   "updated_at"    datetime,
   "completed_at"  datetime DEFAULT NULL,
   "deleted_at"    datetime DEFAULT NULL,
-  "started_at"    datetime DEFAULT NULL
+  "started_at"    datetime DEFAULT NULL,
+  foreign key ("user_id") references users("id"),
+  foreign key ("template_id") references templates("id")
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "campaigns" (user_id);
+CREATE INDEX IF NOT EXISTS idx_user ON "campaigns" (user_id);
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "campaigns" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "subscribers" (
   "id"          integer primary key autoincrement,
@@ -115,30 +125,36 @@ CREATE TABLE IF NOT EXISTS "subscribers" (
   "active"      integer,
   "created_at"  datetime,
   "updated_at"  datetime,
-  UNIQUE("user_id", "email")
+  UNIQUE("user_id", "email"),
+  foreign key ("user_id") references users("id")
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "subscribers" (user_id);
-CREATE INDEX IF NOT EXISTS i_user_blacklist_active ON "subscribers" (user_id, blacklisted, active);
+CREATE INDEX IF NOT EXISTS idx_user ON "subscribers" (user_id);
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "subscribers" (id, created_at);
+CREATE INDEX IF NOT EXISTS idx_user_blacklist_active ON "subscribers" (user_id, blacklisted, active);
 
 CREATE TABLE IF NOT EXISTS "segments" (
   "id"          integer primary key autoincrement,
   "user_id"     integer,
   "name"        varchar(191),
   "created_at"  datetime,
-  "updated_at"  datetime
+  "updated_at"  datetime,
+  foreign key ("user_id") references users("id")
 );
 
-CREATE INDEX IF NOT EXISTS i_user ON "segments" (user_id);
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "segments" (id, created_at);
+CREATE INDEX IF NOT EXISTS idx_user ON "segments" (user_id);
 
 CREATE TABLE IF NOT EXISTS "subscribers_segments" (
   "segment_id"    integer,
   "subscriber_id" integer,
-  UNIQUE("segment_id", "subscriber_id")
+  primary key ("segment_id", "subscriber_id"),
+  foreign key ("segment_id") references segments("id"),
+  foreign key ("subscriber_id") references subscribers("id")
 );
 
-CREATE INDEX IF NOT EXISTS i_segment    ON "subscribers_segments" (segment_id);
-CREATE INDEX IF NOT EXISTS i_subscriber ON "subscribers_segments" (subscriber_id);
+CREATE INDEX IF NOT EXISTS idx_segment    ON "subscribers_segments" (segment_id);
+CREATE INDEX IF NOT EXISTS idx_subscriber ON "subscribers_segments" (subscriber_id);
 
 CREATE TABLE IF NOT EXISTS "bounces" (
   "id"              integer primary key autoincrement,
@@ -151,8 +167,12 @@ CREATE TABLE IF NOT EXISTS "bounces" (
   "status"          varchar(191),
   "diagnostic_code" varchar(191),
   "feedback_id"     varchar(191),
-  "created_at"      datetime
+  "created_at"      datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "bounces" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "complaints" (
   "id"              integer primary key autoincrement,
@@ -162,8 +182,12 @@ CREATE TABLE IF NOT EXISTS "complaints" (
   "type"            varchar(30),
   "user_agent"      varchar(191),
   "feedback_id"     varchar(191),
-  "created_at"      datetime
+  "created_at"      datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "complaints" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "clicks" (
   "id"              integer primary key autoincrement,
@@ -173,8 +197,12 @@ CREATE TABLE IF NOT EXISTS "clicks" (
   "ip_address"      varchar(50),
   "user_agent"      varchar(191),
   "link"            varchar(191),
-  "created_at"      datetime
+  "created_at"      datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "clicks" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "opens" (
   "id"              integer primary key autoincrement,
@@ -183,8 +211,12 @@ CREATE TABLE IF NOT EXISTS "opens" (
   "recipient"       varchar(191),
   "ip_address"      varchar(50),
   "user_agent"      varchar(191),
-  "created_at"      datetime
+  "created_at"      datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "opens" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "deliveries" (
   "id"                     integer primary key autoincrement,
@@ -195,8 +227,12 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
   "smtp_response"          varchar(191),
   "reporting_mta"          varchar(191),
   "remote_mta_ip"          varchar(50),
-  "created_at"             datetime
+  "created_at"             datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "deliveries" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "send_logs" (
   "id"           varchar(27) primary key,
@@ -206,8 +242,12 @@ CREATE TABLE IF NOT EXISTS "send_logs" (
   "status"        varchar(191) NOT NULL,
   "message_id"    varchar(191),
   "description"   varchar(191),
-  "created_at"    datetime
+  "created_at"    datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "send_logs" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "sends" (
   "id"                 integer primary key autoincrement,
@@ -217,16 +257,24 @@ CREATE TABLE IF NOT EXISTS "sends" (
   "source"             varchar(191),
   "sending_account_id" varchar(191),
   "destination"        varchar(191),
-  "created_at"         datetime
+  "created_at"         datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "sends" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "subscriber_events" (
     "id"               VARBINARY(27) PRIMARY KEY NOT NULL,
     "user_id"          INTEGER UNSIGNED NOT NULL,
     "subscriber_email" VARCHAR(191) NOT NULL,
     "event_type"       VARCHAR(50) NOT NULL,
-    "created_at"       DATETIME(6) NOT NULL
-    );
+    "created_at"       DATETIME(6) NOT NULL,
+    foreign key ("user_id") references users("id")
+);
+
+CREATE INDEX IF NOT EXISTS idx_id_created_at ON "subscriber_events" (id, created_at);
+CREATE INDEX IF NOT EXISTS idx_event_type ON "subscriber_events" (event_type);
 
 -- +migrate Down
 

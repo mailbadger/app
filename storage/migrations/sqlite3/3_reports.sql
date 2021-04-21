@@ -10,9 +10,11 @@ CREATE TABLE IF NOT EXISTS "reports"
     "status"     varchar(191) NOT NULL,
     "note"       varchar(191),
     "created_at" datetime,
-    "updated_at" datetime
+    "updated_at" datetime,
+    foreign key ("user_id") references users("id")
 );
-CREATE INDEX IF NOT EXISTS i_user ON "reports" (user_id);
+CREATE INDEX IF NOT EXISTS idx_user ON "reports" (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_resource ON "reports" (user_id, resource, file_name, type);
 
 
 -- +migrate Down
