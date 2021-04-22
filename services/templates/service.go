@@ -38,8 +38,8 @@ type Service interface {
 
 type Opts func(s *service)
 
-// SetTemplateBucket this is optionally adding template bucket for testing or for the fixture cli
-func SetTemplateBucket(bucket string) Opts {
+// TemplateBucket this is optionally adding template bucket for testing or for the fixture cli
+func TemplateBucket(bucket string) Opts {
 	return func(s *service) {
 		s.templatesBucket = bucket
 	}
