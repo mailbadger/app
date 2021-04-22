@@ -32,7 +32,7 @@ import (
 // Cache prefix and duration parameters
 const (
 	cachePrefix   = "campaigner:"
-	cacheDuration = 300000 * time.Millisecond
+	cacheDuration = 7 * 24 * time.Hour // & days cache duration
 )
 
 // MessageHandler implements the nsq handler interface.

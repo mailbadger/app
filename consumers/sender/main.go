@@ -34,7 +34,7 @@ var (
 // Cache prefix and duration parameters
 const (
 	cachePrefix   = "sender:"
-	cacheDuration = 300000 * time.Millisecond
+	cacheDuration = 7 * 24 * time.Hour // & days cache duration
 )
 
 // CharSet is used for the SES message body charset
