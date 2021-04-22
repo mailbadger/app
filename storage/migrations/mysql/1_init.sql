@@ -98,8 +98,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
     `started_at`    DATETIME(6) DEFAULT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users(`id`),
     FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    INDEX idx_id_created_at (`id`, `created_at`),
-    INDEX idx_user_id (`user_id`)
+    INDEX idx_id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `subscribers` (
@@ -114,7 +113,6 @@ CREATE TABLE IF NOT EXISTS `subscribers` (
     `updated_at`  DATETIME(6) NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users(`id`),
     INDEX idx_id_created_at (`id`, `created_at`),
-    INDEX idx_user_id (`user_id`),
     INDEX idx_user_blacklist_active (`user_id`, `blacklisted`, `active`),
     UNIQUE(`user_id`, `email`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -126,8 +124,7 @@ CREATE TABLE IF NOT EXISTS `segments` (
     `created_at`  DATETIME(6) NOT NULL,
     `updated_at`  DATETIME(6) NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-    INDEX idx_id_created_at (`id`, `created_at`),
-    INDEX idx_user_id (`user_id`)
+    INDEX idx_id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `subscribers_segments` (
@@ -135,9 +132,7 @@ CREATE TABLE IF NOT EXISTS `subscribers_segments` (
     `subscriber_id` BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (`segment_id`, `subscriber_id`),
     FOREIGN KEY (`segment_id`) REFERENCES segments(`id`),
-    FOREIGN KEY (`subscriber_id`) REFERENCES subscribers(`id`),
-    INDEX idx_segment_id (`segment_id`),
-    INDEX idx_subscriber_id (`subscriber_id`)
+    FOREIGN KEY (`subscriber_id`) REFERENCES subscribers(`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `bounces` (
@@ -182,9 +177,7 @@ CREATE TABLE IF NOT EXISTS `clicks` (
     `created_at`  DATETIME(6) NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users(`id`),
     FOREIGN KEY (`campaign_id`) REFERENCES campaigns(`id`),
-    INDEX idx_id_created_at (`id`, `created_at`),
-    INDEX idx_link (`campaign_id`, `user_id`, `link`),
-    INDEX idx_link_recipients (`campaign_id`, `user_id`, `recipient`, `link`)
+    INDEX idx_id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `opens` (
@@ -250,8 +243,7 @@ CREATE TABLE IF NOT EXISTS `subscriber_events` (
     `event_type`       VARCHAR(50) NOT NULL,
     `created_at`       DATETIME(6) NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES users (`id`),
-    INDEX idx_user_id_created_at (`user_id`, `created_at`),
-    INDEX idx_event_type (`event_type`)
+    INDEX idx_user_id_created_at (`user_id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- +migrate Down
