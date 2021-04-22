@@ -79,7 +79,6 @@ func StartCampaign(c *gin.Context) {
 		}
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Warn("Unable to parse template")
@@ -131,7 +130,6 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to marshal campaigner message body")
@@ -145,7 +143,6 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
@@ -159,7 +156,6 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to update campaign.")
