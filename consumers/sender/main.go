@@ -302,10 +302,6 @@ func newSesClient(keys entities.SesKeys) (emails.Sender, error) {
 	return client, nil
 }
 
-func genCacheKey(uuid string) string {
-	return cachePrefix + uuid
-}
-
 func sendEmail(client emails.Sender, msg entities.SenderTopicParams) (*ses.SendEmailOutput, error) {
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{

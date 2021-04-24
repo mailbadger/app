@@ -81,12 +81,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return err
 	}
 
-	if campaign.EventID == nil {
-		logEntry.WithError(err).Error("event id not found")
-		return err
-	}
-
-	campaignerKey := redis.GenCacheKey(cachePrefix, campaign.EventID.String())
+	campaignerKey := redis.GenCacheKey(cachePrefix, msg.EventID.String())
 
 	exist, err := h.cache.Exists(campaignerKey)
 	if err != nil {
@@ -202,7 +197,7 @@ func processSubscribers(
 				sendLog := &entities.SendLog{
 					ID:           id,
 					UserID:       msg.UserID,
-					EventID:      *campaign.EventID,
+					EventID:      msg.EventID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
@@ -213,7 +208,7 @@ func processSubscribers(
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
-						"event_id":      campaign.EventID.String(),
+						"event_id":      msg.EventID.String(),
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 
@@ -227,7 +222,7 @@ func processSubscribers(
 				sendLog := &entities.SendLog{
 					ID:           id,
 					UserID:       msg.UserID,
-					EventID:      *campaign.EventID, // We check the event id after fetching the campaign
+					EventID:      msg.EventID,
 					SubscriberID: s.ID,
 					CampaignID:   msg.CampaignID,
 					Status:       entities.SendLogStatusFailed,
@@ -238,7 +233,7 @@ func processSubscribers(
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
-						"event_id":      campaign.EventID.String(),
+						"event_id":      msg.EventID.String(),
 					}).WithError(err).Error("unable to insert send logs for subscriber.")
 				}
 
@@ -259,7 +254,7 @@ func processSubscribers(
 	return nil
 }
 
-// overwriting the callback func for max attempts reached to insert into campaign failed logs.
+// LogFailedMessage overwriting the callback func for max attempts reached to insert into campaign failed logs.
 func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 	if m == nil {
 		return
