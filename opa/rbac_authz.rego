@@ -6,7 +6,7 @@ role_permissions := {
   "engineering": [{"method": "GET",  "path": "/api/campaigns"},
                   {"method": "GET",  "path": "/api/campaigns/:id"}],
   "webdev":      [{"method": "GET",  "path": "/api/campaigns"},
-                  {"method": "PUT",  "path": "/api/campaigns/:id"}],
+                  {"method": "PUT",  "path": "/api/campaigns/:id"}]
 }
 
 default allow = false

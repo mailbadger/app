@@ -22,7 +22,7 @@ type User struct {
 }
 
 func (u *User) RoleNames() []string {
-	roles := []string{}
+	var roles []string
 	for _, r := range u.Roles {
 		roles = append(roles, r.Name)
 	}
