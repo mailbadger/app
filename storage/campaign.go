@@ -2,7 +2,6 @@ package storage
 
 import (
 	"os"
-	"time"
 
 	"github.com/jinzhu/gorm"
 
@@ -197,14 +196,4 @@ func NameLike(name string) func(*gorm.DB) *gorm.DB {
 // NotDeleted scopes a resource by deletion column.
 func NotDeleted(db *gorm.DB) *gorm.DB {
 	return db.Where("deleted_at IS NULL")
-}
-
-// GetScheduledCampaigns returns all scheduled campaigns < time
-func (db *store) GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error) {
-	var campaignsSchedule []entities.CampaignSchedule
-	err := db.Where("created_at <= ?", time).Find(&campaignsSchedule).Error
-	if err != nil {
-		return nil, err
-	}
-	return campaignsSchedule, err
 }

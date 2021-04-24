@@ -29,24 +29,71 @@ func TestScheduledCampaign(t *testing.T) {
 	segmentIDSsJSON, err := json.Marshal(segmentIDS)
 	assert.Nil(t, err)
 
-	//Test create scheduled campaign
-	c := &entities.CampaignSchedule{
-		ID:                  ksuid.New(),
-		UserID:              1,
-		CampaignID:          1,
-		ScheduledAt:         now,
-		Source:              "bla@email.com",
-		FromName:            "from name",
-		SegmentIDs:          segmentIDSsJSON,
-		DefaultTemplateData: []byte(`{"foo":"bar"}`),
-		CreatedAt:           now,
-		UpdatedAt:           now,
+	cam := []*entities.Campaign{
+		{
+			UserID:       1,
+			Name:         "test",
+			TemplateID:   0,
+			BaseTemplate: nil,
+			Schedule:     nil,
+			Status:       "draft",
+		},
+		{
+			UserID:       1,
+			Name:         "test2",
+			TemplateID:   0,
+			BaseTemplate: nil,
+			Schedule:     nil,
+			Status:       "sending",
+		},
 	}
 
-	err = store.CreateCampaignSchedule(c)
+	for i := range cam {
+		err = store.CreateCampaign(cam[i])
+		assert.Nil(t, err)
+	}
+
+	//Test create scheduled campaign
+	c := []*entities.CampaignSchedule{
+		{
+			UserID:              1,
+			CampaignID:          cam[0].ID,
+			ScheduledAt:         now,
+			Source:              "bla@email.com",
+			FromName:            "from name",
+			SegmentIDs:          segmentIDSsJSON,
+			DefaultTemplateData: []byte(`{"foo":"bar"}`),
+			CreatedAt:           now,
+			UpdatedAt:           now,
+		},
+		{
+			UserID:              1,
+			CampaignID:          cam[1].ID,
+			ScheduledAt:         now,
+			Source:              "bla@email.com",
+			FromName:            "from name",
+			SegmentIDs:          segmentIDSsJSON,
+			DefaultTemplateData: []byte(`{"foo":"bar"}`),
+			CreatedAt:           now,
+			UpdatedAt:           now,
+		},
+	}
+
+	id := ksuid.New()
+	for _, i := range c {
+		i.ID = id
+		err = store.CreateCampaignSchedule(i)
+		assert.Nil(t, err)
+		id = id.Next()
+	}
+
+	campSch, err := store.GetScheduledCampaigns(now)
 	assert.Nil(t, err)
 
+	// len should be 1 since the second campaign have status = sending (We only fetch campaigns with status draft)
+	assert.Equal(t, 1, len(campSch))
+
 	// Test delete scheduled campaign
-	err = store.DeleteCampaignSchedule(c.CampaignID)
+	err = store.DeleteCampaignSchedule(c[0].CampaignID)
 	assert.Nil(t, err)
 }

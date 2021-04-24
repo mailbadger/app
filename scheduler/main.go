@@ -17,6 +17,7 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
+	// todo add info logs for starting campaign, ending
 	err := job(context.Background(), s, time.Now())
 	if err != nil {
 		panic(err)
@@ -29,6 +30,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 	if err != nil {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
 	}
+	// todo add info logs
 
 	for _, cs := range scheduledCampaigns {
 		u, err := s.GetUser(cs.UserID)
