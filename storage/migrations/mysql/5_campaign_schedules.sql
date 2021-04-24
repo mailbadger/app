@@ -1,7 +1,6 @@
 -- +migrate Up
 
-CREATE TABLE IF NOT EXISTS `campaign_schedules`
-(
+CREATE TABLE IF NOT EXISTS `campaign_schedules` (
     `id`            varbinary(27)       primary key,
     `campaign_id`   integer unsigned UNIQUE NOT NULL,
     `scheduled_at`  datetime(6)         NOT NULL,
