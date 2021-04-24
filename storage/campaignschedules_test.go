@@ -24,7 +24,7 @@ func TestScheduledCampaign(t *testing.T) {
 
 	store := From(db)
 
-	//Test create scheduled campaign
+	// Test create scheduled campaign
 	c := &entities.CampaignSchedule{
 		ID:          ksuid.New(),
 		CampaignID:  1,

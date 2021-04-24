@@ -29,6 +29,7 @@ const (
 type Campaign struct {
 	Model
 	UserID       int64             `json:"-" gorm:"column:user_id; index"`
+	EventID      *ksuid.KSUID      `json:"-"`
 	Name         string            `json:"name" gorm:"not null"`
 	TemplateID   int64             `json:"-"`
 	BaseTemplate *BaseTemplate     `json:"template" gorm:"foreignKey:template_id"`
@@ -53,6 +54,7 @@ type BulkSendMessage struct {
 // CampaignerTopicParams represent the request params used
 // by the send campaign endpoint.
 type CampaignerTopicParams struct {
+	EventID                ksuid.KSUID       `json:"event_id"`
 	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
@@ -66,7 +68,7 @@ type CampaignerTopicParams struct {
 // SenderTopicParams represent the request params used
 // by the sender campaign consumer.
 type SenderTopicParams struct {
-	ID                     ksuid.KSUID `json:"id"`
+	EventID                ksuid.KSUID `json:"event_id"`
 	UserID                 int64       `json:"user_id"`
 	UserUUID               string      `json:"user_uuid"`
 	CampaignID             int64       `json:"campaign_id"`
@@ -103,6 +105,17 @@ func (c Campaign) GetCreatedAt() time.Time {
 
 func (c Campaign) GetUpdatedAt() time.Time {
 	return c.Model.UpdatedAt
+}
+
+// SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
+func (c *Campaign) SetEventID() {
+	if c.Schedule != nil {
+		c.EventID = &c.Schedule.ID
+		return
+	}
+
+	uid := ksuid.New()
+	c.EventID = &uid
 }
 
 type OpensStats struct {
