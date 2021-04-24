@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS `campaign_schedules`
     `scheduled_at`  datetime(6)         NOT NULL,
     `source`        varchar(191)        NOT NULL,
     `from_name`     varchar(60)         NOT NULL,
-    `segment_ids`   varchar(50)         NOT NULL,
-    `default_template_data` JSON NOT NULL,
+    `segment_ids`           JSON        NOT NULL,
+    `default_template_data` JSON        NOT NULL,
     `created_at`    datetime(6)         NOT NULL,
     `updated_at`    datetime(6)         NOT NULL,
     FOREIGN KEY (`campaign_id`) REFERENCES campaigns (`id`)

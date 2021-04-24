@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/gin-gonic/gin"
-	"github.com/mailbadger/app/utils"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
@@ -673,14 +672,20 @@ func PatchCampaignSchedule(c *gin.Context) {
 		return
 	}
 
-	segmentIDstring := utils.SliceIntToString(body.SegmentIDs, ",")
+	segmentIDsJSON, err := json.Marshal(body.SegmentIDs)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to schedule campaign, please try again.",
+		})
+		return
+	}
 
 	// if schedule exist update.
 	if campaign.Schedule != nil {
 		campaign.Schedule.ScheduledAt = schAt
 		campaign.Schedule.FromName = body.FromName
 		campaign.Schedule.Source = body.Source
-		campaign.Schedule.SegmentIDs = segmentIDstring
+		campaign.Schedule.SegmentIDs = segmentIDsJSON
 		campaign.Schedule.DefaultTemplateData = defMetadata
 	} else {
 		// else create new campaign schedule
@@ -689,7 +694,7 @@ func PatchCampaignSchedule(c *gin.Context) {
 			CampaignID:          campaign.ID,
 			ScheduledAt:         schAt,
 			UserID:              u.ID,
-			SegmentIDs:          segmentIDstring,
+			SegmentIDs:          segmentIDsJSON,
 			FromName:            body.FromName,
 			Source:              body.Source,
 			DefaultTemplateData: defMetadata,

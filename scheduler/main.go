@@ -10,7 +10,6 @@ import (
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/utils"
 )
 
 func main() {
@@ -65,7 +64,8 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		segmentIDs, err := utils.StringToIntSlice(cs.SegmentIDs)
+		var segmentIDs []int64
+		err = json.Unmarshal(cs.SegmentIDs, &segmentIDs)
 		if err != nil {
 			continue
 		}
