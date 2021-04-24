@@ -13,10 +13,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/open-policy-agent/opa/ast"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
@@ -55,25 +55,7 @@ func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect
 
 	routes.SetGuestRoutes(handler)
 
-	// OPA compiler
-	module := `
-		package example
-
-		default allow = false
-
-		allow {
-			input.identity = "admin"
-		}
-
-		allow {
-			input.method = "GET"
-		}
-	`
-
-	// Compile the module. The keys are used as identifiers in error messages.
-	compiler, err := ast.CompileModules(map[string]string{
-		"rbac_authz.rego": module,
-	})
+	compiler, err := opa.NewCompiler()
 	if err != nil {
 		t.FailNow()
 	}
@@ -105,6 +87,9 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 			Valid:  true,
 		},
 		BoundaryID: 2, //db_test type boundary
+		Roles: []entities.Role{
+			{Name: "admin"},
+		},
 	}
 	err = s.CreateUser(u)
 	if err != nil {
