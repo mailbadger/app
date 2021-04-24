@@ -200,9 +200,9 @@ func NotDeleted(db *gorm.DB) *gorm.DB {
 }
 
 // GetScheduledCampaigns returns all scheduled campaigns < time
-func (db *store) GetScheduledCampaigns(time time.Time) ([]*entities.CampaignSchedule, error) {
-	var campaignsSchedule []*entities.CampaignSchedule
-	err := db.Where("created_at < ?", time).Find(&campaignsSchedule).Error
+func (db *store) GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error) {
+	var campaignsSchedule []entities.CampaignSchedule
+	err := db.Where("created_at <= ?", time).Find(&campaignsSchedule).Error
 	if err != nil {
 		return nil, err
 	}

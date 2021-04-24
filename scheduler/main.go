@@ -17,9 +17,7 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
-	now := time.Now()
-
-	err := job(context.Background(), s, now)
+	err := job(context.Background(), s, time.Now())
 	if err != nil {
 		panic(err)
 	}
@@ -39,7 +37,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		}
 		campaign, err := s.GetCampaign(u.ID, cs.CampaignID)
 		if err != nil {
-			panic(err)
+			continue
 		}
 		if campaign.Status != entities.StatusDraft {
 			continue
@@ -88,7 +86,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		if err != nil {
 			continue
 		}
-		campaign.Status = entities.StatusSending
+		campaign.Status = entities.StatusScheduled
 		err = storage.UpdateCampaign(c, campaign)
 		if err != nil {
 			continue
