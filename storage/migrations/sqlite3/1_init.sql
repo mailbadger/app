@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
     "user_id"       integer,
     "name"          varchar(191) not null,
     "template_id"   integer,
+    "event_id"      varchar(27),
     "status"        varchar(191),
     "created_at"    datetime,
     "updated_at"    datetime,

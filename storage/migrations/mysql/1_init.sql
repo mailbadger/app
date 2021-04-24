@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
     `user_id`       INTEGER UNSIGNED NOT NULL,
     `name`          VARCHAR(191) NOT NULL,
     `template_id`   INTEGER UNSIGNED,
+    `event_id`      VARBINARY(27) DEFAULT NULL,
     `status`        VARCHAR(191) NOT NULL,
     `created_at`    DATETIME(6) NOT NULL,
     `updated_at`    DATETIME(6) NOT NULL,
