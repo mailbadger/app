@@ -26,9 +26,9 @@ func main() {
 	if err != nil {
 		logrus.WithField("time", now).WithError(err).Error("failed to start campaign scheduler job")
 	}
-	end := time.Now()
+	end := time.Since(now)
 
-	logrus.Infof("Scheduler started at %s, ended at: %s and took %f minutes to finish", now.String(), end.String(), end.Sub(now).Minutes())
+	logrus.Infof("Scheduler started at %v and took %f minutes to finish", now, end.Minutes())
 
 }
 
@@ -109,6 +109,15 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
+		lists, err := storage.GetSegmentsByIDs(c, u.ID, segmentIDs)
+		if err != nil || len(lists) == 0 {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id": cs.CampaignID,
+				"user_id":     cs.UserID,
+			}).WithError(err).Error("failed to get segments by ids.")
+			continue
+		}
+
 		sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{
@@ -148,7 +157,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			}).WithError(err).Error("failed to publish campaign to campaigner.")
 			continue
 		}
-		campaign.Status = entities.StatusScheduled
+		campaign.Status = entities.StatusSending
 		err = storage.UpdateCampaign(c, campaign)
 		if err != nil {
 			logrus.WithFields(logrus.Fields{

@@ -29,7 +29,7 @@ func (db *store) DeleteCampaignSchedule(campaignID int64) error {
 // GetScheduledCampaigns returns all scheduled campaigns < time
 func (db *store) GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error) {
 	var campaignsSchedule []entities.CampaignSchedule
-	err := db.Joins("LEFT JOIN campaigns ON campaigns.id = campaign_schedules.campaign_id").
+	err := db.Joins("JOIN campaigns ON campaigns.id = campaign_schedules.campaign_id").
 		Where("campaigns.status = ? OR campaigns.status = ? and campaign_schedules.created_at <= ?", entities.StatusDraft, entities.StatusScheduled, time).Find(&campaignsSchedule).Error
 	if err != nil {
 		return nil, err
