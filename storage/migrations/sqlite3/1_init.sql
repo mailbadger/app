@@ -96,19 +96,19 @@ CREATE TABLE IF NOT EXISTS "ses_keys" (
 );
 
 CREATE TABLE IF NOT EXISTS "campaigns" (
-  "id"            integer primary key autoincrement,
-  "user_id"       integer,
-  "event_id"      varchar(27),
-  "name"          varchar(191) not null,
-  "template_id"   integer,
-  "status"        varchar(191),
-  "created_at"    datetime,
-  "updated_at"    datetime,
-  "completed_at"  datetime DEFAULT NULL,
-  "deleted_at"    datetime DEFAULT NULL,
-  "started_at"    datetime DEFAULT NULL,
-  foreign key ("user_id") references users("id"),
-  foreign key ("template_id") references templates("id")
+    "id"            integer primary key autoincrement,
+    "user_id"       integer,
+    "name"          varchar(191) not null,
+    "template_id"   integer,
+    "event_id"      varchar(27),
+    "status"        varchar(191),
+    "created_at"    datetime,
+    "updated_at"    datetime,
+    "completed_at"  datetime DEFAULT NULL,
+    "deleted_at"    datetime DEFAULT NULL,
+    "started_at"    datetime DEFAULT NULL,
+    foreign key ("user_id") references users("id"),
+    foreign key ("template_id") references templates("id")
 );
 
 CREATE INDEX IF NOT EXISTS idx_user ON "campaigns" (user_id);

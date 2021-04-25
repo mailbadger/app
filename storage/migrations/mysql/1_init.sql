@@ -86,20 +86,20 @@ CREATE TABLE IF NOT EXISTS `templates` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `campaigns` (
-  `id`            INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
-  `user_id`       INTEGER UNSIGNED NOT NULL,
-  `event_id`      VARBINARY(27) UNIQUE,
-  `name`          VARCHAR(191) NOT NULL,
-  `template_id`   INTEGER UNSIGNED,
-  `status`        VARCHAR(191) NOT NULL,
-  `created_at`    DATETIME(6) NOT NULL,
-  `updated_at`    DATETIME(6) NOT NULL,
-  `completed_at`  DATETIME(6) DEFAULT NULL,
-  `deleted_at`    DATETIME(6) DEFAULT NULL,
-  `started_at`    DATETIME(6) DEFAULT NULL,
-  FOREIGN KEY (`user_id`) REFERENCES users(`id`),
-  FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  INDEX idx_id_created_at (`id`, `created_at`)
+    `id`            INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    `user_id`       INTEGER UNSIGNED NOT NULL,
+    `name`          VARCHAR(191) NOT NULL,
+    `template_id`   INTEGER UNSIGNED,
+    `event_id`      VARBINARY(27) DEFAULT NULL,
+    `status`        VARCHAR(191) NOT NULL,
+    `created_at`    DATETIME(6) NOT NULL,
+    `updated_at`    DATETIME(6) NOT NULL,
+    `completed_at`  DATETIME(6) DEFAULT NULL,
+    `deleted_at`    DATETIME(6) DEFAULT NULL,
+    `started_at`    DATETIME(6) DEFAULT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+    FOREIGN KEY (`template_id`) REFERENCES templates(`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    INDEX idx_id_created_at (`id`, `created_at`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `subscribers` (
