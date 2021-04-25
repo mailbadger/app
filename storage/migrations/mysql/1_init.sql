@@ -212,6 +212,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 CREATE TABLE IF NOT EXISTS `send_logs` (
     `id`              varbinary(27) primary key NOT NULL,
     `user_id`         integer unsigned NOT NULL,
+    `event_id`        varbinary(27) NOT NULL,
     `subscriber_id`   integer unsigned NOT NULL,
     `campaign_id`     integer unsigned NOT NULL,
     `status`          varchar(191) NOT NULL,

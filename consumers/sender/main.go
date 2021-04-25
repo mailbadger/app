@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/nsqio/go-nsq"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/mailbadger/app/consumers"
@@ -32,8 +33,8 @@ var (
 
 // Cache prefix and duration parameters
 const (
-	CachePrefix   = "sender:"
-	CacheDuration = 300000 * time.Millisecond
+	cachePrefix   = "sender:"
+	cacheDuration = 7 * 24 * time.Hour // & days cache duration
 )
 
 // CharSet is used for the SES message body charset
@@ -62,7 +63,7 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"send_log_id":   msg.ID,
+		"event_id":      msg.EventID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
@@ -71,7 +72,8 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 	logEntry.Error("Exceeded max attempts for sending the e-mail.")
 
 	err = h.storage.CreateSendLog(&entities.SendLog{
-		ID:           msg.ID,
+		ID:           ksuid.New(),
+		EventID:      msg.EventID,
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
@@ -85,14 +87,14 @@ func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
 
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
-func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
+func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	if len(m.Body) == 0 {
 		logrus.Error("Empty message, unable to proceed.")
 		return nil
 	}
 
 	msg := new(entities.SenderTopicParams)
-	err := json.Unmarshal(m.Body, msg)
+	err = json.Unmarshal(m.Body, msg)
 	if err != nil {
 		logrus.WithField("body", string(m.Body)).
 			WithError(err).Error("Malformed JSON message.")
@@ -100,14 +102,16 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
-		"send_log_id":   msg.ID,
+		"event_id":      msg.EventID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
 	})
 
+	cacheKey := redis.GenCacheKey(cachePrefix, fmt.Sprintf("%s_%d", msg.EventID.String(), msg.SubscriberID))
+
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
-	exist, err := h.cache.Exists(genCacheKey(msg.ID.String()))
+	exist, err := h.cache.Exists(cacheKey)
 	if err != nil {
 		logEntry.WithError(err).Error("Unable to check message existence")
 		return err
@@ -118,13 +122,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		return nil
 	}
 
-	if err := h.cache.Set(genCacheKey(msg.ID.String()), []byte("sending"), CacheDuration); err != nil {
+	if err := h.cache.Set(cacheKey, []byte("sending"), cacheDuration); err != nil {
 		logEntry.WithError(err).Error("Unable to write to cache")
 		return err
 	}
 
 	sendLog := &entities.SendLog{
-		ID:           msg.ID,
+		ID:           ksuid.New(),
+		EventID:      msg.EventID,
 		UserID:       msg.UserID,
 		CampaignID:   msg.CampaignID,
 		SubscriberID: msg.SubscriberID,
@@ -132,23 +137,27 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 		Description:  entities.SendLogDescriptionOnSuccessful,
 	}
 
+	defer func() {
+		if err == nil {
+			err = h.storage.CreateSendLog(sendLog)
+			if err != nil {
+				logrus.WithFields(logrus.Fields{
+					"event_id":      msg.EventID.String(),
+					"user_id":       msg.UserID,
+					"campaign_id":   msg.CampaignID,
+					"subscriber_id": msg.SubscriberID,
+					"message_id":    sendLog.MessageID,
+				}).WithError(err).Error("Unable to add log for sent emails result.")
+			}
+		}
+	}()
+
 	client, err := newSesClient(msg.SesKeys)
 	if err != nil {
 		logEntry.WithError(err).Error("Unable to create ses sender")
 
 		sendLog.Status = entities.StatusFailed
 		sendLog.Description = entities.SendLogDescriptionOnSesClientError
-
-		err = h.storage.CreateSendLog(sendLog)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"id":            msg.ID.String(),
-				"user_id":       msg.UserID,
-				"campaign_id":   msg.CampaignID,
-				"subscriber_id": msg.SubscriberID,
-				"message_id":    sendLog.MessageID,
-			}).WithError(err).Error("Unable to add log for sent emails result.")
-		}
 
 		return nil
 	}
@@ -173,21 +182,21 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 				logEntry.WithError(aerr).Error("Unable to send templated email. Configuration set does not exist.")
 			case sns.ErrCodeThrottledException:
 				logEntry.WithError(aerr).Error("Unable to send templated email. The rate at which requests have been submitted for this action exceeds the limit for your account. Slow down!")
-				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+				rerr := h.cache.Delete(cacheKey)
 				if rerr != nil {
 					logEntry.WithError(rerr).Error("Unable to delete cached id")
 				}
 				return err
 			case sns.ErrCodeInternalErrorException:
 				logEntry.WithError(aerr).Error("Unable to send templated email. The request processing has failed because of an unknown error, exception, or failure.")
-				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+				rerr := h.cache.Delete(cacheKey)
 				if rerr != nil {
 					logEntry.WithError(rerr).Error("Unable to delete cached id")
 				}
 				return err
 			default:
 				logEntry.WithError(aerr).Error("Unable to send templated email. Unknown status.")
-				rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+				rerr := h.cache.Delete(cacheKey)
 				if rerr != nil {
 					logEntry.WithError(rerr).Error("Unable to delete cached id")
 				}
@@ -195,7 +204,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 			}
 		} else {
 			logEntry.WithError(err).Error("Unable to send templated email.")
-			rerr := h.cache.Delete(genCacheKey(msg.ID.String()))
+			rerr := h.cache.Delete(cacheKey)
 			if rerr != nil {
 				logEntry.WithError(rerr).Error("Unable to delete cached id")
 			}
@@ -205,17 +214,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) error {
 
 	if resp != nil {
 		sendLog.MessageID = resp.MessageId
-	}
-
-	err = h.storage.CreateSendLog(sendLog)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"id":            msg.ID.String(),
-			"user_id":       msg.UserID,
-			"campaign_id":   msg.CampaignID,
-			"subscriber_id": msg.SubscriberID,
-			"message_id":    sendLog.MessageID,
-		}).WithError(err).Error("Unable to add log for sent emails result.")
 	}
 
 	return nil
@@ -302,10 +300,6 @@ func newSesClient(keys entities.SesKeys) (emails.Sender, error) {
 	}
 
 	return client, nil
-}
-
-func genCacheKey(uuid string) string {
-	return CachePrefix + uuid
 }
 
 func sendEmail(client emails.Sender, msg entities.SenderTopicParams) (*ses.SendEmailOutput, error) {

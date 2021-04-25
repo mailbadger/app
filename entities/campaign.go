@@ -54,6 +54,7 @@ type BulkSendMessage struct {
 // CampaignerTopicParams represent the request params used
 // by the send campaign endpoint.
 type CampaignerTopicParams struct {
+	EventID                ksuid.KSUID       `json:"event_id"`
 	CampaignID             int64             `json:"campaign_id"`
 	SegmentIDs             []int64           `json:"segment_ids"`
 	TemplateData           map[string]string `json:"template_data"`
@@ -67,7 +68,7 @@ type CampaignerTopicParams struct {
 // SenderTopicParams represent the request params used
 // by the sender campaign consumer.
 type SenderTopicParams struct {
-	ID                     ksuid.KSUID `json:"id"`
+	EventID                ksuid.KSUID `json:"event_id"`
 	UserID                 int64       `json:"user_id"`
 	UserUUID               string      `json:"user_uuid"`
 	CampaignID             int64       `json:"campaign_id"`
