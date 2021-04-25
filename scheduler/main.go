@@ -7,6 +7,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/storage"
@@ -106,6 +109,19 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
+		sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{
+				"campaign_id": cs.CampaignID,
+				"user_id":     cs.UserID,
+			}).WithError(err).Error("failed to create new ses sender.")
+			continue
+		}
+
+		_, err = sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
+			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+		})
+
 		params := &entities.CampaignerTopicParams{
 			CampaignID:             cs.CampaignID,
 			SegmentIDs:             segmentIDs,
@@ -113,7 +129,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			Source:                 cs.Source,
 			UserID:                 u.ID,
 			UserUUID:               u.UUID,
-			ConfigurationSetExists: false,
+			ConfigurationSetExists: err == nil,
 			SesKeys:                *sesKeys,
 		}
 		paramsByte, err := json.Marshal(params)

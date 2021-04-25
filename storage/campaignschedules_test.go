@@ -36,7 +36,7 @@ func TestScheduledCampaign(t *testing.T) {
 			TemplateID:   0,
 			BaseTemplate: nil,
 			Schedule:     nil,
-			Status:       "draft",
+			Status:       entities.StatusDraft,
 		},
 		{
 			UserID:       1,
@@ -44,7 +44,7 @@ func TestScheduledCampaign(t *testing.T) {
 			TemplateID:   0,
 			BaseTemplate: nil,
 			Schedule:     nil,
-			Status:       "sending",
+			Status:       entities.StatusSending,
 		},
 	}
 
@@ -90,7 +90,7 @@ func TestScheduledCampaign(t *testing.T) {
 	campSch, err := store.GetScheduledCampaigns(now)
 	assert.Nil(t, err)
 
-	// len should be 1 since the second campaign have status = sending (We only fetch campaigns with status draft)
+	// len should be 1 since the second campaign have status = sending (We only fetch campaigns with status draft and scheduled)
 	assert.Equal(t, 1, len(campSch))
 
 	// Test delete scheduled campaign
