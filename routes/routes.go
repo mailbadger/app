@@ -16,10 +16,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	adapter "github.com/gwatts/gin-adapter"
+	"github.com/open-policy-agent/opa/ast"
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/secure"
 
 	"github.com/mailbadger/app/actions"
+	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
@@ -162,8 +164,15 @@ func New() http.Handler {
 		tollbooth_gin.LimitHandler(lmt),
 	)
 
+	// Compile the OPA module. The keys are used as identifiers in error messages.
+	opacompiler, err := opa.NewCompiler()
+	if err != nil {
+		panic(err)
+	}
+
 	SetAuthorizedRoutes(
 		handler,
+		opacompiler,
 		middleware.NoCache(),
 		CSRF(),
 		tollbooth_gin.LimitHandler(lmt),
@@ -216,9 +225,9 @@ func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 // SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
 // the Authorized middleware which performs the checks for authorized user as well as
 // other optional middlewares that we set.
-func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
+func SetAuthorizedRoutes(handler *gin.Engine, opacompiler *ast.Compiler, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.Authorized())
+	authorized.Use(middleware.Authorized(opacompiler))
 	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout)
