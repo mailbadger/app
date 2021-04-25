@@ -90,7 +90,7 @@ func (s service) AddTemplate(c context.Context, template *entities.Template) err
 
 	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(s.templatesBucket),
-		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
+		Key:    aws.String(templateKey(template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
@@ -121,7 +121,7 @@ func (s service) UpdateTemplate(c context.Context, template *entities.Template) 
 
 	s3Input := &s3.PutObjectInput{
 		Bucket: aws.String(s.templatesBucket),
-		Key:    aws.String(fmt.Sprintf("%d/%d", template.UserID, template.ID)),
+		Key:    aws.String(templateKey(template.UserID, template.ID)),
 		Body:   bytes.NewReader([]byte(template.HTMLPart)),
 	}
 
@@ -148,7 +148,7 @@ func (s service) GetTemplates(c context.Context, userID int64, p *storage.Pagina
 func (s *service) DeleteTemplate(c context.Context, templateID, userID int64) error {
 	_, err := s.s3.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(s.templatesBucket),
-		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+		Key:    aws.String(templateKey(userID, templateID)),
 	})
 	if err != nil {
 		return fmt.Errorf("delete object: %w", err)
@@ -171,7 +171,7 @@ func (s service) GetTemplate(c context.Context, templateID int64, userID int64) 
 
 	resp, err := s.s3.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(s.templatesBucket),
-		Key:    aws.String(fmt.Sprintf("%d/%d", userID, templateID)),
+		Key:    aws.String(templateKey(template.UserID, template.ID)),
 	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -227,4 +227,9 @@ func (s *service) ParseTemplate(c context.Context, templateID int64, userID int6
 		SubjectPart: sub,
 		TextPart:    text,
 	}, nil
+}
+
+// templateKey generates template key
+func templateKey(userID, templateID int64) string {
+	return fmt.Sprintf("temnplates/%d/%d", userID, templateID)
 }

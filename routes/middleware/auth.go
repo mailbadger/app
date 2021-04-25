@@ -7,11 +7,12 @@ import (
 	"github.com/gorilla/csrf"
 
 	"github.com/gin-contrib/sessions"
-
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/storage"
-	log "github.com/sirupsen/logrus"
+	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/rego"
 )
 
 // Authorization header prefixes.
@@ -35,7 +36,7 @@ func SetUser() gin.HandlerFunc {
 			if parts[0] == APIKeyAuth {
 				key, err := storage.GetAPIKey(c, parts[1])
 				if err != nil {
-					log.WithError(err).Error("unable to fetch api key")
+					logger.From(c).WithError(err).Error("unable to fetch api key")
 					c.Next()
 					return
 				}
@@ -86,15 +87,52 @@ func GetUser(c *gin.Context) *entities.User {
 
 // Authorized is a middleware that checks if the user is authorized to do the
 // requested action.
-func Authorized() gin.HandlerFunc {
+func Authorized(compiler *ast.Compiler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		val, ok := c.Get("user")
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
 			return
 		}
-		_, ok = val.(*entities.User)
+		u, ok := val.(*entities.User)
 		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
+			return
+		}
+
+		// Create a new query that uses the compiled policy from above.
+		input := map[string]interface{}{
+			"roles":  u.RoleNames(),
+			"method": c.Request.Method,
+			"path":   c.FullPath(),
+		}
+		rego := rego.New(
+			rego.Query("data.rbac.authz.allow"),
+			rego.Compiler(compiler),
+			rego.Input(input),
+		)
+
+		// Run evaluation.
+		rs, err := rego.Eval(c)
+
+		if err != nil {
+			logger.From(c).WithField("input", input).WithError(err).Error("auth: unable to evaluate opa decision")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
+			return
+		}
+
+		if len(rs) == 0 {
+			logger.From(c).WithField("input", input).Error("auth: undefined opa decision")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
+			return
+		}
+
+		if decision, ok := rs[0].Expressions[0].Value.(bool); !ok || len(rs) > 1 {
+			logger.From(c).WithField("input", input).Error("auth: non-boolean opa decision")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
+			return
+		} else if !decision {
+			logger.From(c).WithField("input", input).Info("auth: user does not have required permissions")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "User not authorized"})
 			return
 		}

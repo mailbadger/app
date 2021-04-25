@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS "campaigns" (
     "user_id"       integer,
     "name"          varchar(191) not null,
     "template_id"   integer,
+    "event_id"      varchar(27),
     "status"        varchar(191),
     "created_at"    datetime,
     "updated_at"    datetime,
@@ -235,16 +236,17 @@ CREATE TABLE IF NOT EXISTS "deliveries" (
 CREATE INDEX IF NOT EXISTS idx_id_created_at ON "deliveries" (id, created_at);
 
 CREATE TABLE IF NOT EXISTS "send_logs" (
-    "id"           varchar(27) primary key,
-    "user_id"       integer NOT NULL,
-    "campaign_id"   integer NOT NULL,
-    "subscriber_id" integer NOT NULL,
-    "status"        varchar(191) NOT NULL,
-    "message_id"    varchar(191),
-    "description"   varchar(191),
-    "created_at"    datetime,
-    foreign key ("user_id") references users("id"),
-    foreign key ("campaign_id") references campaigns("id")
+  "id"            varchar(27) primary key,
+  "user_id"       integer NOT NULL,
+  "event_id"      varchar(27) NOT NULL,
+  "campaign_id"   integer NOT NULL,
+  "subscriber_id" integer NOT NULL,
+  "status"        varchar(191) NOT NULL,
+  "message_id"    varchar(191),
+  "description"   varchar(191),
+  "created_at"    datetime,
+  foreign key ("user_id") references users("id"),
+  foreign key ("campaign_id") references campaigns("id")
 );
 
 CREATE INDEX IF NOT EXISTS idx_id_created_at ON "send_logs" (id, created_at);

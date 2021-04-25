@@ -42,7 +42,9 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
+
 	LogFailedCampaign(c *entities.Campaign, description string) error
+
 	CreateCampaignSchedule(c *entities.CampaignSchedule) error
 	DeleteCampaignSchedule(campaignID int64) error
 	GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error)

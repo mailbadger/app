@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS `campaigns` (
     `user_id`       INTEGER UNSIGNED NOT NULL,
     `name`          VARCHAR(191) NOT NULL,
     `template_id`   INTEGER UNSIGNED,
+    `event_id`      VARBINARY(27) DEFAULT NULL,
     `status`        VARCHAR(191) NOT NULL,
     `created_at`    DATETIME(6) NOT NULL,
     `updated_at`    DATETIME(6) NOT NULL,
@@ -211,6 +212,7 @@ CREATE TABLE IF NOT EXISTS `deliveries` (
 CREATE TABLE IF NOT EXISTS `send_logs` (
     `id`              varbinary(27) primary key NOT NULL,
     `user_id`         integer unsigned NOT NULL,
+    `event_id`        varbinary(27) NOT NULL,
     `subscriber_id`   integer unsigned NOT NULL,
     `campaign_id`     integer unsigned NOT NULL,
     `status`          varchar(191) NOT NULL,

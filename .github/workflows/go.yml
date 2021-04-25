@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Generate migration files
-        uses: cedrickring/golang-action@1.6.0
+        uses: cedrickring/golang-action@1.7.0
         with:
           args: go get github.com/rakyll/statik && make gen
       - name: golangci-lint
@@ -30,7 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: test
-      uses: cedrickring/golang-action@1.6.0
+      uses: cedrickring/golang-action@1.7.0
       env:
         GO111MODULE: "on"
       with:
@@ -47,7 +47,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: build
-      uses: cedrickring/golang-action@1.6.0
+      uses: cedrickring/golang-action@1.7.0
       env:
         GO111MODULE: "on"
       with:

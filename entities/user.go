@@ -20,3 +20,11 @@ type User struct {
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 }
+
+func (u *User) RoleNames() []string {
+	var roles []string
+	for _, r := range u.Roles {
+		roles = append(roles, r.Name)
+	}
+	return roles
+}

@@ -41,7 +41,7 @@ func New(db storage.Storage, p queue.Producer) Service {
 
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
-	id ksuid.KSUID,
+	eventID ksuid.KSUID,
 	msg entities.CampaignerTopicParams,
 	campaignID int64,
 	html *mustache.Template,
@@ -91,7 +91,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SenderTopicParams{
-		ID:                     id,
+		EventID:                eventID,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,
