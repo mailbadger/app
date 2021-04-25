@@ -46,6 +46,14 @@ func TestScheduledCampaign(t *testing.T) {
 			Schedule:     nil,
 			Status:       entities.StatusSending,
 		},
+		{
+			UserID:       1,
+			Name:         "test2",
+			TemplateID:   0,
+			BaseTemplate: nil,
+			Schedule:     nil,
+			Status:       entities.StatusScheduled,
+		},
 	}
 
 	for i := range cam {
@@ -77,6 +85,17 @@ func TestScheduledCampaign(t *testing.T) {
 			CreatedAt:           now,
 			UpdatedAt:           now,
 		},
+		{
+			UserID:              1,
+			CampaignID:          cam[2].ID,
+			ScheduledAt:         now,
+			Source:              "bla@email.com",
+			FromName:            "from name",
+			SegmentIDs:          segmentIDSsJSON,
+			DefaultTemplateData: []byte(`{"foo":"bar"}`),
+			CreatedAt:           now,
+			UpdatedAt:           now,
+		},
 	}
 
 	id := ksuid.New()
@@ -91,7 +110,7 @@ func TestScheduledCampaign(t *testing.T) {
 	assert.Nil(t, err)
 
 	// len should be 1 since the second campaign have status = sending (We only fetch campaigns with status draft and scheduled)
-	assert.Equal(t, 1, len(campSch))
+	assert.Equal(t, 2, len(campSch))
 
 	// Test delete scheduled campaign
 	err = store.DeleteCampaignSchedule(c[0].CampaignID)
