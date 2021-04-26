@@ -38,7 +38,6 @@ type Campaign struct {
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
 	StartedAt    NullTime          `json:"started_at" gorm:"column:started_at"`
-	Errors       map[string]string `json:"-" sql:"-"`
 }
 
 // BulkSendMessage represents the entity used to transport the bulk send message
