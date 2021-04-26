@@ -4,6 +4,6 @@ import "github.com/mailbadger/app/entities"
 
 func (db *store) GetBoundariesByType(t string) (*entities.Boundaries, error) {
 	var b = new(entities.Boundaries)
-	err := db.Where("type = ?", t).Find(b).Error
+	err := db.Where("type = ?", t).First(b).Error
 	return b, err
 }

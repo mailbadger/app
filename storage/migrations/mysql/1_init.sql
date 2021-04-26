@@ -15,7 +15,33 @@ CREATE TABLE IF NOT EXISTS `boundaries` (
     `updated_at`                 DATETIME(6) NOT NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-INSERT INTO `boundaries` (`type`, `stats_retention`, `subscribers_limit`, `campaigns_limit`, `templates_limit`, `groups_limit`, `schedule_campaigns_enabled`, `saml_enabled`, `team_members_limit`, `created_at`, `updated_at`) VALUES ("nolimit", 0, 0, 1, 0, 0, 1, 1, 0, NOW(), NOW());
+INSERT INTO `boundaries` (
+  `type`, 
+  `stats_retention`, 
+  `subscribers_limit`, 
+  `campaigns_limit`, 
+  `templates_limit`, 
+  `groups_limit`, 
+  `schedule_campaigns_enabled`, 
+  `saml_enabled`, 
+  `team_members_limit`, 
+  `created_at`, 
+  `updated_at`
+  ) VALUES ("nolimit", 0, 0, 0, 0, 0, 1, 1, 0, NOW(), NOW());
+
+INSERT INTO `boundaries` (
+  `type`, 
+  `stats_retention`, 
+  `subscribers_limit`, 
+  `campaigns_limit`, 
+  `templates_limit`, 
+  `groups_limit`, 
+  `schedule_campaigns_enabled`, 
+  `saml_enabled`, 
+  `team_members_limit`, 
+  `created_at`, 
+  `updated_at`
+  ) VALUES ("free", 0, 0, 3, 0, 0, 0, 0, 0, NOW(), NOW());
 
 CREATE TABLE IF NOT EXISTS `users` (
     `id`          INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,

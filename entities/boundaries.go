@@ -1,5 +1,10 @@
 package entities
 
+const (
+	BoundaryTypeNoLimit = "nolimit"
+	BoundaryTypeFree    = "free"
+)
+
 // Boundaries represents the boundary to which a user is constrained.
 type Boundaries struct {
 	Model
