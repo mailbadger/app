@@ -28,7 +28,7 @@ func main() {
 	}
 	end := time.Since(now)
 
-	logrus.Infof("Scheduler started at %v and took %f minutes to finish", now, end.Minutes())
+	logrus.Infof("Scheduler started at %v and took %v minutes to finish", now, end)
 
 }
 
@@ -39,91 +39,66 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 	}
 
 	for _, cs := range scheduledCampaigns {
+
+		logEntry := logrus.WithFields(logrus.Fields{
+			"campaign_id": cs.CampaignID,
+			"user_id":     cs.UserID,
+		})
+
 		u, err := s.GetUser(cs.UserID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to get user.")
+			logEntry.WithError(err).Error("failed to get user.")
 			continue
 		}
 		campaign, err := s.GetCampaign(u.ID, cs.CampaignID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to get campaign.")
+			logEntry.WithError(err).Error("failed to get campaign.")
 			continue
 		}
 		if campaign.Status != entities.StatusDraft {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Warn("campaign status is not draft.")
+			logEntry.WithError(err).Warn("campaign status is not draft.")
 			continue
 		}
 
 		template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-				"template_id": campaign.BaseTemplate.ID,
-			}).WithError(err).Error("failed to get template.")
+			logEntry.WithField("template_id", campaign.BaseTemplate.ID).WithError(err).Error("failed to get template.")
 			continue
 		}
 		var templateData map[string]string
 		err = json.Unmarshal(cs.DefaultTemplateData, &templateData)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to unmarshal default template data.")
+			logEntry.WithError(err).Error("failed to unmarshal default template data.")
 			continue
 		}
 		err = template.ValidateData(templateData)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to validate template data.")
+			logEntry.WithError(err).Error("failed to validate template data.")
 			continue
 		}
 
 		sesKeys, err := storage.GetSesKeys(c, u.ID)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to get ses keys.")
+			logEntry.WithError(err).Error("failed to get ses keys.")
 			continue
 		}
 
 		var segmentIDs []int64
 		err = json.Unmarshal(cs.SegmentIDs, &segmentIDs)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to unmarshal segment ids.")
+			logEntry.WithError(err).Error("failed to unmarshal segment ids.")
 			continue
 		}
 
 		lists, err := storage.GetSegmentsByIDs(c, u.ID, segmentIDs)
 		if err != nil || len(lists) == 0 {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to get segments by ids.")
+			logEntry.WithField("segment_ids", segmentIDs).WithError(err).Error("failed to get segments by ids.")
 			continue
 		}
 
 		sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to create new ses sender.")
+			logEntry.WithError(err).Error("failed to create new ses sender.")
 			continue
 		}
 
@@ -143,27 +118,18 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		}
 		paramsByte, err := json.Marshal(params)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to marshal params for campaigner.")
+			logEntry.WithError(err).Error("failed to marshal params for campaigner.")
 			continue
 		}
 		err = queue.Publish(c, entities.CampaignerTopic, paramsByte)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to publish campaign to campaigner.")
+			logEntry.WithError(err).Error("failed to publish campaign to campaigner.")
 			continue
 		}
 		campaign.Status = entities.StatusSending
 		err = storage.UpdateCampaign(c, campaign)
 		if err != nil {
-			logrus.WithFields(logrus.Fields{
-				"campaign_id": cs.CampaignID,
-				"user_id":     cs.UserID,
-			}).WithError(err).Error("failed to update status of campaign.")
+			logEntry.WithError(err).Error("failed to update status of campaign.")
 			continue
 		}
 	}
