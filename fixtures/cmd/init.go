@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/bcrypt"
 
@@ -83,9 +82,9 @@ func createUser() (*entities.User, error) {
 		Active:    true,
 	})
 	if err != nil {
-		fmt.Printf("Failed to create API key\n\n")
+		fmt.Printf("Failed to create api key\n\n")
 	} else {
-		fmt.Printf("created API key secret: %s", secret)
+		fmt.Printf("created api key secret: %s", secret)
 	}
 
 	return u, nil
@@ -124,12 +123,7 @@ func createSubscribersAndSegments(userID int64) error {
 
 		err = db.CreateSubscriber(subscriber)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to create subscriber\n name: %s segment_id: %d, error: %s", name, fullSegment.ID, err.Error())
-
-			logrus.WithError(err).WithFields(logrus.Fields{
-				"name":       name,
-				"segment_id": fullSegment.ID,
-			}).Errorf("failed to create subscriber")
+			fmt.Printf("[ERROR] failed to create subscriber\n name: %s, segment_id: %d, error: %s", name, fullSegment.ID, err.Error())
 			continue
 		}
 
@@ -183,7 +177,7 @@ func createCampaignsAndTemplates(userID int64) error {
 
 		err := db.CreateCampaign(campaign)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to create campaign\n name: %s template_id: %d error: %s", name, template.ID, err.Error())
+			fmt.Printf("[ERROR] failed to create campaign\n name: %s, template_id: %d, error: %s", name, template.ID, err.Error())
 			continue
 		}
 
