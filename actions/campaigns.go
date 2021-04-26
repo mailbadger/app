@@ -692,19 +692,19 @@ func PatchCampaignSchedule(c *gin.Context) {
 		campaign.Schedule.ScheduledAt = schAt
 		campaign.Schedule.FromName = body.FromName
 		campaign.Schedule.Source = body.Source
-		campaign.Schedule.SegmentIDs = segmentIDsJSON
-		campaign.Schedule.DefaultTemplateData = defMetadata
+		campaign.Schedule.SegmentIDsJSON = segmentIDsJSON
+		campaign.Schedule.DefaultTemplateDataJSON = defMetadata
 	} else {
 		// else create new campaign schedule
 		campaign.Schedule = &entities.CampaignSchedule{
-			ID:                  ksuid.New(),
-			CampaignID:          campaign.ID,
-			ScheduledAt:         schAt,
-			UserID:              u.ID,
-			SegmentIDs:          segmentIDsJSON,
-			FromName:            body.FromName,
-			Source:              body.Source,
-			DefaultTemplateData: defMetadata,
+			ID:                      ksuid.New(),
+			CampaignID:              campaign.ID,
+			ScheduledAt:             schAt,
+			UserID:                  u.ID,
+			SegmentIDsJSON:          segmentIDsJSON,
+			FromName:                body.FromName,
+			Source:                  body.Source,
+			DefaultTemplateDataJSON: defMetadata,
 		}
 	}
 
