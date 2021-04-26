@@ -14,10 +14,10 @@ type CampaignSchedule struct {
 	ScheduledAt             time.Time         `json:"scheduled_at"`
 	Source                  string            `json:"source"`
 	FromName                string            `json:"from_name"`
-	SegmentIDsJSON          JSON              `json:"segment_ids"`
-	SegmentIDs              []int64           `json:"-"`
-	DefaultTemplateDataJSON JSON              `json:"default_template_data"`
-	DefaultTemplateData     map[string]string `json:"-"`
+	SegmentIDsJSON          JSON              `json:"segment_ids" gorm:"column:segment_ids; type:json"`
+	SegmentIDs              []int64           `json:"-" sql:"-"`
+	DefaultTemplateDataJSON JSON              `json:"default_template_data"  gorm:"column:default_template_data; type:json"`
+	DefaultTemplateData     map[string]string `json:"-" sql:"-"`
 	CreatedAt               time.Time         `json:"created_at"`
 	UpdatedAt               time.Time         `json:"updated_at"`
 }
