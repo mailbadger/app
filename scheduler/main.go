@@ -66,6 +66,10 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 		templateData, err := cs.GetMetadata()
+		if err != nil {
+			logEntry.WithError(err).Error("failed to unmarshal default template data.")
+			continue
+		}
 		err = template.ValidateData(templateData)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to validate template data.")
