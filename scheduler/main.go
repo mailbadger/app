@@ -65,12 +65,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			logEntry.WithField("template_id", campaign.BaseTemplate.ID).WithError(err).Error("failed to get template.")
 			continue
 		}
-		var templateData map[string]string
-		err = json.Unmarshal(cs.DefaultTemplateData, &templateData)
-		if err != nil {
-			logEntry.WithError(err).Error("failed to unmarshal default template data.")
-			continue
-		}
+		templateData, err := cs.GetMetadata()
 		err = template.ValidateData(templateData)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to validate template data.")
@@ -83,8 +78,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		var segmentIDs []int64
-		err = json.Unmarshal(cs.SegmentIDs, &segmentIDs)
+		segmentIDs, err := cs.GetSegmentIDs()
 		if err != nil {
 			logEntry.WithError(err).Error("failed to unmarshal segment ids.")
 			continue
