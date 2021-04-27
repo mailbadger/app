@@ -62,7 +62,7 @@ func TestScheduledCampaign(t *testing.T) {
 	}
 
 	//Test create scheduled campaign
-	c := []*entities.CampaignSchedule{
+	cs := []*entities.CampaignSchedule{
 		{
 			UserID:                  1,
 			CampaignID:              cam[0].ID,
@@ -99,7 +99,7 @@ func TestScheduledCampaign(t *testing.T) {
 	}
 
 	id := ksuid.New()
-	for _, i := range c {
+	for _, i := range cs {
 		i.ID = id
 		err = store.CreateCampaignSchedule(i)
 		assert.Nil(t, err)
@@ -109,10 +109,19 @@ func TestScheduledCampaign(t *testing.T) {
 	campSch, err := store.GetScheduledCampaigns(now)
 	assert.Nil(t, err)
 
-	// len should be 1 since the second campaign have status = sending (We only fetch campaigns with status draft and scheduled)
-	assert.Equal(t, 2, len(campSch))
+	assert.Equal(t, 3, len(campSch))
+
+	fetchedCampaign, err := store.GetCampaign(cam[0].ID, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, cam[0].Name, fetchedCampaign.Name)
+	assert.Equal(t, entities.StatusScheduled, fetchedCampaign.Status)
 
 	// Test delete scheduled campaign
-	err = store.DeleteCampaignSchedule(c[0].CampaignID)
+	err = store.DeleteCampaignSchedule(cs[0].CampaignID)
 	assert.Nil(t, err)
+
+	fetchedCampaign, err = store.GetCampaign(cam[0].ID, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, cam[0].Name, fetchedCampaign.Name)
+	assert.Equal(t, entities.StatusDraft, fetchedCampaign.Status)
 }

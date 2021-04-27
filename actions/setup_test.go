@@ -79,6 +79,11 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 		return nil, err
 	}
 
+	b, err := s.GetBoundariesByType("db_test")
+	if err != nil {
+		return nil, err
+	}
+
 	u := &entities.User{
 		Active:   true,
 		Username: "john",
@@ -86,7 +91,7 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 			String: string(pass),
 			Valid:  true,
 		},
-		BoundaryID: 2, //db_test type boundary
+		Boundaries: b,
 		Roles: []entities.Role{
 			{Name: "admin"},
 		},

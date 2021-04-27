@@ -60,6 +60,13 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
+	if campaign.Status != entities.StatusDraft && campaign.Status != entities.StatusScheduled {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Campaign can not be started its already processed",
+		})
+		return
+	}
+
 	campaign.Status = entities.StatusSending
 	campaign.SetEventID()
 

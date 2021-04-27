@@ -15,11 +15,47 @@ CREATE TABLE IF NOT EXISTS "boundaries" (
     "updated_at"                 datetime not null
 );
 
-INSERT INTO "boundaries" ("type", "stats_retention", "subscribers_limit", "campaigns_limit", "templates_limit", "groups_limit", "schedule_campaigns_enabled", "saml_enabled", "team_members_limit", "created_at", "updated_at")
-VALUES ("nolimit", 0, 0, 0, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
+INSERT INTO "boundaries" (
+  "type", 
+  "stats_retention", 
+  "subscribers_limit", 
+  "campaigns_limit", 
+  "templates_limit", 
+  "groups_limit", 
+  "schedule_campaigns_enabled", 
+  "saml_enabled", 
+  "team_members_limit", 
+  "created_at", 
+  "updated_at"
+) VALUES ("nolimit", 0, 0, 0, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
 
-INSERT INTO "boundaries" ("type", "stats_retention", "subscribers_limit", "campaigns_limit", "templates_limit", "groups_limit", "schedule_campaigns_enabled", "saml_enabled", "team_members_limit", "created_at", "updated_at")
-VALUES ("db_test", 0, 0, 2, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
+INSERT INTO "boundaries" (
+  "type", 
+  "stats_retention", 
+  "subscribers_limit", 
+  "campaigns_limit", 
+  "templates_limit", 
+  "groups_limit", 
+  "schedule_campaigns_enabled", 
+  "saml_enabled", 
+  "team_members_limit", 
+  "created_at", 
+  "updated_at"
+) VALUES ("free", 0, 0, 3, 0, 0, 0, 0, 0, datetime('now'), datetime('now'));
+
+INSERT INTO "boundaries" (
+  "type", 
+  "stats_retention", 
+  "subscribers_limit", 
+  "campaigns_limit", 
+  "templates_limit", 
+  "groups_limit", 
+  "schedule_campaigns_enabled", 
+  "saml_enabled", 
+  "team_members_limit", 
+  "created_at", 
+  "updated_at"
+) VALUES ("db_test", 0, 0, 2, 0, 0, 1, 1, 0, datetime('now'), datetime('now'));
 
 CREATE TABLE IF NOT EXISTS "users" (
     "id"          integer primary key autoincrement,

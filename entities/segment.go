@@ -7,10 +7,9 @@ import (
 // Segment represents the list entity
 type Segment struct {
 	Model
-	Name        string            `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
-	UserID      int64             `json:"-" gorm:"column:user_id; index"`
-	Subscribers []Subscriber      `json:"-" gorm:"many2many:subscribers_segments;"`
-	Errors      map[string]string `json:"-" sql:"-"`
+	Name        string       `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
+	UserID      int64        `json:"-" gorm:"column:user_id; index"`
+	Subscribers []Subscriber `json:"-" gorm:"many2many:subscribers_segments;"`
 }
 
 // SegmentWithTotalSubs represents the segment entity with

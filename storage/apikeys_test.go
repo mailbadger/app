@@ -41,7 +41,7 @@ func TestAPIKeys(t *testing.T) {
 	assert.True(t, k.Active)
 	assert.Equal(t, k.User.Username, "admin")
 	assert.NotNil(t, k.User.Boundaries)
-	assert.Equal(t, k.User.Boundaries.Type, "nolimit")
+	assert.Equal(t, k.User.Boundaries.Type, entities.BoundaryTypeNoLimit)
 
 	k.Active = false
 	err = store.UpdateAPIKey(k)
