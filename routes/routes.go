@@ -25,6 +25,7 @@ import (
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/templates"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -117,7 +118,10 @@ func New() http.Handler {
 		logrus.Panic("app directory not set")
 	}
 
-	// handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
+	err = templates.Init(handler)
+	if err != nil {
+		logrus.Panic(err)
+	}
 
 	handler.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/api") {
