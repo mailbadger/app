@@ -124,7 +124,7 @@ func initDb(config string, db *gorm.DB) error {
 
 	//Create the default user
 	nolimit := &entities.Boundaries{}
-	err = db.Where("type = ?", "nolimit").First(nolimit).Error
+	err = db.Where("type = ?", entities.BoundaryTypeNoLimit).First(nolimit).Error
 	if err != nil {
 		return fmt.Errorf("init db: fetch nolimit boundaries: %w", err)
 	}
@@ -138,7 +138,7 @@ func initDb(config string, db *gorm.DB) error {
 		},
 		Active:     true,
 		Verified:   true,
-		Boundaries: *nolimit,
+		Boundaries: nolimit,
 		Source:     "mailbadger.io",
 	}
 

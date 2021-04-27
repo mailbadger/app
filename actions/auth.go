@@ -165,18 +165,27 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	uuid := uuid.New()
+	b, err := storage.GetBoundariesByType(c, entities.BoundaryTypeFree)
+	if err != nil {
+		logger.From(c).WithError(err).Error("signup: unable to fetch boundary")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Unable to create an account.",
+		})
+		return
+	}
+
+	uuid := uuid.NewString()
 
 	user := &entities.User{
 		Username: body.Email,
-		UUID:     uuid.String(),
+		UUID:     uuid,
 		Password: sql.NullString{
 			String: string(hashedPassword),
 			Valid:  true,
 		},
 		Active:     true,
 		Verified:   false,
-		BoundaryID: 1,
+		Boundaries: b,
 		Source:     "mailbadger.io",
 	}
 
@@ -189,35 +198,14 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
-	sender, err := emails.NewSesSender(
-		os.Getenv("AWS_SES_ACCESS_KEY"),
-		os.Getenv("AWS_SES_SECRET_KEY"),
-		os.Getenv("AWS_SES_REGION"),
-	)
-	if err == nil {
-		tokenStr, err := utils.GenerateRandomString(32)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to generate random string.")
-		}
-		t := &entities.Token{
-			UserID:    user.ID,
-			Token:     tokenStr,
-			Type:      entities.VerifyEmailTokenType,
-			ExpiresAt: time.Now().AddDate(0, 0, 1),
-		}
-		err = storage.CreateToken(c, t)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Cannot create token.")
-		} else {
-			go func(c *gin.Context) {
-				err := sendVerifyEmail(tokenStr, user.Username, sender)
-				if err != nil {
-					logger.From(c).WithError(err).Error("Unable to send verification email.")
-				}
-			}(c.Copy())
-		}
-	} else {
-		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+	verifyEmail, _ := strconv.ParseBool(os.Getenv("VERIFY_EMAIL_ON_SIGNUP"))
+	if verifyEmail {
+		go func(c *gin.Context) {
+			err := sendVerifyEmail(c, user)
+			if err != nil {
+				logger.From(c).WithError(err).Error("Unable to send verification email.")
+			}
+		}(c.Copy())
 	}
 
 	sessID, err := utils.GenerateRandomString(32)
@@ -609,19 +597,46 @@ func completeCallback(c *gin.Context, email, source, host string) {
 	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
 }
 
-func sendVerifyEmail(token, email string, sender emails.Sender) error {
+func sendVerifyEmail(c context.Context, u *entities.User) error {
+	sender, err := emails.NewSesSender(
+		os.Getenv("AWS_SES_ACCESS_KEY"),
+		os.Getenv("AWS_SES_SECRET_KEY"),
+		os.Getenv("AWS_SES_REGION"),
+	)
+	if err != nil {
+		return fmt.Errorf("send verify email: ses sender: %w", err)
+	}
+
+	token, err := utils.GenerateRandomString(32)
+	if err != nil {
+		return fmt.Errorf("send verify email: gen token: %w", err)
+	}
+
+	t := &entities.Token{
+		UserID:    u.ID,
+		Token:     token,
+		Type:      entities.VerifyEmailTokenType,
+		ExpiresAt: time.Now().AddDate(0, 0, 1),
+	}
+
+	err = storage.CreateToken(c, t)
+	if err != nil {
+		return fmt.Errorf("send verify email: create token: %w", err)
+	}
+
 	url := os.Getenv("APP_URL") + "/verify-email/" + token
 
-	_, err := sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
+	//TODO - avoid templated email issue #1220
+	_, err = sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
 		Template:     aws.String("VerifyEmail"),
 		Source:       aws.String(os.Getenv("SYSTEM_EMAIL_SOURCE")),
 		TemplateData: aws.String(fmt.Sprintf(`{"url": "%s"}`, url)),
 		Destination: &ses.Destination{
-			ToAddresses: []*string{aws.String(email)},
+			ToAddresses: []*string{aws.String(u.Username)},
 		},
 	})
 
-	return err
+	return fmt.Errorf("send verify email: %w", err)
 }
 
 func persistSession(c *gin.Context, userID int64, sessID string) error {
