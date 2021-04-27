@@ -25,7 +25,7 @@ require (
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/klauspost/compress v1.11.1 // indirect
-	github.com/lib/pq v1.10.0
+	github.com/lib/pq v1.10.1
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/open-policy-agent/opa v0.27.1
