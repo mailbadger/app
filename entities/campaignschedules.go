@@ -13,3 +13,7 @@ type CampaignSchedule struct {
 	CreatedAt   time.Time   `json:"created_at"`
 	UpdatedAt   time.Time   `json:"updated_at"`
 }
+
+func (cs *CampaignSchedule) TableName() string {
+	return "scheduled_campaigns"
+}
