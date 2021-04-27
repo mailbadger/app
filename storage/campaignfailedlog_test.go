@@ -26,7 +26,6 @@ func TestCampaignFailedLog(t *testing.T) {
 		TemplateID:   0,
 		BaseTemplate: nil,
 		Status:       "draft",
-		Errors:       nil,
 	}
 	err := store.CreateCampaign(campaign1)
 	assert.Nil(t, err)
