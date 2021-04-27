@@ -21,7 +21,6 @@ type Subscriber struct {
 	Segments    []Segment         `json:"segments" gorm:"many2many:subscribers_segments;"`
 	Blacklisted bool              `json:"blacklisted"`
 	Active      bool              `json:"active"`
-	Errors      map[string]string `json:"-" sql:"-"`
 	Metadata    map[string]string `json:"-" sql:"-"`
 }
 

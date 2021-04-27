@@ -60,12 +60,15 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	if campaign.Status != entities.StatusDraft {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": fmt.Sprintf(`Campaign has a status of '%s', cannot start the campaign.`, campaign.Status),
+	if campaign.Status != entities.StatusDraft && campaign.Status != entities.StatusScheduled {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Campaign can not be started its already processed",
 		})
 		return
 	}
+
+	campaign.Status = entities.StatusSending
+	campaign.SetEventID()
 
 	template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
 	if err != nil {
@@ -85,7 +88,6 @@ func StartCampaign(c *gin.Context) {
 		}
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Warn("Unable to parse template")
@@ -125,6 +127,7 @@ func StartCampaign(c *gin.Context) {
 	})
 
 	msg, err := json.Marshal(entities.CampaignerTopicParams{
+		EventID:                *campaign.EventID, // this id is handled in campaigns SetEventID method
 		CampaignID:             id,
 		SegmentIDs:             body.SegmentIDs,
 		Source:                 fmt.Sprintf("%s <%s>", body.FromName, body.Source),
@@ -137,12 +140,11 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to marshal campaigner message body")
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to publish campaign.",
+			"message": "Unable to start campaign.",
 		})
 		return
 	}
@@ -151,12 +153,24 @@ func StartCampaign(c *gin.Context) {
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
-			"user_id":     u.ID,
 			"template_id": campaign.BaseTemplate.ID,
 			"segment_ids": body.SegmentIDs,
 		}).WithError(err).Error("Unable to queue campaign for sending.")
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to publish campaign.",
+			"message": "Unable to start campaign.",
+		})
+		return
+	}
+
+	err = storage.UpdateCampaign(c, campaign)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to update campaign.")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to start campaign.",
 		})
 		return
 	}

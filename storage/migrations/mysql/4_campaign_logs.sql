@@ -1,7 +1,6 @@
 -- +migrate Up
 
-CREATE TABLE IF NOT EXISTS `campaign_failed_logs`
-(
+CREATE TABLE IF NOT EXISTS `campaign_failed_logs` (
     `id`          varbinary(27) primary key,
     `user_id`     integer unsigned NOT NULL,
     `campaign_id` integer unsigned NOT NULL,

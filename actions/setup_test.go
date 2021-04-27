@@ -16,6 +16,7 @@ import (
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/storage"
@@ -53,7 +54,12 @@ func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect
 	handler.Use(middleware.S3Client(s3Mock))
 
 	routes.SetGuestRoutes(handler)
-	routes.SetAuthorizedRoutes(handler)
+
+	compiler, err := opa.NewCompiler()
+	if err != nil {
+		t.FailNow()
+	}
+	routes.SetAuthorizedRoutes(handler, compiler)
 
 	return httpexpect.WithConfig(httpexpect.Config{
 		Client: &http.Client{
@@ -73,6 +79,11 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 		return nil, err
 	}
 
+	b, err := s.GetBoundariesByType("db_test")
+	if err != nil {
+		return nil, err
+	}
+
 	u := &entities.User{
 		Active:   true,
 		Username: "john",
@@ -80,7 +91,10 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 			String: string(pass),
 			Valid:  true,
 		},
-		BoundaryID: 2, //db_test type boundary
+		Boundaries: b,
+		Roles: []entities.Role{
+			{Name: "admin"},
+		},
 	}
 	err = s.CreateUser(u)
 	if err != nil {

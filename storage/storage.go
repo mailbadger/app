@@ -21,6 +21,8 @@ type Storage interface {
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
 
+	GetBoundariesByType(t string) (*entities.Boundaries, error)
+
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
@@ -42,7 +44,9 @@ type Storage interface {
 	GetCampaignClicksStats(int64, int64) ([]entities.ClicksStats, error)
 	GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error
 	GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error
+
 	LogFailedCampaign(c *entities.Campaign, description string) error
+
 	CreateCampaignSchedule(c *entities.CampaignSchedule) error
 	DeleteCampaignSchedule(campaignID int64) error
 
@@ -171,6 +175,10 @@ func CreateSession(c context.Context, s *entities.Session) error {
 // DeleteSession deletes a session by the given user id from the database.
 func DeleteSession(c context.Context, sessionID string) error {
 	return GetFromContext(c).DeleteSession(sessionID)
+}
+
+func GetBoundariesByType(c context.Context, t string) (*entities.Boundaries, error) {
+	return GetFromContext(c).GetBoundariesByType(t)
 }
 
 // GetCampaigns populates a pagination object with a collection of
