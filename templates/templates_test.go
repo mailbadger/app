@@ -17,6 +17,7 @@ func TestInit(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
+	// render unsubscribe.html
 	err = r.HTMLRender.Instance("unsubscribe.html", gin.H{
 		"email":  "foo@bar.com",
 		"t":      "foo",
@@ -31,4 +32,17 @@ func TestInit(t *testing.T) {
 
 	_, err = html.Parse(resp.Body)
 	assert.Nil(t, err)
+
+	// render unsubscribe-success.html
+	err = r.HTMLRender.Instance("unsubscribe-success.html", gin.H{}).Render(rec)
+
+	assert.Nil(t, err)
+	resp = rec.Result()
+	defer resp.Body.Close()
+
+	_, err = html.Parse(resp.Body)
+	assert.Nil(t, err)
+
+	err = r.HTMLRender.Instance("non-existent-file.html", gin.H{}).Render(rec)
+	assert.NotNil(t, err)
 }
