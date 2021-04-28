@@ -28,7 +28,7 @@ require (
 	github.com/lib/pq v1.10.1
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/open-policy-agent/opa v0.27.1
+	github.com/open-policy-agent/opa v0.28.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
@@ -46,7 +46,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
-	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	google.golang.org/api v0.43.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gopkg.in/yaml.v2 v2.4.0 // indirect
