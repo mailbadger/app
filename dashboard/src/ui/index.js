@@ -18,6 +18,15 @@ import Emoji from "./Emoji";
 import GradientBadger from "./GradientBadger";
 import Avatar from "./Avatar";
 import UserMenu from "./UserMenu";
+import AuthStyledTextInput from './Auth/AuthStyledTextInput';
+import AuthStyledTextLabel from './Auth/AuthStyledTextLabel';
+import AuthStyledButton from './Auth/AuthStyledButton';
+import AuthStyledHeader from './Auth/AuthStyledHeader';
+import AuthErrorMessage from './Auth/AuthErrorMessage';
+import CustomLineBreak from './CustomLineBreak';
+import Checkbox from './Checkbox';
+import AuthStyledRedirectLink from './Auth/AuthStyledRedirectLink';
+import AuthMainWrapper from './Auth/AuthMainWrapper';
 
 export {
   Badge,
@@ -41,4 +50,13 @@ export {
   GradientBadger,
   Avatar,
   UserMenu,
+  AuthStyledTextInput,
+  AuthStyledTextLabel,
+  AuthStyledButton,
+  AuthStyledHeader,
+  AuthErrorMessage,
+  CustomLineBreak,
+  Checkbox,
+  AuthStyledRedirectLink,
+  AuthMainWrapper
 };
