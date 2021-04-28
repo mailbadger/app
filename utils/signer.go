@@ -6,9 +6,9 @@ import (
 	"encoding/hex"
 )
 
-// SignData signs data string using HMAC SHA256 signer algorithm with the provided secret.
-func SignData(data, secret string) (string, error) {
-	h := hmac.New(sha256.New, []byte(secret))
+// SignData signs data string using HMAC SHA256 signer algorithm with the provided key.
+func SignData(data, key string) (string, error) {
+	h := hmac.New(sha256.New, []byte(key))
 	_, err := h.Write([]byte(data))
 	if err != nil {
 		return "", err
