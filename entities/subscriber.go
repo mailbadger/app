@@ -54,19 +54,19 @@ func (s *Subscriber) GetUnsubscribeURL(uuid string) (string, error) {
 	return os.Getenv("APP_URL") + "/unsubscribe.html?" + params.Encode(), nil
 }
 
-// GenerateUnsubscribeToken generates and signs a new unsubscribe token with the given secret, from the
+// GenerateUnsubscribeToken generates and signs a new unsubscribe token with the given key, from the
 // ID of the subscriber. When a subscriber wants to unsubscribe from future emails, we check this hash
 // against a newly generated hash and compare them, if they match we unsubscribe the user.
-func (s *Subscriber) GenerateUnsubscribeToken(secret string) (string, error) {
+func (s *Subscriber) GenerateUnsubscribeToken(key string) (string, error) {
 	if s.ID == 0 {
 		return "", errors.New("entities: unable to generate unsubscribe token: subscriber ID is 0")
 	}
 
-	if secret == "" {
-		return "", errors.New("entities: unable to generate unsubscribe token: secret is empty")
+	if key == "" {
+		return "", errors.New("entities: unable to generate unsubscribe token: key is empty")
 	}
 
-	return utils.SignData(strconv.FormatInt(s.ID, 10), secret)
+	return utils.SignData(strconv.FormatInt(s.ID, 10), key)
 }
 
 func (s Subscriber) GetID() int64 {

@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -32,6 +33,7 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/templates"
 	"github.com/mailbadger/app/utils"
 	"github.com/mailbadger/app/validator"
 )
@@ -624,19 +626,41 @@ func sendVerifyEmail(c context.Context, u *entities.User) error {
 		return fmt.Errorf("send verify email: create token: %w", err)
 	}
 
-	url := os.Getenv("APP_URL") + "/verify-email/" + token
+	var html bytes.Buffer
+	emailTmpls := templates.GetEmailTemplates()
+	url := fmt.Sprintf("%s/verify-email/%s", os.Getenv("APP_URL"), token)
 
-	//TODO - avoid templated email issue #1220
-	_, err = sender.SendTemplatedEmail(&ses.SendTemplatedEmailInput{
-		Template:     aws.String("VerifyEmail"),
-		Source:       aws.String(os.Getenv("SYSTEM_EMAIL_SOURCE")),
-		TemplateData: aws.String(fmt.Sprintf(`{"url": "%s"}`, url)),
+	err = emailTmpls.ExecuteTemplate(&html, "verify-email.html", map[string]string{
+		"url": url,
+	})
+	if err != nil {
+		return fmt.Errorf("send verify email: exec template: %w", err)
+	}
+
+	charset := aws.String("UTF-8")
+	_, err = sender.SendEmail(&ses.SendEmailInput{
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: charset,
+					Data:    aws.String(html.String()),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: charset,
+				Data:    aws.String(string("Verify your email address")),
+			},
+		},
+		Source: aws.String(fmt.Sprintf("%s <%s>", "Mailbadger.io", os.Getenv("SYSTEM_EMAIL_SOURCE"))),
 		Destination: &ses.Destination{
 			ToAddresses: []*string{aws.String(u.Username)},
 		},
 	})
+	if err != nil {
+		return fmt.Errorf("send verify email: %w", err)
+	}
 
-	return fmt.Errorf("send verify email: %w", err)
+	return nil
 }
 
 func persistSession(c *gin.Context, userID int64, sessID string) error {

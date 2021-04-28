@@ -68,7 +68,7 @@ func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
 		Printers: []httpexpect.Printer{
-			httpexpect.NewDebugPrinter(t, true),
+			httpexpect.NewCompactPrinter(t),
 		},
 	})
 }
