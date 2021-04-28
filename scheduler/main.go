@@ -108,7 +108,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			CampaignID:             cs.CampaignID,
 			SegmentIDs:             segmentIDs,
 			TemplateData:           templateData,
-			Source:                 cs.Source,
+			Source:                 fmt.Sprintf("%s <%s>", cs.FromName, cs.Source),
 			UserID:                 u.ID,
 			UserUUID:               u.UUID,
 			ConfigurationSetExists: err == nil,
