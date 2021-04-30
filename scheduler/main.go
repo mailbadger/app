@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -21,8 +20,13 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
+	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
 	now := time.Now()
-	err := job(context.Background(), s, now)
+	err = job(s, p, now)
 	if err != nil {
 		logrus.WithField("time", now).WithError(err).Error("failed to start campaign scheduler job")
 	}
@@ -32,11 +36,13 @@ func main() {
 
 }
 
-func job(c context.Context, s storage.Storage, time time.Time) error {
+func job(s storage.Storage, p queue.Producer, time time.Time) error {
 	scheduledCampaigns, err := s.GetScheduledCampaigns(time)
 	if err != nil {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
 	}
+
+	logrus.Infof("scheduled campaigns %d  %+v", len(scheduledCampaigns), scheduledCampaigns)
 
 	for _, cs := range scheduledCampaigns {
 
@@ -50,17 +56,17 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			logEntry.WithError(err).Error("failed to get user.")
 			continue
 		}
-		campaign, err := s.GetCampaign(u.ID, cs.CampaignID)
+		campaign, err := s.GetCampaign(cs.CampaignID, u.ID)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to get campaign.")
 			continue
 		}
-		if campaign.Status != entities.StatusDraft {
+		if campaign.Status != entities.StatusScheduled {
 			logEntry.WithError(err).Warn("campaign status is not draft.")
 			continue
 		}
 
-		template, err := storage.GetTemplate(c, campaign.BaseTemplate.ID, u.ID)
+		template, err := s.GetTemplate(campaign.BaseTemplate.ID, u.ID)
 		if err != nil {
 			logEntry.WithField("template_id", campaign.BaseTemplate.ID).WithError(err).Error("failed to get template.")
 			continue
@@ -76,7 +82,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		sesKeys, err := storage.GetSesKeys(c, u.ID)
+		sesKeys, err := s.GetSesKeys(u.ID)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to get ses keys.")
 			continue
@@ -88,7 +94,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			continue
 		}
 
-		lists, err := storage.GetSegmentsByIDs(c, u.ID, segmentIDs)
+		lists, err := s.GetSegmentsByIDs(u.ID, segmentIDs)
 		if err != nil || len(lists) == 0 {
 			logEntry.WithField("segment_ids", segmentIDs).WithError(err).Error("failed to get segments by ids.")
 			continue
@@ -105,6 +111,7 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 		})
 
 		params := &entities.CampaignerTopicParams{
+			EventID:                cs.ID,
 			CampaignID:             cs.CampaignID,
 			SegmentIDs:             segmentIDs,
 			TemplateData:           templateData,
@@ -119,13 +126,13 @@ func job(c context.Context, s storage.Storage, time time.Time) error {
 			logEntry.WithError(err).Error("failed to marshal params for campaigner.")
 			continue
 		}
-		err = queue.Publish(c, entities.CampaignerTopic, paramsByte)
+		err = p.Publish(entities.CampaignerTopic, paramsByte)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to publish campaign to campaigner.")
 			continue
 		}
 		campaign.Status = entities.StatusSending
-		err = storage.UpdateCampaign(c, campaign)
+		err = s.UpdateCampaign(campaign)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to update status of campaign.")
 			continue
