@@ -20,6 +20,7 @@ func (db *store) CreateCampaignSchedule(c *entities.CampaignSchedule) error {
 
 	err := tx.Model(&entities.Campaign{}).
 		Where("id = ?", c.CampaignID).
+		Update("event_id", c.ID).
 		Update("status", entities.StatusScheduled).Error
 	if err != nil {
 		tx.Rollback()
@@ -53,6 +54,7 @@ func (db *store) DeleteCampaignSchedule(campaignID int64) error {
 
 	err := tx.Model(&entities.Campaign{}).
 		Where("id = ?", campaignID).
+		Update("event_id", nil).
 		Update("status", entities.StatusDraft).Error
 	if err != nil {
 		tx.Rollback()
