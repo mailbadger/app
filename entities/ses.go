@@ -14,6 +14,4 @@ type SesKeys struct {
 	Region    string    `json:"region" gorm:"not null" valid:"required"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-
-	Errors map[string]string `json:"-" sql:"-"`
 }

@@ -37,7 +37,7 @@ func TestSessions(t *testing.T) {
 	assert.Equal(t, sess.SessionID, "foobar")
 	assert.Equal(t, sess.User.Username, "admin")
 	assert.NotNil(t, sess.User.Boundaries)
-	assert.Equal(t, sess.User.Boundaries.Type, "nolimit")
+	assert.Equal(t, sess.User.Boundaries.Type, entities.BoundaryTypeNoLimit)
 
 	err = store.DeleteSession("foobar")
 	assert.Nil(t, err)

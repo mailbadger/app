@@ -32,9 +32,9 @@ func TestGenerateRandomString(t *testing.T) {
 
 func TestSignData(t *testing.T) {
 	data := "foobar"
-	secret := "supersecret"
+	key := "supersecret"
 
-	hash, err := SignData(data, secret)
+	hash, err := SignData(data, key)
 	assert.Nil(t, err)
 	assert.Equal(t, "bd209680297c13ce4d5eaf0c8dea68691de725cfb7ae116b8e8845a9606b22d4", hash)
 }

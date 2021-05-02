@@ -22,6 +22,8 @@ type Storage interface {
 	UpdateUser(*entities.User) error
 	DeleteUser(user *entities.User) error
 
+	GetBoundariesByType(t string) (*entities.Boundaries, error)
+
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
@@ -47,6 +49,9 @@ type Storage interface {
 	DeleteAllCampaignsForUser(userID int64) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
 	DeleteAllCampaignFailedLogsForUser(userID int64) error
+
+	CreateCampaignSchedule(c *entities.CampaignSchedule) error
+	DeleteCampaignSchedule(campaignID int64) error
 
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
@@ -189,6 +194,10 @@ func DeleteSession(c context.Context, sessionID string) error {
 	return GetFromContext(c).DeleteSession(sessionID)
 }
 
+func GetBoundariesByType(c context.Context, t string) (*entities.Boundaries, error) {
+	return GetFromContext(c).GetBoundariesByType(t)
+}
+
 // GetCampaigns populates a pagination object with a collection of
 // campaigns by the specified user id.
 func GetCampaigns(c context.Context, userID int64, p *PaginationCursor, scopeMap map[string]string) error {
@@ -258,6 +267,16 @@ func GetMonthlyTotalCampaigns(c context.Context, userID int64) (int64, error) {
 // LogFailedCampaign updates campaign status to failed & stores campaign failed log record.
 func LogFailedCampaign(c context.Context, ca *entities.Campaign, description string) error {
 	return GetFromContext(c).LogFailedCampaign(ca, description)
+}
+
+// CreateCampaignSchedule creates new schedule for campaign.
+func CreateCampaignSchedule(c context.Context, sc *entities.CampaignSchedule) error {
+	return GetFromContext(c).CreateCampaignSchedule(sc)
+}
+
+// DeleteCampaignSchedule deletes campaign schedule.
+func DeleteCampaignSchedule(c context.Context, campaignID int64) error {
+	return GetFromContext(c).DeleteCampaignSchedule(campaignID)
 }
 
 // GetTotalSends returns total sends for specified campaign id

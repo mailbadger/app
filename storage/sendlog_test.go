@@ -27,6 +27,7 @@ func TestSendLogs(t *testing.T) {
 	sendLogs := []*entities.SendLog{
 		{
 			UserID:       1,
+			EventID:      ksuid.New(),
 			SubscriberID: 1,
 			CampaignID:   1,
 			Status:       entities.SendLogStatusFailed,
@@ -35,6 +36,7 @@ func TestSendLogs(t *testing.T) {
 		},
 		{
 			UserID:       1,
+			EventID:      ksuid.New(),
 			SubscriberID: 2,
 			CampaignID:   1,
 			Status:       entities.SendLogStatusFailed,
@@ -43,6 +45,7 @@ func TestSendLogs(t *testing.T) {
 		},
 		{
 			UserID:       1,
+			EventID:      ksuid.New(),
 			SubscriberID: 3,
 			CampaignID:   1,
 			Status:       entities.SendLogStatusSuccessful,

@@ -3,10 +3,10 @@ package rbac.authz
 # role-permissions assignments
 role_permissions := {
   # test roles and permissions
-  "engineering": [{"action": "read",  "object": "server123"}],
-  "webdev":      [{"action": "read",  "object": "server123"},
-                    {"action": "write", "object": "server123"}],
-  "hr":          [{"action": "read",  "object": "database456"}]
+  "engineering": [{"method": "GET",  "path": "/api/campaigns"},
+                  {"method": "GET",  "path": "/api/campaigns/:id"}],
+  "webdev":      [{"method": "GET",  "path": "/api/campaigns"},
+                  {"method": "PUT",  "path": "/api/campaigns/:id"}]
 }
 
 default allow = false
@@ -24,5 +24,5 @@ allow {
     r := input.roles[_]
     permissions := role_permissions[r]
     p := permissions[_]
-    p == {"action": input.action, "object": input.object}
+    p == {"method": input.method, "path": input.path}
 }

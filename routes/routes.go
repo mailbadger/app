@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -17,13 +16,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	adapter "github.com/gwatts/gin-adapter"
+	"github.com/open-policy-agent/opa/ast"
 	"github.com/sirupsen/logrus"
 	"github.com/unrolled/secure"
 
 	"github.com/mailbadger/app/actions"
+	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/templates"
 	"github.com/mailbadger/app/utils"
 )
 
@@ -75,8 +77,7 @@ func New() http.Handler {
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
-	handler.Use(middleware.S3Client(s3Client),
-	)
+	handler.Use(middleware.S3Client(s3Client))
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{
@@ -117,7 +118,10 @@ func New() http.Handler {
 		logrus.Panic("app directory not set")
 	}
 
-	handler.LoadHTMLGlob(filepath.Join(appDir, "/views/*"))
+	err = templates.Init(handler)
+	if err != nil {
+		logrus.Panic(err)
+	}
 
 	handler.NoRoute(func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, "/api") {
@@ -153,7 +157,7 @@ func New() http.Handler {
 	// Assets
 	handler.Static("/static", appDir+"/static")
 
-	//rate limiter
+	// rate limiter
 	lmt := tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
 	lmt.SetMessageContentType("application/json; charset=utf-8")
@@ -164,8 +168,15 @@ func New() http.Handler {
 		tollbooth_gin.LimitHandler(lmt),
 	)
 
+	// Compile the OPA module. The keys are used as identifiers in error messages.
+	opacompiler, err := opa.NewCompiler()
+	if err != nil {
+		panic(err)
+	}
+
 	SetAuthorizedRoutes(
 		handler,
+		opacompiler,
 		middleware.NoCache(),
 		CSRF(),
 		tollbooth_gin.LimitHandler(lmt),
@@ -218,9 +229,9 @@ func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 // SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
 // the Authorized middleware which performs the checks for authorized user as well as
 // other optional middlewares that we set.
-func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
+func SetAuthorizedRoutes(handler *gin.Engine, opacompiler *ast.Compiler, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.Authorized())
+	authorized.Use(middleware.Authorized(opacompiler))
 	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout)
@@ -253,6 +264,8 @@ func SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
 			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints)
 			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces)
+			campaigns.PATCH("/:id/schedule", actions.PatchCampaignSchedule)
+			campaigns.DELETE("/:id/schedule", actions.DeleteCampaignSchedule)
 		}
 
 		segments := authorized.Group("/segments")
