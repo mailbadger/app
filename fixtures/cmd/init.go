@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mailbadger/app/entities"
@@ -159,7 +160,7 @@ func createCampaignsAndTemplates(userID int64) error {
 	Unsubscribe => {{unsubscribe_url}}`,
 	}
 
-	err := templates.New(db, s3Client).AddTemplate(context.Background(), template)
+	err := templates.New(db, s3Client, templates.TemplateBucket(viper.GetString("TEMPLATES_BUCKET"))).AddTemplate(context.Background(), template)
 	if err != nil {
 		return fmt.Errorf("failed to create 'init-template' template: %w", err)
 	}

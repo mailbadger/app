@@ -7,6 +7,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/mailbadger/app/services/templates"
 )
@@ -137,7 +138,7 @@ func clear() error {
 	}
 
 	for _, t := range allTemplates {
-		err = templates.New(db, s3Client).DeleteTemplate(context.Background(), t.ID, u.ID)
+		err = templates.New(db, s3Client, templates.TemplateBucket(viper.GetString("TEMPLATES_BUCKET"))).DeleteTemplate(context.Background(), t.ID, u.ID)
 		if err != nil {
 			return fmt.Errorf("failed to delete template	: %w", err)
 		}

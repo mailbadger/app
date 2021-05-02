@@ -187,7 +187,7 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 
 // DeleteAllCampaignsForUser deletes all campaigns for user
 func (db *store) DeleteAllCampaignsForUser(userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(&entities.Campaign{}).Error
+	return db.Exec("DELETE FROM campaigns WHERE user_id = ?", userID).Error
 }
 
 // NameLike applies a scope for campaigns by the given name.
