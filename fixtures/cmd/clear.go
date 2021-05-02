@@ -43,7 +43,7 @@ func clear() error {
 			return fmt.Errorf("failed to delete api key: %w", err)
 		}
 
-		fmt.Printf("secret: %s\n", u.Username, apiKey.SecretKey)
+		fmt.Printf("secret: %s\n", apiKey.SecretKey)
 	}
 
 	subscribers, err := db.GetAllSubscribersForUser(u.ID)
@@ -67,70 +67,70 @@ func clear() error {
 		return fmt.Errorf("failed to delete all segments for user: %w", err)
 	}
 
-	fmt.Println("deleted all segments\n")
+	fmt.Printf("deleted all segments\n\n")
 
 	err = db.DeleteAllEventsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete subscriber events for 'badger' user: %w", err)
 	}
 
-	fmt.Println("deleted all events\n")
+	fmt.Printf("deleted all events\n\n")
 
 	err = db.DeleteAllBouncesForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all bounces for user: %w", err)
 	}
 
-	fmt.Println("deleted all bounces\n")
+	fmt.Printf("deleted all bounces\n\n")
 
 	err = db.DeleteAllCampaignFailedLogsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all campaign failed logs for user: %w", err)
 	}
 
-	fmt.Println("deleted all campaigns failed logs\n")
+	fmt.Printf("deleted all campaigns failed logs\n\n")
 
 	err = db.DeleteAllClicksForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all clicks for user: %w", err)
 	}
 
-	fmt.Println("deleted all clicks\n")
+	fmt.Printf("deleted all clicks\n\n")
 
 	err = db.DeleteAllComplaintsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all complaints for user: %w", err)
 	}
 
-	fmt.Println("deleted all complaints\n")
+	fmt.Printf("deleted all complaints\n\n")
 
 	err = db.DeleteAllDeliveriesForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all deliveries for user: %w", err)
 	}
 
-	fmt.Println("deleted all deliveries\n")
+	fmt.Printf("deleted all deliveries\n\n")
 
 	err = db.DeleteAllOpensForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all opens for user: %w", err)
 	}
 
-	fmt.Println("deleted all opens\n")
+	fmt.Printf("deleted all opens\n\n")
 
 	err = db.DeleteAllSendsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all sends for user: %w", err)
 	}
 
-	fmt.Println("deleted all sends\n")
+	fmt.Printf("deleted all sends\n\n")
 
 	err = db.DeleteAllCampaignsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all campaigns for user: %w", err)
 	}
 
-	fmt.Println("deleted all campaigns\n")
+	fmt.Printf("deleted all campaigns\n\n")
 
 	allTemplates, err := db.GetAllTemplatesForUser(u.ID)
 	if err != nil {
@@ -149,28 +149,28 @@ func clear() error {
 		return fmt.Errorf("failed to delete all reports for user: %w", err)
 	}
 
-	fmt.Println("deleted all reports\n")
+	fmt.Printf("deleted all reports\n\n")
 
 	err = db.DeleteSesKeys(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete ses keys: %w", err)
 	}
 
-	fmt.Println("deleted ses keys\n")
+	fmt.Printf("deleted ses keys\n\n")
 
 	err = db.DeleteAllSessionsForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all sessions for user: %w", err)
 	}
 
-	fmt.Println("deleted all sessions\n")
+	fmt.Printf("deleted all sessions\n\n")
 
 	err = db.DeleteAllTokensForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to delete all tokens for user: %w", err)
 	}
 
-	fmt.Println("deleted all tokens\n")
+	fmt.Printf("deleted all tokens\n\n")
 
 	err = db.DeleteUser(u)
 	if err != nil {
