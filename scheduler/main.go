@@ -42,8 +42,6 @@ func job(s storage.Storage, p queue.Producer, time time.Time) error {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
 	}
 
-	logrus.Infof("scheduled campaigns %d  %+v", len(scheduledCampaigns), scheduledCampaigns)
-
 	for _, cs := range scheduledCampaigns {
 
 		logEntry := logrus.WithFields(logrus.Fields{
