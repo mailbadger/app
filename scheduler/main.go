@@ -28,7 +28,7 @@ func main() {
 	}
 	end := time.Since(now)
 
-	logrus.Infof("Scheduler started at %v and took %v minutes to finish", now, end)
+	logrus.Infof("Scheduler started at %v and took %v to finish", now, end)
 
 }
 
