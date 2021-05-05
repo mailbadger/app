@@ -19,10 +19,10 @@ func TestSubscriberEntity(t *testing.T) {
 		assert.FailNow(t, "unable to set os env.")
 	}
 
-var (
-	subID int64 = 123
-	now         = time.Now()
-)
+	var (
+		subID int64 = 123
+		now         = time.Now()
+	)
 
 	sub := &Subscriber{
 		Model: Model{

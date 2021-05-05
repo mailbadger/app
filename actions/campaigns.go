@@ -662,6 +662,8 @@ func PatchCampaignSchedule(c *gin.Context) {
 		})
 		return
 	}
+	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
+	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -676,15 +678,40 @@ func PatchCampaignSchedule(c *gin.Context) {
 		return
 	}
 
+	defMetadata, err := json.Marshal(body.DefaultTemplateData)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to schedule campaign, invalid default metdata.",
+		})
+		return
+	}
+
+	segmentIDsJSON, err := json.Marshal(body.SegmentIDs)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"message": "Unable to schedule campaign, please try again.",
+		})
+		return
+	}
+
 	// if schedule exist update.
 	if campaign.Schedule != nil {
 		campaign.Schedule.ScheduledAt = schAt
+		campaign.Schedule.FromName = body.FromName
+		campaign.Schedule.Source = body.Source
+		campaign.Schedule.SegmentIDsJSON = segmentIDsJSON
+		campaign.Schedule.DefaultTemplateDataJSON = defMetadata
 	} else {
 		// else create new campaign schedule
 		campaign.Schedule = &entities.CampaignSchedule{
-			ID:          ksuid.New(),
-			CampaignID:  campaign.ID,
-			ScheduledAt: schAt,
+			ID:                      ksuid.New(),
+			CampaignID:              campaign.ID,
+			ScheduledAt:             schAt,
+			UserID:                  u.ID,
+			SegmentIDsJSON:          segmentIDsJSON,
+			FromName:                body.FromName,
+			Source:                  body.Source,
+			DefaultTemplateDataJSON: defMetadata,
 		}
 	}
 

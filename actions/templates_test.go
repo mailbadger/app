@@ -22,7 +22,7 @@ func TestTemplates(t *testing.T) {
 
 	mockS3 := new(s3mock.MockS3Client)
 
-	 readCloser := ioutil.NopCloser(strings.NewReader("hello world"))
+	readCloser := ioutil.NopCloser(strings.NewReader("hello world"))
 
 	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Once().Return(nil, errors.New("error"))
 	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
@@ -291,10 +291,10 @@ func TestTemplates(t *testing.T) {
 
 	// TODO add test for get template successfully
 	/*auth.GET("/api/templates/" + idStr).
-		Expect().
-		Status(http.StatusOK).
-		JSON().Object().
-		ValueEqual("message", "Unable to get template")*/
+	Expect().
+	Status(http.StatusOK).
+	JSON().Object().
+	ValueEqual("message", "Unable to get template")*/
 
 	// test list templates
 	collection := auth.GET("/api/templates").

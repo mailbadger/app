@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 
@@ -68,4 +69,15 @@ func (db *store) DeleteCampaignSchedule(campaignID int64) error {
 	}
 
 	return tx.Commit().Error
+}
+
+// GetScheduledCampaigns returns all scheduled campaigns < time
+func (db *store) GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error) {
+	var campaignsSchedule []entities.CampaignSchedule
+	err := db.Joins("JOIN campaigns ON campaigns.id = campaign_schedules.campaign_id").
+		Where("campaigns.status = ? and campaign_schedules.scheduled_at <= ?", entities.StatusScheduled, time).Find(&campaignsSchedule).Error
+	if err != nil {
+		return nil, err
+	}
+	return campaignsSchedule, err
 }

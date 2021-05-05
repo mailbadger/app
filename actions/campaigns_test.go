@@ -136,18 +136,25 @@ func TestCampaigns(t *testing.T) {
 		ValueEqual("message", "Amazon Ses keys are not set.")
 
 	// successful patch campaign schedule.
-	auth.PATCH("/api/campaigns/1/schedule").WithForm(params.CampaignSchedule{ScheduledAt: "2020-04-04 15:04:03"}).
+	auth.PATCH("/api/campaigns/1/schedule").
+		WithQuery("segment_id[]", 1).
+		WithQuery("from_name", "from name").
+		WithQuery("source", "djale@me.com").
+		WithQuery("scheduled_at", "2020-04-04 15:04:03").
 		Expect().
 		Status(http.StatusOK).JSON().Object().
 		ValueEqual("message", "Campaign TESTputtest successfully scheduled at 2020-04-04 15:04:03")
 
 	// wrong time format patch campaign schedule.
-	auth.PATCH("/api/campaigns/1/schedule").WithForm(params.CampaignSchedule{ScheduledAt: "202s0-04-04 15:04:03"}).
+	auth.PATCH("/api/campaigns/1/schedule").
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
 		ValueEqual("errors", map[string]string{
-			"scheduled_at": "Must be of format: 2006-01-02 15:04:05",
+			"from_name":    "This field is required",
+			"scheduled_at": "This field is required",
+			"segment_id[]": "This field is required",
+			"source":       "This field is required",
 		})
 
 	// delete campaign by id

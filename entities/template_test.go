@@ -72,8 +72,8 @@ func TestGetters(t *testing.T) {
 			Name:        "test-template",
 			SubjectPart: "Hello {{name}}",
 		},
-		HTMLPart:     "<h1>My favourite animal is {{fave_animal}}<h1>",
-		TextPart:     "My favourite animal is {{fave_animal}}",
+		HTMLPart: "<h1>My favourite animal is {{fave_animal}}<h1>",
+		TextPart: "My favourite animal is {{fave_animal}}",
 	}
 
 	b := template.GetBase()
