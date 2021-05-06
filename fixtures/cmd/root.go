@@ -1,20 +1,15 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 
 	awss3 "github.com/aws/aws-sdk-go/service/s3"
-	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/spf13/viper"
 
-	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/utils"
@@ -42,18 +37,31 @@ var (
 	db storage.Storage
 	// s3Client represents the s3 client
 	s3Client *awss3.S3
+	// username for the user with fixtures
+	username string
+	// password for the user with fixtures
+	password string
+	// secret for the user with fixtures
+	secret string
 )
 
 func init() {
 	// viper reads conf file app.env located in fixtures
 	initConfig()
 
+	var err error
+	logrus.SetLevel(logrus.InfoLevel)
+	logrus.SetOutput(os.Stdout)
+
+	rootCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username for the user with fixtures")
+	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password for the user with fixtures")
+	rootCmd.PersistentFlags().StringVarP(&password, "secret", "s", "", "Password for the user with fixtures")
+
 	// Connecting to database
 	driver := viper.GetString("DATABASE_DRIVER")
 	conf := makeConfigFromEnv(driver)
 	db = storage.From(openDbConn(driver, conf))
 
-	var err error
 	// Creating s3 client
 	s3Client, err = s3.NewS3Client(
 		viper.GetString("AWS_S3_ACCESS_KEY"),
@@ -61,7 +69,8 @@ func init() {
 		viper.GetString("AWS_S3_REGION"),
 	)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("[ERROR %s] failed to create s3 client", err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -73,7 +82,8 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(err.Error())
+		fmt.Printf("[ERROR %s] failed to read config file", err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -99,82 +109,15 @@ func makeConfigFromEnv(driver string) string {
 func openDbConn(driver, config string) *gorm.DB {
 	db, err := gorm.Open(driver, config)
 	if err != nil {
-		log.WithError(err).Fatalln("db connection failed")
+		fmt.Printf("[ERROR %s] failed to open db connection", err.Error())
+		os.Exit(1)
 	}
 
 	if driver == "mysql" {
 		db.DB().SetMaxIdleConns(0)
 	}
 
-	fresh := false
-	switch driver {
-	case "sqlite3":
-		if _, err := os.Stat(config); err != nil || config == ":memory:" {
-			fresh = true
-		}
-	case "mysql":
-		err := db.First(&entities.User{}).Error
-		if err != nil {
-			fresh = true
-		}
-	}
-
-	if fresh {
-		err = initDb(config, db)
-		if err != nil {
-			log.WithError(err).Fatalln("migrations failed")
-		}
-	}
-
 	db.LogMode(utils.IsDebugMode())
 
 	return db
-}
-
-// initDb seeds the database with the admin user, if the database has not been
-// initialized before
-func initDb(config string, db *gorm.DB) error {
-	log.Info("Generating new credentials...")
-
-	// Hashing the password with the default cost of 10
-	secret, err := utils.GenerateRandomString(12)
-	if err != nil {
-		return fmt.Errorf("init db: gen rand string: %w", err)
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
-	if err != nil {
-		return fmt.Errorf("init db: hash password: %w", err)
-	}
-
-	uuid := uuid.New()
-
-	// Create the default user
-	nolimit := &entities.Boundaries{}
-	err = db.Where("type = ?", "nolimit").First(nolimit).Error
-	if err != nil {
-		return fmt.Errorf("init db: fetch nolimit boundaries: %w", err)
-	}
-
-	admin := entities.User{
-		Username: "admin",
-		UUID:     uuid.String(),
-		Password: sql.NullString{
-			String: string(hashedPassword),
-			Valid:  true,
-		},
-		Active:     true,
-		Verified:   true,
-		Boundaries: nolimit,
-		Source:     "mailbadger.io",
-	}
-
-	err = db.Save(&admin).Error
-	if err != nil {
-		return fmt.Errorf("init db: save user: %w", err)
-	}
-
-	log.WithFields(log.Fields{"user": "admin", "password": secret}).Info("Admin user credentials..make sure to change that password!")
-
-	return nil
 }

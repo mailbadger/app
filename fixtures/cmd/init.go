@@ -3,10 +3,12 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +25,21 @@ var initCmd = &cobra.Command{
 into few different segments.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return fullInit()
+	},
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if username == "" {
+			return errors.New("username flag is required")
+		}
+
+		if password == "" {
+			return errors.New("password flag is required")
+		}
+
+		if secret == "" {
+			secret = uuid.NewString()
+		}
+
+		return nil
 	},
 }
 
@@ -47,16 +64,15 @@ func fullInit() error {
 
 // createUser creates a user - badger
 func createUser() (*entities.User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("changeme"), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password")
 	}
 
-	uuid := uuid.New()
-	username := "badger"
+	uuid := uuid.New().String()
 
 	u := &entities.User{
-		UUID:     uuid.String(),
+		UUID:     uuid,
 		Username: username,
 		Password: sql.NullString{
 			String: string(hashedPassword),
@@ -65,7 +81,7 @@ func createUser() (*entities.User, error) {
 		Active:     true,
 		Verified:   true,
 		BoundaryID: 1,
-		Source:     "fixtures",
+		Source:     viper.GetString("USER_SOURCE"),
 	}
 
 	err = db.CreateUser(u)
@@ -73,9 +89,8 @@ func createUser() (*entities.User, error) {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	fmt.Printf("created user:\n username: %s\n uuid: %s\n\n", username, uuid.String())
+	fmt.Printf("created user:\n username: %s\n uuid: %s\n\n", username, uuid)
 
-	secret := "foobar"
 	err = db.CreateAPIKey(&entities.APIKey{
 		UserID:    u.ID,
 		User:      *u,
@@ -83,9 +98,9 @@ func createUser() (*entities.User, error) {
 		Active:    true,
 	})
 	if err != nil {
-		fmt.Printf("Failed to create api key\n\n")
+		fmt.Printf("[ERROR %s] failed to create api key with secret %s\n\n", err.Error(), secret)
 	} else {
-		fmt.Printf("created api key secret: %s", secret)
+		logrus.Printf("created api key secret: %s\n\n", secret)
 	}
 
 	return u, nil
@@ -124,12 +139,14 @@ func createSubscribersAndSegments(userID int64) error {
 
 		err = db.CreateSubscriber(subscriber)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to create subscriber\n name: %s, segment_id: %d, error: %s", name, fullSegment.ID, err.Error())
+			fmt.Printf("[ERROR %s] failed to create subscriber\n name: %s, email: %s, segment_id: %d\n", err.Error(), name, email, fullSegment.ID)
 			continue
 		}
 
 		fmt.Printf("name: %s email: %s\n", name, email)
 	}
+
+	fmt.Println()
 
 	return nil
 }
@@ -178,12 +195,14 @@ func createCampaignsAndTemplates(userID int64) error {
 
 		err := db.CreateCampaign(campaign)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to create campaign\n name: %s, template_id: %d, error: %s", name, template.ID, err.Error())
+			fmt.Printf("[ERROR %s] failed to create campaign\n name: %s, template_id: %d", err.Error(), name, template.ID)
 			continue
 		}
 
-		fmt.Printf("name: %s\n", name)
+		fmt.Printf("name: %s, template_id: %d\n", name, template.ID)
 	}
+
+	fmt.Println()
 
 	return nil
 }

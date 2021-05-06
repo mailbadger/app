@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -22,12 +23,16 @@ var clearCmd = &cobra.Command{
 }
 
 func clear() error {
-	u, err := db.GetUserByUsername("badger")
+	u, err := db.GetUserByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil
 		}
-		return fmt.Errorf("failed to fetch 'badger' user: %w", err)
+		return fmt.Errorf("failed to fetch %s user: %w", username, err)
+	}
+
+	if u.Source != viper.GetString("USER_SOURCE") {
+		return fmt.Errorf("user: %s can not be cleared, it is not created by %s", username, viper.GetString("USER_SOURCE"))
 	}
 
 	apiKeys, err := db.GetAPIKeys(u.ID)
@@ -35,32 +40,35 @@ func clear() error {
 		return fmt.Errorf("failed to fetch api keys for user: %w", err)
 	}
 
-	fmt.Println("deleted api keys")
+	fmt.Printf("deleted api keys\n\n")
+
 	for _, apiKey := range apiKeys {
 		err = db.DeleteAPIKey(apiKey.ID, u.ID)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to delete api key %+v, error %s", apiKey, err)
-			return fmt.Errorf("failed to delete api key: %w", err)
+			return fmt.Errorf("failed to delete api key with id %d: %w",apiKey.ID, err)
 		}
 
 		fmt.Printf("secret: %s\n", apiKey.SecretKey)
 	}
+
+	fmt.Println()
 
 	subscribers, err := db.GetAllSubscribersForUser(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch subscribers for user: %w", err)
 	}
 
-	fmt.Println("deleted subscribers")
+	logrus.Println("deleted subscribers")
 	for _, s := range subscribers {
 		err = db.DeleteSubscriber(s.ID, u.ID)
 		if err != nil {
-			fmt.Printf("[ERROR] failed to delete subscriebr %+v, error %s", s, err)
 			return fmt.Errorf("failed to delete subscriber: %w", err)
 		}
 
 		fmt.Printf("name: %s, email: %s\n", s.Name, s.Email)
 	}
+
+	fmt.Println()
 
 	err = db.DeleteAllSegmentsForUser(u.ID)
 	if err != nil {
