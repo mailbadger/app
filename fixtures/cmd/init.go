@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
@@ -32,7 +31,7 @@ into few different segments.`,
 		}
 
 		if password == "" {
-			return errors.New("password flag is required")
+			password = uuid.NewString()
 		}
 
 		if secret == "" {
@@ -89,7 +88,7 @@ func createUser() (*entities.User, error) {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	fmt.Printf("created user:\n username: %s\n uuid: %s\n\n", username, uuid)
+	fmt.Printf("created user:\n username: %s\n password: %s\n uuid: %s\n\n", username, password, uuid)
 
 	err = db.CreateAPIKey(&entities.APIKey{
 		UserID:    u.ID,
@@ -100,7 +99,7 @@ func createUser() (*entities.User, error) {
 	if err != nil {
 		fmt.Printf("[ERROR %s] failed to create api key with secret %s\n\n", err.Error(), secret)
 	} else {
-		logrus.Printf("created api key secret: %s\n\n", secret)
+		fmt.Printf("created api key\n secret: %s\n\n", secret)
 	}
 
 	return u, nil
@@ -143,7 +142,7 @@ func createSubscribersAndSegments(userID int64) error {
 			continue
 		}
 
-		fmt.Printf("name: %s email: %s\n", name, email)
+		fmt.Printf(" name: %s email: %s\n", name, email)
 	}
 
 	fmt.Println()
@@ -199,7 +198,7 @@ func createCampaignsAndTemplates(userID int64) error {
 			continue
 		}
 
-		fmt.Printf("name: %s, template_id: %d\n", name, template.ID)
+		fmt.Printf(" name: %s, template_id: %d\n", name, template.ID)
 	}
 
 	fmt.Println()

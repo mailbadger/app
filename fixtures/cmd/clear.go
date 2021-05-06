@@ -6,12 +6,15 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/sirupsen/logrus"
+	"github.com/mailbadger/app/entities"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/mailbadger/app/services/templates"
 )
+
+var u *entities.User
 
 // clearCmd represents the clear command
 var clearCmd = &cobra.Command{
@@ -20,35 +23,51 @@ var clearCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return clear()
 	},
+	PreRunE: func(cmd *cobra.Command, args []string) (err error) {
+		u, err = db.GetUserByUsername(username)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil
+			}
+			return fmt.Errorf("failed to fetch %s user: %w", username, err)
+		}
+
+		if u.Source != viper.GetString("USER_SOURCE") || !u.Password.Valid {
+			return fmt.Errorf("user: %s can not be cleared, it is not created by %s", username, viper.GetString("USER_SOURCE"))
+		}
+
+		pwString := ""
+		fmt.Printf("password for %s: ", username)
+		_, err = fmt.Scanf("%s", &pwString)
+		if err != nil {
+			return fmt.Errorf("failed to scan password %w", err)
+		}
+
+		fmt.Println()
+
+		err = bcrypt.CompareHashAndPassword([]byte(u.Password.String), []byte(pwString))
+		if err != nil {
+			return fmt.Errorf("invalid credentials %w", err)
+		}
+
+		return nil
+	},
 }
 
 func clear() error {
-	u, err := db.GetUserByUsername(username)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
-		}
-		return fmt.Errorf("failed to fetch %s user: %w", username, err)
-	}
-
-	if u.Source != viper.GetString("USER_SOURCE") {
-		return fmt.Errorf("user: %s can not be cleared, it is not created by %s", username, viper.GetString("USER_SOURCE"))
-	}
-
 	apiKeys, err := db.GetAPIKeys(u.ID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch api keys for user: %w", err)
 	}
 
-	fmt.Printf("deleted api keys\n\n")
-
+	fmt.Println("deleted api keys")
 	for _, apiKey := range apiKeys {
 		err = db.DeleteAPIKey(apiKey.ID, u.ID)
 		if err != nil {
 			return fmt.Errorf("failed to delete api key with id %d: %w",apiKey.ID, err)
 		}
 
-		fmt.Printf("secret: %s\n", apiKey.SecretKey)
+		fmt.Printf(" secret: %s\n", apiKey.SecretKey)
 	}
 
 	fmt.Println()
@@ -58,14 +77,14 @@ func clear() error {
 		return fmt.Errorf("failed to fetch subscribers for user: %w", err)
 	}
 
-	logrus.Println("deleted subscribers")
+	fmt.Println("deleted subscribers")
 	for _, s := range subscribers {
 		err = db.DeleteSubscriber(s.ID, u.ID)
 		if err != nil {
 			return fmt.Errorf("failed to delete subscriber: %w", err)
 		}
 
-		fmt.Printf("name: %s, email: %s\n", s.Name, s.Email)
+		fmt.Printf(" name: %s, email: %s\n", s.Name, s.Email)
 	}
 
 	fmt.Println()
@@ -185,7 +204,7 @@ func clear() error {
 		return fmt.Errorf("failed to delete 'badger' user: %w", err)
 	}
 
-	fmt.Printf("deleted user %s, uuid %s\n", u.Username, u.UUID)
+	fmt.Printf("deleted user\n username: %s, uuid %s\n", u.Username, u.UUID)
 
 	return nil
 }
