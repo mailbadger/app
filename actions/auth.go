@@ -176,6 +176,15 @@ func PostSignup(c *gin.Context) {
 		return
 	}
 
+	r, err := storage.GetRole(c, entities.AdminRole)
+	if err != nil {
+		logger.From(c).WithError(err).Error("signup: unable to fetch admin role")
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Unable to create an account.",
+		})
+		return
+	}
+
 	uuid := uuid.NewString()
 
 	user := &entities.User{
@@ -188,6 +197,7 @@ func PostSignup(c *gin.Context) {
 		Active:     true,
 		Verified:   false,
 		Boundaries: b,
+		Roles:      []entities.Role{*r},
 		Source:     "mailbadger.io",
 	}
 
@@ -558,14 +568,30 @@ func completeCallback(c *gin.Context, email, source, host string) {
 			return
 		}
 
-		uuid := uuid.New()
+		b, err := storage.GetBoundariesByType(c, entities.BoundaryTypeFree)
+		if err != nil {
+			logger.From(c).WithError(err).Error("signup: unable to fetch boundary")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		r, err := storage.GetRole(c, entities.AdminRole)
+		if err != nil {
+			logger.From(c).WithError(err).Error("signup: unable to fetch admin role")
+			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			return
+		}
+
+		uuid := uuid.NewString()
 
 		u = &entities.User{
-			UUID:     uuid.String(),
-			Username: email,
-			Active:   true,
-			Verified: true,
-			Source:   source,
+			UUID:       uuid,
+			Username:   email,
+			Active:     true,
+			Verified:   true,
+			Source:     source,
+			Boundaries: b,
+			Roles:      []entities.Role{*r},
 		}
 
 		err = storage.CreateUser(c, u)

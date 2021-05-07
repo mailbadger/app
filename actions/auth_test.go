@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
@@ -62,17 +63,26 @@ func TestAuth(t *testing.T) {
 		Value("errors").Object().
 		ValueEqual("email", "Invalid email format")
 
-	e.POST("/api/signup").WithForm(params.PostSignUp{
+	userObj := e.POST("/api/signup").WithForm(params.PostSignUp{
 		Email:    "gl@mail.com",
 		Password: "password",
 	}).Expect().
 		Status(http.StatusOK).
-		JSON().Object().
-		Value("user").Object().
+		JSON().Object()
+
+	userObj.Value("user").Object().
 		ValueEqual("username", "gl@mail.com").
 		ValueEqual("source", "mailbadger.io").
 		ValueEqual("active", true).
-		ValueEqual("verified", false)
+		ValueEqual("verified", false).
+		Value("boundaries").Object().
+		ValueEqual("type", entities.BoundaryTypeFree)
+
+	userObj.Value("user").Object().
+		Value("roles").
+		Array().
+		NotEmpty().
+		ContainsOnly(entities.Role{ID: 1, Name: entities.AdminRole})
 
 	e.POST("/api/signup").WithForm(params.PostSignUp{
 		Email:    "gl@mail.com",

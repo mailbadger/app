@@ -22,6 +22,7 @@ type Storage interface {
 	UpdateUser(*entities.User) error
 
 	GetBoundariesByType(t string) (*entities.Boundaries, error)
+	GetRole(name string) (*entities.Role, error)
 
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
@@ -180,6 +181,10 @@ func DeleteSession(c context.Context, sessionID string) error {
 
 func GetBoundariesByType(c context.Context, t string) (*entities.Boundaries, error) {
 	return GetFromContext(c).GetBoundariesByType(t)
+}
+
+func GetRole(c context.Context, name string) (*entities.Role, error) {
+	return GetFromContext(c).GetRole(name)
 }
 
 // GetCampaigns populates a pagination object with a collection of

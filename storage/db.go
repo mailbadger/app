@@ -129,6 +129,12 @@ func initDb(config string, db *gorm.DB) error {
 		return fmt.Errorf("init db: fetch nolimit boundaries: %w", err)
 	}
 
+	adminRole := entities.Role{}
+	err = db.Where("name = ?", entities.AdminRole).First(&adminRole).Error
+	if err != nil {
+		return fmt.Errorf("init db: fetch admin role: %w", err)
+	}
+
 	admin := entities.User{
 		Username: "admin",
 		UUID:     uuid.String(),
@@ -139,6 +145,7 @@ func initDb(config string, db *gorm.DB) error {
 		Active:     true,
 		Verified:   true,
 		Boundaries: nolimit,
+		Roles:      []entities.Role{adminRole},
 		Source:     "mailbadger.io",
 	}
 
