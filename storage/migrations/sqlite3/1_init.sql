@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS "roles" (
     "name"  varchar(100)
 );
 
+INSERT INTO "roles" ("name") VALUES ("admin");
+
 CREATE TABLE IF NOT EXISTS "users_roles" (
     "user_id" integer,
     "role_id" integer,
