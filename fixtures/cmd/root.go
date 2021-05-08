@@ -55,7 +55,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username for the user with fixtures")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password for the user with fixtures")
-	rootCmd.PersistentFlags().StringVarP(&password, "secret", "s", "", "Password for the user with fixtures")
+	rootCmd.PersistentFlags().StringVarP(&password, "secret", "s", "", "Secret for api key for the user with fixtures")
 
 	// Connecting to database
 	driver := viper.GetString("DATABASE_DRIVER")
