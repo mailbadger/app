@@ -210,4 +210,11 @@ func TestClicks(t *testing.T) {
 	campaignClicksStats, err = store.GetCampaignClicksStats(55, 1)
 	assert.Nil(t, err)
 	assert.Empty(t, campaignClicksStats)
+
+	err = store.DeleteAllClicksForUser(1)
+	assert.Nil(t, err)
+
+	campaignClicksStats, err = store.GetCampaignClicksStats(2, 1)
+	assert.Nil(t, err)
+	assert.Empty(t, campaignClicksStats)
 }
