@@ -240,4 +240,12 @@ func TestCampaign(t *testing.T) {
 	// campBounce[0] - order desc
 	assert.Equal(t, bounces[1], (*campBounce)[0])
 
+	err = store.DeleteAllCampaignsForUser(1)
+	assert.Nil(t, err)
+
+	p = NewPaginationCursor("/api/campaigns", 10)
+	err = store.GetCampaigns(1, p, nil)
+	assert.Nil(t, err)
+	col := p.Collection.(*[]entities.Campaign)
+	assert.Empty(t, *col)
 }
