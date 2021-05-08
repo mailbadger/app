@@ -88,7 +88,7 @@ func createUser() (*entities.User, error) {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	fmt.Printf("created user:\n username: %s\n password: %s\n uuid: %s\n\n", username, password, uuid)
+	fmt.Printf("created user:\n username: %s\n uuid: %s\n\n", username, uuid)
 
 	err = db.CreateAPIKey(&entities.APIKey{
 		UserID:    u.ID,
