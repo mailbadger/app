@@ -15,12 +15,15 @@ import (
 	"github.com/mailbadger/app/utils"
 )
 
+const version = "v1.0.0"
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "fixtures",
 	Short: "fixtures is a cli for generating test data for mailbadger",
-	Long: `Fixtures can generate testing data a user with a few campaigns alongside with a few templates. Also about 
+	Long: `Fixturenamenames can generate testing data a user with a few campaigns alongside with a few templates. Also about 
 hundreds of subscribers in a few segments`,
+	Version: version,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -56,6 +59,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Username for the user with fixtures")
 	rootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Password for the user with fixtures")
 	rootCmd.PersistentFlags().StringVarP(&password, "secret", "s", "", "Secret for api key for the user with fixtures")
+
+	rootCmd.InitDefaultVersionFlag()
 
 	// Connecting to database
 	driver := viper.GetString("DATABASE_DRIVER")
