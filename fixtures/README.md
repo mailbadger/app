@@ -53,8 +53,8 @@ and five campaigns with one same template.
 fixtures init -u="username" -p="password" -s="secret"
 ```
 
-The `-username` or short `-u` flag is required for the username, the `-password`, `-p` and
-`-secret`, `-s` flags are optional by default random uuid is generated for both.
+The `--username` or short `-u` flag is required for the username, the `--password`, `-p` and
+`--secret`, `-s` flags are optional by default random uuid is generated for both.
 
 ## clear
 
@@ -65,7 +65,7 @@ with the cli can be cleared.
 fixtures init -u="username"
 ```
 
-For This command only the `-username`, `-u` flag is required. Then you will be asked for 
+For This command only the `--username`, `-u` flag is required. Then you will be asked for 
 the user's password.
 
 ```shell
