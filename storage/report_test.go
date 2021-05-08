@@ -99,6 +99,7 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, reports[2].Resource, runningReport.Resource)
 	assert.Equal(t, reports[2].Type, runningReport.Type)
 
+	// Test delete all reports for a user
 	err = store.DeleteAllReportsForUser(1)
 	assert.Nil(t, err)
 

@@ -211,6 +211,7 @@ func TestClicks(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Empty(t, campaignClicksStats)
 
+	// Test delete all clicks for a user
 	err = store.DeleteAllClicksForUser(1)
 	assert.Nil(t, err)
 

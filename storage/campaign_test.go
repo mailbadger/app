@@ -240,6 +240,7 @@ func TestCampaign(t *testing.T) {
 	// campBounce[0] - order desc
 	assert.Equal(t, bounces[1], (*campBounce)[0])
 
+	// Test delete all campaigns for a user
 	err = store.DeleteAllCampaignsForUser(1)
 	assert.Nil(t, err)
 

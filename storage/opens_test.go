@@ -71,6 +71,7 @@ func TestOpens(t *testing.T) {
 	exp := &entities.OpensStats{Unique: 2, Total: 2}
 	assert.Equal(t, exp, opensStats)
 
+	// Test delete all opens for a user
 	err = store.DeleteAllOpensForUser(1)
 	assert.Nil(t, err)
 

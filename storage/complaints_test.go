@@ -60,6 +60,7 @@ func TestComplaints(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalComplaints)
 
+	// Test delete all complaints for a user
 	err = store.DeleteAllComplaintsForUser(1)
 	assert.Nil(t, err)
 
