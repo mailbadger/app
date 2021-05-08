@@ -66,4 +66,12 @@ func TestBounces(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalBounces)
 
+	// test delete all bounces for user
+	err = store.DeleteAllBouncesForUser(1)
+	assert.Nil(t, err)
+
+	totalBounces, err = store.GetTotalBounces(1, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalBounces)
+
 }
