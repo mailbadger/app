@@ -98,4 +98,11 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, reports[2].FileName, runningReport.FileName)
 	assert.Equal(t, reports[2].Resource, runningReport.Resource)
 	assert.Equal(t, reports[2].Type, runningReport.Type)
+
+	err = store.DeleteAllReportsForUser(1)
+	assert.Nil(t, err)
+
+	numOfRep, err = store.GetNumberOfReportsForDate(1, now)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), numOfRep)
 }
