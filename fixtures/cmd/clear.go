@@ -19,7 +19,7 @@ var u *entities.User
 // clearCmd represents the clear command
 var clearCmd = &cobra.Command{
 	Use:   "clear",
-	Short: "clear deletes all date for the user",
+	Short: "clear deletes all data for the user",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return clear()
 	},
