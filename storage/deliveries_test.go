@@ -62,4 +62,10 @@ func TestDeliveries(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalDeliveries)
 
+	err = store.DeleteAllDeliveriesForUser(1)
+	assert.Nil(t, err)
+
+	totalDeliveries, err = store.GetTotalDelivered(1, 1)
+	assert.Nil(t, err)
+	assert.Empty(t, totalDeliveries)
 }
