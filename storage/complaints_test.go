@@ -60,4 +60,10 @@ func TestComplaints(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalComplaints)
 
+	err = store.DeleteAllComplaintsForUser(1)
+	assert.Nil(t, err)
+
+	totalComplaints, err = store.GetTotalComplaints(1, 1)
+	assert.Nil(t, err)
+	assert.Empty(t, totalComplaints)
 }
