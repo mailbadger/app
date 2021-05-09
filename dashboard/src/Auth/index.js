@@ -1,7 +1,5 @@
 import React from 'react';
-import NewPassword from './NewPassword';
-import { Route, Switch } from 'react-router-dom';
-import ForgotPassword from './ForgotPassword';
+import { Switch } from 'react-router-dom';
 import { AuthConsumer } from './context';
 import AuthWrapper from './AuthWrapper';
 
@@ -13,8 +11,6 @@ const Auth = () => {
 			{({ fetchUser }) => (
 				<Switch>
 					<AuthWrapper fetchUser={fetchUser} />
-					<Route path="/forgot-password/:token" component={NewPassword} />
-					<Route path="/forgot-password" component={ForgotPassword} />
 				</Switch>
 			)}
 		</AuthConsumer>

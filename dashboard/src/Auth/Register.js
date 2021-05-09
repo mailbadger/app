@@ -1,6 +1,5 @@
 import React, { useState, Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { Paragraph, FormField, Box } from 'grommet';
+import { FormField, Box } from 'grommet';
 import { Formik } from 'formik';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { string, object, ref, addMethod, bool } from 'yup';
@@ -15,13 +14,14 @@ import {
 	AuthStyledTextLabel,
 	AuthStyledHeader,
 	AuthStyledButton,
-	AuthErrorMessage,
+	AuthFormFieldError,
 	CustomLineBreak,
 	Checkbox,
 	AuthStyledRedirectLink,
-	AuthMainWrapper
+	AuthFormWrapper,
+	AuthFormSubmittedError
 } from '../ui';
-import { FormPropTypes } from '../PropTypes';
+import { FormPropTypes, AuthFormPropTypes } from '../PropTypes';
 
 addMethod(string, 'equalTo', equalTo);
 
@@ -34,7 +34,7 @@ const registerValidation = object().shape({
 	terms: bool().oneOf([ true ], 'Please accept Terms of Service')
 });
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors }) => {
+const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors, isMobile }) => {
 	const [ checked, setChecked ] = useState(false);
 
 	const handleChangeCheckBtn = (e) => {
@@ -42,23 +42,22 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 		handleChange(e);
 	};
 
+	const style = isMobile ? { height: 'fit-content', padding: '20px 10px' } : {};
 	return (
-		<Box flex={true} direction="column">
+		<Box flex={true} direction="column" style={style}>
 			<AuthStyledRedirectLink text="Already a member? " redirectLink="/login" redirectLabel="Sign In" />
 			<Box flex={true} direction="row" alignSelf="center" justify="center" align="center">
-				<AuthMainWrapper width="503px">
+				<AuthFormWrapper isMobile={isMobile}>
 					<form onSubmit={handleSubmit}>
 						<AuthStyledHeader>Sign up to Mailbadger </AuthStyledHeader>
-						<Paragraph textAlign="center" size="small" color="#D85555">
-							{errors && errors.message}
-						</Paragraph>
+						<AuthFormSubmittedError>{errors && errors.message}</AuthFormSubmittedError>
 						<FormField
 							style={{ marginTop: '10px' }}
 							htmlFor="email"
 							label={<AuthStyledTextLabel>Email</AuthStyledTextLabel>}
 						>
 							<AuthStyledTextInput name="email" onChange={handleChange} />
-							<AuthErrorMessage name="email" />
+							<AuthFormFieldError name="email" />
 						</FormField>
 						<FormField
 							style={{ marginTop: '10px' }}
@@ -66,7 +65,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 							label={<AuthStyledTextLabel>Password</AuthStyledTextLabel>}
 						>
 							<AuthStyledTextInput name="password" type="password" onChange={handleChange} />
-							<AuthErrorMessage name="password" />
+							<AuthFormFieldError name="password" />
 						</FormField>
 						<FormField
 							style={{ marginTop: '10px' }}
@@ -74,7 +73,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 							label={<AuthStyledTextLabel>Confirm Password</AuthStyledTextLabel>}
 						>
 							<AuthStyledTextInput name="password_confirm" type="password" onChange={handleChange} />
-							<AuthErrorMessage name="password_confirm" />
+							<AuthFormFieldError name="password_confirm" />
 						</FormField>
 						{process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
 							<ReCAPTCHA
@@ -90,7 +89,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 								checked={checked}
 								handleChange={handleChangeCheckBtn}
 							/>
-							<AuthErrorMessage name="terms" />
+							<AuthFormFieldError name="terms" />
 						</FormField>
 						<Box>
 							<AuthStyledButton
@@ -101,14 +100,14 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 								label="Sign Up"
 							/>
 						</Box>
-						{socialAuthEnabled() && (
+						{!socialAuthEnabled() && (
 							<Fragment>
 								<CustomLineBreak text="or" />
 								<SocialButtons />
 							</Fragment>
 						)}
 					</form>
-				</AuthMainWrapper>
+				</AuthFormWrapper>
 			</Box>
 		</Box>
 	);
@@ -116,7 +115,7 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors 
 
 Form.propTypes = FormPropTypes;
 
-const RegisterForm = (props) => {
+const RegisterForm = ({ isMobile, fetchUser }) => {
 	const handleSubmit = async (values, { setSubmitting, setErrors }) => {
 		const callApi = async () => {
 			try {
@@ -135,7 +134,7 @@ const RegisterForm = (props) => {
 				}
 
 				await axios.post('/api/signup', qs.stringify(params));
-				props.fetchUser();
+				fetchUser();
 			} catch (error) {
 				setErrors(error.response.data);
 			}
@@ -147,9 +146,7 @@ const RegisterForm = (props) => {
 		setSubmitting(false);
 	};
 
-	RegisterForm.propTypes = {
-		fetchUser: PropTypes.func.isRequired
-	};
+	RegisterForm.propTypes = AuthFormPropTypes;
 
 	return (
 		<Formik
@@ -157,7 +154,7 @@ const RegisterForm = (props) => {
 			onSubmit={handleSubmit}
 			validationSchema={registerValidation}
 		>
-			{(props) => <Form {...props} />}
+			{(props) => <Form isMobile={isMobile} {...props} />}
 		</Formik>
 	);
 };

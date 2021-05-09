@@ -28,6 +28,10 @@ const theme = deepMerge(grommet, {
 		},
 		size: {
 			avatar: '45px'
+		},
+		breakpoints: {
+			small: { value: 768 },
+			medium: {value: 1025}
 		}
 	},
 	tabs: {
