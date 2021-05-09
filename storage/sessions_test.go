@@ -58,7 +58,7 @@ func TestSessions(t *testing.T) {
 	err = store.DeleteAllSessionsForUser(1)
 	assert.Nil(t, err)
 
-	_, err = store.GetSession("foobar")
+	_, err = store.GetSession("delete-session")
 	assert.NotNil(t, err)
 	assert.True(t, gorm.IsRecordNotFoundError(err))
 }
