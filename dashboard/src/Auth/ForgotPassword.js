@@ -1,106 +1,86 @@
-import React, { Fragment } from "react";
-import { FormField, Button, TextInput, Box } from "grommet";
-import { Formik, ErrorMessage } from "formik";
-import { string, object, addMethod } from "yup";
-import { mainInstance as axios } from "../axios";
-import qs from "qs";
+import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
+import { FormField, Box } from 'grommet';
+import { Formik } from 'formik';
+import { string, object, addMethod } from 'yup';
+import { mainInstance as axios } from '../axios';
+import qs from 'qs';
 
-import equalTo from "../utils/equalTo";
-import { FormPropTypes } from "../PropTypes";
+import equalTo from '../utils/equalTo';
+import { FormPropTypes } from '../PropTypes';
+import {
+	AuthFormWrapper,
+	AuthStyledTextLabel,
+	AuthStyledTextInput,
+	AuthFormFieldError,
+	AuthStyledButton,
+	AuthFormSubmittedError
+} from '../ui';
 
-addMethod(string, "equalTo", equalTo);
+addMethod(string, 'equalTo', equalTo);
 
 const forgotPassValidation = object().shape({
-  email: string()
-    .email("The email must be a valid format")
-    .required("Please enter your email"),
+	email: string().email('The email must be a valid format').required('Please enter your email')
 });
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Fragment>
-    <Box
-      direction="row"
-      flex="grow"
-      alignSelf="center"
-      background="#ffffff"
-      border={{ color: "#CFCFCF" }}
-      animation="fadeIn"
-      margin={{ top: "40px", bottom: "10px" }}
-      elevation="medium"
-      width="medium"
-      gap="small"
-      pad="medium"
-      align="center"
-      justify="center"
-    >
-      {errors && errors.message && <div>{errors.message}</div>}
-      <form
-        onSubmit={handleSubmit}
-        style={{ color: "black", width: "90%", height: "100%" }}
-      >
-        <FormField label="Email" htmlFor="email">
-          <TextInput
-            placeholder="you@email.com"
-            name="email"
-            onChange={handleChange}
-          />
-          <ErrorMessage name="email" />
-        </FormField>
-        <Button
-          plain
-          style={{
-            marginTop: "10px",
-            marginBottom: "10px",
-            borderRadius: "5px",
-            padding: "8px",
-            background: "#654FAA",
-            width: "100%",
-            textAlign: "center",
-          }}
-          disabled={isSubmitting}
-          type="submit"
-          alignSelf="stretch"
-          textAlign="center"
-          primary
-          label="Submit"
-        />
-      </form>
-    </Box>
-  </Fragment>
+const Form = ({ handleSubmit, handleChange, isSubmitting, errors, isMobile }) => (
+	<Fragment>
+		<Box flex={true} direction="row" alignSelf="center" justify="center" align="center">
+			<AuthFormWrapper isMobile={isMobile}>
+				<form onSubmit={handleSubmit}>
+					<AuthFormSubmittedError>{errors && errors.message}</AuthFormSubmittedError>
+					<FormField htmlFor="email" label={<AuthStyledTextLabel>Email</AuthStyledTextLabel>}>
+						<AuthStyledTextInput name="email" onChange={handleChange} />
+						<AuthFormFieldError name="email" />
+					</FormField>
+					<Box>
+						<AuthStyledButton
+							margin={{ top: 'medium', bottom: 'medium' }}
+							disabled={isSubmitting}
+							type="submit"
+							primary
+							label="Submit"
+							alignSelf="start"
+						/>
+					</Box>
+				</form>
+			</AuthFormWrapper>
+		</Box>
+	</Fragment>
 );
 
 Form.propTypes = FormPropTypes;
 
-const ForgotPasswordForm = () => {
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    const callApi = async () => {
-      try {
-        await axios.post(
-          `/api/forgot-password`,
-          qs.stringify({
-            email: values.email,
-          })
-        );
-      } catch (error) {
-        setErrors(error.response.data);
-      }
-    };
+const ForgotPasswordForm = ({ isMobile }) => {
+	const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+		const callApi = async () => {
+			try {
+				await axios.post(
+					`/api/forgot-password`,
+					qs.stringify({
+						email: values.email
+					})
+				);
+			} catch (error) {
+				setErrors(error.response.data);
+			}
+		};
 
-    await callApi();
+		await callApi();
 
-    //done submitting, set submitting to false
-    setSubmitting(false);
-  };
+		//done submitting, set submitting to false
+		setSubmitting(false);
+	};
 
-  return (
-    <Formik
-      initialValues={{ email: "" }}
-      onSubmit={handleSubmit}
-      validationSchema={forgotPassValidation}
-    >
-      {(props) => <Form {...props} />}
-    </Formik>
-  );
+	return (
+		<Formik initialValues={{ email: '' }} onSubmit={handleSubmit} validationSchema={forgotPassValidation}>
+			{(props) => <Form isMobile={isMobile} {...props} />}
+		</Formik>
+	);
+};
+
+ForgotPasswordForm.propTypes = {
+	isMobile: PropTypes.string
 };
 
 export default ForgotPasswordForm;

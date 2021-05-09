@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
 import { FormField, Paragraph, Box } from 'grommet';
 import { Formik } from 'formik';
 import { string, object } from 'yup';
@@ -13,64 +12,67 @@ import {
 	AuthStyledTextLabel,
 	AuthStyledButton,
 	AuthStyledHeader,
-	AuthErrorMessage,
+	AuthFormFieldError,
 	AuthStyledRedirectLink,
 	CustomLineBreak,
-	AuthMainWrapper
+	AuthFormWrapper,
+	AuthFormSubmittedError
 } from '../ui';
-import { FormPropTypes } from '../PropTypes';
+import { FormPropTypes, AuthFormPropTypes } from '../PropTypes';
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-	<Box flex={true} direction="column">
-		<AuthStyledRedirectLink text="Don't have an account?" redirectLink="/signup" redirectLabel="Sign up" />
-		<Box flex={true} direction="row" alignSelf="center" justify="center" align="center">
-			<AuthMainWrapper width="447px">
-				<form onSubmit={handleSubmit}>
-					<AuthStyledHeader>Welcome back !</AuthStyledHeader>
-					<Paragraph
-						margin={{ top: '10px', right: '0' }}
-						color="#000"
-						style={{ fontSize: '23px', lineHeight: '38px', fontFamily: 'Poppins Medium' }}
-					>
-						We are so excited to see you again !
-					</Paragraph>
-					<Paragraph textAlign="center" size="small" color="#D85555">
-						{errors && errors.message}
-					</Paragraph>
-					<FormField htmlFor="email" label={<AuthStyledTextLabel>Email</AuthStyledTextLabel>}>
-						<AuthStyledTextInput name="email" onChange={handleChange} />
-						<AuthErrorMessage name="email" />
-					</FormField>
-					<FormField htmlFor="password" label={<AuthStyledTextLabel>Password</AuthStyledTextLabel>}>
-						<AuthStyledTextInput name="password" type="password" onChange={handleChange} />
-						<AuthErrorMessage name="password" />
-					</FormField>
-					<NavLink
-						style={{ color: '#000', fontSize: '13px', fontFamily: 'Poppins Medium' }}
-						to="/forgot-password"
-					>
-						Forgot your password?
-					</NavLink>
-					<Box>
-						<AuthStyledButton
-							margin={{ top: 'medium', bottom: 'medium' }}
-							disabled={isSubmitting}
-							type="submit"
-							primary
-							label="Login with email"
-						/>
-					</Box>
-					{socialAuthEnabled() && (
-						<Fragment>
-							<CustomLineBreak text="or" />
-							<SocialButtons />
-						</Fragment>
-					)}
-				</form>
-			</AuthMainWrapper>
+const Form = ({ handleSubmit, handleChange, isSubmitting, errors, isMobile }) => {
+	const style = isMobile ? { height: 'fit-content', padding: '20px 10px' } : {}
+	
+	return (
+		<Box flex={true} direction="column" style={style}>
+			<AuthStyledRedirectLink text="Don't have an account?" redirectLink="/signup" redirectLabel="Sign up" />
+			<Box flex={true} direction="row" alignSelf="center" justify="center" align="center">
+				<AuthFormWrapper isMobile={isMobile}>
+					<form onSubmit={handleSubmit}>
+						<AuthStyledHeader isMobile={isMobile}>Welcome back !</AuthStyledHeader>
+						<Paragraph
+							margin={{ top: '10px', right: '0' }}
+							color="#000"
+							style={{ fontSize: '23px', lineHeight: '38px', fontFamily: 'Poppins Medium' }}
+						>
+							We are so excited to see you again !
+						</Paragraph>
+						<AuthFormSubmittedError>{errors && errors.message}</AuthFormSubmittedError>
+						<FormField htmlFor="email" label={<AuthStyledTextLabel>Email</AuthStyledTextLabel>}>
+							<AuthStyledTextInput name="email" onChange={handleChange} />
+							<AuthFormFieldError name="email" />
+						</FormField>
+						<FormField htmlFor="password" label={<AuthStyledTextLabel>Password</AuthStyledTextLabel>}>
+							<AuthStyledTextInput name="password" type="password" onChange={handleChange} />
+							<AuthFormFieldError name="password" />
+						</FormField>
+						<NavLink
+							style={{ color: '#000', fontSize: '13px', fontFamily: 'Poppins Medium' }}
+							to="/forgot-password"
+						>
+							Forgot your password?
+						</NavLink>
+						<Box>
+							<AuthStyledButton
+								margin={{ top: 'medium', bottom: 'medium' }}
+								disabled={isSubmitting}
+								type="submit"
+								primary
+								label="Login with email"
+							/>
+						</Box>
+						{!socialAuthEnabled() && (
+							<Fragment>
+								<CustomLineBreak text="or" />
+								<SocialButtons />
+							</Fragment>
+						)}
+					</form>
+				</AuthFormWrapper>
+			</Box>
 		</Box>
-	</Box>
-);
+	);
+};
 
 Form.propTypes = FormPropTypes;
 
@@ -79,7 +81,7 @@ const loginValidation = object().shape({
 	password: string().required('Please enter your password')
 });
 
-const LoginForm = (props) => {
+const LoginForm = ({ isMobile, fetchUser }) => {
 	const handleSubmit = async (values, { setSubmitting, setErrors }) => {
 		const callApi = async () => {
 			try {
@@ -93,7 +95,7 @@ const LoginForm = (props) => {
 
 				setSubmitting(false);
 
-				props.fetchUser();
+				fetchUser();
 			} catch (error) {
 				setSubmitting(false);
 				setErrors(error.response.data);
@@ -105,13 +107,11 @@ const LoginForm = (props) => {
 
 	return (
 		<Formik initialValues={{ email: '', password: '' }} onSubmit={handleSubmit} validationSchema={loginValidation}>
-			{(props) => <Form {...props} />}
+			{(props) => <Form isMobile={isMobile} {...props} />}
 		</Formik>
 	);
 };
 
-LoginForm.propTypes = {
-	fetchUser: PropTypes.func.isRequired
-};
+LoginForm.propTypes = AuthFormPropTypes;
 
 export default LoginForm;

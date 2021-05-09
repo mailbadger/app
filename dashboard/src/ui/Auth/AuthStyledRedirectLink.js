@@ -6,20 +6,20 @@ import PropTypes from 'prop-types';
 
 const StyledParagraph = styled(Paragraph)`
     padding-top: 10px;
-    font-size: 25px;
-    line-height: 38px;
+    font-size: 18px;
+    line-height: 30px;
     margin-top: 14px;
     margin-right: 25px;
     text-align:center;
     align-self:flex-end;
     align-content:center;
-    color: #541388;
+    color: #000;
 `;
 
 const AuthStyledRedirectLink = ({ text, redirectLabel, redirectLink }) => (
 	<StyledParagraph>
 		{`${text} `}
-		<NavLink style={{fontFamily: "Poppins Bold" }}to={redirectLink}>{redirectLabel}</NavLink>
+		<NavLink style={{fontFamily: "Poppins Bold", color: '#000'}} to={redirectLink}>{redirectLabel}</NavLink>
 	</StyledParagraph>
 );
 
