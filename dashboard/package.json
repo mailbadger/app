@@ -8,7 +8,7 @@
     "@uppy/core": "^1.17.0",
     "axios": "^0.21.1",
     "codemirror": "^5.61.0",
-    "date-fns": "^2.21.1",
+    "date-fns": "^2.21.3",
     "dompurify": "^2.2.8",
     "es6-promise": "^4.2.8",
     "formik": "^2.2.6",
@@ -57,10 +57,10 @@
   },
   "proxy": "http://localhost:8080",
   "devDependencies": {
-    "eslint": "^7.25.0",
+    "eslint": "^7.26.0",
     "eslint-plugin-react": "^7.23.2",
     "husky": "^5.2.0",
-    "lint-staged": "^10.5.4",
-    "prettier": "2.3.0"
+    "prettier": "2.3.0",
+    "lint-staged": "^11.0.0"
   }
 }
