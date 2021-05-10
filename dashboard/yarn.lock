@@ -2688,10 +2688,10 @@
     qs-stringify "^1.1.0"
     url-parse "^1.4.7"
 
-"@uppy/core@^1.17.0":
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.17.0.tgz#5b394372ee3431d5a1bf09623522c0dd794dfe7b"
-  integrity sha512-UV84/5yMbplAUCmtOhiJFwtHzmajHr5sqS121MLC4nYfNd0iMRyoXo1E3WHUfxBjOxOwicyNRfxOZ92w3nACUQ==
+"@uppy/core@^1.18.0":
+  version "1.18.0"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.18.0.tgz#db24ed3fb66916bc2220ae6de3c98c8f499041d8"
+  integrity sha512-ddon7JWV8l1Gm/A7Y2akNa6wAJF1rBs5N4TMVbcBeYaBUBpDIm3e+HbfbbL5VCuHxTo/bkiyN46zRxA5tv63lw==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/store-default" "^1.2.6"

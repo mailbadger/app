@@ -5,7 +5,7 @@
   "dependencies": {
     "@uppy/react": "^1.11.6",
     "@uppy/aws-s3": "^1.7.9",
-    "@uppy/core": "^1.17.0",
+    "@uppy/core": "^1.18.0",
     "axios": "^0.21.1",
     "codemirror": "^5.61.0",
     "date-fns": "^2.21.3",
