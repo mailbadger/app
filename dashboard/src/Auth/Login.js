@@ -22,7 +22,6 @@ import { FormPropTypes, AuthFormPropTypes } from '../PropTypes';
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors, isMobile }) => {
 	const style = isMobile ? { height: 'fit-content', padding: '20px 10px' } : {}
-	
 	return (
 		<Box flex={true} direction="column" style={style}>
 			<AuthStyledRedirectLink text="Don't have an account?" redirectLink="/signup" redirectLabel="Sign up" />
