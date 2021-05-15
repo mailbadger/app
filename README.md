@@ -11,7 +11,7 @@ Self hosted newsletter mail system written in go.
 This application consists of an Rest API written in Go and a dashboard application which is written in React. The whole app resides in this single repository.
 
 The application depends on several tools and services:
-    
+
     - go
     - MySQL (or sqlite)
     - NSQ

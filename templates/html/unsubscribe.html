@@ -6,7 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Oxygen:300,400,500&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Oxygen:300,400,500&display=swap"
+    />
     <title>Unsubscribe</title>
     <style type="text/css">
       body {
@@ -14,7 +17,8 @@
       }
 
       .container {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Ubuntu", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          "Helvetica Neue", "Ubuntu", sans-serif;
         font-size: 14px;
         line-height: 20px;
         background: rgb(227, 232, 238) none repeat scroll 0% 0%;
@@ -117,18 +121,26 @@
   <body>
     <div class="container">
       {{if .failed}}
-        <div class="alert">
-          <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
-          <strong>Error!</strong> We were unable to process the request. Please contact our support.
-        </div>
+      <div class="alert">
+        <span
+          class="closebtn"
+          onclick="this.parentElement.style.display='none';"
+          >&times;</span
+        >
+        <strong>Error!</strong> We were unable to process the request. Please
+        contact our support.
+      </div>
       {{end}}
       <div class="section">
         <div class="item">
           <h2 class="heading">Hello,</h2>
           <p>
-            We are sorry to find you are no longer interested in our newsletters.
-            <br/>
-            By clicking the <strong>Unsubscribe</strong> button your email address: <strong>{{.email}}</strong> will be removed from our mailing list.
+            We are sorry to find you are no longer interested in our
+            newsletters.
+            <br />
+            By clicking the <strong>Unsubscribe</strong> button your email
+            address: <strong>{{.email}}</strong> will be removed from our
+            mailing list.
           </p>
           <form action="/api/unsubscribe" method="post">
             <input type="hidden" value="{{.email}}" name="email" />
