@@ -45,22 +45,10 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,json,css,md}": [
-      "prettier --write"
-    ]
-  },
   "proxy": "http://localhost:8080",
   "devDependencies": {
     "eslint": "^7.26.0",
     "eslint-plugin-react": "^7.23.2",
-    "husky": "^5.2.0",
-    "prettier": "2.3.0",
-    "lint-staged": "^11.0.0"
+    "prettier": "2.3.0"
   }
 }
