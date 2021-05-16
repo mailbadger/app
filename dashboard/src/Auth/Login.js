@@ -1,122 +1,115 @@
 import React, { Fragment } from "react";
-import PropTypes from "prop-types";
-import { FormField, Paragraph, Heading, Box } from "grommet";
-import { Formik, ErrorMessage } from "formik";
-import { Mail } from "grommet-icons";
+import { FormField, Paragraph, Box } from "grommet";
+import { Formik } from "formik";
 import { string, object } from "yup";
 import { NavLink } from "react-router-dom";
 import { mainInstance as axios } from "../axios";
 import qs from "qs";
-
 import SocialButtons from "./SocialButtons";
 import { socialAuthEnabled } from "../Auth";
-import { StyledTextInput, ButtonWithLoader } from "../ui";
-import { FormPropTypes } from "../PropTypes";
+import {
+  AuthStyledTextInput,
+  AuthStyledTextLabel,
+  AuthStyledButton,
+  AuthStyledHeader,
+  AuthFormFieldError,
+  AuthStyledRedirectLink,
+  CustomLineBreak,
+  AuthFormWrapper,
+  AuthFormSubmittedError,
+} from "../ui";
+import { FormPropTypes, AuthFormPropTypes } from "../PropTypes";
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Box
-    direction="row"
-    alignSelf="center"
-    background="#ffffff"
-    border={{ color: "#CFCFCF" }}
-    animation="fadeIn"
-    margin={{ top: "40px", bottom: "40px" }}
-    elevation="medium"
-    width="medium"
-    gap="small"
-    pad="medium"
-    align="center"
-    justify="center"
-    style={{ borderRadius: "5px" }}
-  >
-    <form onSubmit={handleSubmit}>
-      <Heading
-        textAlign="center"
-        level="3"
-        color="#564392"
-        style={{
-          fontWeight: "400",
-          marginTop: "0px",
-          paddingBottom: "0px",
-          marginBottom: "0px",
-        }}
-      >
-        Welcome back!
-      </Heading>
-      <Paragraph
-        style={{ paddingTop: "0px", marginTop: "5px", fontSize: "17px" }}
-        textAlign="center"
-        color="#ACACAC"
-      >
-        We are so excited to see you again!
-      </Paragraph>
-      <Paragraph textAlign="center" size="small" color="#D85555">
-        {errors && errors.message}
-      </Paragraph>
-      <FormField label="Email" htmlFor="email">
-        <StyledTextInput
-          placeholder="you@email.com"
-          name="email"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="email" />
-      </FormField>
-      <FormField label="Password" htmlFor="password">
-        <StyledTextInput
-          placeholder="****"
-          name="password"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="password" />
-      </FormField>
-
-      <NavLink to="/forgot-password">Forgot your password?</NavLink>
-
-      <Box>
-        <ButtonWithLoader
-          icon={<Mail />}
-          margin={{ top: "medium", bottom: "small" }}
-          disabled={isSubmitting}
-          type="submit"
-          primary
-          label={"Login with email"}
-        />
-      </Box>
-      {socialAuthEnabled() && (
-        <Fragment>
-          <Paragraph
-            style={{
-              borderTop: "1px solid #CACACA",
-              marginTop: "14px",
-              paddingTop: "0px",
-            }}
-            size="small"
-            textAlign="center"
-            alignSelf="center"
-            alignContent="center"
-          >
-            or
-          </Paragraph>
-          <SocialButtons />
-        </Fragment>
-      )}
-      <Paragraph
-        style={{
-          borderTop: "1px solid #CACACA",
-          marginTop: "14px",
-          paddingTop: "10px",
-        }}
-        size="small"
-        textAlign="center"
+const Form = ({
+  handleSubmit,
+  handleChange,
+  isSubmitting,
+  errors,
+  isMobile,
+}) => {
+  const style = isMobile ? { height: "fit-content", padding: "20px 10px" } : {};
+  return (
+    <Box flex={true} direction="column" style={style}>
+      <AuthStyledRedirectLink
+        text="Don't have an account?"
+        redirectLink="/signup"
+        redirectLabel="Sign up"
+      />
+      <Box
+        flex={true}
+        direction="row"
         alignSelf="center"
-        alignContent="center"
+        justify="center"
+        align="center"
       >
-        Don&apos;t have an account? <NavLink to="/signup">Sign up</NavLink>
-      </Paragraph>
-    </form>
-  </Box>
-);
+        <AuthFormWrapper isMobile={isMobile}>
+          <form onSubmit={handleSubmit}>
+            <AuthStyledHeader isMobile={isMobile}>
+              Welcome back !
+            </AuthStyledHeader>
+            <Paragraph
+              margin={{ top: "10px", right: "0" }}
+              color="#000"
+              style={{
+                fontSize: "23px",
+                lineHeight: "38px",
+                fontFamily: "Poppins Medium",
+              }}
+            >
+              We are so excited to see you again !
+            </Paragraph>
+            <AuthFormSubmittedError>
+              {errors && errors.message}
+            </AuthFormSubmittedError>
+            <FormField
+              htmlFor="email"
+              label={<AuthStyledTextLabel>Email</AuthStyledTextLabel>}
+            >
+              <AuthStyledTextInput name="email" onChange={handleChange} />
+              <AuthFormFieldError name="email" />
+            </FormField>
+            <FormField
+              htmlFor="password"
+              label={<AuthStyledTextLabel>Password</AuthStyledTextLabel>}
+            >
+              <AuthStyledTextInput
+                name="password"
+                type="password"
+                onChange={handleChange}
+              />
+              <AuthFormFieldError name="password" />
+            </FormField>
+            <NavLink
+              style={{
+                color: "#000",
+                fontSize: "13px",
+                fontFamily: "Poppins Medium",
+              }}
+              to="/forgot-password"
+            >
+              Forgot your password?
+            </NavLink>
+            <Box>
+              <AuthStyledButton
+                margin={{ top: "medium", bottom: "medium" }}
+                disabled={isSubmitting}
+                type="submit"
+                primary
+                label="Login with email"
+              />
+            </Box>
+            {!socialAuthEnabled() && (
+              <Fragment>
+                <CustomLineBreak text="or" />
+                <SocialButtons />
+              </Fragment>
+            )}
+          </form>
+        </AuthFormWrapper>
+      </Box>
+    </Box>
+  );
+};
 
 Form.propTypes = FormPropTypes;
 
@@ -125,7 +118,7 @@ const loginValidation = object().shape({
   password: string().required("Please enter your password"),
 });
 
-const LoginForm = (props) => {
+const LoginForm = ({ isMobile, fetchUser }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
@@ -139,7 +132,7 @@ const LoginForm = (props) => {
 
         setSubmitting(false);
 
-        props.fetchUser();
+        fetchUser();
       } catch (error) {
         setSubmitting(false);
         setErrors(error.response.data);
@@ -155,13 +148,11 @@ const LoginForm = (props) => {
       onSubmit={handleSubmit}
       validationSchema={loginValidation}
     >
-      {(props) => <Form {...props} />}
+      {(props) => <Form isMobile={isMobile} {...props} />}
     </Formik>
   );
 };
 
-LoginForm.propTypes = {
-  fetchUser: PropTypes.func.isRequired,
-};
+LoginForm.propTypes = AuthFormPropTypes;
 
 export default LoginForm;

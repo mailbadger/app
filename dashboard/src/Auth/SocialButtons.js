@@ -1,53 +1,42 @@
-import React from "react";
-import styled from "styled-components";
-import { Button, Box } from "grommet";
-import { Facebook, Google, Github } from "grommet-icons";
+import React from 'react';
+import styled from 'styled-components';
+import { Button, Box } from 'grommet';
+import { Twitter, Google, Github } from 'grommet-icons';
 
 const SocialButton = styled(Button)`
-  border: 1px solid ${props => props.color};
-  background: ${props => props.color};
+  width: 140px;
+  height: 44px;
+  border-radius: 20px;
+  text-align:center;
+  margin-right:15px;
+  margin-top:24px;
+  border: 1px solid ${(props) => props.color};
+  background: ${(props) => props.color};
   :hover {
-    box-shadow: ${props => props.color};
+    box-shadow: ${(props) => props.color};
   }
   :focus {
-    box-shadow: ${props => props.color};
+    box-shadow: ${(props) => props.color};
   }
   color: white;
   ${this} svg {
     fill: white;
     stroke: white;
   }
+  :last-of-type {
+    margin-right:0;
+  }
+  svg {
+    margin-top: -2px;
+  }
 `;
 
 const SocialButtons = () => (
-  <Box direction="column">
-    <SocialButton
-      color="#4267B2"
-      type="button"
-      href="/api/auth/facebook"
-      icon={<Facebook />}
-      primary
-      label=" Continue with facebook"
-    />
-    <SocialButton
-      margin={{ top: "small" }}
-      color="#4285F4"
-      type="button"
-      href="/api/auth/google"
-      icon={<Google />}
-      primary
-      label=" Continue with google"
-    />
-    <SocialButton
-      margin={{ top: "small" }}
-      color="#333333"
-      type="button"
-      href="/api/auth/github"
-      icon={<Github />}
-      primary
-      label=" Continue with github"
-    />
-  </Box>
+	<Box direction="row">
+		<SocialButton color="#4285F4" type="button" href="/api/auth/google" icon={<Google />} primary />
+		<SocialButton color="#541388" type="button" href="/api/auth/github" icon={<Github />} primary />
+		<SocialButton color="#000" type="button" href="/api/auth/github" icon={<Twitter />} primary />
+	</Box>
 );
 
 export default SocialButtons;
