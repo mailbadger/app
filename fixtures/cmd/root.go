@@ -81,9 +81,8 @@ func init() {
 
 // initConfig reads configuration file
 func initConfig() {
-	viper.AddConfigPath("./fixtures")
+	viper.SetConfigFile(".env.local")
 	viper.SetConfigType("env")
-	viper.SetConfigName("app")
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err != nil {
