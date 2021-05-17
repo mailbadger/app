@@ -5,14 +5,12 @@ import (
 	"os"
 
 	awss3 "github.com/aws/aws-sdk-go/service/s3"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/utils"
 )
 
 const version = "v1.0.0"
@@ -64,8 +62,8 @@ func init() {
 
 	// Connecting to database
 	driver := viper.GetString("DATABASE_DRIVER")
-	conf := makeConfigFromEnv(driver)
-	db = storage.From(openDbConn(driver, conf))
+	conf := storage.MakeConfigFromEnv(driver)
+	db = storage.New(driver, conf)
 
 	// Creating s3 client
 	s3Client, err = s3.NewS3Client(
@@ -89,39 +87,4 @@ func initConfig() {
 		fmt.Printf("[ERROR %s] failed to read config file", err.Error())
 		os.Exit(1)
 	}
-}
-
-// makeConfigFromEnv creates configuration string for db connection
-func makeConfigFromEnv(driver string) string {
-	switch driver {
-	case "sqlite3":
-		return viper.GetString("SQLITE3_FILE")
-	case "mysql":
-		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
-			viper.GetString("MYSQL_USER"),
-			viper.GetString("MYSQL_PASS"),
-			viper.GetString("MYSQL_HOST"),
-			viper.GetString("MYSQL_PORT"),
-			viper.GetString("MYSQL_DATABASE"),
-		)
-	default:
-		return ""
-	}
-}
-
-// openDbConn creates a database connection using the driver and config string
-func openDbConn(driver, config string) *gorm.DB {
-	db, err := gorm.Open(driver, config)
-	if err != nil {
-		fmt.Printf("[ERROR %s] failed to open db connection", err.Error())
-		os.Exit(1)
-	}
-
-	if driver == "mysql" {
-		db.DB().SetMaxIdleConns(0)
-	}
-
-	db.LogMode(utils.IsDebugMode())
-
-	return db
 }
