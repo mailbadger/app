@@ -51,14 +51,14 @@ const Dashboard = () => {
 
   return (
     <Grid
-        fill
-        rows={['auto']}
-        columns={['auto', 'flex']}
-        areas={[
-          { name: 'sidebar', start: [0, 0], end: [0, 0] },
-          { name: 'main', start: [1, 0], end: [1, 0] },
-        ]}
-      >
+      fill
+      rows={["auto"]}
+      columns={["84px", "flex"]}
+      areas={[
+        { name: "sidebar", start: [0, 0], end: [0, 0] },
+        { name: "main", start: [1, 0], end: [1, 0] },
+      ]}
+    >
       <Sidebar
         gridArea="sidebar"
         showSidebar={showSidebar}

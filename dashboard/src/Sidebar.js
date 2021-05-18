@@ -1,42 +1,48 @@
 import React, { Fragment, useState } from "react";
 import PropTypes from "prop-types";
-import {
-  FormClose,
-  Configure,
-  Group,
-  List,
-  Send,
-  Template,
-} from "grommet-icons";
+import { FormClose } from "grommet-icons";
 import { useLocation } from "react-router-dom";
 import { Box, Button, Layer } from "grommet";
-import { AnchorLink, GradientBadger, UserMenu } from "./ui";
+import { UserMenu } from "./ui";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUsers,
+  faSitemap,
+  faBullhorn,
+  faCopy,
+  faTools,
+} from "@fortawesome/free-solid-svg-icons";
+import logo from "./images/logo-small.png";
+import {
+  StyledMenuItemContainer,
+  StyledAnchorLink,
+} from "./ui/Sidebar/StyledSections";
 
 const links = [
   {
     to: "/dashboard/subscribers",
     label: "Subscribers",
-    icon: <Group size="medium" />,
+    icon: <FontAwesomeIcon icon={faUsers} />,
   },
   {
     to: "/dashboard/segments",
     label: "Segments",
-    icon: <List size="medium" />,
+    icon: <FontAwesomeIcon icon={faSitemap} />,
   },
   {
     to: "/dashboard/campaigns",
     label: "Campaigns",
-    icon: <Send size="medium" />,
+    icon: <FontAwesomeIcon icon={faBullhorn} />,
   },
   {
     to: "/dashboard/templates",
     label: "Templates",
-    icon: <Template size="medium" />,
+    icon: <FontAwesomeIcon icon={faCopy} />,
   },
   {
     to: "/dashboard/settings",
     label: "Settings",
-    icon: <Configure size="medium" />,
+    icon: <FontAwesomeIcon icon={faTools} />,
   },
 ];
 
@@ -46,19 +52,26 @@ const NavLinks = () => {
 
   return (
     <Fragment>
-        {links.map((link) => (
-          <Box pad="xsmall" direction="row" key={link.label}>
-            <AnchorLink
-              to={link.to}
-              size="medium"
-              icon={link.icon}
-              active={
-                active === link.label || location.pathname.startsWith(link.to)
-              }
-              onClick={() => setActive(link.label)}
-            />
-          </Box>
-        ))}
+      {links.map((link) => {
+        const isActive =
+          active === link.label || location.pathname.startsWith(link.to);
+
+        return (
+          <StyledMenuItemContainer active={isActive} key={link.label}>
+            <Box direction="row">
+              <StyledAnchorLink
+                to={link.to}
+                size="medium"
+                icon={link.icon}
+                active={isActive}
+                onClick={() => setActive(link.label)}
+                fromSidebar={true}
+                label={link.label}
+              />
+            </Box>
+          </StyledMenuItemContainer>
+        );
+      })}
     </Fragment>
   );
 };
@@ -69,21 +82,28 @@ const Sidebar = (props) => {
   return (
     <Fragment>
       {!showSidebar || size !== "small" ? (
-          <Box
-            overflow="auto"
-            background="brand"
-          >
-            <Box align="center" pad={{ vertical: 'small' }}>
-              <GradientBadger />
-            </Box>
-            <Box align="center" gap={size === 'small' ? 'medium' : 'small'}>
-              <NavLinks />
-            </Box>
-            <Box flex />
-            <Box pad={{ vertical: 'small' }}>
-              <UserMenu alignSelf="center" />
+        <Box
+          overflow="auto"
+          background="white"
+          style={{
+            boxShadow: "0 3px 6px 0 #fadcff",
+            margin: "0 0 1px",
+            padding: "20px 0 24px",
+          }}
+        >
+          <Box align="center" margin={{ bottom: "15px" }}>
+            <Box height="80px">
+              <img style={{ height: "100%" }} src={logo} />
             </Box>
           </Box>
+          <Box align="center" gap={size === "small" ? "medium" : "small"}>
+            <NavLinks />
+          </Box>
+          <Box flex />
+          <Box>
+            <UserMenu alignSelf="center" />
+          </Box>
+        </Box>
       ) : (
         <Layer>
           <Box
