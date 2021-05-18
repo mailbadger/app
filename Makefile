@@ -42,4 +42,4 @@ run_sender:
 	./scripts/run-sender.sh
 
 install_fixtures:
-	go install ./fixtures
+	./scripts/install-fixtures.sh
