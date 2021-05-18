@@ -1,0 +1,50 @@
+openapi: "3.0.3"
+info:
+  title: Mailbadger API
+  version: "1.0"
+servers:
+  - url: https://app.mailbadger.io/api
+paths:
+  /templates:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+      responses:
+        "200":
+          description: OK
+security:
+  - api_key: []
+components:
+  parameters:
+    perPage:
+      name: per_page
+      in: query
+      description: Number of objects to be returned, per page.
+      schema:
+        type: integer
+        format: int64
+        maximum: 100
+        default: 15
+    endingBefore:
+      name: ending_before
+      in: query
+      description: |
+        `ending_before` is the ID of the object that should be included in order to fetch the 
+        previous page of the list, which ends before this object's place in the collection.
+      schema:
+        type: string
+    startingAfter:
+      name: starting_after
+      in: query
+      description: |
+        `starting_after` is the ID of the object that should be included in order to fetch the 
+        next page of the list, which begins after this object's place in the collection.
+      schema:
+        type: string
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: X-API-Key
+      in: header
