@@ -4,9 +4,25 @@ info:
   version: "1.0"
 servers:
   - url: https://app.mailbadger.io/api
+tags:
+  - name: templates
+    description: Template operations
+  - name: campaigns
+    description: Campaign operations
+  - name: subscribers
+    description: Subscriber operations
+  - name: groups
+    description: Subscriber groups operations
 paths:
   /templates:
     get:
+      tags:
+        - templates
+      operationId: getTemplates
+      summary: List templates
+      description: |
+        Returns a list of templates in a paginated manner. Each object in the `collection` represents a Template.
+        This endpoint should always return a result even if there are zero templates in the collection.
       parameters:
         - $ref: "#/components/parameters/perPage"
         - $ref: "#/components/parameters/endingBefore"
@@ -14,6 +30,30 @@ paths:
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BaseTemplate"
+                        example:
+                          - id: 111
+                            user_id: 444
+                            name: HelloWorld
+                            subject_part: Hello World!
+                            created_at: "2021-05-19T20:48:50.378Z"
+                            updated_at: "2021-05-19T20:48:50.378Z"
+                          - id: 222
+                            user_id: 444
+                            name: Welcome
+                            subject_part: Welcome to Mailbadger {{name}}!
+                            created_at: "2021-05-19T20:48:50.378Z"
+                            updated_at: "2021-05-19T20:48:50.378Z"
 security:
   - api_key: []
 components:
@@ -43,6 +83,65 @@ components:
         next page of the list, which begins after this object's place in the collection.
       schema:
         type: string
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        per_page:
+          description: Number of objects that are present in the collection.
+          type: integer
+          format: int64
+          example: 15
+        total:
+          description: Total number of objects.
+          type: integer
+          format: int64
+          example: 100
+        links:
+          type: object
+          properties:
+            previous:
+              description: Link to the previous set of results.
+              type: string
+              nullable: true
+            next:
+              description: Link to the next set of results.
+              type: string
+              nullable: true
+    BaseTemplate:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            user_id:
+              description: The ID of the owner of the template.
+              type: integer
+              format: int64
+              example: 123
+            name:
+              description: The name of the template.
+              type: string
+              example: Welcome
+            subject_part:
+              description: The subject part.
+              type: string
+              example: Welcome to Mailbadger {{name}}!
+    BaseModel:
+      type: object
+      properties:
+        id:
+          description: The ID of the resource.
+          type: integer
+          format: int64
+          example: 111
+        created_at:
+          description: The date and time when the resource was created.
+          type: string
+          format: date-time
+        updated_at:
+          description: The date and time when the resource was last updated.
+          type: string
+          format: date-time
   securitySchemes:
     api_key:
       type: apiKey
