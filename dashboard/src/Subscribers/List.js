@@ -1,34 +1,44 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useRef,
+  Fragment,
+} from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
+import { More } from "grommet-icons";
 import {
-  More,
-  Add,
-  UserAdd,
-  Download,
-  SubtractCircle,
-  FormPreviousLink,
-  FormNextLink,
-} from "grommet-icons";
-import {
-  TableHeader,
   TableBody,
   TableRow,
   TableCell,
   Box,
-  Button,
   Heading,
+  ResponsiveContext,
   Select,
 } from "grommet";
 
 import history from "../history";
 import { useApi, useInterval } from "../hooks";
 import { mainInstance as axios } from "../axios";
-import { StyledTable, PlaceholderTable, Modal, SecondaryButton } from "../ui";
+import { StyledTable, Modal } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 import CreateSubscriber from "./Create";
 import DeleteSubscriber from "./Delete";
 import EditSubscriber from "./Edit";
+import { DashboardDataTable, getColumnSize } from "../ui/DashboardDataTable";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import {
+  StyledHeaderWrapper,
+  StyledHeaderButtons,
+  StyledHeaderTitle,
+  StyledHeaderButton,
+  StyledImportButton,
+  StyledActions,
+} from "./StyledSections";
+import { StyledTableHeader } from "../ui/DashboardStyledTable";
+import DashboardPlaceholderTable from "../ui/DashboardPlaceholderTable";
 
 export const Row = ({ subscriber, actions }) => {
   const ca = parseISO(subscriber.created_at);
@@ -61,25 +71,31 @@ Row.propTypes = {
   actions: PropTypes.element,
 };
 
-export const Header = () => (
-  <TableHeader>
+export const Header = ({ size }) => (
+  <StyledTableHeader>
     <TableRow>
-      <TableCell scope="col" border="bottom" size="medium">
+      <TableCell scope="col" border="bottom" size={getColumnSize(size)}>
         <strong>Email</strong>
       </TableCell>
-      <TableCell scope="col" border="bottom" size="medium">
+      <TableCell scope="col" border="bottom" size="small">
         <strong>Created At</strong>
       </TableCell>
       <TableCell scope="col" border="bottom" size="small">
         <strong>Updated At</strong>
       </TableCell>
-      <TableCell align="end" scope="col" border="bottom" size="small">
-        <strong>Action</strong>
+      <TableCell scope="col" border="bottom" size="128px">
+        <strong> {""}</strong>
+      </TableCell>
+      <TableCell align="center" scope="col" border="bottom" size="small">
+        <strong>Actions</strong>
       </TableCell>
     </TableRow>
-  </TableHeader>
+  </StyledTableHeader>
 );
 
+Header.propTypes = {
+  size: PropTypes.string,
+};
 export const SubscriberTable = React.memo(({ list, actions }) => (
   <StyledTable>
     <Header />
@@ -97,51 +113,25 @@ SubscriberTable.propTypes = {
   actions: PropTypes.func,
 };
 
-// eslint-disable-next-line react/display-name
-const rowActions = (setShowEdit, setShowDelete) => (subscriber) => {
-  return (
-    <Select
-      alignSelf="center"
-      plain
-      icon={<More />}
-      options={["Edit", "Delete"]}
-      onChange={({ option }) => {
-        (function () {
-          switch (option) {
-            case "Edit":
-              setShowEdit({
-                show: true,
-                id: subscriber.id,
-              });
-              break;
-            case "Delete":
-              setShowDelete({
-                show: true,
-                email: subscriber.email,
-                id: subscriber.id,
-              });
-              break;
-            default:
-              return null;
-          }
-        })();
-      } } />
-  );
-};
-
 const ExportSubscribers = () => {
   const linkEl = useRef(null);
   const { createNotification } = useContext(NotificationsContext);
   const [notification, setNotification] = useState();
   const [filename, setFilename] = useState("");
   const [retries, setRetries] = useState(-1);
-  const [state, callApi] = useApi({
-    url: `/api/subscribers/export`,
-  }, null, true);
+  const [state, callApi] = useApi(
+    {
+      url: `/api/subscribers/export`,
+    },
+    null,
+    true
+  );
 
   useInterval(
     async () => {
-      await callApi({ url: `/api/subscribers/export/download?filename=${filename}` });
+      await callApi({
+        url: `/api/subscribers/export/download?filename=${filename}`,
+      });
       setRetries(retries - 1);
     },
     retries > 0 ? 1000 : null
@@ -157,60 +147,122 @@ const ExportSubscribers = () => {
     if (!state.isLoading && state.isError && state.data) {
       if (state.data.status === "failed" && retries > 0 && retries < 50) {
         setRetries(-1);
-        setNotification({message: state.data.message, status: "status-error"});
+        setNotification({
+          message: state.data.message,
+          status: "status-error",
+        });
       }
     }
-  
+
     if (!state.isLoading && !state.isError && state.data) {
       if (retries > 0) {
         setRetries(-1);
-        linkEl.current.click()
+        linkEl.current.click();
       }
     }
   }, [state]);
-  
 
   return (
-    <>
-    <SecondaryButton
-      disabled={retries > 0 || state.isLoading}
-      onClick={
-        async () => {
+    <Fragment>
+      <StyledHeaderButton
+        width="110"
+        disabled={retries > 0 || state.isLoading}
+        onClick={async () => {
           try {
             const res = await axios.post(`/api/subscribers/export`);
             setFilename(res.data.file_name);
             setRetries(50);
-          } catch(e) {
+          } catch (e) {
             console.error("Unable to generate report", e);
           }
-        }
-        } icon={<Download size="20px" />} label="Export"
-    />
-    {
-      !state.isLoading && !state.isError && state.data && 
-      <a ref={linkEl} href={state.data.url}></a>
-    }
-    </>
-  )
-}
+        }}
+        label="Export"
+      />
+      {!state.isLoading && !state.isError && state.data && (
+        <a ref={linkEl} href={state.data.url} />
+      )}
+    </Fragment>
+  );
+};
 
-const ActionButtons = () => (
-  <>
-    <SecondaryButton
-      margin={{ right: "small" }}
-      icon={<UserAdd size="20px" />}
-      label="Import from file"
-      onClick={() => history.push("/dashboard/subscribers/import")}
-    />
-    <SecondaryButton
-      margin={{ right: "small" }}
-      icon={<SubtractCircle size="20px" />}
-      label="Delete from file"
-      onClick={() => history.push("/dashboard/subscribers/bulk-delete")}
-    />
-    <ExportSubscribers />
-  </>
+const getData = (subscribersData, setShowEdit, setShowDelete) => {
+  const data = [];
+
+  for (let i = 0; i < subscribersData.length; i += 1) {
+    const { email, created_at, updated_at, id } = subscribersData[i];
+
+    const dateCreatedAt = new Date(created_at);
+    const dateUpdatedAt = parseISO(updated_at);
+
+    data.push({
+      email,
+      created: dateCreatedAt.toLocaleDateString("en-US"),
+      updated: formatRelative(dateUpdatedAt, new Date()),
+      tags: "Subscribers",
+      actions: (
+        <StyledActions>
+          <Select
+            alignSelf="center"
+            plain
+            defaultValue="View"
+            icon={<More />}
+            options={["View", "Edit", "Delete"]}
+            onChange={({ option }) => {
+              (function () {
+                switch (option) {
+                  case "Edit":
+                    setShowEdit({
+                      show: true,
+                      id,
+                    });
+                    break;
+                  case "View":
+                    break;
+                  case "Delete":
+                    setShowDelete({
+                      show: true,
+                      email,
+                      id,
+                    });
+                    break;
+                  default:
+                    return "null";
+                }
+              })();
+            }}
+          >
+            {renderOption}
+          </Select>
+        </StyledActions>
+      ),
+    });
+  }
+
+  return data;
+};
+
+const renderOption = (option, index, options, state) => (
+  <Box pad="small" style={{ display: state.selected ? "none" : "block" }}>
+    {option}
+  </Box>
 );
+
+const search = (setFilteredData, searchInput, data) => {
+  let filteredData = [];
+  if (searchInput !== "") {
+    filteredData = data.filter((entry) => {
+      const foundMatch = Object.values(entry).some((entryValue) =>
+        entryValue.toString().toLowerCase().includes(searchInput.toLowerCase())
+      );
+
+      if (foundMatch) {
+        return entry;
+      }
+    });
+  }
+
+  setFilteredData(filteredData);
+};
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({
@@ -220,9 +272,21 @@ const List = () => {
   });
   const [showEdit, setShowEdit] = useState({ show: false, id: "" });
   const [showCreate, openCreateModal] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+
   const hideDeleteModal = () =>
     setShowDelete({ show: false, email: "", id: "" });
   const hideEditModal = () => setShowEdit({ show: false, id: "" });
+
+  const contextSize = useContext(ResponsiveContext);
+  const columns = [
+    { property: "email", header: "Email", size: getColumnSize(contextSize) },
+    { property: "created", header: "Created At", size: "small" },
+    { property: "updated", header: "Updated At", size: "small" },
+    { property: "tags", header: "", size: "128px", align: "center" },
+    { property: "actions", header: "Actions", size: "small", align: "center" },
+  ];
 
   const [state, callApi] = useApi(
     {
@@ -234,21 +298,61 @@ const List = () => {
     }
   );
 
+  const onClickPrev = () => {
+    callApi({
+      url: state.data.links.previous,
+    });
+  };
+
+  const onClickNext = () => {
+    callApi({
+      url: state.data.links.next,
+    });
+  };
+
+  const dataFromApi = getData(
+    state.data.collection,
+    setShowEdit,
+    setShowDelete
+  );
+
+  const handleChange = (e) => {
+    setSearchInput(e.target.value);
+  };
+
+  useEffect(() => {
+    search(setFilteredData, searchInput, dataFromApi);
+  }, [searchInput]);
+
   let table = null;
+  const data = filteredData && filteredData.length ? filteredData : dataFromApi;
+
   if (state.isLoading) {
-    table = <PlaceholderTable header={Header} numCols={3} numRows={10} />;
-  } else if (state.data.collection.length > 0) {
     table = (
-      <SubscriberTable
+      <DashboardPlaceholderTable
+        columns={columns}
+        numCols={columns.length}
+        numRows={10}
+      />
+    );
+  } else if (data.length > 0) {
+    table = (
+      <DashboardDataTable
+        columns={columns}
+        data={data}
         isLoading={state.isLoading}
-        list={state.data.collection}
-        actions={rowActions(setShowEdit, setShowDelete)}
+        onClickNext={onClickNext}
+        onClickPrev={onClickPrev}
+        prevLinks={state.data.links.previous}
+        nextLinks={state.data.links.next}
+        searchInput={searchInput}
+        handleChange={handleChange}
       />
     );
   }
 
   return (
-    <>
+    <Fragment>
       {showDelete.show && (
         <Modal
           title={`Delete subscriber ${showDelete.email} ?`}
@@ -287,65 +391,48 @@ const List = () => {
           }
         />
       )}
-      <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
-        <Box alignSelf="center" margin={{ right: "small" }}>
-          <Heading level="2">Subscribers</Heading>
-        </Box>
-        <Box alignSelf="center">
-          <Button
-            primary
-            color="status-ok"
-            label="Create new"
-            icon={<Add />}
-            reverse
-            onClick={() => openCreateModal(true)}
-          />
-        </Box>
-        <Box margin={{ left: "auto" }} alignSelf="center" direction="row">
-          <ActionButtons />
-        </Box>
-      </Box>
+      <StyledHeaderWrapper
+        size={contextSize}
+        gridArea="nav"
+        margin={{ left: "40px", right: "100px", bottom: "22px", top: "40px" }}
+      >
+        <StyledHeaderTitle size={contextSize}>Subscribers</StyledHeaderTitle>
+        <StyledHeaderButtons size={contextSize} margin={{ left: "auto" }}>
+          <Fragment>
+            <StyledImportButton
+              width="256"
+              margin={{ right: "small" }}
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              label="Import from file"
+              onClick={() => history.push("/dashboard/subscribers/import")}
+            />
+            <StyledHeaderButton
+              width="154"
+              margin={{ right: "small" }}
+              label="Create New"
+              onClick={() => openCreateModal(true)}
+            />
+            <StyledHeaderButton
+              width="184"
+              margin={{ right: "small" }}
+              label="Delete from file"
+              onClick={() => history.push("/dashboard/subscribers/bulk-delete")}
+            />
+            <ExportSubscribers />
+          </Fragment>
+        </StyledHeaderButtons>
+      </StyledHeaderWrapper>
       <Box gridArea="main">
         <Box animation="fadeIn">
           {table}
-
-          {!state.isLoading && state.data.collection.length === 0 ? (
+          {!state.isLoading && data.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
               <Heading level="2">Create your first subscriber.</Heading>
             </Box>
           ) : null}
         </Box>
-        {!state.isLoading && state.data.collection.length > 0 ? (
-          <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-            <Box margin={{ right: "small" }}>
-              <Button
-                icon={<FormPreviousLink />}
-                label="Previous"
-                disabled={state.data.links.previous === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.previous,
-                  });
-                }}
-              />
-            </Box>
-            <Box>
-              <Button
-                icon={<FormNextLink />}
-                reverse
-                label="Next"
-                disabled={state.data.links.next === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.next,
-                  });
-                }}
-              />
-            </Box>
-          </Box>
-        ) : null}
       </Box>
-    </>
+    </Fragment>
   );
 };
 
