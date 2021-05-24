@@ -85,11 +85,9 @@ const Sidebar = (props) => {
         <Box
           overflow="auto"
           background="white"
-          style={{
-            boxShadow: "0 3px 6px 0 #fadcff",
-            margin: "0 0 1px",
-            padding: "20px 0 24px",
-          }}
+          margin={{ top: "0", bottom: "1px", horizontal: "0" }}
+          pad={{ top: "20px", bottom: "24px", horizontal: "0" }}
+          style={{ boxShadow: "0 3px 6px 0 #fadcff" }}
         >
           <Box align="center" margin={{ bottom: "15px" }}>
             <Box height="80px">

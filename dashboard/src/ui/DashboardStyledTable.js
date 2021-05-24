@@ -4,13 +4,10 @@ import { tableHeading } from "./DashboardDataTable";
 
 const StyledTable = styled(Table)`
   background: white;
-  border-radius: 12px;
 
   ${this} tbody {
-    th,
-    td {
-      padding-top: 17px;
-      padding-bottom: 17px;
+    tr {
+      height: 52px;
     }
 
     tr:hover,

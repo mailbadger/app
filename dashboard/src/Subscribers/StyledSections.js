@@ -77,6 +77,12 @@ export const StyledActions = styled(Box)`
   justify-content: center;
 
   button {
+    div {
+      div:nth-child(1) {
+        display: none;
+      }
+    }
+
     svg {
       &:hover,
       &:focus {

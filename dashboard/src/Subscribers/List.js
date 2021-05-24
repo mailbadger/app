@@ -208,7 +208,7 @@ const getData = (subscribersData, setShowEdit, setShowDelete) => {
             icon={<More />}
             options={["View", "Edit", "Delete"]}
             onChange={({ option }) => {
-              (function () {
+              (() => {
                 switch (option) {
                   case "Edit":
                     setShowEdit({
@@ -217,6 +217,7 @@ const getData = (subscribersData, setShowEdit, setShowDelete) => {
                     });
                     break;
                   case "View":
+                    history.push(`/dashboard/segments/${id}`);
                     break;
                   case "Delete":
                     setShowDelete({
@@ -230,9 +231,7 @@ const getData = (subscribersData, setShowEdit, setShowDelete) => {
                 }
               })();
             }}
-          >
-            {renderOption}
-          </Select>
+          />
         </StyledActions>
       ),
     });
@@ -240,12 +239,6 @@ const getData = (subscribersData, setShowEdit, setShowDelete) => {
 
   return data;
 };
-
-const renderOption = (option, index, options, state) => (
-  <Box pad="small" style={{ display: state.selected ? "none" : "block" }}>
-    {option}
-  </Box>
-);
 
 const search = (setFilteredData, searchInput, data) => {
   let filteredData = [];

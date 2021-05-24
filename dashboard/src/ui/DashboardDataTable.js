@@ -9,6 +9,12 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 
+const StyledWrapper = styled(Box)`
+  min-height: auto;
+  position: relative;
+  border-radius: 12px 12px 0px 0px;
+`;
+
 export const tableHeading = css`
   height: 50px;
   margin: 10px 0 0;
@@ -25,27 +31,33 @@ const StyledSearchIcon = styled(FontAwesomeIcon)`
 }
 `;
 const StyledInput = styled.input`
-	${tableHeading};
-	border: none;
-	padding-left: 65px;
-	outline: none;
-	font-size: 17px;
-	font-family: 'Poppins Bold';
-	
-	&::placeholder {
-		font-size: 13px;
-		line-height: 1.38;
-		color: #737d8b;
-		foo
-	}
+  ${tableHeading};
+  border: none;
+  padding-left: 65px;
+  outline: none;
+  font-size: 17px;
+  font-family: "Poppins Bold";
+
+  &::-webkit-input-placeholder,
+  &::-moz-placeholder,
+  &:-ms-input-placeholder,
+  &:-moz-placeholder {
+    font-size: 13px;
+    line-height: 1.38;
+    color: #737d8b;
+  }
 `;
 
 const StyledDataTable = styled(DataTable)`
 	background:white;
 	padding: 10px 0 0;
 	display: table;
-	overflow: auto;
-	
+  overflow: auto;
+  
+  @media (width: 1440px) {
+    width: auto;
+   }
+
 	${this} thead {
 		tr {
 		width: 100%;
@@ -64,9 +76,8 @@ const StyledDataTable = styled(DataTable)`
 
 	${this} tbody {
 		th, td {
-			padding-top:17px;
-			padding-bottom:17px;
-			cursor: pointer;
+			padding-top: 2px;
+			padding-bottom: 1px;
 		}
 
 		tr {
@@ -151,6 +162,12 @@ const StyledButton = styled(Button)`
   }
 `;
 
+export const DashboardWrapper = styled(Box)`
+  padding: ${(props) =>
+    props.contextSize === "large" ? "0 100px 15px" : "20px"};
+  display: table;
+`;
+
 export const getColumnSize = (size) => (size === "large" ? "medium" : "small");
 
 export const DashboardSearchPlaceholder = ({
@@ -160,15 +177,10 @@ export const DashboardSearchPlaceholder = ({
 }) => {
   const onChange = handleChange ? handleChange : () => {};
   return (
-    <Box
-      background=" white"
-      fill
-      pad={pad ? pad : {}}
-      style={{ minHeight: "auto", position: "relative" }}
-    >
+    <StyledWrapper background=" white" fill pad={pad ? pad : {}}>
       <Box
         background="white"
-        style={{ borderRadius: "12px 12px 0px 0px" }}
+        style={{ borderRadius: "12px 12px 0px 0px", position: "relative" }}
         pad={{ top: "30px" }}
       >
         <StyledInput
@@ -180,7 +192,7 @@ export const DashboardSearchPlaceholder = ({
         />
         <StyledSearchIcon icon={faSearch} />
       </Box>
-    </Box>
+    </StyledWrapper>
   );
 };
 
@@ -204,19 +216,13 @@ export const DashboardDataTable = ({
   const size = useContext(ResponsiveContext);
 
   return (
-    <Box
-      fill="horizontal"
-      style={{
-        padding: size === "large" ? "0 100px 15px" : "20px",
-        display: size === "large" ? "flex" : "table",
-        overflow: "auto",
-      }}
-    >
+    <DashboardWrapper fill="horizontal" contextSize={size} overflow="auto">
       <DashboardSearchPlaceholder
         searchInput={searchInput}
         handleChange={handleChange}
       />
       <StyledDataTable
+        contextSize={size}
         rowProps={{ email: { pad: "large" } }}
         columns={columns}
         data={data}
@@ -232,10 +238,7 @@ export const DashboardDataTable = ({
           }}
         >
           <Box direction="row" alignSelf="end">
-            <Box
-              margin={{ right: "small" }}
-              style={{ justifyContent: "center" }}
-            >
+            <Box margin={{ right: "small" }} justify="center">
               <StyledButton
                 icon={
                   <StyledLinkIcon>
@@ -247,12 +250,7 @@ export const DashboardDataTable = ({
                 onClick={onClickPrev}
               />
             </Box>
-            <Box
-              style={{
-                justifyContent: "center",
-                marginRight: "0",
-              }}
-            >
+            <Box justify="center" margin={{ right: "0" }}>
               <StyledButton
                 icon={
                   <StyledLinkIcon>
@@ -268,7 +266,7 @@ export const DashboardDataTable = ({
           </Box>
         </Box>
       ) : null}
-    </Box>
+    </DashboardWrapper>
   );
 };
 

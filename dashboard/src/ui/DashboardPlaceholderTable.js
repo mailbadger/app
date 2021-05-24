@@ -1,15 +1,12 @@
 import React, { useContext } from "react";
 import PropTypes from "prop-types";
-import {
-  TableBody,
-  Box,
-  ResponsiveContext,
-  TableRow,
-  TableCell,
-} from "grommet";
+import { TableBody, ResponsiveContext, TableRow, TableCell } from "grommet";
 import StyledTable, { StyledTableHeader } from "./DashboardStyledTable";
 import PlaceholderRow from "./PlaceholderRow";
-import { DashboardSearchPlaceholder } from "./DashboardDataTable";
+import {
+  DashboardSearchPlaceholder,
+  DashboardWrapper,
+} from "./DashboardDataTable";
 
 const DashboardPlaceholderTable = ({ columns, numRows, numCols, ...rest }) => {
   const rows = [];
@@ -19,20 +16,13 @@ const DashboardPlaceholderTable = ({ columns, numRows, numCols, ...rest }) => {
   const size = useContext(ResponsiveContext);
 
   return (
-    <Box
-      fill="horizontal"
-      style={{
-        padding: size === "large" ? "0 100px 15px" : "20px",
-        display: size === "large" ? "flex" : "table",
-        overflow: "auto",
-      }}
-    >
+    <DashboardWrapper fill="horizontal" overflow="auto" contextSize={size}>
       <DashboardSearchPlaceholder pad={{ bottom: "10px" }} searchInput="" />
       <StyledTable {...rest}>
         <PlaceholderHeader columns={columns} />
         <TableBody>{rows}</TableBody>
       </StyledTable>
-    </Box>
+    </DashboardWrapper>
   );
 };
 

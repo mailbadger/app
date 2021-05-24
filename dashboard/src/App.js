@@ -32,7 +32,7 @@ const theme = deepMerge(grommet, {
     },
     breakpoints: {
       small: { value: 768 },
-      medium: { value: 1025 },
+      medium: { value: 1439 },
     },
   },
   tabs: {
