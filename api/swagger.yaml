@@ -27,6 +27,7 @@ paths:
         - $ref: "#/components/parameters/perPage"
         - $ref: "#/components/parameters/endingBefore"
         - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
       responses:
         "200":
           description: OK
@@ -54,6 +55,11 @@ paths:
                             subject_part: Welcome to Mailbadger {{name}}!
                             created_at: "2021-05-19T20:48:50.378Z"
                             updated_at: "2021-05-19T20:48:50.378Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+
 security:
   - api_key: []
 components:
@@ -83,7 +89,40 @@ components:
         next page of the list, which begins after this object's place in the collection.
       schema:
         type: string
+    scopes:
+      name: scopes
+      in: query
+      description: |
+        Scopes can be used to search through and filter a collection of results.
+      schema:
+        type: object
+        additionalProperties:
+          type: string
+      style: deepObject
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Message"
+          example:
+            message: "User not authorized"
+    UnexpectedError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Message"
+          example:
+            message: "Something unexpected happened. Please try again."
   schemas:
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+          description: The error message.
     PaginationMeta:
       type: object
       properties:
