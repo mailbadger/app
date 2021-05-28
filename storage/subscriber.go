@@ -290,3 +290,10 @@ func (db *store) SeekSubscribersByUserID(userID, nextID, limit int64) ([]entitie
 	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(limit).Find(&s).Error
 	return s, err
 }
+
+// GetAllSubscribersForUser fetches all subscribers for a user
+func (db *store) GetAllSubscribersForUser(userID int64) ([]entities.Subscriber, error) {
+	var s []entities.Subscriber
+	err := db.Where("user_id = ?", userID).Find(&s).Error
+	return s, err
+}

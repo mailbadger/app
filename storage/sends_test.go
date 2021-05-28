@@ -60,4 +60,11 @@ func TestSends(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalSends)
 
+	// test delete all sends for user
+	err = store.DeleteAllSendsForUser(1)
+	assert.Nil(t, err)
+
+	totalSends, err = store.GetTotalSends(1, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), totalSends)
 }

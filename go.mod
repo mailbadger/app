@@ -27,6 +27,7 @@ require (
 	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/open-policy-agent/opa v0.28.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
@@ -37,6 +38,8 @@ require (
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.9

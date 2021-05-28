@@ -35,3 +35,8 @@ func (db *store) GetNumberOfReportsForDate(userID int64, time time.Time) (int64,
 	err := db.Model(entities.Report{}).Where("user_id = ? and DATE(created_at) = DATE(?)", userID, time).Count(&count).Error
 	return count, err
 }
+
+// DeleteAllReportsForUser deletes all reports for user
+func (db *store) DeleteAllReportsForUser(userID int64) error {
+	return db.Where("user_id = ?", userID).Delete(&entities.Report{}).Error
+}

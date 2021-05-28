@@ -18,3 +18,9 @@ func (db *store) GetCampaignClicksStats(id, userID int64) ([]entities.ClicksStat
 
 	return clickStats, err
 }
+
+// DeleteAllClicksForUser deletes all clicks for user
+func (db *store) DeleteAllClicksForUser(userID int64) error {
+	return db.Where("user_id = ?", userID).Delete(&entities.Click{}).Error
+}
+

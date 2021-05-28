@@ -75,7 +75,7 @@ func (db *store) DeleteSegment(id, userID int64) error {
 	return db.Delete(&l).Error
 }
 
-// RemoveSubscribersFromSegment clears the segscribers association.
+// RemoveSubscribersFromSegment clears the subscribers association.
 func (db *store) RemoveSubscribersFromSegment(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Clear().Error
 }
@@ -85,7 +85,12 @@ func (db *store) AppendSubscribers(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Append(s.Subscribers).Error
 }
 
-// DetachSubscribers deletes the segscribers association by the given segscribers list.
+// DetachSubscribers deletes the subscribers association by the given subscribers list.
 func (db *store) DetachSubscribers(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Delete(s.Subscribers).Error
+}
+
+// DeleteAllSegmentsForUser deletes all subscribers for user
+func (db *store) DeleteAllSegmentsForUser(userID int64) error {
+	return db.Where("user_id = ?", userID).Delete(&entities.Segment{}).Error
 }

@@ -2,20 +2,21 @@ package storage
 
 import (
 	"github.com/jinzhu/gorm"
+
 	"github.com/mailbadger/app/entities"
 )
 
-//CreateUser creates a new user
+// CreateUser creates a new user
 func (db *store) CreateUser(user *entities.User) error {
 	return db.Create(user).Error
 }
 
-//UpdateUser updates the given user
+// UpdateUser updates the given user
 func (db *store) UpdateUser(user *entities.User) error {
 	return db.Save(user).Error
 }
 
-//GetUser returns an active user by id. If no user is found, an error is returned
+// GetUser returns an active user by id. If no user is found, an error is returned
 func (db *store) GetUser(id int64) (*entities.User, error) {
 	var user = new(entities.User)
 	err := db.
@@ -26,7 +27,7 @@ func (db *store) GetUser(id int64) (*entities.User, error) {
 	return user, err
 }
 
-//GetUserByUUID returns an user by uuid. If no user is found, an error is returned
+// GetUserByUUID returns an user by uuid. If no user is found, an error is returned
 func (db *store) GetUserByUUID(uuid string) (*entities.User, error) {
 	var user = new(entities.User)
 	err := db.
@@ -37,8 +38,8 @@ func (db *store) GetUserByUUID(uuid string) (*entities.User, error) {
 	return user, err
 }
 
-//GetUserByUsername returns a user by username. If no user is found,
-//an error is returned
+// GetUserByUsername returns a user by username. If no user is found,
+// an error is returned
 func (db *store) GetUserByUsername(username string) (*entities.User, error) {
 	var user = new(entities.User)
 	err := db.
@@ -49,8 +50,8 @@ func (db *store) GetUserByUsername(username string) (*entities.User, error) {
 	return user, err
 }
 
-//GetActiveUserByUsername returns an active user by username. If no user is found,
-//an error is returned
+// GetActiveUserByUsername returns an active user by username. If no user is found,
+// an error is returned
 func (db *store) GetActiveUserByUsername(username string) (*entities.User, error) {
 	var user = new(entities.User)
 	err := db.
@@ -59,6 +60,11 @@ func (db *store) GetActiveUserByUsername(username string) (*entities.User, error
 		Where("username = ? and active = ?", username, true).
 		First(user).Error
 	return user, err
+}
+
+// DeleteUser deletes user by id
+func (db *store) DeleteUser(user *entities.User) error {
+	return db.Where("id = ?", user.ID).Delete(user).Error
 }
 
 // BelongsToUser finds a resource by the given user id.
