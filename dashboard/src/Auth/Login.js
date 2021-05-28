@@ -50,8 +50,8 @@ const Form = ({
             <Paragraph
               margin={{ top: "10px", right: "0" }}
               color="#000"
+              fontSize="23px"
               style={{
-                fontSize: "23px",
                 lineHeight: "38px",
                 fontFamily: "Poppins Medium",
               }}

@@ -65,7 +65,12 @@ const Dashboard = () => {
         size={size}
         closeSidebar={() => setSidebar(false)}
       />
-      <Box gridArea="main" overflow="auto" animation="fadeIn">
+      <Box
+        gridArea="main"
+        overflow="auto"
+        animation="fadeIn"
+        background="#f5f5fa"
+      >
         <NotificationsProvider>
           <Routes />
           <Notification />

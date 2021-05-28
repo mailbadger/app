@@ -12,7 +12,7 @@ const PlaceholderRow = ({ columns }) => {
       <TableCell key={i}>
         <ContentLoader
           height={35}
-          width={150}
+          width="100%"
           speed={2}
           backgroundColor="#d9d9d9"
           foregroundColor="#ecebeb"

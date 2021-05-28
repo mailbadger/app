@@ -5,7 +5,6 @@ import ProtectedRoute from "../ProtectedRoute";
 import List, { Row, Header, SubscriberTable } from "./List";
 import Import from "./Import";
 import BulkDelete from "./BulkDelete";
-import { ListGrid } from "../ui";
 
 const Subscribers = () => {
   return (
@@ -13,11 +12,7 @@ const Subscribers = () => {
       <ProtectedRoute
         exact
         path="/dashboard/subscribers"
-        component={() => (
-          <ListGrid>
-            <List />
-          </ListGrid>
-        )}
+        component={() => <List />}
       />
       <ProtectedRoute
         exact
