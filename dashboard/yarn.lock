@@ -2728,14 +2728,14 @@
     qs-stringify "^1.1.0"
     url-parse "^1.4.7"
 
-"@uppy/core@^1.17.0":
-  version "1.17.0"
-  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.17.0.tgz#5b394372ee3431d5a1bf09623522c0dd794dfe7b"
-  integrity sha512-UV84/5yMbplAUCmtOhiJFwtHzmajHr5sqS121MLC4nYfNd0iMRyoXo1E3WHUfxBjOxOwicyNRfxOZ92w3nACUQ==
+"@uppy/core@^1.19.0":
+  version "1.19.0"
+  resolved "https://registry.yarnpkg.com/@uppy/core/-/core-1.19.0.tgz#7258bc307509f9c730f757134ce29d493bfbe910"
+  integrity sha512-LKDMGUG9/dzKR7liXdnzh4yt4C24/M8elcINFFE6MYseCSQJ0I4Rx1n9d6snD/S9xdbuQD2QVJlFmuckBdAwJA==
   dependencies:
     "@transloadit/prettier-bytes" "0.0.7"
     "@uppy/store-default" "^1.2.6"
-    "@uppy/utils" "^3.5.0"
+    "@uppy/utils" "^3.6.0"
     cuid "^2.1.1"
     lodash.throttle "^4.1.1"
     mime-match "^1.0.2"
@@ -2841,10 +2841,10 @@
     exifr "^6.0.0"
     math-log2 "^1.0.1"
 
-"@uppy/utils@^3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.5.0.tgz#0822f68e8a4c7e833a7ca9ddf387adbd3ea0535c"
-  integrity sha512-Hhe8e/ArclSascuRjpwWtiEqAcykh9Qb/tZrA6cw+L4QjoYhxaxnOZOQoPG8LOz+zZS/DgQyF7IjWp+oiHDzag==
+"@uppy/utils@^3.5.0", "@uppy/utils@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@uppy/utils/-/utils-3.6.0.tgz#a09b5046d759679656638b6c70fac843fbedd430"
+  integrity sha512-qC/RsyLrA9+zaVKXVxSup8j/lpMt6Rx9HLSdJBhsODn2mqFJHkgAh3qDnwZ9dN+92TkZsbDQY/AIBC9z6z3kqA==
   dependencies:
     abortcontroller-polyfill "^1.4.0"
     lodash.throttle "^4.1.1"
