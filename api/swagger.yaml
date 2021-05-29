@@ -59,10 +59,176 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         default:
           $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - templates
+      operationId: addTemplate
+      summary: Add a new template
+      description: |
+        Add a new template to be used in the e-mail campaigns. The template's parts (subject, html and text) can
+        contain tags which are used to personalize the campaign's content. The tag names are defined between two curly brackets e.g. `{{name}}`.
+      requestBody:
+        $ref: "#/components/requestBodies/TemplateParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Template name is required and must not be empty.
+                      html_part: Content must be html.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Template could not be created, please try again.
 
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /templates/{id}:
+    get:
+      tags:
+        - templates
+      operationId: getTemplateByID
+      summary: Get template by ID
+      description: Returns a single template object
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - templates
+      operationId: updateTemplate
+      summary: Update an existing template
+      description: Update an existing template
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/TemplateParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Template name is required and must not be empty.
+                      html_part: Content must be html.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Template could not be created, please try again.
+
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
 security:
   - api_key: []
 components:
+  requestBodies:
+    TemplateParams:
+      description: Template parameters for the form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - name
+              - subject_part
+              - html_part
+              - text_part
+            properties:
+              name:
+                type: string
+                example: HelloWorld
+                description: The name of the new template, must be unique.
+                maxLength: 191
+              subject_part:
+                type: string
+                example: Welcome {{name}} to mailbadger.io!
+                description: The subject part
+                maxLength: 191
+              html_part:
+                description: The HTML content used in the e-mail campaign.
+                type: string
+                example: <div>Hello {{name}}, welcome to mailbadger.io</div>
+              text_part:
+                description: The text content used in the e-mail campaign.
+                type: string
+                example: Hello {{name}}, welcome to mailbadger.io
   parameters:
     perPage:
       name: per_page
@@ -99,6 +265,14 @@ components:
         additionalProperties:
           type: string
       style: deepObject
+    id:
+      name: id
+      in: path
+      description: ID of the object to return
+      required: true
+      schema:
+        type: integer
+        format: int64
   responses:
     Unauthorized:
       description: Unauthorized
@@ -123,6 +297,13 @@ components:
         message:
           type: string
           description: The error message.
+    ValidationErrors:
+      allOf:
+        - $ref: "#/components/schemas/Message"
+        - type: object
+          description: Validation errors
+          additionalProperties:
+            type: string
     PaginationMeta:
       type: object
       properties:
@@ -147,6 +328,22 @@ components:
               description: Link to the next set of results.
               type: string
               nullable: true
+    BaseModel:
+      type: object
+      properties:
+        id:
+          description: The ID of the resource.
+          type: integer
+          format: int64
+          example: 111
+        created_at:
+          description: The date and time when the resource was created.
+          type: string
+          format: date-time
+        updated_at:
+          description: The date and time when the resource was last updated.
+          type: string
+          format: date-time
     BaseTemplate:
       allOf:
         - $ref: "#/components/schemas/BaseModel"
@@ -165,22 +362,19 @@ components:
               description: The subject part.
               type: string
               example: Welcome to Mailbadger {{name}}!
-    BaseModel:
-      type: object
-      properties:
-        id:
-          description: The ID of the resource.
-          type: integer
-          format: int64
-          example: 111
-        created_at:
-          description: The date and time when the resource was created.
-          type: string
-          format: date-time
-        updated_at:
-          description: The date and time when the resource was last updated.
-          type: string
-          format: date-time
+    Template:
+      allOf:
+        - $ref: "#/components/schemas/BaseTemplate"
+        - type: object
+          properties:
+            html_part:
+              description: The HTML content used in the e-mail campaign.
+              type: string
+              example: <div>Hello {{name}}, welcome to mailbadger.io</div>
+            text_part:
+              description: The text content used in the e-mail campaign.
+              type: string
+              example: Hello {{name}}, welcome to mailbadger.io
   securitySchemes:
     api_key:
       type: apiKey
