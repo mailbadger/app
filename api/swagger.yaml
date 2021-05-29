@@ -2,6 +2,14 @@ openapi: "3.0.3"
 info:
   title: Mailbadger API
   version: "1.0"
+  contact:
+    name: Mailbadger support team
+    email: support@mailbadger.io
+  description: |
+    The Mailbadger [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) API.
+  license:
+    name: “Commons Clause” License Condition v1.0
+    url: https://github.com/mailbadger/app/blob/master/LICENSE
 servers:
   - url: https://app.mailbadger.io/api
 tags:
@@ -193,6 +201,29 @@ paths:
                 $ref: "#/components/schemas/Message"
               example:
                 message: Template name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - templates
+      operationId: deleteTemplate
+      summary: Delete a template
+      description: Delete a template.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: The template was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
         default:
           $ref: "#/components/responses/UnexpectedError"
 security:
