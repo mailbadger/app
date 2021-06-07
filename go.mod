@@ -29,7 +29,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/open-policy-agent/opa v0.29.3
+	github.com/open-policy-agent/opa v0.29.4
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
