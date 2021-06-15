@@ -9,14 +9,14 @@ import (
 
 type CampaignSchedule struct {
 	ID                      ksuid.KSUID       `json:"id" gorm:"column:id; primary_key:yes"`
-	UserID                  int64             `json:"user_id"`
-	CampaignID              int64             `json:"campaign_id"`
+	UserID                  int64             `json:"-"`
+	CampaignID              int64             `json:"-"`
 	ScheduledAt             time.Time         `json:"scheduled_at"`
-	Source                  string            `json:"source"`
-	FromName                string            `json:"from_name"`
-	SegmentIDsJSON          JSON              `json:"segment_ids" gorm:"column:segment_ids; type:json"`
+	Source                  string            `json:"-"`
+	FromName                string            `json:"-"`
+	SegmentIDsJSON          JSON              `json:"-" gorm:"column:segment_ids; type:json"`
 	SegmentIDs              []int64           `json:"-" sql:"-"`
-	DefaultTemplateDataJSON JSON              `json:"default_template_data"  gorm:"column:default_template_data; type:json"`
+	DefaultTemplateDataJSON JSON              `json:"-"  gorm:"column:default_template_data; type:json"`
 	DefaultTemplateData     map[string]string `json:"-" sql:"-"`
 	CreatedAt               time.Time         `json:"created_at"`
 	UpdatedAt               time.Time         `json:"updated_at"`
