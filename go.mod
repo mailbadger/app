@@ -4,8 +4,8 @@ go 1.16
 
 require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
+	github.com/aws/aws-sdk-go v1.38.62
 	github.com/cbroglie/mustache v1.2.2
-	github.com/aws/aws-sdk-go v1.38.61
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gavv/httpexpect/v2 v2.2.0
