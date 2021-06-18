@@ -24,5 +24,6 @@ type PutTemplate struct {
 }
 
 func (p *PutTemplate) TrimSpaces() {
+	p.Name = strings.TrimSpace(p.Name)
 	p.SubjectPart = strings.TrimSpace(p.SubjectPart)
 }

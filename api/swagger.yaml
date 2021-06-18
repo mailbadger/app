@@ -321,6 +321,119 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Campaign"
+    put:
+      tags:
+        - campaigns
+      operationId: updateCampaign
+      summary: Update an existing campaign
+      description: Update an existing campaign
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/CampaignParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Campaign name is required and must not be empty.
+                      template_name: Template name is required and must not be empty.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Campaign could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign with that name already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - campaigns
+      operationId: deleteCampaign
+      summary: Delete a campaign
+      description: Delete a campaign.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: The campaign was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /campaigns/{id}/start:
+    post:
+      tags:
+        - campaigns
+      operationId: startCampaign
+      summary: Start a campaign
+      description: Start a campaign. This action will begin sending the e-mails to subscribers immediately.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/StartCampaignParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: The campaign has started. You can track the progress in the campaign details page.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+
 security:
   - api_key: []
 components:
@@ -375,6 +488,48 @@ components:
                 example: HelloWorld
                 description: The name of the template to be used for the campaign content.
                 maxLength: 191
+    StartCampaignParams:
+      description: Parameters for the "Start Campaign" action
+      content:
+        application/x-www-form-urlencoded:
+          encoding:
+            segment_ids:
+              style: form
+              explode: true
+            default_template_data:
+              style: deepObject
+              explode: true
+          schema:
+            type: object
+            required:
+              - source
+              - from_name
+              - segment_ids
+              - default_template_data
+            properties:
+              source:
+                type: string
+                example: news@example.com
+                description: The source email address that is sending the e-mail campaign.
+                maxLength: 191
+              from_name:
+                type: string
+                example: Mailbadger News
+                description: The name of the sender.
+                maxLength: 191
+              segment_ids:
+                type: array
+                description: Groups of subscribers that we'll send the campaign to. You can choose to send the campaign to multiple groups.
+                items:
+                  type: integer
+              default_template_data:
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "field1": "value1",
+                    "field2": "value2"
+                  }
   parameters:
     perPage:
       name: per_page
@@ -414,7 +569,7 @@ components:
     id:
       name: id
       in: path
-      description: ID of the object to return
+      description: ID of the object
       required: true
       schema:
         type: integer
@@ -442,7 +597,7 @@ components:
       properties:
         message:
           type: string
-          description: The error message.
+          description: Response message.
     ValidationErrors:
       allOf:
         - $ref: "#/components/schemas/Message"
