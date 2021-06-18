@@ -622,10 +622,7 @@ func DeleteCampaignSchedule(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Campaign schedule removed successfully",
-	})
-
+	c.Status(http.StatusNoContent)
 }
 
 func PatchCampaignSchedule(c *gin.Context) {
