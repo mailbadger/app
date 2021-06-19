@@ -121,7 +121,7 @@ paths:
     get:
       tags:
         - templates
-      operationId: getTemplateByID
+      operationId: getTemplate
       summary: Get template by ID
       description: Returns a single template object
       parameters:
@@ -309,7 +309,7 @@ paths:
     get:
       tags:
         - campaigns
-      operationId: getCampaignByID
+      operationId: getCampaign
       summary: Get campaign by ID
       description: Returns a single campaign object
       parameters:
@@ -321,6 +321,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
     put:
       tags:
         - campaigns
@@ -513,7 +525,7 @@ paths:
                       collection:
                         type: array
                         items:
-                          $ref: "#/components/schemas/Subscriber"
+                          $ref: "#/components/schemas/BaseSubscriber"
         "401":
           $ref: "#/components/responses/Unauthorized"
         default:
@@ -562,6 +574,109 @@ paths:
                 $ref: "#/components/schemas/Message"
               example:
                 message: A subscriber with that email already exists.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /subscribers/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - subscribers
+      operationId: getSubscriber
+      summary: Get subscriber by ID
+      description: Returns a single subscriber object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - subscribers
+      operationId: updateSubscriber
+      summary: Update an existing subscriber
+      description: Update an existing subscriber.
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateSubscriberParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The subscriber name is too long.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Subscriber could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber with that email already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - subscribers
+      operationId: deleteSubscriber
+      summary: Delete a subscriber
+      description: Delete a subscriber.
+      responses:
+        "204":
+          description: The subscriber was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
         default:
           $ref: "#/components/responses/UnexpectedError"
 security:
@@ -721,6 +836,34 @@ components:
                 example: john@example.com
                 description: The subscriber's email address.
                 maxLength: 191
+              name:
+                type: string
+                example: John Doe
+                description: The subscriber's name.
+                maxLength: 191
+              segments:
+                type: array
+                description: Groups to place the subscriber in.
+                items:
+                  type: integer
+              metadata:
+                description: |
+                  Metadata (key=value pairs) for the subscriber. These values can be used in the campaign templates to 
+                  personalize the e-mail, used in a form of tags e.g. {{phone_number}}
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "phone_number": "123456",
+                    "favorite_animal": "honeybadger"
+                  }
+    UpdateSubscriberParams:
+      description: Parameters for the update subscriber form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
               name:
                 type: string
                 example: John Doe
@@ -948,7 +1091,7 @@ components:
           description: The date and time when the resource was last updated.
           type: string
           format: date-time
-    Subscriber:
+    BaseSubscriber:
       allOf:
         - $ref: "#/components/schemas/BaseModel"
         - type: object
@@ -977,6 +1120,24 @@ components:
             active:
               description: Flag that indicates if the subscriber is active or not (we send e-mails only to active subscribers).
               type: boolean
+    Subscriber:
+      allOf:
+        - $ref: "#/components/schemas/BaseSubscriber"
+        - type: object
+          properties:
+            segments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Group"
+    Group:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            name:
+              description: The name of the group.
+              type: string
+              example: Foo Group
   securitySchemes:
     api_key:
       type: apiKey

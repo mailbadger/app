@@ -367,7 +367,7 @@ func PutCampaign(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, campaign)
 }
 
 func DeleteCampaign(c *gin.Context) {
