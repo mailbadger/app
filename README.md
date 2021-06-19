@@ -16,7 +16,7 @@ The application depends on several tools and services:
     - MySQL (or sqlite)
     - NSQ
     - yarn
-    - go-bindata
+    - statik
     - Docker and docker-compose (optional)
 
 1. `statik` is used to generate the DB migration assets (sql files)

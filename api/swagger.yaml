@@ -486,6 +486,84 @@ paths:
                 message: Invalid ID supplied.
         default:
           $ref: "#/components/responses/UnexpectedError"
+  /subscribers:
+    get:
+      tags:
+        - subscribers
+      operationId: getSubscribers
+      summary: List subscribers
+      description: |
+        Returns a list of subscribers in a paginated manner. Each object in the `collection` represents a Subscriber.
+        This endpoint should always return a result even if there are zero subscribers in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - subscribers
+      operationId: addSubscriber
+      summary: Add a new subscriber
+      description: Add a new subscriber to the list.
+      requestBody:
+        $ref: "#/components/requestBodies/SubscriberParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      email: The email has an invalid format.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Subscriber could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: A subscriber with that email already exists.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
 security:
   - api_key: []
 components:
@@ -628,6 +706,41 @@ components:
                   {
                     "field1": "value1",
                     "field2": "value2"
+                  }
+    SubscriberParams:
+      description: Parameters for the subscriber form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                example: john@example.com
+                description: The subscriber's email address.
+                maxLength: 191
+              name:
+                type: string
+                example: John Doe
+                description: The subscriber's name.
+                maxLength: 191
+              segments:
+                type: array
+                description: Groups to place the subscriber in.
+                items:
+                  type: integer
+              metadata:
+                description: |
+                  Metadata (key=value pairs) for the subscriber. These values can be used in the campaign templates to 
+                  personalize the e-mail, used in a form of tags e.g. {{phone_number}}
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "phone_number": "123456",
+                    "favorite_animal": "honeybadger"
                   }
   parameters:
     perPage:
@@ -781,7 +894,7 @@ components:
         - type: object
           properties:
             user_id:
-              description: The ID of the owner of the template.
+              description: The ID of the owner of the campaign.
               type: integer
               format: int64
               example: 123
@@ -835,7 +948,35 @@ components:
           description: The date and time when the resource was last updated.
           type: string
           format: date-time
-
+    Subscriber:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            name:
+              description: The name of the subscriber.
+              type: string
+              example: John Doe
+            email:
+              description: The email of the subscriber.
+              type: string
+              example: john@example.com
+            metadata:
+              description: Metadata associated with the subscriber.
+              type: object
+              additionalProperties:
+                type: string
+              example: >
+                {
+                  "phone_number": "123456789",
+                  "favorite_animal": "honeybadger"
+                }
+            blacklisted:
+              description: Flag that indicates if the subscriber has been blacklisted (unsubscribed, marked email as spam, bounced).
+              type: boolean
+            active:
+              description: Flag that indicates if the subscriber is active or not (we send e-mails only to active subscribers).
+              type: boolean
   securitySchemes:
     api_key:
       type: apiKey
