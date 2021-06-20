@@ -36,4 +36,8 @@ func TestCampaignFailedLog(t *testing.T) {
 	c, err := store.GetCampaign(campaign1.ID, campaign1.UserID)
 	assert.Nil(t, err)
 	assert.Equal(t, "failed", c.Status)
+
+	// Test delete all campaign failed logs for a user
+	err = store.DeleteAllCampaignFailedLogsForUser(campaign1.UserID)
+	assert.Nil(t, err)
 }

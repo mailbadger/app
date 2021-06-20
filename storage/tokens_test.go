@@ -45,7 +45,7 @@ func TestTokens(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, token)
 
-	//Create expired token
+	// Create expired token
 	token = &entities.Token{
 		UserID:    1,
 		Token:     "abc",
@@ -59,4 +59,22 @@ func TestTokens(t *testing.T) {
 	token, err = store.GetToken("abc")
 	assert.NotNil(t, err)
 	assert.Nil(t, token)
+
+	// test delete all tokens for user
+	token = &entities.Token{
+		UserID:    1,
+		Token:     "delete-all-tokens",
+		Type:      entities.UnsubscribeTokenType,
+		ExpiresAt: now.AddDate(0, 0, 4),
+	}
+
+	err = store.CreateToken(token)
+	assert.Nil(t, err)
+
+	err = store.DeleteAllTokensForUser(1)
+	assert.Nil(t, err)
+
+	token, err = store.GetToken("delete-all-tokens")
+	assert.NotNil(t, err)
+	assert.Empty(t, token)
 }

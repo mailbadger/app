@@ -185,6 +185,11 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 	return db.Paginate(p, userID)
 }
 
+// DeleteAllCampaignsForUser deletes all campaigns for user
+func (db *store) DeleteAllCampaignsForUser(userID int64) error {
+	return db.Exec("DELETE FROM campaigns WHERE user_id = ?", userID).Error
+}
+
 // NameLike applies a scope for campaigns by the given name.
 // The wildcard is applied on the end of the name search.
 func NameLike(name string) func(*gorm.DB) *gorm.DB {

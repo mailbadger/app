@@ -4910,10 +4910,10 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-date-fns@^2.21.3:
-  version "2.21.3"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.21.3.tgz#8f5f6889d7a96bbcc1f0ea50239b397a83357f9b"
-  integrity sha512-HeYdzCaFflc1i4tGbj7JKMjM4cKGYoyxwcIIkHzNgCkX8xXDNJDZXgDDVchIWpN4eQc3lH37WarduXFZJOtxfw==
+date-fns@^2.22.1:
+  version "2.22.1"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.22.1.tgz#1e5af959831ebb1d82992bf67b765052d8f0efc4"
+  integrity sha512-yUFPQjrxEmIsMqlHhAhmxkuH769baF21Kk+nZwZGyrMoyLA+LugaQtC0+Tqf9CBUUULWwUJt6Q5ySI3LJDDCGg==
 
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.0, debug@^2.6.9:
   version "2.6.9"
@@ -5106,9 +5106,9 @@ dns-equal@^1.0.0:
   integrity sha1-s55/HabrCnW6nBcySzR1PEfgZU0=
 
 dns-packet@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/dns-packet/-/dns-packet-1.3.1.tgz#12aa426981075be500b910eedcd0b47dd7deda5a"
-  integrity sha512-0UxfQkMhYAUaZI+xrNZOz/as5KgDU0M/fQ9b6SpkyLbk3GEswDi6PADJVaYJradtRVsRIlF1zLyOodbcTCDzUg==
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/dns-packet/-/dns-packet-1.3.4.tgz#e3455065824a2507ba886c55a89963bb107dec6f"
+  integrity sha512-BQ6F4vycLXBvdrJZ6S3gZewt6rcrks9KBgM9vrhW+knGRqc8uEdT7fuCwloc7nny5xNoMJ17HGH0R/6fpo8ECA==
   dependencies:
     ip "^1.1.0"
     safe-buffer "^5.0.1"
@@ -5193,10 +5193,10 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
-dompurify@^2.2.8:
-  version "2.2.8"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.8.tgz#ce88e395f6d00b6dc53f80d6b2a6fdf5446873c6"
-  integrity sha512-9H0UL59EkDLgY3dUFjLV6IEUaHm5qp3mxSqWw7Yyx4Zhk2Jn2cmLe+CNPP3xy13zl8Bqg+0NehQzkdMoVhGRww==
+dompurify@^2.2.9:
+  version "2.2.9"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.9.tgz#4b42e244238032d9286a0d2c87b51313581d9624"
+  integrity sha512-+9MqacuigMIZ+1+EwoEltogyWGFTJZWU3258Rupxs+2CGs4H914G9er6pZbsme/bvb5L67o2rade9n21e4RW/w==
 
 domutils@1.5.1:
   version "1.5.1"
@@ -6158,10 +6158,10 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-formik@^2.2.6:
-  version "2.2.6"
-  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.6.tgz#378a4bafe4b95caf6acf6db01f81f3fe5147559d"
-  integrity sha512-Kxk2zQRafy56zhLmrzcbryUpMBvT0tal5IvcifK5+4YNGelKsnrODFJ0sZQRMQboblWNym4lAW3bt+tf2vApSA==
+formik@^2.2.8:
+  version "2.2.8"
+  resolved "https://registry.yarnpkg.com/formik/-/formik-2.2.8.tgz#986c3cd73849dde7c5154e5f6093a5568e482854"
+  integrity sha512-hDjQyTGO0ivptzCRHEyeTvfvgFVSzLeW2ptAgSk5U2jkf8pvSNtXe6oExo1RmrbKF1Bs7dmPv4P5g2JAgYnvlw==
   dependencies:
     deepmerge "^2.1.1"
     hoist-non-react-statics "^3.3.0"
@@ -6428,10 +6428,10 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.4.tgz#2256bde14d3632958c465ebc96dc467ca07a29fb"
   integrity sha512-WjKPNJF79dtJAVniUlGGWHYGz2jWxT6VhN/4m1NdkbZ2nOsEF+cI1Edgql5zCRhs/VsQYRvrXctxktVXZUkixw==
 
-grommet-icons@^4.4.0, grommet-icons@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/grommet-icons/-/grommet-icons-4.5.0.tgz#855ad26338ea1a1503eb18fdae428c431332be6a"
-  integrity sha512-q7TNXV996fDh2e++7WapiNFUk0UEll17iEZ2d75W4yz+8Bb3+vdQ1MeT/d1RRlM0pV2KnTpSeR00GeN4KA9upg==
+grommet-icons@^4.5.0, grommet-icons@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/grommet-icons/-/grommet-icons-4.6.0.tgz#f5933a4cc23a4c70d2378f12391643e49a542e5b"
+  integrity sha512-ytnFHPvCEDv7dUZddXUDxG/r/2Mbiq1MDy+kbmCelLXZ09B2zyC2N9KQPKHsm/XbJV6LnOnwchz2pobdz0OITQ==
   dependencies:
     grommet-styles "^0.2.0"
 
@@ -6612,9 +6612,9 @@ hoopy@^0.1.4:
   integrity sha512-HRcs+2mr52W0K+x8RzcLzuPPmVIKMSv97RGHy0Ea9y/mpcaK+xTrjICA04KAHi4GRzxliNqNJEFYWHghy3rSfQ==
 
 hosted-git-info@^2.1.4:
-  version "2.8.8"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
-  integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
+  integrity sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==
 
 hpack.js@^2.1.6:
   version "2.1.6"

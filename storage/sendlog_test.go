@@ -68,4 +68,7 @@ func TestSendLogs(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 2, n)
 
+	// Test delete all segments for a user
+	err = store.DeleteAllSendsForUser(1)
+	assert.Nil(t, err)
 }

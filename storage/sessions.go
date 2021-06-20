@@ -26,3 +26,8 @@ func (db *store) CreateSession(s *entities.Session) error {
 func (db *store) DeleteSession(sessionID string) error {
 	return db.Delete(&entities.Session{SessionID: sessionID}).Error
 }
+
+// DeleteAllSessionsForUser deletes sessions for user
+func (db *store) DeleteAllSessionsForUser(userID int64) error {
+	return db.Where("user_id = ?" ,userID).Delete(&entities.Session{}).Error
+}
