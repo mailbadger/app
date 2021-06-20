@@ -86,7 +86,7 @@ func TestCampaigns(t *testing.T) {
 
 	auth.PUT("/api/campaigns/" + idStr).WithForm(params.PutCampaign{Name: "TESTputtest", TemplateName: templateName}).
 		Expect().
-		Status(http.StatusNoContent)
+		Status(http.StatusOK)
 
 	// test updated campaign
 	auth.GET("/api/campaigns/"+idStr).

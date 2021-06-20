@@ -89,7 +89,7 @@ func TestSubscribers(t *testing.T) {
 	// test put subscriber by id
 	auth.PUT("/api/subscribers/2").WithForm(params.PutSubscriber{Name: "FooPutChange", Metadata: map[string]string{"test": "test"}}).
 		Expect().
-		Status(http.StatusNoContent)
+		Status(http.StatusOK)
 
 	// test updated subscriber
 	auth.GET("/api/subscribers/2").

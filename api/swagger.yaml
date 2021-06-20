@@ -679,6 +679,187 @@ paths:
                 message: Invalid ID supplied.
         default:
           $ref: "#/components/responses/UnexpectedError"
+  /segments:
+    get:
+      tags:
+        - groups
+      operationId: getGroups
+      summary: List groups
+      description: |
+        Returns a list of groups in a paginated manner. Each object in the `collection` represents a Group.
+        This endpoint should always return a result even if there are zero groups in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - groups
+      operationId: addGroup
+      summary: Add a new group
+      description: Add a new group.
+      requestBody:
+        $ref: "#/components/requestBodies/GroupParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseGroup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The name is required and should not be empty.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Group could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: A group with that name already exists.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /segments/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - groups
+      operationId: getGroup
+      summary: Get group by ID
+      description: Returns a single group object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtendedGroupWithTotalSubs"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - groups
+      operationId: updateGroup
+      summary: Update an existing group
+      description: Update an existing group.
+      requestBody:
+        $ref: "#/components/requestBodies/GroupParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseGroup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The group name is too long.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Group could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group with that name already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - groups
+      operationId: deleteGroup
+      summary: Delete a group
+      description: Delete a group.
+      responses:
+        "204":
+          description: The group was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
 security:
   - api_key: []
 components:
@@ -738,16 +919,15 @@ components:
       content:
         application/x-www-form-urlencoded:
           encoding:
-            segment_ids:
-              style: form
-              explode: true
             default_template_data:
               style: deepObject
+              explode: true
+            segment_ids:
+              style: form
               explode: true
           schema:
             type: object
             required:
-              - scheduled_at
               - source
               - from_name
               - segment_ids
@@ -790,6 +970,7 @@ components:
           schema:
             type: object
             required:
+              - scheduled_at
               - source
               - from_name
               - segment_ids
@@ -885,6 +1066,18 @@ components:
                     "phone_number": "123456",
                     "favorite_animal": "honeybadger"
                   }
+    GroupParams:
+      description: Parameters for the group form.
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Foo Group
+                description: The group's name.
+                maxLength: 191
   parameters:
     perPage:
       name: per_page
@@ -1129,7 +1322,7 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Group"
-    Group:
+    BaseGroup:
       allOf:
         - $ref: "#/components/schemas/BaseModel"
         - type: object
@@ -1138,6 +1331,26 @@ components:
               description: The name of the group.
               type: string
               example: Foo Group
+    Group:
+      allOf:
+        - $ref: "#/components/schemas/BaseGroup"
+        - type: object
+          properties:
+            subscribers_in_segment:
+              description: Number of subscribers inside the group.
+              type: integer
+              format: int64
+              example: 123
+    ExtendedGroupWithTotalSubs:
+      allOf:
+        - $ref: "#/components/schemas/Group"
+        - type: object
+          properties:
+            total_subscribers:
+              description: The total number of subscribers.
+              type: integer
+              format: int64
+              example: 10231
   securitySchemes:
     api_key:
       type: apiKey

@@ -277,7 +277,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, opacompiler *ast.Compiler, middlew
 			segments.DELETE("/:id", actions.DeleteSegment)
 			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
 			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers)
-			segments.POST("/:id/subscribers", actions.DetachSegmentSubscribers)
+			segments.POST("/:id/subscribers/detach", actions.DetachSegmentSubscribers)
 			segments.DELETE("/:id/subscribers/:sub_id", actions.DetachSubscriber)
 		}
 
@@ -285,16 +285,7 @@ func SetAuthorizedRoutes(handler *gin.Engine, opacompiler *ast.Compiler, middlew
 		{
 			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers)
 			subscribers.GET("/:id", actions.GetSubscriber)
-			subscribers.GET("/:id/download", func(c *gin.Context) {
-				idPath := c.Param("id")
-				if idPath == "export" {
-					actions.DownloadSubscribersReport(c)
-					return
-				}
-				c.JSON(http.StatusNotFound, gin.H{
-					"message": "Not found.",
-				})
-			})
+			subscribers.GET("/export/download", actions.DownloadSubscribersReport)
 			subscribers.POST("", actions.PostSubscriber)
 			subscribers.PUT("/:id", actions.PutSubscriber)
 			subscribers.DELETE("/:id", actions.DeleteSubscriber)
