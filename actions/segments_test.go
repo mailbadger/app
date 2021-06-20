@@ -47,7 +47,7 @@ func TestSegments(t *testing.T) {
 	// test put segments
 	auth.PUT("/api/segments/1").WithForm(params.Segment{Name: "djaleputtest"}).
 		Expect().
-		Status(http.StatusNoContent)
+		Status(http.StatusOK)
 
 	// delete segment by id
 	auth.DELETE("/api/segments/1").
