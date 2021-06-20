@@ -34,7 +34,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	body := &params.SendCampaign{}
+	body := &params.StartCampaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -236,7 +236,7 @@ func GetCampaign(c *gin.Context) {
 }
 
 func PostCampaign(c *gin.Context) {
-	body := &params.Campaign{}
+	body := &params.PostCampaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -323,7 +323,7 @@ func PutCampaign(c *gin.Context) {
 		return
 	}
 
-	body := &params.Campaign{}
+	body := &params.PutCampaign{}
 	if err := c.ShouldBind(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -367,7 +367,7 @@ func PutCampaign(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusOK, campaign)
 }
 
 func DeleteCampaign(c *gin.Context) {
@@ -622,10 +622,7 @@ func DeleteCampaignSchedule(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Campaign schedule removed successfully",
-	})
-
+	c.Status(http.StatusNoContent)
 }
 
 func PatchCampaignSchedule(c *gin.Context) {

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Segment represents the list entity
+// Segment represents the group of subscribers entity
 type Segment struct {
 	Model
 	Name        string       `json:"name" gorm:"not null" valid:"required,stringlength(1|191)"`
@@ -19,7 +19,9 @@ type Segment struct {
 // 'subscribers_in_segment' column is not present.
 type SegmentWithTotalSubs struct {
 	Segment
-	SubscribersInSeg int64  `json:"subscribers_in_segment" gorm:"column:subscribers_in_segment"`
+	SubscribersInSeg int64 `json:"subscribers_in_segment" gorm:"column:subscribers_in_segment"`
+	// This property is a pointer because we omit it when we populate the object for the paginated result.
+	// The property is only used in the "get single result" response.
 	TotalSubscribers *int64 `json:"total_subscribers,omitempty" sql:"-"`
 }
 

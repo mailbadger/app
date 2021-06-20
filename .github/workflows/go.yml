@@ -22,7 +22,7 @@ jobs:
         env:
           GO111MODULE: "on"
         with:
-          version: v1.29
+          version: v1.41
           args: --enable=gosec --timeout=5m
   test:
     name: Test

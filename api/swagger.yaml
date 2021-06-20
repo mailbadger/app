@@ -1,0 +1,1358 @@
+openapi: "3.0.3"
+info:
+  title: Mailbadger API
+  version: "1.0"
+  contact:
+    name: Mailbadger support team
+    email: support@mailbadger.io
+  description: |
+    The Mailbadger [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) API.
+  license:
+    name: “Commons Clause” License Condition v1.0
+    url: https://github.com/mailbadger/app/blob/master/LICENSE
+servers:
+  - url: https://app.mailbadger.io/api
+tags:
+  - name: templates
+    description: Template operations
+  - name: campaigns
+    description: Campaign operations
+  - name: subscribers
+    description: Subscriber operations
+  - name: groups
+    description: Subscriber groups operations
+paths:
+  /templates:
+    get:
+      tags:
+        - templates
+      operationId: getTemplates
+      summary: List templates
+      description: |
+        Returns a list of templates in a paginated manner. Each object in the `collection` represents a Template.
+        This endpoint should always return a result even if there are zero templates in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BaseTemplate"
+                        example:
+                          - id: 111
+                            user_id: 444
+                            name: HelloWorld
+                            subject_part: Hello World!
+                            created_at: "2021-05-19T20:48:50.378Z"
+                            updated_at: "2021-05-19T20:48:50.378Z"
+                          - id: 222
+                            user_id: 444
+                            name: Welcome
+                            subject_part: Welcome to Mailbadger {{name}}!
+                            created_at: "2021-05-19T20:48:50.378Z"
+                            updated_at: "2021-05-19T20:48:50.378Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - templates
+      operationId: addTemplate
+      summary: Add a new template
+      description: |
+        Add a new template to be used in the e-mail campaigns. The template's parts (subject, html and text) can
+        contain tags which are used to personalize the campaign's content. The tag names are defined between two curly brackets e.g. `{{name}}`.
+      requestBody:
+        $ref: "#/components/requestBodies/TemplateParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Template name is required and must not be empty.
+                      html_part: Content must be html.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Template could not be created, please try again.
+
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /templates/{id}:
+    get:
+      tags:
+        - templates
+      operationId: getTemplate
+      summary: Get template by ID
+      description: Returns a single template object
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - templates
+      operationId: updateTemplate
+      summary: Update an existing template
+      description: Update an existing template
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/TemplateParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Template name is required and must not be empty.
+                      html_part: Content must be html.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Template could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Template name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - templates
+      operationId: deleteTemplate
+      summary: Delete a template
+      description: Delete a template.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: The template was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /campaigns:
+    get:
+      tags:
+        - campaigns
+      operationId: getCampaigns
+      summary: List campaigns
+      description: |
+        Returns a list of campaigns in a paginated manner. Each object in the `collection` represents a Campaign.
+        This endpoint should always return a result even if there are zero campaigns in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - campaigns
+      operationId: addCampaign
+      summary: Add a new campaign
+      description: |
+        Add a new campaign. When the campaign is firstly created, it has a `draft` status. 
+        After a campaign has been created it can either be sent, scheduled or deleted. In order to send a campaign you will need to connect your AWS account.
+      requestBody:
+        $ref: "#/components/requestBodies/CampaignParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Campaign name is required and must not be empty.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Campaign could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign name is not unique.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /campaigns/{id}:
+    get:
+      tags:
+        - campaigns
+      operationId: getCampaign
+      summary: Get campaign by ID
+      description: Returns a single campaign object
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - campaigns
+      operationId: updateCampaign
+      summary: Update an existing campaign
+      description: Update an existing campaign
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/CampaignParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: Campaign name is required and must not be empty.
+                      template_name: Template name is required and must not be empty.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Campaign could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Campaign with that name already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - campaigns
+      operationId: deleteCampaign
+      summary: Delete a campaign
+      description: Delete a campaign.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "204":
+          description: The campaign was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /campaigns/{id}/start:
+    post:
+      tags:
+        - campaigns
+      operationId: startCampaign
+      summary: Start a campaign
+      description: Start a campaign. This action will begin sending the e-mails to subscribers immediately.
+      parameters:
+        - $ref: "#/components/parameters/id"
+      requestBody:
+        $ref: "#/components/requestBodies/StartCampaignParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: The campaign has started. You can track the progress in the campaign details page.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /campaigns/{id}/schedule:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    patch:
+      tags:
+        - campaigns
+      operationId: scheduleCampaign
+      summary: Schedule a campaign
+      description: Schedule a campaign.
+      requestBody:
+        $ref: "#/components/requestBodies/ScheduleCampaignParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: The campaign was successfully scheduled.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - campaigns
+      operationId: deleteCampaignSchedule
+      summary: Delete a campaign's schedule
+      description: Delete a campaign's schedule.
+      responses:
+        "204":
+          description: The campaign's schedule was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /subscribers:
+    get:
+      tags:
+        - subscribers
+      operationId: getSubscribers
+      summary: List subscribers
+      description: |
+        Returns a list of subscribers in a paginated manner. Each object in the `collection` represents a Subscriber.
+        This endpoint should always return a result even if there are zero subscribers in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/BaseSubscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - subscribers
+      operationId: addSubscriber
+      summary: Add a new subscriber
+      description: Add a new subscriber to the list.
+      requestBody:
+        $ref: "#/components/requestBodies/SubscriberParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      email: The email has an invalid format.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Subscriber could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: A subscriber with that email already exists.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /subscribers/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - subscribers
+      operationId: getSubscriber
+      summary: Get subscriber by ID
+      description: Returns a single subscriber object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - subscribers
+      operationId: updateSubscriber
+      summary: Update an existing subscriber
+      description: Update an existing subscriber.
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateSubscriberParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Subscriber"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The subscriber name is too long.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Subscriber could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Subscriber with that email already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - subscribers
+      operationId: deleteSubscriber
+      summary: Delete a subscriber
+      description: Delete a subscriber.
+      responses:
+        "204":
+          description: The subscriber was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /segments:
+    get:
+      tags:
+        - groups
+      operationId: getGroups
+      summary: List groups
+      description: |
+        Returns a list of groups in a paginated manner. Each object in the `collection` represents a Group.
+        This endpoint should always return a result even if there are zero groups in the collection.
+      parameters:
+        - $ref: "#/components/parameters/perPage"
+        - $ref: "#/components/parameters/endingBefore"
+        - $ref: "#/components/parameters/startingAfter"
+        - $ref: "#/components/parameters/scopes"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PaginationMeta"
+                  - type: object
+                    properties:
+                      collection:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Group"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    post:
+      tags:
+        - groups
+      operationId: addGroup
+      summary: Add a new group
+      description: Add a new group.
+      requestBody:
+        $ref: "#/components/requestBodies/GroupParams"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseGroup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The name is required and should not be empty.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Group could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: A group with that name already exists.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+  /segments/{id}:
+    parameters:
+      - $ref: "#/components/parameters/id"
+    get:
+      tags:
+        - groups
+      operationId: getGroup
+      summary: Get group by ID
+      description: Returns a single group object
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtendedGroupWithTotalSubs"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group not found.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    put:
+      tags:
+        - groups
+      operationId: updateGroup
+      summary: Update an existing group
+      description: Update an existing group.
+      requestBody:
+        $ref: "#/components/requestBodies/GroupParams"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BaseGroup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group not found.
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/Message"
+                  - $ref: "#/components/schemas/ValidationErrors"
+              examples:
+                validationErrors:
+                  summary: Invalid parameters
+                  value:
+                    message: Invalid parameters, please try again
+                    errors:
+                      name: The group name is too long.
+                message:
+                  summary: Bad request
+                  value:
+                    message: Group could not be created, please try again.
+        "422":
+          description: Unprocessable entity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Group with that name already exist.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+    delete:
+      tags:
+        - groups
+      operationId: deleteGroup
+      summary: Delete a group
+      description: Delete a group.
+      responses:
+        "204":
+          description: The group was deleted successfully.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+              example:
+                message: Invalid ID supplied.
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+security:
+  - api_key: []
+components:
+  requestBodies:
+    TemplateParams:
+      description: Template parameters for the form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - name
+              - subject_part
+              - html_part
+              - text_part
+            properties:
+              name:
+                type: string
+                example: HelloWorld
+                description: The name of the new template, must be unique.
+                maxLength: 191
+              subject_part:
+                type: string
+                example: Welcome {{name}} to mailbadger.io!
+                description: The subject part
+                maxLength: 191
+              html_part:
+                description: The HTML content used in the e-mail campaign.
+                type: string
+                example: <div>Hello {{name}}, welcome to mailbadger.io</div>
+              text_part:
+                description: The text content used in the e-mail campaign.
+                type: string
+                example: Hello {{name}}, welcome to mailbadger.io
+    CampaignParams:
+      description: Campaign parameters for the form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - name
+              - template_name
+            properties:
+              name:
+                type: string
+                example: January Newsletter
+                description: The name of the new campaign, must be unique.
+                maxLength: 191
+              template_name:
+                type: string
+                example: HelloWorld
+                description: The name of the template to be used for the campaign content.
+                maxLength: 191
+    StartCampaignParams:
+      description: Parameters for starting a campaign
+      content:
+        application/x-www-form-urlencoded:
+          encoding:
+            default_template_data:
+              style: deepObject
+              explode: true
+            segment_ids:
+              style: form
+              explode: true
+          schema:
+            type: object
+            required:
+              - source
+              - from_name
+              - segment_ids
+              - default_template_data
+            properties:
+              source:
+                type: string
+                example: news@example.com
+                description: The source email address that is sending the e-mail campaign.
+                maxLength: 191
+              from_name:
+                type: string
+                example: Mailbadger News
+                description: The name of the sender.
+                maxLength: 191
+              segment_ids:
+                type: array
+                description: Groups of subscribers that we'll send the campaign to. You can choose to send the campaign to multiple groups.
+                items:
+                  type: integer
+              default_template_data:
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "field1": "value1",
+                    "field2": "value2"
+                  }
+    ScheduleCampaignParams:
+      description: Parameters for scheduling a campaign
+      content:
+        application/x-www-form-urlencoded:
+          encoding:
+            segment_ids:
+              style: form
+              explode: true
+            default_template_data:
+              style: deepObject
+              explode: true
+          schema:
+            type: object
+            required:
+              - scheduled_at
+              - source
+              - from_name
+              - segment_ids
+              - default_template_data
+            properties:
+              scheduled_at:
+                type: string
+                format: date-time
+                description: The date and time of the start of the campaign.
+              source:
+                type: string
+                example: news@example.com
+                description: The source email address that is sending the e-mail campaign.
+                maxLength: 191
+              from_name:
+                type: string
+                example: Mailbadger News
+                description: The name of the sender.
+                maxLength: 191
+              segment_ids:
+                type: array
+                description: Groups of subscribers that we'll send the campaign to. You can choose to send the campaign to multiple groups.
+                items:
+                  type: integer
+              default_template_data:
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "field1": "value1",
+                    "field2": "value2"
+                  }
+    SubscriberParams:
+      description: Parameters for the subscriber form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                example: john@example.com
+                description: The subscriber's email address.
+                maxLength: 191
+              name:
+                type: string
+                example: John Doe
+                description: The subscriber's name.
+                maxLength: 191
+              segments:
+                type: array
+                description: Groups to place the subscriber in.
+                items:
+                  type: integer
+              metadata:
+                description: |
+                  Metadata (key=value pairs) for the subscriber. These values can be used in the campaign templates to 
+                  personalize the e-mail, used in a form of tags e.g. {{phone_number}}
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "phone_number": "123456",
+                    "favorite_animal": "honeybadger"
+                  }
+    UpdateSubscriberParams:
+      description: Parameters for the update subscriber form
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: John Doe
+                description: The subscriber's name.
+                maxLength: 191
+              segments:
+                type: array
+                description: Groups to place the subscriber in.
+                items:
+                  type: integer
+              metadata:
+                description: |
+                  Metadata (key=value pairs) for the subscriber. These values can be used in the campaign templates to 
+                  personalize the e-mail, used in a form of tags e.g. {{phone_number}}
+                type: object
+                additionalProperties: true
+                example: >
+                  {
+                    "phone_number": "123456",
+                    "favorite_animal": "honeybadger"
+                  }
+    GroupParams:
+      description: Parameters for the group form.
+      content:
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Foo Group
+                description: The group's name.
+                maxLength: 191
+  parameters:
+    perPage:
+      name: per_page
+      in: query
+      description: Number of objects to be returned, per page.
+      schema:
+        type: integer
+        format: int64
+        maximum: 100
+        default: 15
+    endingBefore:
+      name: ending_before
+      in: query
+      description: |
+        `ending_before` is the ID of the object that should be included in order to fetch the 
+        previous page of the list, which ends before this object's place in the collection.
+      schema:
+        type: string
+    startingAfter:
+      name: starting_after
+      in: query
+      description: |
+        `starting_after` is the ID of the object that should be included in order to fetch the 
+        next page of the list, which begins after this object's place in the collection.
+      schema:
+        type: string
+    scopes:
+      name: scopes
+      in: query
+      description: |
+        Scopes can be used to search through and filter a collection of results.
+      schema:
+        type: object
+        additionalProperties:
+          type: string
+      style: deepObject
+    id:
+      name: id
+      in: path
+      description: ID of the object
+      required: true
+      schema:
+        type: integer
+        format: int64
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Message"
+          example:
+            message: "User not authorized"
+    UnexpectedError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Message"
+          example:
+            message: "Something unexpected happened. Please try again."
+  schemas:
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Response message.
+    ValidationErrors:
+      allOf:
+        - $ref: "#/components/schemas/Message"
+        - type: object
+          description: Validation errors
+          additionalProperties:
+            type: string
+    PaginationMeta:
+      type: object
+      properties:
+        per_page:
+          description: Number of objects that are present in the collection.
+          type: integer
+          format: int64
+          example: 15
+        total:
+          description: Total number of objects.
+          type: integer
+          format: int64
+          example: 100
+        links:
+          type: object
+          properties:
+            previous:
+              description: Link to the previous set of results.
+              type: string
+              nullable: true
+            next:
+              description: Link to the next set of results.
+              type: string
+              nullable: true
+    BaseModel:
+      type: object
+      properties:
+        id:
+          description: The ID of the resource.
+          type: integer
+          format: int64
+          example: 111
+        created_at:
+          description: The date and time when the resource was created.
+          type: string
+          format: date-time
+        updated_at:
+          description: The date and time when the resource was last updated.
+          type: string
+          format: date-time
+    BaseTemplate:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            user_id:
+              description: The ID of the owner of the template.
+              type: integer
+              format: int64
+              example: 123
+            name:
+              description: The name of the template.
+              type: string
+              example: Welcome
+            subject_part:
+              description: The subject part.
+              type: string
+              example: Welcome to Mailbadger {{name}}!
+    Template:
+      allOf:
+        - $ref: "#/components/schemas/BaseTemplate"
+        - type: object
+          properties:
+            html_part:
+              description: The HTML content used in the e-mail campaign.
+              type: string
+              example: <div>Hello {{name}}, welcome to mailbadger.io</div>
+            text_part:
+              description: The text content used in the e-mail campaign.
+              type: string
+              example: Hello {{name}}, welcome to mailbadger.io
+    Campaign:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            user_id:
+              description: The ID of the owner of the campaign.
+              type: integer
+              format: int64
+              example: 123
+            name:
+              description: The name of the campaign.
+              type: string
+              example: January Newsletter
+            status:
+              description: The campaign's status.
+              type: string
+              enum:
+                - draft
+                - scheduled
+                - sending
+                - sent
+              example: draft
+            template:
+              description: The associated template content for the e-mail campaign.
+              nullable: true
+              anyOf:
+                - $ref: "#/components/schemas/BaseTemplate"
+            schedule:
+              description: |
+                The campaign schedule (optional). If a schedule is set, we will send the campaign in that particular time.
+              nullable: true
+              anyOf:
+                - $ref: "#/components/schemas/CampaignSchedule"
+            started_at:
+              description: The date and time when the campaign was started.
+              type: string
+              format: date-time
+            completed_at:
+              description: The date and time when the campaign was completed (the e-mail has been sent to all of the subscribers).
+              type: string
+              format: date-time
+    CampaignSchedule:
+      type: object
+      properties:
+        id:
+          description: The ID of the resource.
+          type: string
+        scheduled_at:
+          description: The date and time when the campaign is scheduled to be sent.
+          type: string
+          format: date-time
+        created_at:
+          description: The date and time when the resource was created.
+          type: string
+          format: date-time
+        updated_at:
+          description: The date and time when the resource was last updated.
+          type: string
+          format: date-time
+    BaseSubscriber:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            name:
+              description: The name of the subscriber.
+              type: string
+              example: John Doe
+            email:
+              description: The email of the subscriber.
+              type: string
+              example: john@example.com
+            metadata:
+              description: Metadata associated with the subscriber.
+              type: object
+              additionalProperties:
+                type: string
+              example: >
+                {
+                  "phone_number": "123456789",
+                  "favorite_animal": "honeybadger"
+                }
+            blacklisted:
+              description: Flag that indicates if the subscriber has been blacklisted (unsubscribed, marked email as spam, bounced).
+              type: boolean
+            active:
+              description: Flag that indicates if the subscriber is active or not (we send e-mails only to active subscribers).
+              type: boolean
+    Subscriber:
+      allOf:
+        - $ref: "#/components/schemas/BaseSubscriber"
+        - type: object
+          properties:
+            segments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Group"
+    BaseGroup:
+      allOf:
+        - $ref: "#/components/schemas/BaseModel"
+        - type: object
+          properties:
+            name:
+              description: The name of the group.
+              type: string
+              example: Foo Group
+    Group:
+      allOf:
+        - $ref: "#/components/schemas/BaseGroup"
+        - type: object
+          properties:
+            subscribers_in_segment:
+              description: Number of subscribers inside the group.
+              type: integer
+              format: int64
+              example: 123
+    ExtendedGroupWithTotalSubs:
+      allOf:
+        - $ref: "#/components/schemas/Group"
+        - type: object
+          properties:
+            total_subscribers:
+              description: The total number of subscribers.
+              type: integer
+              format: int64
+              example: 10231
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: X-API-Key
+      in: header

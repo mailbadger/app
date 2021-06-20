@@ -33,29 +33,29 @@ func TestCampaigns(t *testing.T) {
 		Status(http.StatusCreated).
 		JSON().Object().Value("name").String().Raw()
 
-	e.POST("/api/campaigns").WithForm(params.Campaign{Name: "djale", TemplateName: templateName}).
+	e.POST("/api/campaigns").WithForm(params.PostCampaign{Name: "djale", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusUnauthorized)
 
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "", TemplateName: ""}).
+	auth.POST("/api/campaigns").WithForm(params.PostCampaign{Name: "", TemplateName: ""}).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
 		ValueEqual("errors", map[string]string{"name": "This field is required", "template_name": "This field is required"})
 
 	// test post campaign
-	id := auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo1", TemplateName: templateName}).
+	id := auth.POST("/api/campaigns").WithForm(params.PostCampaign{Name: "foo1", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusCreated).
 		JSON().Object().Value("id")
 
 	idStr := strconv.FormatFloat(id.Raw().(float64), 'f', 0, 64)
 
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "foo2", TemplateName: templateName}).
+	auth.POST("/api/campaigns").WithForm(params.PostCampaign{Name: "foo2", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusCreated)
 
-	auth.POST("/api/campaigns").WithForm(params.Campaign{Name: "test-scopes", TemplateName: templateName}).
+	auth.POST("/api/campaigns").WithForm(params.PostCampaign{Name: "test-scopes", TemplateName: templateName}).
 		Expect().
 		Status(http.StatusForbidden).JSON().Object().
 		ValueEqual("message", "You have exceeded your campaigns limit, please upgrade to a bigger plan or contact support.")
@@ -84,9 +84,9 @@ func TestCampaigns(t *testing.T) {
 		ValueEqual("name", "foo1").
 		ValueEqual("status", "draft")
 
-	auth.PUT("/api/campaigns/" + idStr).WithForm(params.Campaign{Name: "TESTputtest", TemplateName: templateName}).
+	auth.PUT("/api/campaigns/" + idStr).WithForm(params.PutCampaign{Name: "TESTputtest", TemplateName: templateName}).
 		Expect().
-		Status(http.StatusNoContent)
+		Status(http.StatusOK)
 
 	// test updated campaign
 	auth.GET("/api/campaigns/"+idStr).

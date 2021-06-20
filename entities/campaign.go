@@ -36,7 +36,7 @@ type Campaign struct {
 	Schedule     *CampaignSchedule `json:"schedule" gorm:"foreignKey:campaign_id"`
 	Status       string            `json:"status"`
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
-	DeletedAt    NullTime          `json:"deleted_at" gorm:"column:deleted_at"`
+	DeletedAt    NullTime          `json:"-" gorm:"column:deleted_at"`
 	StartedAt    NullTime          `json:"started_at" gorm:"column:started_at"`
 }
 

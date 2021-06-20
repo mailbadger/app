@@ -160,9 +160,8 @@ func PutSegment(c *gin.Context) {
 			return
 		}
 
-		c.Status(http.StatusNoContent)
+		c.JSON(http.StatusOK, l)
 		return
-
 	}
 
 	c.JSON(http.StatusBadRequest, gin.H{
