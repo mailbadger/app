@@ -3,9 +3,9 @@ package storage
 import (
 	"context"
 	"time"
-
+	
 	"github.com/gin-gonic/gin"
-
+	
 	"github.com/mailbadger/app/entities"
 )
 
@@ -21,15 +21,15 @@ type Storage interface {
 	CreateUser(*entities.User) error
 	UpdateUser(*entities.User) error
 	DeleteUser(user *entities.User) error
-
+	
 	GetBoundariesByType(t string) (*entities.Boundaries, error)
 	GetRole(name string) (*entities.Role, error)
-
+	
 	GetSession(sessionID string) (*entities.Session, error)
 	CreateSession(s *entities.Session) error
 	DeleteSession(sessionID string) error
 	DeleteAllSessionsForUser(userID int64) error
-
+	
 	GetCampaigns(int64, *PaginationCursor, map[string]string) error
 	GetCampaign(int64, int64) (*entities.Campaign, error)
 	GetCampaignByName(name string, userID int64) (*entities.Campaign, error)
@@ -50,11 +50,11 @@ type Storage interface {
 	DeleteAllCampaignsForUser(userID int64) error
 	LogFailedCampaign(c *entities.Campaign, description string) error
 	DeleteAllCampaignFailedLogsForUser(userID int64) error
-
+	
 	CreateCampaignSchedule(c *entities.CampaignSchedule) error
 	DeleteCampaignSchedule(campaignID int64) error
 	GetScheduledCampaigns(time time.Time) ([]entities.CampaignSchedule, error)
-
+	
 	GetSegments(int64, *PaginationCursor) error
 	GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment, error)
 	GetSegment(int64, int64) (*entities.Segment, error)
@@ -66,7 +66,7 @@ type Storage interface {
 	AppendSubscribers(*entities.Segment) error
 	DetachSubscribers(*entities.Segment) error
 	DeleteAllSegmentsForUser(userID int64) error
-
+	
 	GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	GetSubscribersBySegmentID(int64, int64, *PaginationCursor) error
 	GetSubscriber(int64, int64) (*entities.Subscriber, error)
@@ -88,28 +88,28 @@ type Storage interface {
 	GetTotalSubscribersBySegment(segmentID, userID int64) (int64, error)
 	SeekSubscribersByUserID(userID int64, nextID int64, limit int64) ([]entities.Subscriber, error)
 	GetAllSubscribersForUser(userID int64) ([]entities.Subscriber, error)
-
+	
 	GetAPIKeys(userID int64) ([]*entities.APIKey, error)
 	GetAPIKey(identifier string) (*entities.APIKey, error)
 	CreateAPIKey(ak *entities.APIKey) error
 	UpdateAPIKey(ak *entities.APIKey) error
 	DeleteAPIKey(id, userID int64) error
-
+	
 	GetSesKeys(userID int64) (*entities.SesKeys, error)
 	CreateSesKeys(s *entities.SesKeys) error
 	DeleteSesKeys(userID int64) error
-
+	
 	GetToken(token string) (*entities.Token, error)
 	CreateToken(s *entities.Token) error
 	DeleteToken(token string) error
 	DeleteAllTokensForUser(userID int64) error
-
+	
 	CreateSendLog(l *entities.SendLog) error
 	CountLogsByUUID(id string) (int, error)
 	CountLogsByStatus(status string) (int, error)
 	GetSendLogByUUID(id string) (*entities.SendLog, error)
 	DeleteAllSendLogsForUser(userID int64) error
-
+	
 	CreateBounce(b *entities.Bounce) error
 	DeleteAllBouncesForUser(userID int64) error
 	CreateComplaint(c *entities.Complaint) error
@@ -122,14 +122,14 @@ type Storage interface {
 	DeleteAllOpensForUser(userID int64) error
 	CreateDelivery(d *entities.Delivery) error
 	DeleteAllDeliveriesForUser(userID int64) error
-
+	
 	CreateReport(r *entities.Report) error
 	UpdateReport(r *entities.Report) error
 	GetReportByFilename(filename string, userID int64) (*entities.Report, error)
 	GetRunningReportForUser(userID int64) (*entities.Report, error)
 	GetNumberOfReportsForDate(userID int64, time time.Time) (int64, error)
 	DeleteAllReportsForUser(userID int64) error
-
+	
 	CreateTemplate(t *entities.Template) error
 	UpdateTemplate(t *entities.Template) error
 	GetTemplateByName(name string, userID int64) (*entities.Template, error)
@@ -137,8 +137,11 @@ type Storage interface {
 	GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error
 	DeleteTemplate(templateID int64, userID int64) error
 	GetAllTemplatesForUser(userID int64) ([]entities.Template, error)
-
+	
 	DeleteAllEventsForUser(userID int64) error
+	
+	GetJobByName(name string) (*entities.Job, error)
+	UpdateJob(job *entities.Job) error
 }
 
 // SetToContext sets the storage to the context
