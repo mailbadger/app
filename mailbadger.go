@@ -13,11 +13,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
+	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/routes"
-	"github.com/mailbadger/app/utils"
 )
 
 func init() {
+	mode.SetModeFromEnv()
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		lvl = logrus.InfoLevel
@@ -25,7 +26,7 @@ func init() {
 
 	logrus.SetLevel(lvl)
 	logrus.SetOutput(os.Stdout)
-	if utils.IsProductionMode() {
+	if mode.IsProd() {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 		gin.SetMode(gin.ReleaseMode)
 	}
