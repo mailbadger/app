@@ -21,12 +21,12 @@ import (
 	"github.com/unrolled/secure"
 
 	"github.com/mailbadger/app/actions"
+	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/templates"
-	"github.com/mailbadger/app/utils"
 )
 
 // New creates a new HTTP handler with the specified middleware.
@@ -39,7 +39,7 @@ func New() http.Handler {
 	log := logrus.New()
 	log.SetLevel(lvl)
 	log.SetOutput(os.Stdout)
-	if utils.IsProductionMode() {
+	if mode.IsProd() {
 		log.SetFormatter(&logrus.JSONFormatter{})
 	}
 
@@ -91,7 +91,7 @@ func New() http.Handler {
 		STSPreload:            true,
 		ContentSecurityPolicy: "default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'",
 
-		IsDevelopment: !utils.IsProductionMode(),
+		IsDevelopment: !mode.IsProd(),
 	})
 	secureFunc := func() gin.HandlerFunc {
 		return func(c *gin.Context) {

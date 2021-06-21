@@ -20,13 +20,13 @@ import (
 
 	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/services/campaigns"
 	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/redis"
-	"github.com/mailbadger/app/utils"
 )
 
 // Cache prefix and duration parameters
@@ -303,9 +303,9 @@ func setStatusSent(ctx context.Context, store storage.Storage, campaign *entitie
 }
 
 func main() {
-	mode := flag.String("profile.mode", "", "enable profiling mode, one of [cpu, mem, mutex, block, trace]")
+	m := flag.String("profile.mode", "", "enable profiling mode, one of [cpu, mem, mutex, block, trace]")
 	flag.Parse()
-	switch *mode {
+	switch *m {
 	case "cpu":
 		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	case "mem":
@@ -320,13 +320,15 @@ func main() {
 		// do nothing
 	}
 
+	mode.SetModeFromEnv()
+
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		lvl = logrus.InfoLevel
 	}
 
 	logrus.SetLevel(lvl)
-	if utils.IsProductionMode() {
+	if mode.IsProd() {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 	logrus.SetOutput(os.Stdout)

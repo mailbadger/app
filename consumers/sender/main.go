@@ -21,9 +21,9 @@ import (
 	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
+	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/redis"
-	"github.com/mailbadger/app/utils"
 )
 
 // Sender errors
@@ -220,13 +220,15 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 }
 
 func main() {
+	mode.SetModeFromEnv()
+
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		lvl = logrus.InfoLevel
 	}
 
 	logrus.SetLevel(lvl)
-	if utils.IsProductionMode() {
+	if mode.IsProd() {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 	logrus.SetOutput(os.Stdout)
