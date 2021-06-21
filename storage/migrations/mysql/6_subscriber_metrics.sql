@@ -8,7 +8,14 @@ CREATE TABLE IF NOT EXISTS `jobs` (
     `updated_at`        datetime(6)            NOT NULL,
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `accumulated_subscribes` (
+INSERT INTO `jobs` (
+    `name`,
+    `last_processed_id`,
+    `created_at`,
+    `updated_at`
+) VALUES ("subscriber_metrics", 0, NOW(), NOW())
+
+CREATE TABLE IF NOT EXISTS `subscriber_metrics` (
     `id`                BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
     `user_id`           INTEGER UNSIGNED NOT NULL,
     `total_subscribers` INTEGER UNSIGNED NOT NULL,
