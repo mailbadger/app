@@ -27,8 +27,15 @@ func (m Mode) String() string {
 var appMode = Debug
 
 // SetMode sets the app mode according to input string.
-func SetMode(m Mode) {
-	appMode = m
+func SetMode(mode string) {
+	switch mode {
+	case "debug":
+		appMode = Debug
+	case "prod":
+		appMode = Prod
+	case "test":
+		appMode = Test
+	}
 }
 
 // CurrentMode returns the app's current mode.
