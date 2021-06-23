@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/routes"
@@ -45,14 +44,7 @@ func main() {
 		server.WithHandler(handler),
 		server.WithTLS(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE")),
 	)
-
-	var g errgroup.Group
-	g.Go(func() error {
-		logrus.Infoln("Starting the server...")
-		return srv.ListenAndServe(ctx)
-	})
-
-	if err := g.Wait(); err != nil {
-		logrus.WithError(err).Fatalln("Server terminated...")
+	if err := srv.ListenAndServe(ctx); err != nil {
+		logrus.WithError(err).Fatalln("server terminated")
 	}
 }
