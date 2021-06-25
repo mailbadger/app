@@ -5,6 +5,7 @@ import (
 	"time"
 	
 	"github.com/gin-gonic/gin"
+	"github.com/segmentio/ksuid"
 	
 	"github.com/mailbadger/app/entities"
 )
@@ -139,10 +140,11 @@ type Storage interface {
 	GetAllTemplatesForUser(userID int64) ([]entities.Template, error)
 	
 	DeleteAllEventsForUser(userID int64) error
+	GetEventsAfterID(id ksuid.KSUID, limit int64) ([]entities.SubscriberEvent, error)
 	
 	GetJobByName(name string) (*entities.Job, error)
 	UpdateJob(job *entities.Job) error
-	CreateSubscriberMetrics(sm []*entities.SubscribersMetrics, job *entities.Job) error
+	UpdateSubscriberMetrics(sm []*entities.SubscribersMetrics, job *entities.Job) error
 }
 
 // SetToContext sets the storage to the context

@@ -11,6 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	limit int64 = 1000
+)
+
 func main() {
 	driver := os.Getenv("DATABASE_DRIVER")
 	config := storage.MakeConfigFromEnv(driver)
@@ -24,9 +28,19 @@ func main() {
 			Fatal("failed to fetch job")
 	}
 	
-	// Fetch last N events
-	var events []*entities.SubscriberEvent
+	events, err := s.GetEventsAfterID(job.LastProcessedID, limit)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"job_name":          entities.Job_SubscriberMetrics,
+			"last_processed_id": job.LastProcessedID,
+		}).WithError(err).
+			Fatal("failed to fetch events")
+	}
 	
+	if len(events) == 0 {
+		logrus.Info("there are no events to process")
+		return
+	}
 	
 	var wg sync.WaitGroup
 	workers := 5
@@ -40,7 +54,7 @@ func main() {
 	
 	lastProcessedID := ksuid.KSUID{}
 	for _, event := range events {
-		chEvents <- event
+		chEvents <- &event
 		lastProcessedID = event.ID
 	}
 	
@@ -66,9 +80,17 @@ func main() {
 		sm = append(sm, v)
 	}
 	
+	previousLastProccesedID := job.LastProcessedID
 	job.LastProcessedID = lastProcessedID
 	// Make that big transaction
-	s.CreateSubscriberMetrics(sm, job)
+	err = s.UpdateSubscriberMetrics(sm, job)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"job_name": job.Name,
+			"from_id":  previousLastProccesedID,
+			"to_id":    lastProcessedID,
+		}).WithError(err).Error("failed to update subscriber metrics")
+	}
 }
 
 func processEvent(events chan *entities.SubscriberEvent, reducers chan map[string]*entities.SubscribersMetrics) {
