@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS "reports" (
     "id"         integer primary key autoincrement,
-    "user_id"    integer,
+    "user_id"    integer NOT NULL,
     "resource"   varchar(191) NOT NULL,
     "file_name"  varchar(191) NOT NULL,
     "type"       varchar(191) NOT NULL,
