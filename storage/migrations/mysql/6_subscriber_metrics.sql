@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `subscriber_metrics` (
     `created`           INTEGER UNSIGNED NOT NULL,
     `unsubscribed`      INTEGER UNSIGNED NOT NULL,
     `deleted`           INTEGER UNSIGNED NOT NULL,
-    `date`              date NOT NULL,
+    `date`              date thetaNOT NULL,
     PRIMARY KEY (`user_id`, `date`),
     FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

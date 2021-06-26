@@ -11,8 +11,8 @@ func (db *store) DeleteAllEventsForUser(userID int64) error {
 }
 
 // GetEventsAfterID fetches limited batch ov events after provided id
-func (db *store) GetEventsAfterID(id ksuid.KSUID, limit int64) ([]entities.SubscriberEvent, error) {
-	var events []entities.SubscriberEvent
+func (db *store) GetEventsAfterID(id ksuid.KSUID, limit int64) ([]*entities.SubscriberEvent, error) {
+	var events []*entities.SubscriberEvent
 	err := db.Where("id > ?", id).Limit(limit).Find(&events).Error
 	return events, err
 }

@@ -25,9 +25,9 @@ func (db *store) UpdateSubscriberMetrics(sm []*entities.SubscribersMetrics, job 
 			if rbErr != nil {
 				logrus.WithError(rbErr).Error("failed to rollback")
 			}
+			
+			return
 		}
-		
-		return
 	}
 	
 	err = tx.Save(job).Error

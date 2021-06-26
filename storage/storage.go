@@ -140,7 +140,7 @@ type Storage interface {
 	GetAllTemplatesForUser(userID int64) ([]entities.Template, error)
 	
 	DeleteAllEventsForUser(userID int64) error
-	GetEventsAfterID(id ksuid.KSUID, limit int64) ([]entities.SubscriberEvent, error)
+	GetEventsAfterID(id ksuid.KSUID, limit int64) ([]*entities.SubscriberEvent, error)
 	
 	GetJobByName(name string) (*entities.Job, error)
 	UpdateJob(job *entities.Job) error

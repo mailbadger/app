@@ -54,7 +54,7 @@ func main() {
 	
 	lastProcessedID := ksuid.KSUID{}
 	for _, event := range events {
-		chEvents <- &event
+		chEvents <- event
 		lastProcessedID = event.ID
 	}
 	
