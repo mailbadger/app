@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS "roles" (
 );
 
 INSERT INTO "roles" ("name") VALUES ("admin");
+INSERT INTO "roles" ("name") VALUES ("billing");
 
 CREATE TABLE IF NOT EXISTS "users_roles" (
     "user_id" integer,

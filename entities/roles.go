@@ -2,7 +2,8 @@ package entities
 
 // Role names
 const (
-	AdminRole = "admin"
+	AdminRole   = "admin"
+	BillingRole = "billing"
 )
 
 type Role struct {

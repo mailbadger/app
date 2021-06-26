@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS `roles` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 INSERT INTO `roles` (`name`) VALUES ("admin");
+INSERT INTO `roles` (`name`) VALUES ("billing");
 
 CREATE TABLE IF NOT EXISTS `users_roles` (
     `user_id` INTEGER UNSIGNED NOT NULL,
