@@ -4,8 +4,9 @@ CREATE TABLE IF NOT EXISTS `jobs` (
     `id`                INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
     `name`              VARCHAR(30) UNIQUE NOT NULL,
     `last_processed_id` BIGINT UNSIGNED NOT NULL,
-    `created_at`        datetime(6) NOT NULL,
-    `updated_at`        datetime(6) NOT NULL,
+    `status`            VARCHAR(30) NOT NULL,
+    `created_at`        DATETIME(6) NOT NULL,
+    `updated_at`        DATETIME(6) NOT NULL,
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 INSERT INTO `jobs` (
@@ -21,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `subscriber_metrics` (
     `created`           INTEGER UNSIGNED NOT NULL,
     `unsubscribed`      INTEGER UNSIGNED NOT NULL,
     `deleted`           INTEGER UNSIGNED NOT NULL,
-    `date`              date thetaNOT NULL,
+    `date`              DATE NOT NULL,
     PRIMARY KEY (`user_id`, `date`),
     FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
