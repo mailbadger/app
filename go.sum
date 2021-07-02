@@ -127,6 +127,8 @@ github.com/bradfitz/gomemcache v0.0.0-20190329173943-551aad21a668/go.mod h1:H0wQ
 github.com/bradleypeabody/gorilla-sessions-memcache v0.0.0-20181103040241-659414f458e1/go.mod h1:dkChI7Tbtx7H1Tj7TqGSZMOeGpMP5gLHtjroHd4agiI=
 github.com/bytecodealliance/wasmtime-go v0.27.0 h1:b/mvyw1YJSwF5zNxqLH9V24ENkZGAvp+KgIKHOFHk1c=
 github.com/bytecodealliance/wasmtime-go v0.27.0/go.mod h1:q320gUxqyI8yB+ZqRuaJOEnGkAnHh6WtJjMaT2CW4wI=
+github.com/bytecodealliance/wasmtime-go v0.28.0 h1:JTWP482wkmR79O9T0JiIAllPqmNW5oP0v56v/FwCpaQ=
+github.com/bytecodealliance/wasmtime-go v0.28.0/go.mod h1:q320gUxqyI8yB+ZqRuaJOEnGkAnHh6WtJjMaT2CW4wI=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=
 github.com/cbroglie/mustache v1.2.2 h1:yBMb9m4ihtI2Rg8GSuVEUZbTdphhRu4S1AJx1uDC2f8=
 github.com/cbroglie/mustache v1.2.2/go.mod h1:gomHsVlF4zTcsY2H8d7U9SipCYbbrAks5breARbqAM0=
@@ -791,6 +793,8 @@ github.com/onsi/gomega v1.10.5/go.mod h1:gza4q3jKQJijlu05nKWRCW/GavJumGt8aNRxWg7
 github.com/op/go-logging v0.0.0-20160315200505-970db520ece7/go.mod h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk=
 github.com/open-policy-agent/opa v0.29.4 h1:rNa/Gd3Fs0xWgL0aZoyblRwCZLJsSLDQOhnck6DWpaA=
 github.com/open-policy-agent/opa v0.29.4/go.mod h1:ZCOTD3yyFR8JvF8ETdWdiSPn9WcF1dXeQWOv7VoPorU=
+github.com/open-policy-agent/opa v0.30.0 h1:m8KqIiPMA4ITm3o5G7druz19V5rs07RYqb6mYdnG4QM=
+github.com/open-policy-agent/opa v0.30.0/go.mod h1:+Bv1G/E7Irxgm5zLNXiHuxYqMaqJUSKyBhIGxeneoGA=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing/basictracer-go v1.0.0/go.mod h1:QfBfYuafItcjQuMwinw9GhYKwFXS9KnPs5lxoYwgW74=
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=

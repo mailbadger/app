@@ -16,6 +16,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/snappy v0.0.2 // indirect
+	github.com/golangci/golangci-lint v1.40.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/csrf v1.7.0
@@ -28,7 +29,7 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/open-policy-agent/opa v0.29.4
+	github.com/open-policy-agent/opa v0.30.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
