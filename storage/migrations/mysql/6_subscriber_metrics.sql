@@ -1,12 +1,12 @@
 -- +migrate Up
 
 CREATE TABLE IF NOT EXISTS `jobs` (
-    `id`                INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    `name`              VARCHAR(30) UNIQUE NOT NULL,
-    `last_processed_id` BIGINT UNSIGNED NOT NULL,
-    `status`            VARCHAR(30) NOT NULL,
-    `created_at`        DATETIME(6) NOT NULL,
-    `updated_at`        DATETIME(6) NOT NULL,
+    `id`                  INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    `name`                VARCHAR(30) UNIQUE NOT NULL,
+    `last_processed_date` DATE(6) UNSIGNED NOT NULL,
+    `status`              VARCHAR(30) NOT NULL,
+    `created_at`          DATETIME(6) NOT NULL,
+    `updated_at`          DATETIME(6) NOT NULL,
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 INSERT INTO `jobs` (

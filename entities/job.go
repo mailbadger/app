@@ -3,8 +3,6 @@ package entities
 import (
 	"database/sql/driver"
 	"time"
-	
-	"github.com/segmentio/ksuid"
 )
 
 var (
@@ -29,10 +27,10 @@ var (
 )
 
 type Job struct {
-	ID              int64       `json:"-" gorm:"column:id; primary_key:yes"`
-	Name            string      `json:"-"`
-	LastProcessedID ksuid.KSUID `json:"-"`
-	Status          JobStatus   `json:"-" gorm:"column:status"`
-	CreatedAt       time.Time   `json:"-"`
-	UpdatedAt       time.Time   `json:"-"`
+	ID                int64     `json:"-" gorm:"column:id; primary_key:yes"`
+	Name              string    `json:"-"`
+	LastProcessedDate time.Time `json:"-"`
+	Status            JobStatus `json:"-" gorm:"column:status"`
+	CreatedAt         time.Time `json:"-"`
+	UpdatedAt         time.Time `json:"-"`
 }

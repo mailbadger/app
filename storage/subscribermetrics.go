@@ -9,7 +9,7 @@ func (db *store) UpdateSubscriberMetrics(sm *entities.SubscribersMetrics) (err e
 			(user_id, created, deleted, unsubscribed, date)
 			VALUES (?, ?, ?, ?, ?)
 			ON DUPLICATE KEY
-			UPDATE created = created_at + ?, deleted = deleted + ?, unsubscribed = unsubscribed + ?`,
+			UPDATE created = ?, deleted = ?, unsubscribed = ?`,
 		sm.UserID, sm.Created, sm.Deleted, sm.Unsubscribed, sm.Date,
 		sm.Created, sm.Deleted, sm.Unsubscribed,
 	).Error
