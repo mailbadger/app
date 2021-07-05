@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { FormField, Box } from 'grommet';
 import { Formik } from 'formik';
-import ReCAPTCHA from 'react-google-recaptcha';
+//import ReCAPTCHA from 'react-google-recaptcha';
 import { string, object, ref, addMethod, bool } from 'yup';
 import { mainInstance as axios } from '../axios';
 import qs from 'qs';
@@ -34,7 +34,7 @@ const registerValidation = object().shape({
 	terms: bool().oneOf([ true ], 'Please accept Terms of Service')
 });
 
-const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors, isMobile }) => {
+const Form = ({ handleSubmit, handleChange, isSubmitting, errors, isMobile }) => {
 	const [ checked, setChecked ] = useState(false);
 
 	const handleChangeCheckBtn = (e) => {
@@ -75,12 +75,12 @@ const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors,
 							<AuthStyledTextInput name="password_confirm" type="password" onChange={handleChange} />
 							<AuthFormFieldError name="password_confirm" />
 						</FormField>
-						{process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
-							<ReCAPTCHA
-								sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
-								onChange={(value) => setFieldValue('token_response', value, true)}
-							/>
-						)}
+						{/* {process.env.REACT_APP_RECAPTCHA_SITE_KEY && (
+							// <ReCAPTCHA
+							// 	sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
+							// 	onChange={(value) => setFieldValue('token_response', value, true)}
+							// />
+						)} */}
 						<FormField style={{ marginTop: '20px' }} htmlFor="terms">
 							<Checkbox
 								name="terms"
@@ -124,14 +124,14 @@ const RegisterForm = ({ isMobile, fetchUser }) => {
 					password: values.password
 				};
 
-				if (process.env.REACT_APP_RECAPTCHA_SITE_KEY !== '') {
-					if (!values.token_response) {
-						setErrors({ message: 'Invalid re-captcha response.' });
-						return;
-					}
+				// if (process.env.REACT_APP_RECAPTCHA_SITE_KEY !== '') {
+				// 	if (!values.token_response) {
+				// 		setErrors({ message: 'Invalid re-captcha response.' });
+				// 		return;
+				// 	}
 
-					params.token_response = values.token_response;
-				}
+				// 	params.token_response = values.token_response;
+				// }
 
 				await axios.post('/api/signup', qs.stringify(params));
 				fetchUser();
