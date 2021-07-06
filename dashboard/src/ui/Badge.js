@@ -9,9 +9,9 @@ const Badge = styled.span`
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: 5px;
-  color: #fff;
-  background-color: ${props => props.color || "#CCCCCC"};
+  color: #541388;
+  background-color: ${(props) => props.color || "rgba(84, 19, 136, 0.2)"};
+  border: solid 1px #541388;
 `;
 
 export default Badge;

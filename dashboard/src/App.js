@@ -24,7 +24,7 @@ const theme = deepMerge(grommet, {
     },
     colors: {
       background: "#ffffff",
-      brand: "#390099",
+      brand: "#541388",
       focus: "#541388",
     },
     size: {
@@ -59,17 +59,17 @@ const theme = deepMerge(grommet, {
   button: {
     border: {
       radius: "5px",
-      color: "#390099",
+      color: "#541388",
     },
     primary: {
-      color: "#390099",
+      color: "#541388",
     },
   },
   anchor: {
     primary: {
       color: "#999999",
     },
-    color: "#390099",
+    color: "#541388",
   },
 
   checkBox: {
@@ -80,7 +80,7 @@ const theme = deepMerge(grommet, {
     check: {
       extend: `
 			background:#f5f5fa;
-			box-shadow: 0 0 1px #390099;
+			box-shadow: 0 0 1px #541388;
 			border-radius: 5px;
 			`,
     },

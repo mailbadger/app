@@ -33,7 +33,7 @@ const StyledDataTable = styled(DataTable)`
   }
 
   ${this} thead th {
-    color: #390099;
+    color: #541388;
   }
 
   ${this} thead th div {

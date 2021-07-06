@@ -51,12 +51,8 @@ export const StyledHeaderButton = styled(SecondaryButton)`
 	font-size: 16px;
 
 	:hover {
-	background-color: #000000;
-	color: white;
-	}
-
-	&:focus {
-		box-shadow:none;
+    background-color: #000000;
+    color: white;
 	}
 `;
 

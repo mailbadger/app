@@ -99,7 +99,7 @@ const StyledDataTable = styled(DataTable)`
 				font-weight: bold;
 				color: #541388;
 
-				&:first-of-type{
+				&:first-of-type {
 					padding-left: 30px;
 				}
 			}
@@ -111,23 +111,12 @@ const StyledDataTable = styled(DataTable)`
 			}
 
 			td {
-				button{
+				button {
 					&:focus {
 						box-shadow: none;
 					}
 				}
-
-				&:nth-of-type(3) {	
-					div {
-						background-color: #fadcff;
-						border-radius: 8px;
-						padding: 8.5px 24px 8.5px;
-						font-size: 14px;
-						font-weight: bold;
-						color: #541388;
-				}
-			}
-		}	
+		  }	
 	}
 `;
 
@@ -154,7 +143,7 @@ const StyledButton = styled(Button)`
   font-weight: normal;
 
   &:focus {
-    box-shadow: 0 0 6px 2px #390099;
+    box-shadow: 0 0 6px 2px #541388;
   }
 
   &:first-of-type {

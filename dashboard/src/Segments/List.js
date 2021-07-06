@@ -9,24 +9,15 @@ import qs from "qs";
 
 import { useApi } from "../hooks";
 import {
-  TableBody,
-  TableRow,
-  TableCell,
   Box,
   Button,
   Heading,
-  Select,
   FormField,
   TextInput,
   ResponsiveContext,
-  } from "grommet";
+} from "grommet";
 import history from "../history";
-import {
-  StyledTable,
-  ButtonWithLoader,
-  Modal,
-  AnchorLink,
-} from "../ui";
+import { ButtonWithLoader, Modal, StyledTableMenu } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 import DeleteSegment from "./Delete";
 import { DashboardDataTable } from "../ui/DashboardDataTable";
@@ -36,113 +27,7 @@ import {
   StyledHeaderButtons,
   StyledHeaderTitle,
   StyledHeaderButton,
-  StyledActions,
 } from "../Subscribers/StyledSections";
-import { StyledTableHeader } from "../ui/DashboardStyledTable";
-
-const Row = ({ segment, setShowDelete }) => {
-  const ca = parseISO(segment.created_at);
-  const ua = parseISO(segment.updated_at);
-  return (
-    <TableRow>
-      <TableCell scope="row" size="medium">
-        <AnchorLink
-          size="medium"
-          fontWeight="bold"
-          to={`/dashboard/segments/${segment.id}`}
-          label={segment.name}
-        />
-      </TableCell>
-      <TableCell scope="row" size="medium">
-        <strong>{segment.subscribers_in_segment}</strong>
-      </TableCell>
-      <TableCell scope="row" size="medium">
-        {formatRelative(ca, new Date())}
-      </TableCell>
-      <TableCell scope="row" size="medium">
-        {formatRelative(ua, new Date())}
-      </TableCell>
-      <TableCell scope="row" size="xsmall" align="end">
-        <StyledActions>
-        <Select
-          alignSelf="center"
-          plain
-          icon={<More />}
-          options={["View", "Delete"]}
-          onChange={({ option }) => {
-            (function () {
-              switch (option) {
-                case "View":
-                  history.push(`/dashboard/segments/${segment.id}`);
-                  break;
-                case "Delete":
-                  setShowDelete({
-                    show: true,
-                    name: segment.name,
-                    id: segment.id,
-                  });
-                  break;
-                default:
-                  return null;
-              }
-            })();
-          }}
-        />
-        </StyledActions>
-      </TableCell>
-    </TableRow>
-  );
-};
-
-Row.propTypes = {
-  segment: PropTypes.shape({
-    name: PropTypes.string,
-    id: PropTypes.number,
-    subscribers_in_segment: PropTypes.number,
-    created_at: PropTypes.string,
-    updated_at: PropTypes.string,
-  }),
-  setShowDelete: PropTypes.func,
-};
-
-const Header = () => (
-  <StyledTableHeader>
-    <TableRow>
-      <TableCell scope="col" border="bottom" size="small">
-        <strong>Name</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
-        <strong>Total Subscribers</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
-        <strong>Created At</strong>
-      </TableCell>
-      <TableCell scope="col" border="bottom" size="small">
-        <strong>Updated At</strong>
-      </TableCell>
-      <TableCell align="end" scope="col" border="bottom" size="small">
-        <strong>Action</strong>
-      </TableCell>
-    </TableRow>
-  </StyledTableHeader>
-);
-
-const SegmentTable = React.memo(({ list, setShowDelete }) => (
-  <StyledTable>
-    <Header />
-    <TableBody>
-      {list.map((s) => (
-        <Row segment={s} key={s.id} setShowDelete={setShowDelete} />
-      ))}
-    </TableBody>
-  </StyledTable>
-));
-
-SegmentTable.displayName = "SegmentTable";
-SegmentTable.propTypes = {
-  list: PropTypes.array,
-  setShowDelete: PropTypes.func,
-};
 
 const segmentValidation = object().shape({
   name: string()
@@ -297,50 +182,52 @@ const getData = (segmentsData, setShowDelete) => {
   const data = [];
 
   for (let i = 0; i < segmentsData.length; i += 1) {
-    const { name, subscribers_in_segment, created_at, updated_at, id } = segmentsData[i];
+    const { name, subscribers_in_segment, created_at, updated_at, id } =
+      segmentsData[i];
 
-    const dateCreatedAt = new Date(created_at);
+    const dateCreatedAt = parseISO(created_at);
     const dateUpdatedAt = parseISO(updated_at);
 
     data.push({
       name,
       subscribers_in_segment,
-      created: dateCreatedAt.toLocaleDateString("en-US"),
+      created: formatRelative(dateCreatedAt, new Date()),
       updated: formatRelative(dateUpdatedAt, new Date()),
       actions: (
-        <StyledActions>
-          <Select
+        <Box direction="row">
+          <Button
+            label="view"
+            primary
+            margin={{ right: "medium" }}
+            onClick={() => history.push(`/dashboard/segments/${id}`)}
+          />
+          <StyledTableMenu
             alignSelf="center"
             plain
-            defaultValue="View"
-            icon={<More />}
-            options={["View","Delete"]}
-            onChange={({ option }) => {
-              (() => {
-                switch (option) {
-                  case "View":
-                    history.push(`/dashboard/segments/${id}`);
-                    break;
-                  case "Delete":
-                    setShowDelete({
-                      show: true,
-                      name,
-                      id,
-                    });
-                    break;
-                  default:
-                    return "null";
-                }
-              })();
+            size="small"
+            dropProps={{
+              align: { top: "bottom", left: "left" },
+              elevation: "xlarge",
             }}
+            icon={<More />}
+            items={[
+              {
+                label: "Delete",
+                onClick: () =>
+                  setShowDelete({
+                    show: true,
+                    name,
+                    id,
+                  }),
+              },
+            ]}
           />
-        </StyledActions>
+        </Box>
       ),
     });
   }
   return data;
 };
-
 
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
@@ -358,13 +245,14 @@ const List = () => {
   );
   const contextSize = useContext(ResponsiveContext);
 
-  const data = getData(
-    state.data.collection,
-    setShowDelete
-  );
-   const columns = [
+  const data = getData(state.data.collection, setShowDelete);
+  const columns = [
     { property: "name", header: "Name", size: "small" },
-    { property: "subscribers_in_segment", header: "Subscribers in Group", size: "small" },
+    {
+      property: "subscribers_in_segment",
+      header: "Subscribers in Group",
+      size: "small",
+    },
     { property: "created", header: "Created At", size: "small" },
     { property: "updated", header: "Updated At", size: "small" },
     { property: "actions", header: "Actions", size: "small", align: "center" },
@@ -374,11 +262,10 @@ const List = () => {
   if (state.isLoading) {
     table = (
       <DashboardPlaceholderTable
-      columns={columns}
-      numCols={columns.length}
-      numRows={10}
-    />
-    
+        columns={columns}
+        numCols={columns.length}
+        numRows={10}
+      />
     );
   } else if (state.data && state.data.collection.length > 0) {
     table = (
@@ -386,7 +273,7 @@ const List = () => {
         columns={columns}
         data={data}
         isLoading={state.isLoading}
-        setShowDelete={setShowDelete}     
+        setShowDelete={setShowDelete}
         prevLinks={state.data.links.previous}
         nextLinks={state.data.links.next}
       />
@@ -424,7 +311,7 @@ const List = () => {
         />
       )}
 
-    <StyledHeaderWrapper
+      <StyledHeaderWrapper
         size={contextSize}
         gridArea="nav"
         margin={{ left: "40px", right: "100px", bottom: "22px", top: "40px" }}
@@ -432,12 +319,10 @@ const List = () => {
         <StyledHeaderTitle size={contextSize}>Segments</StyledHeaderTitle>
         <StyledHeaderButtons size={contextSize} margin={{ left: "auto" }}>
           <Fragment>
-           
             <StyledHeaderButton
               width="154"
               margin={{ right: "small" }}
               label="Create New"
-              color="status-ok"
               icon={<Add />}
               onClick={() => openCreateModal(true)}
             />
@@ -447,70 +332,15 @@ const List = () => {
       <Box gridArea="main">
         <Box animation="fadeIn">
           {table}
-          {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
+          {!state.isLoading &&
+          !state.isError &&
+          state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "large" }}>
               <Heading level="2">Create your first segment.</Heading>
             </Box>
           ) : null}
         </Box>
       </Box>
-
-
-      {/* <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
-        <Box margin={{ right: "small" }} alignSelf="center">
-          <Heading level="2">Segments</Heading>
-        </Box>
-        <Box alignSelf="center">
-          <Button
-            primary
-            color="status-ok"
-            label="Create new"
-            icon={<Add />}
-            reverse
-            onClick={() => openCreateModal(true)}
-          />
-        </Box>
-      </Box> */}
-      {/* <Box gridArea="main">
-        <Box animation="fadeIn">
-          {table}
-
-          {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
-            <Box align="center" margin={{ top: "small" }}>
-              <Heading level="2">Create your first segment.</Heading>
-            </Box>
-          ) : null}
-        </Box>
-        {!state.isLoading && state.data.collection.length > 0 ? (
-          <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-            <Box margin={{ right: "small" }}>
-              <Button
-                icon={<FormPreviousLink />}
-                label="Previous"
-                disabled={state.data.links.previous === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.previous,
-                  });
-                }}
-              />
-            </Box>
-            <Box>
-              <Button
-                icon={<FormNextLink />}
-                reverse
-                label="Next"
-                disabled={state.data.links.next === null}
-                onClick={() => {
-                  callApi({
-                    url: state.data.links.next,
-                  });
-                }}
-              />
-            </Box>
-          </Box>
-        ) : null}
-      </Box> */}
     </>
   );
 };

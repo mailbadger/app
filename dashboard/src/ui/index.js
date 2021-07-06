@@ -18,16 +18,17 @@ import Emoji from "./Emoji";
 import GradientBadger from "./GradientBadger";
 import Avatar from "./Avatar";
 import UserMenu from "./UserMenu";
-import AuthStyledTextInput from './Auth/AuthStyledTextInput';
-import AuthStyledTextLabel from './Auth/AuthStyledTextLabel';
-import AuthStyledButton from './Auth/AuthStyledButton';
-import AuthStyledHeader from './Auth/AuthStyledHeader';
-import AuthFormFieldError from './Auth/AuthFormFieldError';
-import AuthFormSubmittedError from './Auth/AuthFormSubmittedError';
-import CustomLineBreak from './CustomLineBreak';
-import Checkbox from './Checkbox';
-import AuthStyledRedirectLink from './Auth/AuthStyledRedirectLink';
-import AuthFormWrapper from './Auth/AuthFormWrapper';
+import AuthStyledTextInput from "./Auth/AuthStyledTextInput";
+import AuthStyledTextLabel from "./Auth/AuthStyledTextLabel";
+import AuthStyledButton from "./Auth/AuthStyledButton";
+import AuthStyledHeader from "./Auth/AuthStyledHeader";
+import AuthFormFieldError from "./Auth/AuthFormFieldError";
+import AuthFormSubmittedError from "./Auth/AuthFormSubmittedError";
+import CustomLineBreak from "./CustomLineBreak";
+import Checkbox from "./Checkbox";
+import StyledTableMenu from "./StyledTableMenu";
+import AuthStyledRedirectLink from "./Auth/AuthStyledRedirectLink";
+import AuthFormWrapper from "./Auth/AuthFormWrapper";
 
 export {
   Badge,
@@ -60,5 +61,6 @@ export {
   Checkbox,
   AuthStyledRedirectLink,
   AuthFormWrapper,
-  AuthFormSubmittedError
+  AuthFormSubmittedError,
+  StyledTableMenu,
 };
