@@ -25,10 +25,21 @@ export const StyledLink = styled(Link)`
   ${(props) =>
     props.hovered
       ? `${activeAnchor}
-borderTopRightRadius: '0',
-borderBottomRightRadius: '0'
+border-top-right-radius: 0;
+border-bottom-right-radius: 0
 `
       : ""};
+
+  /*
+      Hack for Safari browser as position fixed is not behaving the same way as on other browsers 
+      */
+  @media not all and (min-resolution: 0.001dpcm) {
+    @media {
+      div:nth-of-type(2) {
+        margin-left: 73px !important;
+      }
+    }
+  }
 `;
 
 export const StyledMenuItemContainer = styled(Box)`

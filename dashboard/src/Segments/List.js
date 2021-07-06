@@ -1,7 +1,7 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, Fragment } from "react";
 import PropTypes from "prop-types";
 import { parseISO, formatRelative } from "date-fns";
-import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
+import { More, Add } from "grommet-icons";
 import { mainInstance as axios } from "../axios";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
@@ -9,7 +9,6 @@ import qs from "qs";
 
 import { useApi } from "../hooks";
 import {
-  TableHeader,
   TableBody,
   TableRow,
   TableCell,
@@ -19,24 +18,34 @@ import {
   Select,
   FormField,
   TextInput,
-} from "grommet";
+  ResponsiveContext,
+  } from "grommet";
 import history from "../history";
 import {
   StyledTable,
   ButtonWithLoader,
-  PlaceholderTable,
   Modal,
   AnchorLink,
 } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 import DeleteSegment from "./Delete";
+import { DashboardDataTable } from "../ui/DashboardDataTable";
+import DashboardPlaceholderTable from "../ui/DashboardPlaceholderTable";
+import {
+  StyledHeaderWrapper,
+  StyledHeaderButtons,
+  StyledHeaderTitle,
+  StyledHeaderButton,
+  StyledActions,
+} from "../Subscribers/StyledSections";
+import { StyledTableHeader } from "../ui/DashboardStyledTable";
 
 const Row = ({ segment, setShowDelete }) => {
   const ca = parseISO(segment.created_at);
   const ua = parseISO(segment.updated_at);
   return (
     <TableRow>
-      <TableCell scope="row" size="xlarge">
+      <TableCell scope="row" size="medium">
         <AnchorLink
           size="medium"
           fontWeight="bold"
@@ -44,7 +53,7 @@ const Row = ({ segment, setShowDelete }) => {
           label={segment.name}
         />
       </TableCell>
-      <TableCell scope="row" size="xlarge">
+      <TableCell scope="row" size="medium">
         <strong>{segment.subscribers_in_segment}</strong>
       </TableCell>
       <TableCell scope="row" size="medium">
@@ -54,6 +63,7 @@ const Row = ({ segment, setShowDelete }) => {
         {formatRelative(ua, new Date())}
       </TableCell>
       <TableCell scope="row" size="xsmall" align="end">
+        <StyledActions>
         <Select
           alignSelf="center"
           plain
@@ -78,6 +88,7 @@ const Row = ({ segment, setShowDelete }) => {
             })();
           }}
         />
+        </StyledActions>
       </TableCell>
     </TableRow>
   );
@@ -95,7 +106,7 @@ Row.propTypes = {
 };
 
 const Header = () => (
-  <TableHeader>
+  <StyledTableHeader>
     <TableRow>
       <TableCell scope="col" border="bottom" size="small">
         <strong>Name</strong>
@@ -113,7 +124,7 @@ const Header = () => (
         <strong>Action</strong>
       </TableCell>
     </TableRow>
-  </TableHeader>
+  </StyledTableHeader>
 );
 
 const SegmentTable = React.memo(({ list, setShowDelete }) => (
@@ -282,6 +293,55 @@ DeleteForm.propTypes = {
   hideModal: PropTypes.func,
 };
 
+const getData = (segmentsData, setShowDelete) => {
+  const data = [];
+
+  for (let i = 0; i < segmentsData.length; i += 1) {
+    const { name, subscribers_in_segment, created_at, updated_at, id } = segmentsData[i];
+
+    const dateCreatedAt = new Date(created_at);
+    const dateUpdatedAt = parseISO(updated_at);
+
+    data.push({
+      name,
+      subscribers_in_segment,
+      created: dateCreatedAt.toLocaleDateString("en-US"),
+      updated: formatRelative(dateUpdatedAt, new Date()),
+      actions: (
+        <StyledActions>
+          <Select
+            alignSelf="center"
+            plain
+            defaultValue="View"
+            icon={<More />}
+            options={["View","Delete"]}
+            onChange={({ option }) => {
+              (() => {
+                switch (option) {
+                  case "View":
+                    history.push(`/dashboard/segments/${id}`);
+                    break;
+                  case "Delete":
+                    setShowDelete({
+                      show: true,
+                      name,
+                      id,
+                    });
+                    break;
+                  default:
+                    return "null";
+                }
+              })();
+            }}
+          />
+        </StyledActions>
+      ),
+    });
+  }
+  return data;
+};
+
+
 const List = () => {
   const [showDelete, setShowDelete] = useState({ show: false, name: "" });
   const [showCreate, openCreateModal] = useState(false);
@@ -296,18 +356,39 @@ const List = () => {
       init: true,
     }
   );
+  const contextSize = useContext(ResponsiveContext);
+
+  const data = getData(
+    state.data.collection,
+    setShowDelete
+  );
+   const columns = [
+    { property: "name", header: "Name", size: "small" },
+    { property: "subscribers_in_segment", header: "Subscribers in Group", size: "small" },
+    { property: "created", header: "Created At", size: "small" },
+    { property: "updated", header: "Updated At", size: "small" },
+    { property: "actions", header: "Actions", size: "small", align: "center" },
+  ];
 
   let table = null;
   if (state.isLoading) {
     table = (
-      <PlaceholderTable width="100%" header={Header} numCols={4} numRows={8} />
+      <DashboardPlaceholderTable
+      columns={columns}
+      numCols={columns.length}
+      numRows={10}
+    />
+    
     );
   } else if (state.data && state.data.collection.length > 0) {
     table = (
-      <SegmentTable
+      <DashboardDataTable
+        columns={columns}
+        data={data}
         isLoading={state.isLoading}
-        list={state.data.collection}
-        setShowDelete={setShowDelete}
+        setShowDelete={setShowDelete}     
+        prevLinks={state.data.links.previous}
+        nextLinks={state.data.links.next}
       />
     );
   }
@@ -342,7 +423,40 @@ const List = () => {
           }
         />
       )}
-      <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
+
+    <StyledHeaderWrapper
+        size={contextSize}
+        gridArea="nav"
+        margin={{ left: "40px", right: "100px", bottom: "22px", top: "40px" }}
+      >
+        <StyledHeaderTitle size={contextSize}>Segments</StyledHeaderTitle>
+        <StyledHeaderButtons size={contextSize} margin={{ left: "auto" }}>
+          <Fragment>
+           
+            <StyledHeaderButton
+              width="154"
+              margin={{ right: "small" }}
+              label="Create New"
+              color="status-ok"
+              icon={<Add />}
+              onClick={() => openCreateModal(true)}
+            />
+          </Fragment>
+        </StyledHeaderButtons>
+      </StyledHeaderWrapper>
+      <Box gridArea="main">
+        <Box animation="fadeIn">
+          {table}
+          {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
+            <Box align="center" margin={{ top: "large" }}>
+              <Heading level="2">Create your first segment.</Heading>
+            </Box>
+          ) : null}
+        </Box>
+      </Box>
+
+
+      {/* <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
         <Box margin={{ right: "small" }} alignSelf="center">
           <Heading level="2">Segments</Heading>
         </Box>
@@ -356,8 +470,8 @@ const List = () => {
             onClick={() => openCreateModal(true)}
           />
         </Box>
-      </Box>
-      <Box gridArea="main">
+      </Box> */}
+      {/* <Box gridArea="main">
         <Box animation="fadeIn">
           {table}
 
@@ -396,7 +510,7 @@ const List = () => {
             </Box>
           </Box>
         ) : null}
-      </Box>
+      </Box> */}
     </>
   );
 };

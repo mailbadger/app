@@ -91,3 +91,10 @@ export const StyledActions = styled(Box)`
     }
   }
 `;
+
+export const StyledModalHeader = styled(Box)`
+  font-family: "Poppins Bold";
+  font-size: 16px;
+  text-align: left;
+  color: #000000;
+`;

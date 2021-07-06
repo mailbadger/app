@@ -36,9 +36,11 @@ import {
   StyledHeaderButton,
   StyledImportButton,
   StyledActions,
+  StyledModalHeader,
 } from "./StyledSections";
 import { StyledTableHeader } from "../ui/DashboardStyledTable";
 import DashboardPlaceholderTable from "../ui/DashboardPlaceholderTable";
+import ImportSubscribers from "./Import";
 
 export const Row = ({ subscriber, actions }) => {
   const ca = parseISO(subscriber.created_at);
@@ -267,12 +269,14 @@ const List = () => {
   const [showCreate, openCreateModal] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [filteredData, setFilteredData] = useState([]);
+  const [showImport, openImportModal] = useState(false);
 
   const hideDeleteModal = () =>
     setShowDelete({ show: false, email: "", id: "" });
   const hideEditModal = () => setShowEdit({ show: false, id: "" });
 
   const contextSize = useContext(ResponsiveContext);
+
   const columns = [
     { property: "email", header: "Email", size: getColumnSize(contextSize) },
     { property: "created", header: "Created At", size: "small" },
@@ -346,8 +350,24 @@ const List = () => {
 
   return (
     <Fragment>
+      {showImport && (
+        <Modal
+          width="906px"
+          title={
+            <StyledModalHeader>{"Import from a CSV file"}</StyledModalHeader>
+          }
+          hideModal={() => openImportModal(false)}
+          form={
+            <ImportSubscribers
+              callApi={callApi}
+              hideModal={() => openImportModal(false)}
+            />
+          }
+        />
+      )}
       {showDelete.show && (
         <Modal
+          width="906px"
           title={`Delete subscriber ${showDelete.email} ?`}
           hideModal={hideDeleteModal}
           form={
@@ -397,7 +417,7 @@ const List = () => {
               margin={{ right: "small" }}
               icon={<FontAwesomeIcon icon={faPlus} />}
               label="Import from file"
-              onClick={() => history.push("/dashboard/subscribers/import")}
+              onClick={() => openImportModal(true)}
             />
             <StyledHeaderButton
               width="154"

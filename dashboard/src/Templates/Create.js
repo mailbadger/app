@@ -120,7 +120,7 @@ const CreateTemplateForm = () => {
             name: values.name,
             html_part: values.html_part,
             text_part: values.html_part,
-            subject: values.subject,
+            subject_part: values.subject,
           })
         );
         createNotification("Template has been created successfully.");

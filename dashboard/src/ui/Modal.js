@@ -2,11 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Layer, Box, Heading } from "grommet";
 
-const Modal = ({ hideModal, title, form }) => {
+const Modal = ({ hideModal, title, form, width = "30em" }) => {
   return (
     <Layer onEsc={() => hideModal()} onClickOutside={() => hideModal()}>
-      <Box width="30em">
-        <Heading margin="small" level="3">
+      <Box width={width}>
+        <Heading
+          margin={{ top: "20px", bottom: "20px", left: "20px" }}
+          level="3"
+        >
           {title}
         </Heading>
         {form}
@@ -17,8 +20,9 @@ const Modal = ({ hideModal, title, form }) => {
 
 Modal.propTypes = {
   hideModal: PropTypes.func,
-  title: PropTypes.string,
-  form: PropTypes.element.isRequired
+  title: PropTypes.string || PropTypes.element,
+  form: PropTypes.element.isRequired,
+  width: PropTypes.string,
 };
 
 export default Modal;

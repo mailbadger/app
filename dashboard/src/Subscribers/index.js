@@ -3,7 +3,6 @@ import { Switch } from "react-router-dom";
 
 import ProtectedRoute from "../ProtectedRoute";
 import List, { Row, Header, SubscriberTable } from "./List";
-import Import from "./Import";
 import BulkDelete from "./BulkDelete";
 
 const Subscribers = () => {
@@ -13,11 +12,6 @@ const Subscribers = () => {
         exact
         path="/dashboard/subscribers"
         component={() => <List />}
-      />
-      <ProtectedRoute
-        exact
-        path="/dashboard/subscribers/import"
-        component={Import}
       />
       <ProtectedRoute
         exact
