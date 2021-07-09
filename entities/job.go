@@ -34,10 +34,8 @@ var (
 )
 
 type Job struct {
-	ID                int64     `json:"-" gorm:"column:id; primary_key:yes"`
-	Name              string    `json:"-"`
-	LastProcessedDate time.Time `json:"-"`
-	Status            string    `json:"-"`
-	CreatedAt         time.Time `json:"-"`
-	UpdatedAt         time.Time `json:"-"`
+	Model
+	Name              string    `json:"name"`
+	LastProcessedDate time.Time `json:"last_processed_date"`
+	Status            string    `json:"status"`
 }

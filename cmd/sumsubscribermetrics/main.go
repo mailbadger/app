@@ -76,20 +76,45 @@ func main() {
 		}
 	}()
 	
+	job.Status = processEvents(s, startDate, endDate, lf)
+}
+
+func parseDates(yesterday, dateStr, startDateStr, endDateStr string) (sd time.Time, ed time.Time, err error) {
+	if startDateStr != yesterday && endDateStr != yesterday {
+		sd, err = time.Parse("2006-01-02", startDateStr)
+		if err != nil {
+			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
+		}
+		
+		ed, err = time.Parse("2006-01-02", endDateStr)
+		if err != nil {
+			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
+		}
+		
+		return sd, ed.AddDate(0, 0, 1), nil
+	}
+	
+	cd, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("parsing date: %w", err)
+	}
+	
+	return cd, cd.AddDate(0, 0, 1), nil
+}
+
+func processEvents(s storage.Storage, startDate, endDate time.Time, lf *logrus.Entry) string {
 	events, err := s.GetGroupedSubscriberEvents(startDate, endDate)
 	if err != nil {
-		job.Status = entities.JobStatusDirty
 		lf.WithError(err).
 			Error("failed to group events")
-		return
+		return entities.JobStatusDirty
 	}
 	
 	logrus.Infof("There are %d grouped events from %s, to %s to be proccessed", len(events), startDate, endDate)
 	
 	if len(events) == 0 {
-		job.Status = entities.JobStatusIdle
 		lf.Info("there are no events to process")
-		return
+		return entities.JobStatusIdle
 	}
 	
 	var (
@@ -103,7 +128,7 @@ func main() {
 	
 	for i = 0; i < workers; i++ {
 		wg.Add(1)
-		go processEvent(&wg, chGroupedEvents, chReducers)
+		go worker(&wg, chGroupedEvents, chReducers)
 	}
 	
 	for _, event := range events {
@@ -145,39 +170,15 @@ func main() {
 	close(chSubscriberMetrics)
 	err = errGroup.Wait()
 	if err != nil {
-		job.Status = entities.JobStatusIdle
 		lf.WithError(err).
 			Error("failed to upsert subscriber metrics")
-		return
+		return  entities.JobStatusIdle
 	}
 	
-	job.Status = entities.JobStatusIdle
+	return entities.JobStatusIdle
 }
 
-func parseDates(yesterday, dateStr, startDateStr, endDateStr string) (sd time.Time, ed time.Time, err error) {
-	if startDateStr != yesterday && endDateStr != yesterday {
-		sd, err = time.Parse("2006-01-02", startDateStr)
-		if err != nil {
-			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
-		}
-		
-		ed, err = time.Parse("2006-01-02", endDateStr)
-		if err != nil {
-			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
-		}
-		
-		return sd, ed.AddDate(0, 0, 1), nil
-	}
-	
-	cd, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		return time.Time{}, time.Time{}, fmt.Errorf("parsing date: %w", err)
-	}
-	
-	return cd, cd.AddDate(0, 0, 1), nil
-}
-
-func processEvent(wg *sync.WaitGroup, events chan *entities.GroupedSubscriberEvents, reducers chan map[string]*entities.SubscriberMetrics) {
+func worker(wg *sync.WaitGroup, events chan *entities.GroupedSubscriberEvents, reducers chan map[string]*entities.SubscriberMetrics) {
 	defer wg.Done()
 	
 	m := make(map[string]*entities.SubscriberMetrics)
