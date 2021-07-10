@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"testing"
 	
 	"github.com/jinzhu/gorm"
@@ -31,7 +32,8 @@ func TestJobs(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, entities.Job_SubscriberMetrics, job.Name)
 	
-	job.Status = entities.StatusInProgress
+	job.Status = entities.JobStatusInProgress
+	fmt.Println(job)
 	err = store.UpdateJob(job)
 	assert.Nil(t, err)
 	
