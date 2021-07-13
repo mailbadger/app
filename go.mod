@@ -18,7 +18,7 @@ require (
 	github.com/golang/snappy v0.0.2 // indirect
 	github.com/golangci/golangci-lint v1.40.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/csrf v1.7.0
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
