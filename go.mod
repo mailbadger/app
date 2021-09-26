@@ -46,6 +46,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
-	google.golang.org/api v0.56.0
+	google.golang.org/api v0.57.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 )
