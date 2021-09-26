@@ -15,7 +15,6 @@ require (
 	github.com/go-playground/validator/v10 v10.6.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang/snappy v0.0.2 // indirect
 	github.com/golangci/golangci-lint v1.40.1 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.2.0
@@ -25,11 +24,10 @@ require (
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16
-	github.com/klauspost/compress v1.11.1 // indirect
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/open-policy-agent/opa v0.30.0
+	github.com/open-policy-agent/opa v0.32.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
@@ -37,8 +35,8 @@ require (
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/segmentio/ksuid v1.0.3
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.1
+	github.com/spf13/cobra v1.2.1
+	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.9
@@ -50,5 +48,4 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	google.golang.org/api v0.46.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
