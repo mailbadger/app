@@ -10,7 +10,7 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@uppy/aws-s3": "^1.7.9",
     "@uppy/core": "^1.17.0",
-    "@uppy/react": "^1.11.6",
+    "@uppy/react": "^2.0.0",
     "codemirror": "^5.63.0",
     "axios": "^0.21.3",
     "date-fns": "^2.22.1",
