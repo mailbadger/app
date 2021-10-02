@@ -1,7 +1,5 @@
 # Builder image
-FROM golang:1.14-buster as go-build
-
-ENV GO111MODULE=on
+FROM golang:1.16-buster as go-build
 
 WORKDIR /go/src/app
 
@@ -10,15 +8,16 @@ COPY go.sum .
 
 RUN go mod download
 RUN go build -tags json1 github.com/mattn/go-sqlite3
+RUN go get github.com/rakyll/statik
 
 COPY . .
 
-RUN make gen
+RUN make driver=mysql gen
 RUN go build -o /go/bin/app .
 RUN go build -o /go/bin/consumers/bulksender ./consumers/bulksender
 RUN go build -o /go/bin/consumers/campaigner ./consumers/campaigner
 
-FROM node:13-buster as node-build
+FROM node:14-buster as node-build
 
 WORKDIR /www/app
 
