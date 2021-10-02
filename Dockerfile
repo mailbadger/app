@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.14-buster as go-build
+FROM golang:1.16-buster as go-build
 
 ENV GO111MODULE=on
 
@@ -18,7 +18,7 @@ RUN go build -o /go/bin/app .
 RUN go build -o /go/bin/consumers/bulksender ./consumers/bulksender
 RUN go build -o /go/bin/consumers/campaigner ./consumers/campaigner
 
-FROM node:13-buster as node-build
+FROM node:14-buster as node-build
 
 WORKDIR /www/app
 

@@ -40,3 +40,5 @@ statik/statik.go
 
 .env.*
 fixtures/app.env
+
+.DS_Store
