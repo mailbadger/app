@@ -15,5 +15,5 @@ func TestModes(t *testing.T) {
 
 	SetMode("unknown")
 
-	assert.Equal(t, "Unknown", CurrentMode().String())
+	assert.Equal(t, "Prod", CurrentMode().String())
 }
