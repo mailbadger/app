@@ -4,18 +4,24 @@ go 1.16
 
 require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
+	github.com/cbroglie/mustache v1.3.0
 	github.com/aws/aws-sdk-go v1.41.4
-	github.com/cbroglie/mustache v1.2.2
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gavv/httpexpect/v2 v2.2.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.7.2
+	github.com/go-lintpack/lintpack v0.5.2 // indirect
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/golangci/errcheck v0.0.0-20181223084120-ef45e06d44b6 // indirect
+	github.com/golangci/goconst v0.0.0-20180610141641-041c5f2b40f3 // indirect
+	github.com/golangci/gocyclo v0.0.0-20180528144436-0a533e8fa43d // indirect
 	github.com/golangci/golangci-lint v1.40.1 // indirect
+	github.com/golangci/ineffassign v0.0.0-20190609212857-42439a7714cc // indirect
+	github.com/golangci/prealloc v0.0.0-20180630174525-215b22d4de21 // indirect
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/csrf v1.7.0
@@ -24,6 +30,7 @@ require (
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/jinzhu/gorm v1.9.16
+	github.com/jmoiron/sqlx v1.2.1-0.20190826204134-d7d95172beb5 // indirect
 	github.com/lib/pq v1.10.2
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nsqio/go-nsq v1.0.8
@@ -34,10 +41,12 @@ require (
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/segmentio/ksuid v1.0.4
+	github.com/shirou/gopsutil v0.0.0-20190901111213-e4ec7b275ada // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
 	github.com/stretchr/testify v1.7.0
+	github.com/tommy-muehle/go-mnd v1.3.1-0.20200224220436-e6f9a994e8fa // indirect
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.9
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
@@ -48,4 +57,5 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	google.golang.org/api v0.58.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
+	sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4 // indirect
 )
