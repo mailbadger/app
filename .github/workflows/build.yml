@@ -4,13 +4,6 @@ on:
   push:
     tags:
       - "v*.*.*"
-    branches:
-      - master
-      - main
-  pull_request:
-    branches:
-      - master
-      - main
 
 jobs:
   build-push:
@@ -31,7 +24,6 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=sha
 
       - name: Set up Docker Buildx
         id: buildx
