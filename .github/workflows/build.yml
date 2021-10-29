@@ -23,7 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: 802899362487.dkr.ecr.eu-west-1.amazonaws.com/app
+          images: 933237757710.dkr.ecr.eu-west-1.amazonaws.com/app
 
       - name: Set up Docker Buildx
         id: buildx
