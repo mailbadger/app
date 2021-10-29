@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - "v*.*.*"
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
   build-push:
@@ -16,14 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          # list of Docker images to use as base name for tags
-          images: |
-            802899362487.dkr.ecr.eu-west-1.amazonaws.com/app
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+          images: 802899362487.dkr.ecr.eu-west-1.amazonaws.com/app
 
       - name: Set up Docker Buildx
         id: buildx
