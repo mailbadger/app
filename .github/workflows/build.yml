@@ -76,7 +76,7 @@ jobs:
         id: docker_build_reverseproxy
         uses: docker/build-push-action@v2
         with:
-          context: .
+          context: ./reverseproxy
           builder: ${{ steps.build-reverseproxy.outputs.name }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-reverseproxy.outputs.tags }}
