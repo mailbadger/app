@@ -18,7 +18,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 
-	"github.com/mailbadger/app/consumers"
+	"github.com/mailbadger/app/cmd/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/mode"
