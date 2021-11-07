@@ -13,9 +13,10 @@ RUN go get github.com/rakyll/statik
 COPY . .
 
 RUN make driver=mysql gen
-RUN go build -o /go/bin/app .
-RUN go build -o /go/bin/consumers/bulksender ./consumers/bulksender
-RUN go build -o /go/bin/consumers/campaigner ./consumers/campaigner
+RUN go build -o /go/bin/app ./cmd/app
+# RUN go build -o /go/bin/consumers/bulksender ./cmd/consumers/bulksender
+RUN go build -o /go/bin/consumers/sender ./cmd/consumers/sender
+RUN go build -o /go/bin/consumers/campaigner ./cmd/consumers/campaigner
 
 FROM node:14-buster as node-build
 

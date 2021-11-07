@@ -4,4 +4,4 @@ set -euxo pipefail
 
 export $(egrep -v '^#' .env.local | xargs)
 
-go install ./fixtures
+go install ./cmd/fixtures
