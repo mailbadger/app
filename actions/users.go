@@ -104,9 +104,9 @@ func PostForgotPassword(c *gin.Context) {
 	u, err := storage.GetUserByUsername(c, body.Email)
 	if err == nil {
 		sender, err := emails.NewSesSender(
-			os.Getenv("AWS_SES_ACCESS_KEY"),
-			os.Getenv("AWS_SES_SECRET_KEY"),
-			os.Getenv("AWS_SES_REGION"),
+			os.Getenv("AWS_ACCESS_KEY_ID"),
+			os.Getenv("AWS_SECRET_ACCESS_KEY"),
+			os.Getenv("AWS_REGION"),
 		)
 		if err == nil {
 			tokenStr, err := utils.GenerateRandomString(32)

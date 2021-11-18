@@ -2,14 +2,15 @@ package campaigns
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/cbroglie/mustache"
 	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/storage"
 )
 
@@ -23,19 +24,19 @@ type Service interface {
 		sub *mustache.Template,
 		text *mustache.Template,
 	) (*entities.SenderTopicParams, error)
-	PublishSubscriberEmailParams(params *entities.SenderTopicParams) error
+	PublishSubscriberEmailParams(ctx context.Context, params *entities.SenderTopicParams, queueURL *string) error
 }
 
 // service implements the Service interface
 type service struct {
-	db storage.Storage
-	p  queue.Producer
+	db        storage.Storage
+	sqsclient *sqs.Client
 }
 
-func New(db storage.Storage, p queue.Producer) Service {
+func New(db storage.Storage, sqsclient *sqs.Client) Service {
 	return &service{
-		db: db,
-		p:  p,
+		db:        db,
+		sqsclient: sqsclient,
 	}
 }
 
@@ -73,9 +74,9 @@ func (svc *service) PrepareSubscriberEmailData(
 	url, err := s.GetUnsubscribeURL(msg.UserUUID)
 	if err != nil {
 		return nil, fmt.Errorf("campaign service: get unsubscribe url: %w", err)
-	} else {
-		m[entities.TagUnsubscribeUrl] = url
 	}
+
+	m[entities.TagUnsubscribeUrl] = url
 
 	err = html.FRender(&htmlBuf, m)
 	if err != nil {
@@ -109,14 +110,17 @@ func (svc *service) PrepareSubscriberEmailData(
 
 }
 
-func (svc *service) PublishSubscriberEmailParams(params *entities.SenderTopicParams) error {
+func (svc *service) PublishSubscriberEmailParams(ctx context.Context, params *entities.SenderTopicParams, queueURL *string) error {
 	senderBytes, err := json.Marshal(params)
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: marshal params: %w", err)
 	}
 
-	// publish the message to the queue
-	err = svc.p.Publish(entities.SenderTopic, senderBytes)
+	body := string(senderBytes)
+	_, err = svc.sqsclient.SendMessage(ctx, &sqs.SendMessageInput{
+		MessageBody: &body,
+		QueueUrl:    queueURL,
+	})
 	if err != nil {
 		return fmt.Errorf("campaign service: publish to sender: %w", err)
 	}

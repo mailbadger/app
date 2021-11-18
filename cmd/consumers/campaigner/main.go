@@ -8,23 +8,23 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"runtime/trace"
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/jinzhu/gorm"
-	"github.com/nsqio/go-nsq"
-	"github.com/pkg/profile"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 
-	"github.com/mailbadger/app/cmd/consumers"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/mode"
-	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/services/campaigns"
 	"github.com/mailbadger/app/services/templates"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/redis"
 )
@@ -32,37 +32,33 @@ import (
 // Cache prefix and duration parameters
 const (
 	cachePrefix   = "campaigner:"
-	cacheDuration = 7 * 24 * time.Hour // & days cache duration
+	cacheDuration = 7 * 24 * time.Hour // 7 days cache duration
 )
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
-	s           storage.Storage
+	store       storage.Storage
+	campaignsvc campaigns.Service
 	cache       redis.Storage
 	templatesvc templates.Service
-	p           queue.Producer
+	//these are needed to change message visibility
+	sqsclient *sqs.Client
+	queueURL  *string
 }
 
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
-func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
-	ctx, task := trace.NewTask(context.Background(), "handleMessage")
-	defer task.End()
-
-	if len(m.Body) == 0 {
+func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (err error) {
+	if m.Body == nil || len(*m.Body) == 0 {
 		logrus.Error("Empty message, unable to proceed.")
 		return nil
 	}
 
-	svc := campaigns.New(h.s, h.p)
-
 	msg := new(entities.CampaignerTopicParams)
-	trace.WithRegion(ctx, "unmarshalBody", func() {
-		err = json.Unmarshal(m.Body, msg)
-	})
+	err = json.Unmarshal([]byte(*m.Body), msg)
+
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).WithError(err).Error("malformed JSON message")
-		return nil
+		return err
 	}
 
 	logEntry := logrus.WithFields(logrus.Fields{
@@ -70,16 +66,6 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		"user_id":     msg.UserID,
 		"segment_ids": msg.SegmentIDs,
 	})
-
-	campaign, err := getCampaign(ctx, h.s, msg.UserID, msg.CampaignID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logEntry.WithError(err).Warn("unable to find campaign")
-			return nil
-		}
-		logEntry.WithError(err).Error("unable to find campaign")
-		return err
-	}
 
 	campaignerKey := redis.GenCacheKey(cachePrefix, msg.EventID.String())
 
@@ -90,22 +76,32 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	}
 
 	if exist {
-		logEntry.WithError(err).Info("Message already processed")
+		logEntry.Info("Message already processed")
 		return nil
 	}
 
-	if err := h.cache.Set(campaignerKey, []byte("sending"), cacheDuration); err != nil {
+	if err := h.cache.Set(campaignerKey, []byte("1"), cacheDuration); err != nil {
 		logEntry.WithError(err).Error("Unable to write to cache")
+		return err
+	}
+
+	campaign, err := h.store.GetCampaign(msg.UserID, msg.CampaignID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logEntry.WithError(err).Warn("campaign does not exist")
+			return nil
+		}
+		logEntry.WithError(err).Error("unable to find campaign")
 		return err
 	}
 
 	logEntry.WithField("template_id", campaign.TemplateID)
 
-	parsedTemplate, err := parseTemplate(ctx, h.templatesvc, msg.UserID, campaign.TemplateID)
+	parsedTemplate, err := h.templatesvc.ParseTemplate(ctx, msg.UserID, campaign.TemplateID)
 	if err != nil {
 		logEntry.WithError(err).Error("unable to prepare campaign template data")
 
-		err = logFailedCampaign(ctx, h.s, campaign, "failed to parse template")
+		err = h.logFailedCampaign(ctx, campaign, "failed to parse template")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 		}
@@ -113,10 +109,10 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return nil
 	}
 
-	err = processSubscribers(ctx, m, msg, campaign, parsedTemplate, h.s, svc, logEntry)
+	err = h.processSubscribers(ctx, msg, campaign, parsedTemplate, logEntry, m.ReceiptHandle)
 	if err != nil {
 		// TODO return wrapped errors and do the logging here instead of inside processSubscribers
-		err = logFailedCampaign(ctx, h.s, campaign, "failed to process subscribers")
+		err = h.logFailedCampaign(ctx, campaign, "failed to process subscribers")
 		if err != nil {
 			logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusFailed)
 			return nil
@@ -125,7 +121,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return nil
 	}
 
-	err = setStatusSent(ctx, h.s, campaign)
+	err = h.setStatusSent(ctx, campaign)
 	if err != nil {
 		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
 		return nil
@@ -134,30 +130,14 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 	return nil
 }
 
-func getCampaign(ctx context.Context, store storage.Storage, userID, campaignID int64) (*entities.Campaign, error) {
-	defer trace.StartRegion(ctx, "getCampaign").End()
-
-	return store.GetCampaign(campaignID, userID)
-}
-
-func parseTemplate(ctx context.Context, templatesvc templates.Service, userID, templateID int64) (*entities.CampaignTemplateData, error) {
-	defer trace.StartRegion(ctx, "parseTemplate").End()
-
-	return templatesvc.ParseTemplate(ctx, templateID, userID)
-}
-
-func processSubscribers(
+func (h *MessageHandler) processSubscribers(
 	ctx context.Context,
-	m *nsq.Message,
 	msg *entities.CampaignerTopicParams,
 	campaign *entities.Campaign,
 	parsedTemplate *entities.CampaignTemplateData,
-	store storage.Storage,
-	svc campaigns.Service,
 	logEntry *logrus.Entry,
+	receiptHandle *string,
 ) error {
-	defer trace.StartRegion(ctx, "processSubscribers").End()
-
 	var (
 		timestamp time.Time
 		nextID    int64
@@ -167,7 +147,7 @@ func processSubscribers(
 	id := ksuid.New() // this id will be only used for saving failed send logs
 
 	for {
-		subs, err := store.GetDistinctSubscribersBySegmentIDs(
+		subs, err := h.store.GetDistinctSubscribersBySegmentIDs(
 			msg.SegmentIDs,
 			msg.UserID,
 			false,
@@ -184,13 +164,28 @@ func processSubscribers(
 			logEntry.WithError(err).Error("unable to fetch subscribers")
 			return err
 		}
-		// reset timeout timer for campaigner.
-		m.Touch()
+		// extend the timeout for message visibility by 100secs.
+		_, err = h.sqsclient.ChangeMessageVisibility(ctx, &sqs.ChangeMessageVisibilityInput{
+			QueueUrl:          h.queueURL,
+			ReceiptHandle:     receiptHandle,
+			VisibilityTimeout: 100,
+		})
+		if err != nil {
+			logrus.WithError(err).Error("unable to extend the message visibility timeout")
+		}
 
 		for _, s := range subs {
 			id = id.Next()
 
-			params, err := svc.PrepareSubscriberEmailData(s, id, *msg, campaign.ID, parsedTemplate.HTMLPart, parsedTemplate.SubjectPart, parsedTemplate.TextPart)
+			params, err := h.campaignsvc.PrepareSubscriberEmailData(
+				s,
+				id,
+				*msg,
+				campaign.ID,
+				parsedTemplate.HTMLPart,
+				parsedTemplate.SubjectPart,
+				parsedTemplate.TextPart,
+			)
 			if err != nil {
 				logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to prepare subscriber email data")
 
@@ -204,7 +199,7 @@ func processSubscribers(
 					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
 				}
 
-				err := store.CreateSendLog(sendLog)
+				err := h.store.CreateSendLog(sendLog)
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
@@ -215,7 +210,7 @@ func processSubscribers(
 				continue
 			}
 
-			err = svc.PublishSubscriberEmailParams(params)
+			err = h.campaignsvc.PublishSubscriberEmailParams(ctx, params, h.queueURL)
 			if err != nil {
 				logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to publish subscriber email params")
 
@@ -229,7 +224,7 @@ func processSubscribers(
 					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
 				}
 
-				err := store.CreateSendLog(sendLog)
+				err := h.store.CreateSendLog(sendLog)
 				if err != nil {
 					logEntry.WithFields(logrus.Fields{
 						"subscriber_id": s.ID,
@@ -254,71 +249,30 @@ func processSubscribers(
 	return nil
 }
 
-// LogFailedMessage overwriting the callback func for max attempts reached to insert into campaign failed logs.
-func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
-	if m == nil {
-		return
-	}
-	msg := new(entities.CampaignerTopicParams)
-	err := json.Unmarshal(m.Body, &msg)
-	if err != nil {
-		logrus.WithField("body", string(m.Body)).
-			WithError(err).Error("Malformed JSON message.")
-		return
-	}
-	logrus.WithFields(logrus.Fields{
-		"user_id":     msg.UserID,
-		"campaign_id": msg.CampaignID,
-	}).Error("exceeded max attempts for sending the campaign")
-
-	campaign, err := h.s.GetCampaign(msg.CampaignID, msg.UserID)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{"campaign_id": msg.CampaignID, "user_id": msg.UserID}).
-			WithError(err).Error("Failed to get campaign.")
-		return
-	}
-	err = h.s.LogFailedCampaign(campaign, "Exceeded max attempts for preparing the campaign")
-	if err != nil {
-		logrus.WithField("campaign_id", campaign.ID).
-			WithError(err).Error("Failed to store campaign failed log.")
-		return
-	}
-}
-
 // logFailedCampaign updates campaign status to failed & inserts campaign  failed log.
-func logFailedCampaign(ctx context.Context, store storage.Storage, campaign *entities.Campaign, description string) error {
-	defer trace.StartRegion(ctx, "setStatusFailed").End()
-
+func (h *MessageHandler) logFailedCampaign(ctx context.Context, campaign *entities.Campaign, description string) error {
 	campaign.Status = entities.StatusFailed
 	campaign.CompletedAt.SetValid(time.Now().UTC())
-	return store.LogFailedCampaign(campaign, description)
+	return h.store.LogFailedCampaign(campaign, description)
 }
 
-func setStatusSent(ctx context.Context, store storage.Storage, campaign *entities.Campaign) error {
-	defer trace.StartRegion(ctx, "setStatusSent").End()
-
+func (h *MessageHandler) setStatusSent(ctx context.Context, campaign *entities.Campaign) error {
 	campaign.Status = entities.StatusSent
 	campaign.CompletedAt.SetValid(time.Now().UTC())
-	return store.UpdateCampaign(campaign)
+	return h.store.UpdateCampaign(campaign)
+}
+
+func (h *MessageHandler) DeleteMessage(ctx context.Context, m types.Message) error {
+	_, err := h.sqsclient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      h.queueURL,
+		ReceiptHandle: m.ReceiptHandle,
+	})
+	return err
 }
 
 func main() {
-	m := flag.String("profile.mode", "", "enable profiling mode, one of [cpu, mem, mutex, block, trace]")
-	flag.Parse()
-	switch *m {
-	case "cpu":
-		defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
-	case "mem":
-		defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
-	case "mutex":
-		defer profile.Start(profile.MutexProfile, profile.ProfilePath(".")).Stop()
-	case "block":
-		defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
-	case "trace":
-		defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
-	default:
-		// do nothing
-	}
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	mode.SetModeFromEnv()
 
@@ -333,9 +287,58 @@ func main() {
 	}
 	logrus.SetOutput(os.Stdout)
 
+	queueStr := flag.String("q", "", "The name of the queue")
+	timeout := flag.Int("t", 360, "How long, in seconds, that the message is hidden from others")
+	maxInFlightMsgs := flag.Int("m", 10, "Max number of messages to be received from SQS simultaneously")
+	waitTimeout := flag.Int("w", 10, "How long, in seconds, ")
+	flag.Parse()
+
+	if *queueStr == "" {
+		logrus.Fatal("You must supply the name of a queue (-q QUEUE)")
+	}
+
+	if *timeout < 0 {
+		*timeout = 0
+	}
+
+	if *timeout > 12*60*60 {
+		*timeout = 12 * 60 * 60
+	}
+
+	if *waitTimeout < 0 {
+		*waitTimeout = 0
+	}
+
+	if *waitTimeout > 20 {
+		*waitTimeout = 20
+	}
+
+	if *maxInFlightMsgs < 1 {
+		*maxInFlightMsgs = 1
+	}
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("AWS configuration error")
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	gQInput := &sqs.GetQueueUrlInput{
+		QueueName: queueStr,
+	}
+	// Get URL of queue
+	urlResult, err := client.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		logrus.WithError(err).Fatal("Got an error getting the queue URL")
+	}
+
+	queueURL := urlResult.QueueUrl
+	consumer := awssqs.NewConsumer(*queueURL, int32(*timeout), int32(*maxInFlightMsgs), int32(*waitTimeout), client)
+
 	driver := os.Getenv("DATABASE_DRIVER")
 	conf := storage.MakeConfigFromEnv(driver)
-	s := storage.New(driver, conf)
+	store := storage.New(driver, conf)
 
 	cache, err := redis.NewRedisStore()
 	if err != nil {
@@ -343,68 +346,46 @@ func main() {
 	}
 
 	s3Client, err := s3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("AWS_REGION"),
 	)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Fatal("AWS S3 client configuration error")
 	}
 
-	svc := templates.New(s, s3Client)
+	templatesvc := templates.New(store, s3Client)
+	campaignsvc := campaigns.New(store, client)
 
-	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
-	if err != nil {
-		logrus.Fatal(err)
+	var g errgroup.Group
+	handler := &MessageHandler{
+		store:       store,
+		cache:       cache,
+		templatesvc: templatesvc,
+		campaignsvc: campaignsvc,
+		sqsclient:   client,
+		queueURL:    queueURL,
 	}
-
-	config := nsq.NewConfig()
-
-	consumer, err := nsq.NewConsumer(entities.CampaignerTopic, entities.CampaignerTopic, config)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create consumer")
-	}
-
-	consumer.ChangeMaxInFlight(200)
-
-	consumer.SetLogger(
-		&consumers.NoopLogger{},
-		nsq.LogLevelError,
-	)
-
-	consumer.AddConcurrentHandlers(
-		&MessageHandler{
-			s:           s,
-			cache:       cache,
-			templatesvc: svc,
-			p:           p,
-		},
-		20,
-	)
-
-	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
-	nsqlds := []string{addr}
-
-	logrus.Infoln("Connecting to NSQlookup...")
-	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		logrus.Fatal(err)
-	}
-
-	logrus.Infoln("Connected to NSQlookup")
-
-	shutdown := make(chan os.Signal, 2)
-	signal.Notify(shutdown, os.Interrupt)
-	signal.Notify(shutdown, syscall.SIGINT)
-	signal.Notify(shutdown, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-consumer.StopChan:
-			return // consumer disconnected. Time to quit.
-		case <-shutdown:
-			// Synchronously drain the queue before falling out of main
-			logrus.Infoln("Stopping consumer...")
-			consumer.Stop()
+	fn := func(m types.Message) func() error {
+		return func() error {
+			err := handler.HandleMessage(ctx, m)
+			if err != nil {
+				// on error we must not delete the message. We want other
+				// consumers to try and process the message again.
+				return err
+			}
+			return handler.DeleteMessage(ctx, m)
 		}
+	}
+
+	// Poll for messages
+	messages := consumer.PollSQS(ctx)
+
+	for m := range messages {
+		g.Go(fn(m))
+	}
+
+	if err := g.Wait(); err != nil {
+		logrus.WithError(err).Error("received an error when handling a message")
 	}
 }

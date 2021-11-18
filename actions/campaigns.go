@@ -18,9 +18,9 @@ import (
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
-	"github.com/mailbadger/app/queue"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/services/boundaries"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/validator"
 )
@@ -149,7 +149,21 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	err = queue.Publish(c, entities.CampaignerTopic, msg)
+	queueName := entities.CampaignerTopic
+	queueURL, err := awssqs.GetQueueURL(c, &queueName)
+	if err != nil {
+		logger.From(c).WithFields(logrus.Fields{
+			"campaign_id": id,
+			"template_id": campaign.BaseTemplate.ID,
+			"segment_ids": body.SegmentIDs,
+		}).WithError(err).Error("Unable to fetch the queue url")
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to start campaign.",
+		})
+		return
+	}
+
+	err = awssqs.SendMessage(c, queueURL, msg)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
 			"campaign_id": id,
