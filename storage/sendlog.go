@@ -8,14 +8,14 @@ func (db *store) CreateSendLog(l *entities.SendLog) error {
 	return db.Create(l).Error
 }
 
-func (db *store) CountLogsByUUID(id string) (int, error) {
-	var count int
+func (db *store) CountLogsByUUID(id string) (int64, error) {
+	var count int64
 	err := db.Model(&entities.SendLog{}).Where("id = ?", id).Count(&count).Error
 	return count, err
 }
 
-func (db *store) CountLogsByStatus(status string) (int, error) {
-	var count int
+func (db *store) CountLogsByStatus(status string) (int64, error) {
+	var count int64
 	err := db.Model(&entities.SendLog{}).Where("status = ?", status).Count(&count).Error
 	return count, err
 }

@@ -13,12 +13,11 @@ func (db *store) GetSegments(userID int64, p *PaginationCursor) error {
 		Select("segments.*, (?) as subscribers_in_segment",
 			db.Select("count(*)").
 				Table("subscribers_segments").
-				Where("segment_id = segments.id").
-				QueryExpr(),
+				Where("segment_id = segments.id"),
 		).
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -77,17 +76,17 @@ func (db *store) DeleteSegment(id, userID int64) error {
 
 // RemoveSubscribersFromSegment clears the subscribers association.
 func (db *store) RemoveSubscribersFromSegment(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Clear().Error
+	return db.Model(s).Association("Subscribers").Clear()
 }
 
 // AppendSubscribers appends segscribers to the existing association.
 func (db *store) AppendSubscribers(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Append(s.Subscribers).Error
+	return db.Model(s).Association("Subscribers").Append(s.Subscribers)
 }
 
 // DetachSubscribers deletes the subscribers association by the given subscribers list.
 func (db *store) DetachSubscribers(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Delete(s.Subscribers).Error
+	return db.Model(s).Association("Subscribers").Delete(s.Subscribers)
 }
 
 // DeleteAllSegmentsForUser deletes all subscribers for user

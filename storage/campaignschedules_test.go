@@ -15,10 +15,11 @@ import (
 func TestScheduledCampaign(t *testing.T) {
 	db := openTestDb()
 	defer func() {
-		err := db.Close()
+		sqlDB, err := db.DB()
 		if err != nil {
 			logrus.Error(err)
 		}
+		sqlDB.Close()
 	}()
 
 	var now = time.Now()

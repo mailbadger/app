@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
@@ -77,7 +77,7 @@ func (s *service) ImportSubscribersFromFile(
 		_, err = storage.GetSubscriberByEmail(ctx, email, userID)
 		if err == nil {
 			continue
-		} else if !gorm.IsRecordNotFoundError(err) {
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("importer: get subscriber by email: %w", err)
 		}
 

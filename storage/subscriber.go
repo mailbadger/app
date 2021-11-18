@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/segmentio/ksuid"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -24,7 +24,7 @@ func (db *store) GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[
 	query := db.Table(p.Resource).
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -47,7 +47,7 @@ func (db *store) GetSubscribersBySegmentID(segmentID, userID int64, p *Paginatio
 
 	query := db.Table(p.Resource).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -132,7 +132,7 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 			nextID,
 			time.Now().Format(time.RFC3339Nano)).
 		Order("created_at, id").
-		Limit(limit).
+		Limit(int(limit)).
 		Find(&subs).Error
 
 	return subs, err
@@ -175,7 +175,7 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Replace(s.Segments).Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Replace(s.Segments); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: update subscriber's segment: %w", err)
 	}
@@ -234,7 +234,7 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w", err)
 	}
@@ -271,7 +271,7 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -287,7 +287,7 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 // SeekSubscribersByUserID fetches chunk of subscribers with id greater than nextID
 func (db *store) SeekSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
 	var s []entities.Subscriber
-	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(limit).Find(&s).Error
+	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(int(limit)).Find(&s).Error
 	return s, err
 }
 

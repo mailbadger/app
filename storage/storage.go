@@ -105,8 +105,8 @@ type Storage interface {
 	DeleteAllTokensForUser(userID int64) error
 
 	CreateSendLog(l *entities.SendLog) error
-	CountLogsByUUID(id string) (int, error)
-	CountLogsByStatus(status string) (int, error)
+	CountLogsByUUID(id string) (int64, error)
+	CountLogsByStatus(status string) (int64, error)
 	GetSendLogByUUID(id string) (*entities.SendLog, error)
 	DeleteAllSendLogsForUser(userID int64) error
 

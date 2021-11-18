@@ -3,19 +3,20 @@ package storage
 import (
 	"testing"
 
-	"github.com/jinzhu/gorm"
 	"github.com/mailbadger/app/entities"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestRoles(t *testing.T) {
 	db := openTestDb()
 	defer func() {
-		err := db.Close()
+		sqlDB, err := db.DB()
 		if err != nil {
 			logrus.Error(err)
 		}
+		sqlDB.Close()
 	}()
 
 	store := From(db)

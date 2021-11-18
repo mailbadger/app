@@ -42,7 +42,7 @@ func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[st
 	query := db.Table(p.Resource).
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 

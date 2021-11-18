@@ -3,7 +3,7 @@ package storage
 import (
 	"os"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -24,7 +24,7 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 	query := db.Table(p.Resource).Preload("BaseTemplate").
 		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -96,7 +96,7 @@ func (db *store) GetCampaignOpens(campaignID, userID int64, p *PaginationCursor)
 	query := db.Table(p.Resource).
 		Where("campaign_id = ? and user_id=?", campaignID, userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -163,7 +163,7 @@ func (db *store) GetCampaignComplaints(campaignID, userID int64, p *PaginationCu
 	query := db.Table(p.Resource).
 		Where("campaign_id = ? and user_id = ?", campaignID, userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
@@ -178,7 +178,7 @@ func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCurso
 	query := db.Table(p.Resource).
 		Where("campaign_id = ? and user_id= ?", campaignID, userID).
 		Order("created_at desc, id desc").
-		Limit(p.PerPage)
+		Limit(int(p.PerPage))
 
 	p.SetQuery(query)
 
