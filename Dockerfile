@@ -16,7 +16,7 @@ RUN make driver=mysql gen
 RUN go build -o /go/bin/app ./cmd/app
 RUN go build -o /go/bin/consumers/sender ./cmd/consumers/sender
 RUN go build -o /go/bin/consumers/campaigner ./cmd/consumers/campaigner
-RUN go build -o bin/scheduler ./cmd/scheduler
+RUN go build -o /go/bin/scheduler ./cmd/scheduler
 
 FROM node:14-buster as node-build
 
