@@ -1,12 +1,15 @@
 package routes
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
 	"github.com/didip/tollbooth_gin"
@@ -23,6 +26,7 @@ import (
 	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes/middleware"
 	"github.com/mailbadger/app/s3"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/templates"
 )
@@ -42,13 +46,21 @@ func New() http.Handler {
 	}
 
 	s3Client, err := s3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("AWS_REGION"),
 	)
 	if err != nil {
 		panic(err)
 	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	client := sqs.NewFromConfig(cfg)
+	publisher := awssqs.NewPublisher(client)
 
 	store := cookie.NewStore(
 		[]byte(os.Getenv("SESSION_AUTH_KEY")),
@@ -71,11 +83,11 @@ func New() http.Handler {
 	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
 	handler.Use(sessions.Sessions("mbsess", store))
 	handler.Use(middleware.Storage(s))
-	handler.Use(middleware.Producer())
 	handler.Use(middleware.SetUser())
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.SetLoggerEntry())
 	handler.Use(middleware.S3Client(s3Client))
+	handler.Use(middleware.SQSPublisher(publisher))
 
 	// Security headers
 	secureMiddleware := secure.New(secure.Options{

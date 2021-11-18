@@ -51,4 +51,4 @@ jobs:
         env:
           GO111MODULE: "on"
         with:
-          args: go get github.com/rakyll/statik && make gen && go build .
+          args: go get github.com/rakyll/statik && make gen && go build ./...
