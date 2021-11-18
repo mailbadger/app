@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -70,14 +71,14 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 		return err
 	}
 
+	cacheKey := genCacheKey(cachePrefix, fmt.Sprintf("%s_%d", msg.EventID, msg.SubscriberID))
 	logEntry := logrus.WithFields(logrus.Fields{
 		"event_id":      msg.EventID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
+		"cache_key":     cacheKey,
 	})
-
-	cacheKey := redis.GenCacheKey(cachePrefix, fmt.Sprintf("%s_%d", msg.EventID.String(), msg.SubscriberID))
 
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
 	exist, err := h.cache.Exists(cacheKey)
@@ -276,7 +277,7 @@ func main() {
 		logrus.WithError(err).Fatal("Redis: can't establish connection")
 	}
 
-	var g errgroup.Group
+	g, ctx := errgroup.WithContext(ctx)
 	handler := &MessageHandler{
 		storage:   s,
 		cache:     cache,
@@ -360,4 +361,11 @@ func sendEmail(client emails.Sender, msg entities.SenderTopicParams) (*ses.SendE
 	}
 
 	return client.SendEmail(input)
+}
+
+func genCacheKey(prefix string, key string) string {
+	h := sha256.New()
+	h.Write([]byte(key))
+	k := h.Sum(nil)
+	return prefix + string(k)
 }

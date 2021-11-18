@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/cbroglie/mustache"
-	"github.com/segmentio/ksuid"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
@@ -17,7 +16,6 @@ import (
 type Service interface {
 	PrepareSubscriberEmailData(
 		s entities.Subscriber,
-		id ksuid.KSUID,
 		msg entities.CampaignerTopicParams,
 		campaignID int64,
 		html *mustache.Template,
@@ -42,7 +40,6 @@ func New(db storage.Storage, sqsclient *sqs.Client) Service {
 
 func (svc *service) PrepareSubscriberEmailData(
 	s entities.Subscriber,
-	eventID ksuid.KSUID,
 	msg entities.CampaignerTopicParams,
 	campaignID int64,
 	html *mustache.Template,
@@ -92,7 +89,7 @@ func (svc *service) PrepareSubscriberEmailData(
 	}
 
 	sender := entities.SenderTopicParams{
-		EventID:                eventID,
+		EventID:                msg.EventID,
 		SubscriberID:           s.ID,
 		SubscriberEmail:        s.Email,
 		Source:                 msg.Source,

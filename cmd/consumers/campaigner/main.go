@@ -26,20 +26,12 @@ import (
 	"github.com/mailbadger/app/services/templates"
 	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/redis"
-)
-
-// Cache prefix and duration parameters
-const (
-	cachePrefix   = "campaigner:"
-	cacheDuration = 7 * 24 * time.Hour // 7 days cache duration
 )
 
 // MessageHandler implements the nsq handler interface.
 type MessageHandler struct {
 	store       storage.Storage
 	campaignsvc campaigns.Service
-	cache       redis.Storage
 	templatesvc templates.Service
 	//these are needed to change message visibility
 	sqsclient *sqs.Client
@@ -66,24 +58,6 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 		"user_id":     msg.UserID,
 		"segment_ids": msg.SegmentIDs,
 	})
-
-	campaignerKey := redis.GenCacheKey(cachePrefix, msg.EventID.String())
-
-	exist, err := h.cache.Exists(campaignerKey)
-	if err != nil {
-		logEntry.WithError(err).Error("Unable to check message existence")
-		return err
-	}
-
-	if exist {
-		logEntry.Info("Message already processed")
-		return nil
-	}
-
-	if err := h.cache.Set(campaignerKey, []byte("1"), cacheDuration); err != nil {
-		logEntry.WithError(err).Error("Unable to write to cache")
-		return err
-	}
 
 	campaign, err := h.store.GetCampaign(msg.UserID, msg.CampaignID)
 	if err != nil {
@@ -121,12 +95,6 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 		return nil
 	}
 
-	err = h.setStatusSent(ctx, campaign)
-	if err != nil {
-		logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
-		return nil
-	}
-
 	return nil
 }
 
@@ -147,106 +115,103 @@ func (h *MessageHandler) processSubscribers(
 	id := ksuid.New() // this id will be only used for saving failed send logs
 
 	for {
-		subs, err := h.store.GetDistinctSubscribersBySegmentIDs(
-			msg.SegmentIDs,
-			msg.UserID,
-			false,
-			true,
-			timestamp,
-			nextID,
-			limit,
-		)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logEntry.WithError(err).Warn("unable to fetch subscribers")
-				return err
-			}
-			logEntry.WithError(err).Error("unable to fetch subscribers")
-			return err
-		}
-		// extend the timeout for message visibility by 100secs.
-		_, err = h.sqsclient.ChangeMessageVisibility(ctx, &sqs.ChangeMessageVisibilityInput{
-			QueueUrl:          h.queueURL,
-			ReceiptHandle:     receiptHandle,
-			VisibilityTimeout: 100,
-		})
-		if err != nil {
-			logrus.WithError(err).Error("unable to extend the message visibility timeout")
-		}
-
-		for _, s := range subs {
-			id = id.Next()
-
-			params, err := h.campaignsvc.PrepareSubscriberEmailData(
-				s,
-				id,
-				*msg,
-				campaign.ID,
-				parsedTemplate.HTMLPart,
-				parsedTemplate.SubjectPart,
-				parsedTemplate.TextPart,
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			subs, err := h.store.GetDistinctSubscribersBySegmentIDs(
+				msg.SegmentIDs,
+				msg.UserID,
+				false, // not in a denylist
+				true,  // active
+				timestamp,
+				nextID,
+				limit,
 			)
 			if err != nil {
-				logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to prepare subscriber email data")
-
-				sendLog := &entities.SendLog{
-					ID:           id,
-					UserID:       msg.UserID,
-					EventID:      msg.EventID,
-					SubscriberID: s.ID,
-					CampaignID:   msg.CampaignID,
-					Status:       entities.SendLogStatusFailed,
-					Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
-				}
-
-				err := h.store.CreateSendLog(sendLog)
-				if err != nil {
-					logEntry.WithFields(logrus.Fields{
-						"subscriber_id": s.ID,
-						"event_id":      msg.EventID.String(),
-					}).WithError(err).Error("unable to insert send logs for subscriber.")
-				}
-
-				continue
+				logEntry.WithError(err).Error("unable to fetch subscribers")
+				return err
 			}
-
-			err = h.campaignsvc.PublishSubscriberEmailParams(ctx, params, h.queueURL)
+			// extend the timeout for message visibility by 100secs.
+			_, err = h.sqsclient.ChangeMessageVisibility(ctx, &sqs.ChangeMessageVisibilityInput{
+				QueueUrl:          h.queueURL,
+				ReceiptHandle:     receiptHandle,
+				VisibilityTimeout: 100,
+			})
 			if err != nil {
-				logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to publish subscriber email params")
-
-				sendLog := &entities.SendLog{
-					ID:           id,
-					UserID:       msg.UserID,
-					EventID:      msg.EventID,
-					SubscriberID: s.ID,
-					CampaignID:   msg.CampaignID,
-					Status:       entities.SendLogStatusFailed,
-					Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
-				}
-
-				err := h.store.CreateSendLog(sendLog)
-				if err != nil {
-					logEntry.WithFields(logrus.Fields{
-						"subscriber_id": s.ID,
-						"event_id":      msg.EventID.String(),
-					}).WithError(err).Error("unable to insert send logs for subscriber.")
-				}
-
-				continue
+				logrus.WithError(err).Error("unable to extend the message visibility timeout")
 			}
-		}
 
-		if len(subs) < 1000 {
-			break
-		}
+			for _, s := range subs {
+				id = id.Next()
+				params, err := h.campaignsvc.PrepareSubscriberEmailData(
+					s,
+					*msg,
+					campaign.ID,
+					parsedTemplate.HTMLPart,
+					parsedTemplate.SubjectPart,
+					parsedTemplate.TextPart,
+				)
+				if err != nil {
+					logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to prepare subscriber email data")
 
-		// set  vars for next batches
-		lastSub := subs[len(subs)-1]
-		nextID = lastSub.ID
-		timestamp = lastSub.CreatedAt
+					err := h.store.CreateSendLog(&entities.SendLog{
+						ID:           id,
+						UserID:       msg.UserID,
+						EventID:      msg.EventID,
+						SubscriberID: s.ID,
+						CampaignID:   msg.CampaignID,
+						Status:       entities.SendLogStatusFailed,
+						Description:  fmt.Sprintf("Failed to prepare subscriber email data error: %s", err),
+					})
+					if err != nil {
+						logEntry.WithFields(logrus.Fields{
+							"subscriber_id": s.ID,
+							"event_id":      msg.EventID.String(),
+						}).WithError(err).Error("unable to insert send logs for subscriber.")
+					}
+
+					continue
+				}
+
+				err = h.campaignsvc.PublishSubscriberEmailParams(ctx, params, h.queueURL)
+				if err != nil {
+					logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to publish subscriber email params")
+
+					err := h.store.CreateSendLog(&entities.SendLog{
+						ID:           id,
+						UserID:       msg.UserID,
+						EventID:      msg.EventID,
+						SubscriberID: s.ID,
+						CampaignID:   msg.CampaignID,
+						Status:       entities.SendLogStatusFailed,
+						Description:  fmt.Sprintf("Failed to publish subscriber email data error: %s", err),
+					})
+					if err != nil {
+						logEntry.WithFields(logrus.Fields{
+							"subscriber_id": s.ID,
+							"event_id":      msg.EventID.String(),
+						}).WithError(err).Error("unable to insert send logs for subscriber.")
+					}
+
+					continue
+				}
+			}
+
+			if len(subs) < 1000 {
+				err := h.setStatusSent(ctx, campaign)
+				if err != nil {
+					logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
+					return err
+				}
+			}
+
+			// set  vars for next batches
+			lastSub := subs[len(subs)-1]
+			nextID = lastSub.ID
+			timestamp = lastSub.CreatedAt
+		}
 	}
-
-	return nil
 }
 
 // logFailedCampaign updates campaign status to failed & inserts campaign  failed log.
@@ -340,11 +305,6 @@ func main() {
 	conf := storage.MakeConfigFromEnv(driver)
 	store := storage.New(driver, conf)
 
-	cache, err := redis.NewRedisStore()
-	if err != nil {
-		logrus.WithError(err).Fatal("Redis: can't establish connection")
-	}
-
 	s3Client, err := s3.NewS3Client(
 		os.Getenv("AWS_ACCESS_KEY_ID"),
 		os.Getenv("AWS_SECRET_ACCESS_KEY"),
@@ -357,10 +317,9 @@ func main() {
 	templatesvc := templates.New(store, s3Client)
 	campaignsvc := campaigns.New(store, client)
 
-	var g errgroup.Group
+	g, ctx := errgroup.WithContext(ctx)
 	handler := &MessageHandler{
 		store:       store,
-		cache:       cache,
 		templatesvc: templatesvc,
 		campaignsvc: campaignsvc,
 		sqsclient:   client,
@@ -368,10 +327,8 @@ func main() {
 	}
 	fn := func(m types.Message) func() error {
 		return func() error {
-			err := handler.HandleMessage(ctx, m)
+			err = handler.HandleMessage(ctx, m)
 			if err != nil {
-				// on error we must not delete the message. We want other
-				// consumers to try and process the message again.
 				return err
 			}
 			return handler.DeleteMessage(ctx, m)
