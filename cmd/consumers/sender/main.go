@@ -277,7 +277,7 @@ func main() {
 		logrus.WithError(err).Fatal("Redis: can't establish connection")
 	}
 
-	g, ctx := errgroup.WithContext(ctx)
+	g := new(errgroup.Group)
 	handler := &MessageHandler{
 		storage:   s,
 		cache:     cache,
@@ -285,7 +285,7 @@ func main() {
 		queueURL:  queueURL,
 	}
 
-	fn := func(m types.Message) func() error {
+	fn := func(ctx context.Context, m types.Message) func() error {
 		return func() error {
 			err := handler.HandleMessage(ctx, m)
 			if err != nil {
@@ -301,7 +301,7 @@ func main() {
 	messages := consumer.PollSQS(ctx)
 
 	for m := range messages {
-		g.Go(fn(m))
+		g.Go(fn(ctx, m))
 	}
 
 	if err := g.Wait(); err != nil {

@@ -317,7 +317,7 @@ func main() {
 	templatesvc := templates.New(store, s3Client)
 	campaignsvc := campaigns.New(store, client)
 
-	g, ctx := errgroup.WithContext(ctx)
+	g := new(errgroup.Group)
 	handler := &MessageHandler{
 		store:       store,
 		templatesvc: templatesvc,
@@ -325,7 +325,7 @@ func main() {
 		sqsclient:   client,
 		queueURL:    queueURL,
 	}
-	fn := func(m types.Message) func() error {
+	fn := func(ctx context.Context, m types.Message) func() error {
 		return func() error {
 			err = handler.HandleMessage(ctx, m)
 			if err != nil {
@@ -339,7 +339,7 @@ func main() {
 	messages := consumer.PollSQS(ctx)
 
 	for m := range messages {
-		g.Go(fn(m))
+		g.Go(fn(ctx, m))
 	}
 
 	if err := g.Wait(); err != nil {
