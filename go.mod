@@ -5,9 +5,8 @@ go 1.16
 require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.42.11
-	github.com/aws/aws-sdk-go-v2 v1.11.0 // indirect
-	github.com/aws/aws-sdk-go-v2/config v1.10.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0 // indirect
+	github.com/aws/aws-sdk-go-v2/config v1.10.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
 	github.com/cbroglie/mustache v1.3.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
@@ -36,7 +35,6 @@ require (
 	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/open-policy-agent/opa v0.34.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
@@ -57,6 +55,4 @@ require (
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	google.golang.org/api v0.58.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.29.1 // indirect
 )
