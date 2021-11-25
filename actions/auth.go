@@ -627,9 +627,9 @@ func completeCallback(c *gin.Context, email, source, host string) {
 
 func sendVerifyEmail(c context.Context, u *entities.User) error {
 	sender, err := emails.NewSesSender(
-		os.Getenv("AWS_SES_ACCESS_KEY"),
-		os.Getenv("AWS_SES_SECRET_KEY"),
-		os.Getenv("AWS_SES_REGION"),
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("AWS_REGION"),
 	)
 	if err != nil {
 		return fmt.Errorf("send verify email: ses sender: %w", err)

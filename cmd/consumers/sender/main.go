@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,18 +13,21 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/nsqio/go-nsq"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 
-	"github.com/mailbadger/app/consumers"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/mode"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/redis"
 )
@@ -44,71 +50,35 @@ const CharSet = "UTF-8"
 type MessageHandler struct {
 	storage storage.Storage
 	cache   redis.Storage
-}
-
-// LogFailedMessage is for overriding the nsq.FailedMessageLogger
-// interface which handles the last failing retry
-func (h *MessageHandler) LogFailedMessage(m *nsq.Message) {
-	if m == nil || len(m.Body) == 0 {
-		logrus.Error("Empty message, unable to proceed with failed message.")
-		return
-	}
-
-	msg := new(entities.SenderTopicParams)
-	err := json.Unmarshal(m.Body, msg)
-	if err != nil {
-		logrus.WithField("body", string(m.Body)).
-			WithError(err).Error("Malformed JSON message.")
-		return
-	}
-
-	logEntry := logrus.WithFields(logrus.Fields{
-		"event_id":      msg.EventID,
-		"user_id":       msg.UserID,
-		"campaign_id":   msg.CampaignID,
-		"subscriber_id": msg.SubscriberID,
-	})
-
-	logEntry.Error("Exceeded max attempts for sending the e-mail.")
-
-	err = h.storage.CreateSendLog(&entities.SendLog{
-		ID:           ksuid.New(),
-		EventID:      msg.EventID,
-		UserID:       msg.UserID,
-		CampaignID:   msg.CampaignID,
-		SubscriberID: msg.SubscriberID,
-		Status:       entities.SendLogStatusFailed,
-		Description:  "Exceeded max attempts for sending the e-mail.",
-	})
-	if err != nil {
-		logEntry.WithError(err).Error("Unable to add log for sent emails result.")
-	}
+	//these are needed to change message visibility
+	sqsclient *sqs.Client
+	queueURL  *string
 }
 
 // HandleMessage is the only requirement needed to fulfill the
 // nsq.Handler interface.
-func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
-	if len(m.Body) == 0 {
+func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (err error) {
+	if m.Body == nil || len(*m.Body) == 0 {
 		logrus.Error("Empty message, unable to proceed.")
 		return nil
 	}
 
 	msg := new(entities.SenderTopicParams)
-	err = json.Unmarshal(m.Body, msg)
+	err = json.Unmarshal([]byte(*m.Body), msg)
 	if err != nil {
-		logrus.WithField("body", string(m.Body)).
+		logrus.WithField("body", string(*m.Body)).
 			WithError(err).Error("Malformed JSON message.")
-		return nil
+		return err
 	}
 
+	cacheKey := genCacheKey(cachePrefix, fmt.Sprintf("%s_%d", msg.EventID, msg.SubscriberID))
 	logEntry := logrus.WithFields(logrus.Fields{
 		"event_id":      msg.EventID,
 		"user_id":       msg.UserID,
 		"campaign_id":   msg.CampaignID,
 		"subscriber_id": msg.SubscriberID,
+		"cache_key":     cacheKey,
 	})
-
-	cacheKey := redis.GenCacheKey(cachePrefix, fmt.Sprintf("%s_%d", msg.EventID.String(), msg.SubscriberID))
 
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
 	exist, err := h.cache.Exists(cacheKey)
@@ -122,7 +92,7 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 		return nil
 	}
 
-	if err := h.cache.Set(cacheKey, []byte("sending"), cacheDuration); err != nil {
+	if err := h.cache.Set(cacheKey, []byte("1"), cacheDuration); err != nil {
 		logEntry.WithError(err).Error("Unable to write to cache")
 		return err
 	}
@@ -218,8 +188,18 @@ func (h *MessageHandler) HandleMessage(m *nsq.Message) (err error) {
 
 	return nil
 }
+func (h *MessageHandler) DeleteMessage(ctx context.Context, m types.Message) error {
+	_, err := h.sqsclient.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      h.queueURL,
+		ReceiptHandle: m.ReceiptHandle,
+	})
+	return err
+}
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	mode.SetModeFromEnv()
 
 	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
@@ -233,6 +213,61 @@ func main() {
 	}
 	logrus.SetOutput(os.Stdout)
 
+	queueStr := flag.String("q", "", "The name of the queue")
+	timeout := flag.Int("t", 300, "How long, in seconds, that the message is hidden from others")
+	maxInFlightMsgs := flag.Int("m", 100, "Max number of messages to be received from SQS simultaneously")
+	waitTimeout := flag.Int("w", 10, "How long, in seconds, ")
+	flag.Parse()
+
+	if *queueStr == "" {
+		logrus.Fatal("You must supply the name of a queue (-q QUEUE)")
+	}
+
+	if *timeout < 0 {
+		*timeout = 0
+	}
+
+	if *timeout > 12*60*60 {
+		*timeout = 12 * 60 * 60
+	}
+
+	if *waitTimeout < 0 {
+		*waitTimeout = 0
+	}
+
+	if *waitTimeout > 20 {
+		*waitTimeout = 20
+	}
+
+	if *maxInFlightMsgs < 1 {
+		*maxInFlightMsgs = 1
+	}
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("AWS configuration error")
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	gQInput := &sqs.GetQueueUrlInput{
+		QueueName: queueStr,
+	}
+	// Get URL of queue
+	urlResult, err := client.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		logrus.WithError(err).Fatal("Got an error getting the queue URL")
+	}
+
+	queueURL := urlResult.QueueUrl
+	consumer := awssqs.NewConsumer(
+		*queueURL,
+		int32(*timeout),
+		int32(*maxInFlightMsgs),
+		int32(*waitTimeout),
+		client,
+	)
+
 	driver := os.Getenv("DATABASE_DRIVER")
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
@@ -242,52 +277,35 @@ func main() {
 		logrus.WithError(err).Fatal("Redis: can't establish connection")
 	}
 
-	config := nsq.NewConfig()
-
-	consumer, err := nsq.NewConsumer(entities.SenderTopic, entities.SenderTopic, config)
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create consumer")
+	g := new(errgroup.Group)
+	handler := &MessageHandler{
+		storage:   s,
+		cache:     cache,
+		sqsclient: client,
+		queueURL:  queueURL,
 	}
 
-	consumer.ChangeMaxInFlight(200)
-
-	consumer.SetLogger(
-		&consumers.NoopLogger{},
-		nsq.LogLevelError,
-	)
-
-	consumer.AddConcurrentHandlers(
-		&MessageHandler{
-			storage: s,
-			cache:   cache,
-		},
-		20,
-	)
-
-	addr := fmt.Sprintf("%s:%s", os.Getenv("NSQLOOKUPD_HOST"), os.Getenv("NSQLOOKUPD_PORT"))
-	nsqlds := []string{addr}
-
-	logrus.Infoln("Connecting to NSQlookup...")
-	if err := consumer.ConnectToNSQLookupds(nsqlds); err != nil {
-		logrus.WithError(err).Fatal("Nsqlookup: can't establish connection")
-	}
-
-	logrus.Infoln("Connected to NSQlookup")
-
-	shutdown := make(chan os.Signal, 2)
-	signal.Notify(shutdown, os.Interrupt)
-	signal.Notify(shutdown, syscall.SIGINT)
-	signal.Notify(shutdown, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-consumer.StopChan:
-			return // consumer disconnected. Time to quit.
-		case <-shutdown:
-			// Synchronously drain the queue before falling out of main
-			logrus.Infoln("Stopping consumer...")
-			consumer.Stop()
+	fn := func(ctx context.Context, m types.Message) func() error {
+		return func() error {
+			err := handler.HandleMessage(ctx, m)
+			if err != nil {
+				// on error we must not delete the message. We want other
+				// consumers to try and process the message again.
+				return err
+			}
+			return handler.DeleteMessage(ctx, m)
 		}
+	}
+
+	// Poll for messages
+	messages := consumer.PollSQS(ctx)
+
+	for m := range messages {
+		g.Go(fn(ctx, m))
+	}
+
+	if err := g.Wait(); err != nil {
+		logrus.WithError(err).Error("received an error when handling a message")
 	}
 }
 
@@ -343,4 +361,11 @@ func sendEmail(client emails.Sender, msg entities.SenderTopicParams) (*ses.SendE
 	}
 
 	return client.SendEmail(input)
+}
+
+func genCacheKey(prefix string, key string) string {
+	h := sha256.New()
+	h.Write([]byte(key))
+	k := h.Sum(nil)
+	return prefix + string(k)
 }

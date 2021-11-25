@@ -1,32 +1,74 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/queue"
+	"github.com/mailbadger/app/mode"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	mode.SetModeFromEnv()
+
+	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		lvl = logrus.InfoLevel
+	}
+
+	logrus.SetLevel(lvl)
+	if mode.IsProd() {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	}
+	logrus.SetOutput(os.Stdout)
+
+	queueStr := flag.String("q", "", "The name of the queue to send the campaign params to")
+	flag.Parse()
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		logrus.WithError(err).Fatal("AWS configuration error")
+	}
+
+	client := sqs.NewFromConfig(cfg)
+
+	gQInput := &sqs.GetQueueUrlInput{
+		QueueName: queueStr,
+	}
+	// Get URL of queue
+	urlResult, err := client.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		logrus.WithError(err).Fatal("Got an error getting the queue URL")
+	}
+
+	queueURL := urlResult.QueueUrl
+	p := awssqs.NewPublisher(
+		client,
+	)
+
 	driver := os.Getenv("DATABASE_DRIVER")
 	conf := storage.MakeConfigFromEnv(driver)
 	s := storage.New(driver, conf)
 
-	p, err := queue.NewProducer(os.Getenv("NSQD_HOST"), os.Getenv("NSQD_PORT"))
-	if err != nil {
-		logrus.Fatal(err)
-	}
-
 	now := time.Now()
-	err = job(s, p, now)
+	err = job(s, p, queueURL, now)
 	if err != nil {
 		logrus.WithField("time", now).WithError(err).Error("failed to start campaign scheduler job")
 	}
@@ -36,7 +78,7 @@ func main() {
 
 }
 
-func job(s storage.Storage, p queue.Producer, time time.Time) error {
+func job(s storage.Storage, p awssqs.Publisher, queueURL *string, time time.Time) error {
 	scheduledCampaigns, err := s.GetScheduledCampaigns(time)
 	if err != nil {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
@@ -124,7 +166,7 @@ func job(s storage.Storage, p queue.Producer, time time.Time) error {
 			logEntry.WithError(err).Error("failed to marshal params for campaigner.")
 			continue
 		}
-		err = p.Publish(entities.CampaignerTopic, paramsByte)
+		err = p.SendMessage(context.TODO(), queueURL, paramsByte)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to publish campaign to campaigner.")
 			continue

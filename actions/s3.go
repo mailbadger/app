@@ -34,9 +34,9 @@ func GetSignedURL(c *gin.Context) {
 	}
 
 	client, err := s3.NewS3Client(
-		os.Getenv("AWS_S3_ACCESS_KEY"),
-		os.Getenv("AWS_S3_SECRET_KEY"),
-		os.Getenv("AWS_S3_REGION"),
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
+		os.Getenv("AWS_REGION"),
 	)
 	if err != nil {
 		logger.From(c).WithError(err).Error("Unable to create s3 client.")

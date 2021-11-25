@@ -4,14 +4,17 @@ go 1.16
 
 require (
 	github.com/andybalholm/brotli v1.0.1 // indirect
-	github.com/aws/aws-sdk-go v1.41.4
+	github.com/aws/aws-sdk-go v1.42.11
+	github.com/aws/aws-sdk-go-v2 v1.11.0 // indirect
+	github.com/aws/aws-sdk-go-v2/config v1.10.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0 // indirect
 	github.com/cbroglie/mustache v1.3.0
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505
 	github.com/gavv/httpexpect/v2 v2.2.0
 	github.com/gin-contrib/sessions v0.0.4
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
@@ -31,7 +34,7 @@ require (
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
-	github.com/open-policy-agent/opa v0.33.1
+	github.com/open-policy-agent/opa v0.34.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/profile v1.5.0
 	github.com/rakyll/statik v0.1.7
