@@ -231,5 +231,5 @@ func (s *service) ParseTemplate(c context.Context, templateID int64, userID int6
 
 // templateKey generates template key
 func templateKey(userID, templateID int64) string {
-	return fmt.Sprintf("temnplates/%d/%d", userID, templateID)
+	return fmt.Sprintf("templates/%d/%d", userID, templateID)
 }
