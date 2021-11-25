@@ -16,7 +16,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/mailbadger/app/mode"
 	_ "github.com/mailbadger/app/statik"
 
 	"github.com/mailbadger/app/entities"
@@ -70,7 +69,7 @@ func openDbConn(driver, config string) *gorm.DB {
 		log.WithError(err).Fatalln("migrations failed")
 	}
 
-	db.LogMode(mode.IsDebug())
+	// db.LogMode(mode.IsDebug())
 
 	return db
 }
