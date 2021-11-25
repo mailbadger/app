@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -118,8 +119,11 @@ func createAWSResources(
 	snsClient events.EventsClient,
 	uuid string,
 ) error {
-	hookURL := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), uuid)
-
+	hookURLStr := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), uuid)
+	hookURL, err := url.Parse(hookURLStr)
+	if err != nil {
+		return fmt.Errorf("ses keys: unable to parse hook URL: %w", err)
+	}
 	snsRes, err := snsClient.CreateTopic(&sns.CreateTopicInput{
 		Name: aws.String(events.SNSTopicName),
 	})
@@ -130,8 +134,8 @@ func createAWSResources(
 	topicArn := *snsRes.TopicArn
 
 	_, err = snsClient.Subscribe(&sns.SubscribeInput{
-		Protocol: aws.String("https"),
-		Endpoint: aws.String(hookURL),
+		Protocol: aws.String(hookURL.Scheme),
+		Endpoint: aws.String(hookURLStr),
 		TopicArn: aws.String(topicArn),
 	})
 	if err != nil {
