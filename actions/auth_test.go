@@ -21,7 +21,7 @@ func TestAuth(t *testing.T) {
 	e := setup(t, s, s3mock)
 
 	// test when signup is disabled
-	e.POST("/api/signup").WithForm(params.PostSignUp{
+	e.POST("/api/signup").WithJSON(params.PostSignUp{
 		Email:    "foo@bar.com",
 		Password: "test1234",
 	}).
@@ -36,14 +36,11 @@ func TestAuth(t *testing.T) {
 
 	e.POST("/api/signup").
 		Expect().
-		Status(http.StatusBadRequest).
+		Status(http.StatusUnprocessableEntity).
 		JSON().Object().
-		ValueEqual("message", "Invalid parameters, please try again").
-		Value("errors").Object().
-		ValueEqual("email", "This field is required").
-		ValueEqual("password", "This field is required")
+		ValueEqual("message", "Invalid parameters, please try again.")
 
-	e.POST("/api/signup").WithForm(params.PostSignUp{
+	e.POST("/api/signup").WithJSON(params.PostSignUp{
 		Email:    "email",
 		Password: "password",
 	}).Expect().
@@ -53,7 +50,7 @@ func TestAuth(t *testing.T) {
 		Value("errors").Object().
 		ValueEqual("email", "Invalid email format")
 
-	e.POST("/api/signup").WithForm(params.PostSignUp{
+	e.POST("/api/signup").WithJSON(params.PostSignUp{
 		Email:    "email",
 		Password: "password",
 	}).Expect().
@@ -63,7 +60,7 @@ func TestAuth(t *testing.T) {
 		Value("errors").Object().
 		ValueEqual("email", "Invalid email format")
 
-	userObj := e.POST("/api/signup").WithForm(params.PostSignUp{
+	userObj := e.POST("/api/signup").WithJSON(params.PostSignUp{
 		Email:    "gl@mail.com",
 		Password: "password",
 	}).Expect().
@@ -84,7 +81,7 @@ func TestAuth(t *testing.T) {
 		NotEmpty().
 		ContainsOnly(entities.Role{ID: 1, Name: entities.AdminRole})
 
-	e.POST("/api/signup").WithForm(params.PostSignUp{
+	e.POST("/api/signup").WithJSON(params.PostSignUp{
 		Email:    "gl@mail.com",
 		Password: "password",
 	}).Expect().
@@ -96,12 +93,9 @@ func TestAuth(t *testing.T) {
 		Expect().
 		Status(http.StatusBadRequest).
 		JSON().Object().
-		ValueEqual("message", "Invalid parameters, please try again").
-		Value("errors").Object().
-		ValueEqual("username", "This field is required").
-		ValueEqual("password", "This field is required")
+		ValueEqual("message", "Invalid parameters, please try again")
 
-	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+	e.POST("/api/authenticate").WithJSON(params.PostAuthenticate{
 		Username: "username",
 		Password: "password",
 	}).Expect().
@@ -109,7 +103,7 @@ func TestAuth(t *testing.T) {
 		JSON().Object().
 		ValueEqual("message", "Invalid credentials.")
 
-	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+	e.POST("/api/authenticate").WithJSON(params.PostAuthenticate{
 		Username: "gl@mail.com",
 		Password: "badpassword",
 	}).Expect().
@@ -117,7 +111,7 @@ func TestAuth(t *testing.T) {
 		JSON().Object().
 		ValueEqual("message", "Invalid credentials.")
 
-	e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+	e.POST("/api/authenticate").WithJSON(params.PostAuthenticate{
 		Username: "gl@mail.com",
 		Password: "password",
 	}).Expect().
