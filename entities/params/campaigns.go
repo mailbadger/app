@@ -6,8 +6,8 @@ import (
 
 // PostCampaign represents request body for POST /api/campaigns
 type PostCampaign struct {
-	Name         string `form:"name" validate:"required,max=191"`
-	TemplateName string `form:"template_name" validate:"required,max=191"`
+	Name         string `json:"name" validate:"required,max=191"`
+	TemplateName string `json:"template_name" validate:"required,max=191"`
 }
 
 func (p *PostCampaign) TrimSpaces() {
@@ -17,8 +17,8 @@ func (p *PostCampaign) TrimSpaces() {
 
 // PutCampaign represents request body for PUT /api/campaigns/{id}
 type PutCampaign struct {
-	Name         string `form:"name" validate:"required,max=191"`
-	TemplateName string `form:"template_name" validate:"required,max=191"`
+	Name         string `json:"name" validate:"required,max=191"`
+	TemplateName string `json:"template_name" validate:"required,max=191"`
 }
 
 func (p *PutCampaign) TrimSpaces() {
@@ -28,10 +28,10 @@ func (p *PutCampaign) TrimSpaces() {
 
 // StartCampaign represents request body for POST /api/campaigns/id/start
 type StartCampaign struct {
-	SegmentIDs          []int64           `form:"segment_id[]" validate:"required,gt=0,dive,required"`
-	Source              string            `form:"source" validate:"required,email,max=191"`
-	FromName            string            `form:"from_name" validate:"required,max=191"`
-	DefaultTemplateData map[string]string `form:"default_template_data" validate:"dive,keys,required,alphanumhyphen,endkeys,required"`
+	SegmentIDs          []int64           `json:"segment_ids" validate:"required,gt=0,dive,required"`
+	Source              string            `json:"source" validate:"required,email,max=191"`
+	FromName            string            `json:"from_name" validate:"required,max=191"`
+	DefaultTemplateData map[string]string `json:"default_template_data" validate:"dive,keys,required,alphanumhyphen,endkeys,required"`
 }
 
 func (p *StartCampaign) TrimSpaces() {
@@ -39,11 +39,11 @@ func (p *StartCampaign) TrimSpaces() {
 }
 
 type CampaignSchedule struct {
-	ScheduledAt         string            `form:"scheduled_at" validate:"required,datetime=2006-01-02 15:04:05,max=191"`
-	FromName            string            `form:"from_name" validate:"required,max=191"`
-	DefaultTemplateData map[string]string `form:"default_template_data" validate:"dive,keys,required,alphanumhyphen,endkeys,required"`
-	Source              string            `form:"source" validate:"required,email,max=191"`
-	SegmentIDs          []int64           `form:"segment_id[]" validate:"required,gt=0,dive,required"`
+	ScheduledAt         string            `json:"scheduled_at" validate:"required,datetime=2006-01-02 15:04:05,max=191"`
+	FromName            string            `json:"from_name" validate:"required,max=191"`
+	DefaultTemplateData map[string]string `json:"default_template_data" validate:"dive,keys,required,alphanumhyphen,endkeys,required"`
+	Source              string            `json:"source" validate:"required,email,max=191"`
+	SegmentIDs          []int64           `json:"segment_ids" validate:"required,gt=0,dive,required"`
 }
 
 func (p *CampaignSchedule) TrimSpaces() {

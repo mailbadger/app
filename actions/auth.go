@@ -41,7 +41,7 @@ import (
 // PostAuthenticate authenticates a user with the given username and password.
 func PostAuthenticate(c *gin.Context) {
 	body := &params.PostAuthenticate{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -115,7 +115,7 @@ func PostSignup(c *gin.Context) {
 	}
 
 	body := &params.PostSignUp{}
-	err := c.ShouldBind(body)
+	err := c.ShouldBindJSON(body)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"message": "Invalid parameters, please try again.",

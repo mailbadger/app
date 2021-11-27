@@ -867,7 +867,7 @@ components:
     TemplateParams:
       description: Template parameters for the form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -897,7 +897,7 @@ components:
     CampaignParams:
       description: Campaign parameters for the form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -917,14 +917,7 @@ components:
     StartCampaignParams:
       description: Parameters for starting a campaign
       content:
-        application/x-www-form-urlencoded:
-          encoding:
-            default_template_data:
-              style: deepObject
-              explode: true
-            segment_ids:
-              style: form
-              explode: true
+        application/json:
           schema:
             type: object
             required:
@@ -959,14 +952,7 @@ components:
     ScheduleCampaignParams:
       description: Parameters for scheduling a campaign
       content:
-        application/x-www-form-urlencoded:
-          encoding:
-            segment_ids:
-              style: form
-              explode: true
-            default_template_data:
-              style: deepObject
-              explode: true
+        application/json:
           schema:
             type: object
             required:
@@ -1006,7 +992,7 @@ components:
     SubscriberParams:
       description: Parameters for the subscriber form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -1041,7 +1027,7 @@ components:
     UpdateSubscriberParams:
       description: Parameters for the update subscriber form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -1069,7 +1055,7 @@ components:
     GroupParams:
       description: Parameters for the group form.
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:

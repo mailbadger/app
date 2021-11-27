@@ -39,7 +39,7 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	body := &params.ChangePassword{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -89,7 +89,7 @@ func ChangePassword(c *gin.Context) {
 
 func PostForgotPassword(c *gin.Context) {
 	body := &params.ForgotPassword{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -167,7 +167,7 @@ func PutForgotPassword(c *gin.Context) {
 	}
 
 	body := &params.PutForgotPassword{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})

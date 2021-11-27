@@ -94,14 +94,13 @@ func PostSubscriber(c *gin.Context) {
 	var err error
 	body := &params.PostSubscriber{}
 
-	if err = c.ShouldBind(body); err != nil {
+	if err = c.ShouldBindJSON(body); err != nil {
+		logger.From(c).WithError(err).Warn("post subscriber: unable to bind body")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-
-	body.Metadata = c.PostFormMap("metadata")
 
 	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -194,14 +193,13 @@ func PutSubscriber(c *gin.Context) {
 	}
 
 	body := &params.PutSubscriber{}
-	if err = c.ShouldBind(body); err != nil {
+	if err = c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
 
-	body.Metadata = c.PostFormMap("metadata")
 	if err = validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -275,7 +273,7 @@ func DeleteSubscriber(c *gin.Context) {
 
 func PostUnsubscribe(c *gin.Context) {
 	body := &params.PostUnsubscribe{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -354,7 +352,7 @@ func ImportSubscribers(c *gin.Context) {
 	boundariesSvc := boundaries.New(storage.GetFromContext(c))
 
 	reqParams := &params.ImportSubscribers{}
-	err := c.ShouldBind(reqParams)
+	err := c.ShouldBindJSON(reqParams)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
@@ -454,7 +452,7 @@ func BulkRemoveSubscribers(c *gin.Context) {
 	u := middleware.GetUser(c)
 
 	body := &params.BulkRemoveSubscribers{}
-	err := c.ShouldBind(body)
+	err := c.ShouldBindJSON(body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
