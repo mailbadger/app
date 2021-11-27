@@ -2,8 +2,8 @@ package params
 
 // ChangePassword represents request body for POST /api/users/password
 type ChangePassword struct {
-	Password    string `form:"password" validate:"required"`
-	NewPassword string `form:"new_password" validate:"required,min=8"`
+	Password    string `json:"password" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=8"`
 }
 
 func (p *ChangePassword) TrimSpaces() {
@@ -12,7 +12,7 @@ func (p *ChangePassword) TrimSpaces() {
 
 // PutForgotPassword represents request body for PUT /api/forgot-password/{token}
 type PutForgotPassword struct {
-	Password string `form:"password" validate:"required,min=8"`
+	Password string `json:"password" validate:"required,min=8"`
 }
 
 func (p *PutForgotPassword) TrimSpaces() {
@@ -21,7 +21,7 @@ func (p *PutForgotPassword) TrimSpaces() {
 
 // ForgotPassword represents request body for POST /api/forgot-password
 type ForgotPassword struct {
-	Email string `form:"email" validate:"required,email"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 func (p *ForgotPassword) TrimSpaces() {

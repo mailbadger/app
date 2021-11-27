@@ -21,7 +21,7 @@ func GetSignedURL(c *gin.Context) {
 	u := middleware.GetUser(c)
 
 	body := &params.GetSignedURL{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})

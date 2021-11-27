@@ -33,7 +33,7 @@ func TestUser(t *testing.T) {
 		ValueEqual("username", "john").
 		ValueEqual("active", true)
 
-	auth.POST("/api/users/password").WithForm(params.ChangePassword{
+	auth.POST("/api/users/password").WithJSON(params.ChangePassword{
 		Password:    "foo",
 		NewPassword: "hunter2",
 	}).Expect().Status(http.StatusBadRequest).
@@ -41,14 +41,14 @@ func TestUser(t *testing.T) {
 		ValueEqual("message", "Invalid parameters, please try again").
 		Value("errors").Object().ValueEqual("new_password", "Must be at least 8 character long")
 
-	auth.POST("/api/users/password").WithForm(params.ChangePassword{
+	auth.POST("/api/users/password").WithJSON(params.ChangePassword{
 		Password:    "foo",
 		NewPassword: "hunter2foobar",
 	}).Expect().Status(http.StatusForbidden).
 		JSON().Object().
 		ValueEqual("message", "The password that you entered is incorrect.")
 
-	auth.POST("/api/users/password").WithForm(params.ChangePassword{
+	auth.POST("/api/users/password").WithJSON(params.ChangePassword{
 		Password:    "hunter1",
 		NewPassword: "hunter2foobar",
 	}).Expect().Status(http.StatusOK).

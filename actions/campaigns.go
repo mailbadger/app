@@ -35,15 +35,12 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	body := &params.StartCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-
-	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
-	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -251,7 +248,7 @@ func GetCampaign(c *gin.Context) {
 
 func PostCampaign(c *gin.Context) {
 	body := &params.PostCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -338,7 +335,7 @@ func PutCampaign(c *gin.Context) {
 	}
 
 	body := &params.PutCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -667,14 +664,12 @@ func PatchCampaignSchedule(c *gin.Context) {
 	}
 
 	body := &params.CampaignSchedule{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
-	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)

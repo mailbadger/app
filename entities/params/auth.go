@@ -2,8 +2,8 @@ package params
 
 // PostAuthenticate represents request body for POST /api/authenticate
 type PostAuthenticate struct {
-	Username string `form:"username" validate:"required"`
-	Password string `form:"password" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 func (p *PostAuthenticate) TrimSpaces() {
@@ -12,9 +12,9 @@ func (p *PostAuthenticate) TrimSpaces() {
 
 // PostSignUp represents request body for POST /api/signup
 type PostSignUp struct {
-	Email         string `form:"email" validate:"required,email"`
-	Password      string `form:"password" validate:"required,min=8"`
-	TokenResponse string `form:"token_response" validate:"omitempty"`
+	Email         string `json:"email" validate:"required,email"`
+	Password      string `json:"password" validate:"required,min=8"`
+	TokenResponse string `json:"token_response" validate:"omitempty"`
 }
 
 func (p *PostSignUp) TrimSpaces() {
