@@ -244,8 +244,14 @@ func GetCampaign(c *gin.Context) {
 
 	if campaign.Schedule != nil {
 		// populate the meta and segment ids fields
-		campaign.Schedule.GetMetadata()
-		campaign.Schedule.GetSegmentIDs()
+		_, err := campaign.Schedule.GetMetadata()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate metadata field")
+		}
+		_, err = campaign.Schedule.GetSegmentIDs()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate segmentIDs field")
+		}
 	}
 
 	c.JSON(http.StatusOK, campaign)
