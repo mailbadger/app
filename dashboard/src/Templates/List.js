@@ -199,7 +199,7 @@ const List = () => {
       )}
       <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
         <Box alignSelf="center" margin={{ right: "small" }}>
-          <Heading level="2">Templateeee</Heading>
+          <Heading level="2">Template</Heading>
         </Box>
         <Box alignSelf="center">
           <Button
