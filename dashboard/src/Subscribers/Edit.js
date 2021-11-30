@@ -137,7 +137,7 @@ const EditForm = ({
             />
             <ErrorMessage name="name" />
           </FormField>
-          <FormField htmlFor="segments" label="Add to segments (Optional)">
+          <FormField htmlFor="segments" label="Add to groups (Optional)">
             <Select
               multiple
               closeOnChange={false}

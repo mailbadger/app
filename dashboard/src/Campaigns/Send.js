@@ -54,7 +54,7 @@ const sendValidation = object().shape({
         .required("Value is required."),
     })
   ),
-  segments: array().min(1, "Please choose atleast one segment."),
+  segments: array().min(1, "Please choose atleast one group."),
 });
 
 const DetailsGrid = ({ children }) => {
@@ -217,7 +217,7 @@ const Form = ({
               multiple
               name="segments"
               closeOnChange={false}
-              placeholder="select a segment..."
+              placeholder="Select a group..."
               value={selected}
               labelKey="name"
               valueKey="id"
@@ -507,7 +507,7 @@ const SendCampaign = ({ match }) => {
         <>
           {showEdit && (
             <Modal
-              title={`Edit segment`}
+              title={`Edit group`}
               hideModal={() => setShowEdit(false)}
               form={
                 <EditCampaign
