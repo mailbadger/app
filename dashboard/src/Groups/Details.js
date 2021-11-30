@@ -147,7 +147,7 @@ const Details = ({ match }) => {
   if (state.isError) {
     return (
       <Box margin="15%" alignSelf="center">
-        <Heading>Segment not found.</Heading>
+        <Heading>Groups not found.</Heading>
       </Box>
     );
   }
@@ -189,12 +189,12 @@ const Details = ({ match }) => {
           )}
           {showDelete && (
             <Modal
-              title={`Delete segment ${segment.name} ?`}
+              title={`Delete group ${segment.name} ?`}
               hideModal={() => setShowDelete(false)}
               form={
                 <DeleteSegment
                   id={segment.id}
-                  onSuccess={() => history.replace("/dashboard/segments")}
+                  onSuccess={() => history.replace("/dashboard/groups")}
                   onCancel={() => setShowDelete(false)}
                 />
               }
@@ -202,7 +202,7 @@ const Details = ({ match }) => {
           )}
           {showDeleteSub.show && (
             <Modal
-              title={`Remove subscriber from segment ?`}
+              title={`Remove subscriber from group ?`}
               hideModal={() => setShowDeleteSub({ show: false, id: "" })}
               form={
                 <RemoveSubscriber
@@ -229,16 +229,16 @@ const Details = ({ match }) => {
             <Box direction="row" margin={{ left: "auto" }}>
               <SecondaryButton
                 margin={{ right: "small" }}
-                a11yTitle="edit segment name"
+                a11yTitle="edit group name"
                 alignSelf="center"
-                icon={<Edit a11yTitle="edit segment name" color="dark-1" />}
+                icon={<Edit a11yTitle="edit group name" color="dark-1" />}
                 label="Edit"
                 onClick={() => setShowEdit(true)}
               />
               <SecondaryButton
-                a11yTitle="delete segment"
+                a11yTitle="delete group"
                 alignSelf="center"
-                icon={<Trash a11yTitle="delete segment" color="dark-1" />}
+                icon={<Trash a11yTitle="delete group" color="dark-1" />}
                 label="Delete"
                 onClick={() => setShowDelete(true)}
               />
@@ -258,7 +258,7 @@ const Details = ({ match }) => {
                 <Box align="center" margin={{ top: "small" }}>
                   <Box align="start">
                     <Heading level="2" margin="none">
-                      Segment is empty.
+                      Group is empty.
                     </Heading>
                   </Box>
                 </Box>

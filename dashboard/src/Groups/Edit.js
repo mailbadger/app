@@ -11,7 +11,7 @@ import { NotificationsContext } from "../Notifications/context";
 
 const segmentValidation = object().shape({
   name: string()
-    .required("Please enter a segment name.")
+    .required("Please enter a group name.")
     .max(191, "The name must not exceed 191 characters."),
 });
 
@@ -29,12 +29,12 @@ const EditForm = ({
   >
     <form onSubmit={handleSubmit}>
       <Box>
-        <FormField htmlFor="name" label="Segment Name">
+        <FormField htmlFor="name" label="Group Name">
           <TextInput
             name="name"
             value={values.name}
             onChange={handleChange}
-            placeholder="My segment"
+            placeholder="My group"
           />
           <ErrorMessage name="name" />
         </FormField>
@@ -47,7 +47,7 @@ const EditForm = ({
               type="submit"
               primary
               disabled={isSubmitting}
-              label="Save Segment"
+              label="Save Group"
             />
           </Box>
         </Box>
@@ -78,7 +78,7 @@ const EditSegment = ({ setSegment, hideModal, segment }) => {
             name: values.name,
           })
         );
-        createNotification("Segment has been edited successfully.");
+        createNotification("Group has been edited successfully.");
 
         segment.name = values.name;
         setSegment(segment);
@@ -95,7 +95,7 @@ const EditSegment = ({ setSegment, hideModal, segment }) => {
 
           const msg = message
             ? message
-            : "Unable to edit segment. Please try again.";
+            : "Unable to edit group. Please try again.";
 
           createNotification(msg, "status-error");
 

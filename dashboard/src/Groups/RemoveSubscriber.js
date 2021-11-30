@@ -31,7 +31,7 @@ const RemoveSubscriber = ({ id, subId, onSuccess, onCancel }) => {
               await removeSubscriber(id);
               onSuccess();
             } catch (e) {
-              let msg = "Unable to remove subscriber from segment. Try again.";
+              let msg = "Unable to remove subscriber from group. Try again.";
               const { response } = e;
               if (response) {
                 msg = response.data.message;

@@ -135,7 +135,7 @@ SegmentTable.propTypes = {
 
 const segmentValidation = object().shape({
   name: string()
-    .required("Please enter a segment name.")
+    .required("Please enter a group name.")
     .max(191, "The name must not exceed 191 characters."),
 });
 
@@ -152,11 +152,11 @@ const CreateForm = ({
   >
     <form onSubmit={handleSubmit}>
       <Box>
-        <FormField htmlFor="name" label="Segment Name">
+        <FormField htmlFor="name" label="Group Name">
           <TextInput
             name="name"
             onChange={handleChange}
-            placeholder="My segment"
+            placeholder="My group"
           />
           <ErrorMessage name="name" />
         </FormField>
@@ -169,7 +169,7 @@ const CreateForm = ({
               type="submit"
               primary
               disabled={isSubmitting}
-              label="Save Segment"
+              label="Save Group"
             />
           </Box>
         </Box>
@@ -197,7 +197,7 @@ const CreateSegment = ({ callApi, hideModal }) => {
             name: values.name,
           })
         );
-        createNotification("Segment has been created successfully.");
+        createNotification("Group has been created successfully.");
 
         await callApi({ url: "/api/segments" });
 
@@ -213,7 +213,7 @@ const CreateSegment = ({ callApi, hideModal }) => {
 
           const msg = message
             ? message
-            : "Unable to create segment. Please try again.";
+            : "Unable to create group. Please try again.";
 
           createNotification(msg, "status-error");
 
@@ -316,7 +316,7 @@ const List = () => {
     <>
       {showDelete.show && (
         <Modal
-          title={`Delete segment ${showDelete.name} ?`}
+          title={`Delete group ${showDelete.name} ?`}
           hideModal={hideModal}
           form={
             <DeleteSegment
@@ -332,7 +332,7 @@ const List = () => {
       )}
       {showCreate && (
         <Modal
-          title={`Create segment`}
+          title={`Create group`}
           hideModal={() => openCreateModal(false)}
           form={
             <CreateSegment
@@ -363,7 +363,7 @@ const List = () => {
 
           {!state.isLoading && !state.isError && state.data.collection.length === 0 ? (
             <Box align="center" margin={{ top: "small" }}>
-              <Heading level="2">Create your first segment.</Heading>
+              <Heading level="2">Create your first group.</Heading>
             </Box>
           ) : null}
         </Box>

@@ -157,11 +157,11 @@ const ImportSubscribers = () => {
       <Box round background="white" pad="medium" width="50%" alignSelf="start">
         <Markdown>{Content}</Markdown>
         <Box margin={{ top: "medium" }}>
-          <Text margin={{ bottom: "small" }}>Add to segments (optional)</Text>
+          <Text margin={{ bottom: "small" }}>Add to groups (optional)</Text>
           <Select
             multiple
             closeOnChange={false}
-            placeholder="select segments..."
+            placeholder="select groups..."
             value={selected}
             labelKey="name"
             valueKey="id"
