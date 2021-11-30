@@ -6,9 +6,9 @@ import (
 
 // PostSESKeys represents request body for POST /api/ses/keys
 type PostSESKeys struct {
-	AccessKey string `form:"access_key" validate:"required,alphanum,max=191"`
-	SecretKey string `form:"secret_key" validate:"required,max=191"`
-	Region    string `form:"region" validate:"required,max=30"`
+	AccessKey string `json:"access_key" validate:"required,alphanum,max=191"`
+	SecretKey string `json:"secret_key" validate:"required,max=191"`
+	Region    string `json:"region" validate:"required,max=30"`
 }
 
 func (p *PostSESKeys) TrimSpaces() {

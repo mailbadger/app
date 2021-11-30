@@ -101,7 +101,7 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 		return nil, err
 	}
 
-	c := e.POST("/api/authenticate").WithForm(params.PostAuthenticate{
+	c := e.POST("/api/authenticate").WithJSON(params.PostAuthenticate{
 		Username: "john",
 		Password: "hunter1",
 	}).Expect().Status(http.StatusOK).Cookie("mbsess")

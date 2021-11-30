@@ -105,7 +105,7 @@ func PostTemplate(c *gin.Context) {
 	service := templatesvc.New(storage.GetFromContext(c), s3.GetFromContext(c))
 
 	body := &params.PostTemplate{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -186,7 +186,7 @@ func PutTemplate(c *gin.Context) {
 	}
 
 	body := &params.PutTemplate{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})

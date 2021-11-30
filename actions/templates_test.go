@@ -42,7 +42,7 @@ func TestTemplates(t *testing.T) {
 	}
 
 	// test post template unauthorized
-	e.POST("/api/templates").WithForm(params.PostTemplate{
+	e.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "",
 		HTMLPart:    "",
 		TextPart:    "",
@@ -51,7 +51,7 @@ func TestTemplates(t *testing.T) {
 		Status(http.StatusUnauthorized)
 
 	// test binding on post template
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "",
 		HTMLPart:    "",
 		TextPart:    "",
@@ -68,7 +68,7 @@ func TestTemplates(t *testing.T) {
 		})
 
 	// TODO fix test for html validation
-	/*auth.POST("/api/templates").WithForm(params.PostTemplate{
+	/*auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 1",
 		HTMLPart:    "test 1 template<div>hjhjhj",
 		TextPart:    "template {{.number}} 123",
@@ -82,7 +82,7 @@ func TestTemplates(t *testing.T) {
 		})*/
 
 	// test filed to parse text part on post template
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{{number}} 223",
@@ -93,7 +93,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to create template, failed to parse text_part")
 
 	// test filed to parse subject part on post template
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{number}} 223",
@@ -104,7 +104,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to create template, failed to parse subject_part")
 
 	// test filed to parse html part on post template
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>{{{tesT}}",
 		TextPart:    "template {{number}} 223",
@@ -115,7 +115,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to create template, failed to parse html_part")
 
 	// test post subscriber with error on PutObject (this template is saved in database only the html part is not saved)
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 1",
 		HTMLPart:    "<span>test 1 template<span>",
 		TextPart:    "template {{.number}} 123",
@@ -126,7 +126,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to create template, please try again.")
 
 	// test post template
-	id := auth.POST("/api/templates").WithForm(params.PostTemplate{
+	id := auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 2",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{.number}} 223",
@@ -136,7 +136,7 @@ func TestTemplates(t *testing.T) {
 		JSON().Object().Value("id")
 
 	// test post template with name that exists
-	auth.POST("/api/templates").WithForm(params.PostTemplate{
+	auth.POST("/api/templates").WithJSON(params.PostTemplate{
 		Name:        "template 2",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{.number}} 223",
@@ -149,7 +149,7 @@ func TestTemplates(t *testing.T) {
 	idStr := strconv.FormatFloat(id.Raw().(float64), 'f', 0, 64)
 
 	// test invalid parameters on put template
-	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/"+idStr).WithJSON(params.PutTemplate{
 		Name:        "",
 		HTMLPart:    "",
 		TextPart:    "",
@@ -166,7 +166,7 @@ func TestTemplates(t *testing.T) {
 		})
 
 	// test put template for non existing template
-	auth.PUT("/api/templates/9933209").WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/9933209").WithJSON(params.PutTemplate{
 		Name:        "",
 		HTMLPart:    "",
 		TextPart:    "",
@@ -177,7 +177,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Template not found")
 
 	// test put template with non integer id
-	auth.PUT("/api/templates/2.2").WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/2.2").WithJSON(params.PutTemplate{
 		Name:        "",
 		HTMLPart:    "",
 		TextPart:    "",
@@ -188,7 +188,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Id must be an integer")
 
 	// test put template
-	auth.PUT("/api/templates/" + idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/" + idStr).WithJSON(params.PutTemplate{
 		HTMLPart:    "<span>test 2 template updated<span>",
 		TextPart:    "template {{.number}} 223 updated",
 		SubjectPart: "hello {{.name}}",
@@ -197,7 +197,7 @@ func TestTemplates(t *testing.T) {
 		Status(http.StatusOK)
 
 	// test put template with name that already exists
-	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/"+idStr).WithJSON(params.PutTemplate{
 		HTMLPart:    "<span>test 2 template updated<span>",
 		TextPart:    "template {{.number}} 223 updated",
 		SubjectPart: "hello {{.name}}",
@@ -208,7 +208,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Template with that name already exists")
 
 	// TODO fix test for html validation
-	/*auth.PUT("/api/templates/" + idStr).WithForm(params.PostTemplate{
+	/*auth.PUT("/api/templates/" + idStr).WithJSON(params.PostTemplate{
 		Name:        "template 2 uuds",
 		HTMLPart:    "test 1 template<div>hjhjhj",
 		TextPart:    "template {{.number}} 123",
@@ -222,7 +222,7 @@ func TestTemplates(t *testing.T) {
 		})*/
 
 	// test filed to parse text part on put template
-	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/"+idStr).WithJSON(params.PutTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{{number}} 223",
@@ -233,7 +233,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to update template, failed to parse text_part")
 
 	// test filed to parse subject part on put template
-	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/"+idStr).WithJSON(params.PutTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>",
 		TextPart:    "template {{number}} 223",
@@ -244,7 +244,7 @@ func TestTemplates(t *testing.T) {
 		ValueEqual("message", "Unable to update template, failed to parse subject_part")
 
 	// test filed to parse html part on put template
-	auth.PUT("/api/templates/"+idStr).WithForm(params.PutTemplate{
+	auth.PUT("/api/templates/"+idStr).WithJSON(params.PutTemplate{
 		Name:        "template 3",
 		HTMLPart:    "<span>test 2 template<span>{{{tesT}}",
 		TextPart:    "template {{number}} 223",

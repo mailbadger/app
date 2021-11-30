@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/csrf"
 
@@ -17,32 +16,24 @@ import (
 
 // Authorization header prefixes.
 const (
-	APIKeyAuth = "Api-Key"
+	APIKeyAuth = "X-API-Key"
 )
 
 // SetUser fetches the token and then from the token fetches the user entity
 // and sets it to the context.
 func SetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var authHeader = c.GetHeader("Authorization")
+		var authHeader = c.GetHeader(APIKeyAuth)
 
 		if authHeader != "" {
-			parts := strings.SplitN(authHeader, " ", 2)
-			if len(parts) != 2 {
+			key, err := storage.GetAPIKey(c, authHeader)
+			if err != nil {
+				logger.From(c).WithError(err).Error("unable to fetch api key")
 				c.Next()
 				return
 			}
 
-			if parts[0] == APIKeyAuth {
-				key, err := storage.GetAPIKey(c, parts[1])
-				if err != nil {
-					logger.From(c).WithError(err).Error("unable to fetch api key")
-					c.Next()
-					return
-				}
-
-				c.Set("user", &key.User)
-			}
+			c.Set("user", &key.User)
 
 			// When using api keys it's ok to skip the csrf token
 			// since we are not using cookies to authenticate the user

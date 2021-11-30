@@ -21,18 +21,18 @@ func TestSegments(t *testing.T) {
 		t.FailNow()
 	}
 
-	e.POST("/api/segments").WithForm(params.Segment{Name: "djale"}).
+	e.POST("/api/segments").WithJSON(params.Segment{Name: "djale"}).
 		Expect().
 		Status(http.StatusUnauthorized)
 
-	auth.POST("/api/segments").WithForm(params.Segment{Name: ""}).
+	auth.POST("/api/segments").WithJSON(params.Segment{Name: ""}).
 		Expect().
 		Status(http.StatusBadRequest).JSON().Object().
 		ValueEqual("message", "Invalid parameters, please try again").
 		ValueEqual("errors", map[string]string{"name": "This field is required"})
 
 	// test post segment
-	auth.POST("/api/segments").WithForm(params.Segment{Name: "djale"}).
+	auth.POST("/api/segments").WithJSON(params.Segment{Name: "djale"}).
 		Expect().
 		Status(http.StatusCreated)
 
@@ -45,7 +45,7 @@ func TestSegments(t *testing.T) {
 		ValueEqual("total_subscribers", 0)
 
 	// test put segments
-	auth.PUT("/api/segments/1").WithForm(params.Segment{Name: "djaleputtest"}).
+	auth.PUT("/api/segments/1").WithJSON(params.Segment{Name: "djaleputtest"}).
 		Expect().
 		Status(http.StatusOK)
 

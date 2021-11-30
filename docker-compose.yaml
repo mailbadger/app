@@ -14,29 +14,8 @@ services:
     volumes:
       - dbdata:/var/lib/mysql
       - ./config/my.cnf:/etc/mysql/conf.d/my.cnf
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
-    ports:
-      - "4160"
-      - "4161:4161"
-  nsqd:
-    image: nsqio/nsq
-    command: /nsqd --broadcast-address=nsqd --lookupd-tcp-address=nsqlookupd:4160
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4150:4150"
-      - "4151:4151"
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4171:4171"
   redis:
-    image: redis # we need to decide the version
+    image: redis
     ports:
       - 6379:6379
   # app:

@@ -52,13 +52,11 @@ paths:
                           $ref: "#/components/schemas/BaseTemplate"
                         example:
                           - id: 111
-                            user_id: 444
                             name: HelloWorld
                             subject_part: Hello World!
                             created_at: "2021-05-19T20:48:50.378Z"
                             updated_at: "2021-05-19T20:48:50.378Z"
                           - id: 222
-                            user_id: 444
                             name: Welcome
                             subject_part: Welcome to Mailbadger {{name}}!
                             created_at: "2021-05-19T20:48:50.378Z"
@@ -867,7 +865,7 @@ components:
     TemplateParams:
       description: Template parameters for the form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -897,7 +895,7 @@ components:
     CampaignParams:
       description: Campaign parameters for the form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -917,14 +915,7 @@ components:
     StartCampaignParams:
       description: Parameters for starting a campaign
       content:
-        application/x-www-form-urlencoded:
-          encoding:
-            default_template_data:
-              style: deepObject
-              explode: true
-            segment_ids:
-              style: form
-              explode: true
+        application/json:
           schema:
             type: object
             required:
@@ -959,14 +950,7 @@ components:
     ScheduleCampaignParams:
       description: Parameters for scheduling a campaign
       content:
-        application/x-www-form-urlencoded:
-          encoding:
-            segment_ids:
-              style: form
-              explode: true
-            default_template_data:
-              style: deepObject
-              explode: true
+        application/json:
           schema:
             type: object
             required:
@@ -1006,7 +990,7 @@ components:
     SubscriberParams:
       description: Parameters for the subscriber form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             required:
@@ -1041,7 +1025,7 @@ components:
     UpdateSubscriberParams:
       description: Parameters for the update subscriber form
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -1069,7 +1053,7 @@ components:
     GroupParams:
       description: Parameters for the group form.
       content:
-        application/x-www-form-urlencoded:
+        application/json:
           schema:
             type: object
             properties:
@@ -1198,11 +1182,6 @@ components:
         - $ref: "#/components/schemas/BaseModel"
         - type: object
           properties:
-            user_id:
-              description: The ID of the owner of the template.
-              type: integer
-              format: int64
-              example: 123
             name:
               description: The name of the template.
               type: string
@@ -1229,11 +1208,6 @@ components:
         - $ref: "#/components/schemas/BaseModel"
         - type: object
           properties:
-            user_id:
-              description: The ID of the owner of the campaign.
-              type: integer
-              format: int64
-              example: 123
             name:
               description: The name of the campaign.
               type: string

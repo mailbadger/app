@@ -8,16 +8,16 @@ import (
 )
 
 type CampaignSchedule struct {
-	ID                      ksuid.KSUID       `json:"id" gorm:"column:id; primary_key:yes"`
+	ID                      ksuid.KSUID       `json:"-" gorm:"column:id; primary_key:yes"`
 	UserID                  int64             `json:"-"`
 	CampaignID              int64             `json:"-"`
 	ScheduledAt             time.Time         `json:"scheduled_at"`
-	Source                  string            `json:"-"`
-	FromName                string            `json:"-"`
+	Source                  string            `json:"source"`
+	FromName                string            `json:"from_name"`
 	SegmentIDsJSON          JSON              `json:"-" gorm:"column:segment_ids; type:json"`
-	SegmentIDs              []int64           `json:"-" sql:"-"`
+	SegmentIDs              []int64           `json:"segment_ids" sql:"-"`
 	DefaultTemplateDataJSON JSON              `json:"-"  gorm:"column:default_template_data; type:json"`
-	DefaultTemplateData     map[string]string `json:"-" sql:"-"`
+	DefaultTemplateData     map[string]string `json:"default_template_data" sql:"-"`
 	CreatedAt               time.Time         `json:"created_at"`
 	UpdatedAt               time.Time         `json:"updated_at"`
 }

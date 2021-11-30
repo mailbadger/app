@@ -18,7 +18,7 @@ type Subscriber struct {
 	Name        string            `json:"name"`
 	Email       string            `json:"email" gorm:"not null"`
 	MetaJSON    JSON              `json:"metadata" gorm:"column:metadata; type:json"`
-	Segments    []Segment         `json:"segments" gorm:"many2many:subscribers_segments;"`
+	Segments    []Segment         `json:"segments,omitempty" gorm:"many2many:subscribers_segments;"`
 	Blacklisted bool              `json:"blacklisted"`
 	Active      bool              `json:"active"`
 	Metadata    map[string]string `json:"-" sql:"-"`

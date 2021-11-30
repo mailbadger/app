@@ -50,7 +50,7 @@ func initValidator() {
 	MBValidator = validator.New()
 	MBValidator.SetTagName(validatorTagName)
 	MBValidator.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("form"), ",", 2)[0]
+		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 		return name
 	})
 

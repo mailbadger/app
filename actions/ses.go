@@ -49,7 +49,7 @@ func PostSESKeys(c *gin.Context) {
 	}
 
 	body := &params.PostSESKeys{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		logger.From(c).WithError(err).Error("Unable to bind ses keys params.")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",

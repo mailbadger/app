@@ -35,15 +35,12 @@ func StartCampaign(c *gin.Context) {
 	}
 
 	body := &params.StartCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-
-	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
-	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)
@@ -239,11 +236,22 @@ func GetCampaign(c *gin.Context) {
 	}
 	campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID)
 	if err != nil {
-		logrus.Info(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
 		return
+	}
+
+	if campaign.Schedule != nil {
+		// populate the meta and segment ids fields
+		_, err := campaign.Schedule.GetMetadata()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate metadata field")
+		}
+		_, err = campaign.Schedule.GetSegmentIDs()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate segmentIDs field")
+		}
 	}
 
 	c.JSON(http.StatusOK, campaign)
@@ -251,7 +259,7 @@ func GetCampaign(c *gin.Context) {
 
 func PostCampaign(c *gin.Context) {
 	body := &params.PostCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -338,7 +346,7 @@ func PutCampaign(c *gin.Context) {
 	}
 
 	body := &params.PutCampaign{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -667,14 +675,12 @@ func PatchCampaignSchedule(c *gin.Context) {
 	}
 
 	body := &params.CampaignSchedule{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
 		return
 	}
-	// should bind supports only struct type so we need to take our map key value with PostFormMap before validating struct
-	body.DefaultTemplateData = c.PostFormMap("default_template_data")
 
 	if err := validator.Validate(body); err != nil {
 		c.JSON(http.StatusBadRequest, err)

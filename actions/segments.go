@@ -85,7 +85,7 @@ func GetSegment(c *gin.Context) {
 func PostSegment(c *gin.Context) {
 
 	body := &params.Segment{}
-	if err := c.ShouldBind(body); err != nil {
+	if err := c.ShouldBindJSON(body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "Invalid parameters, please try again",
 		})
@@ -131,7 +131,7 @@ func PutSegment(c *gin.Context) {
 		}
 
 		body := &params.Segment{}
-		if err := c.ShouldBind(body); err != nil {
+		if err := c.ShouldBindJSON(body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Invalid parameters, please try again",
 			})
@@ -210,7 +210,7 @@ func PutSegmentSubscribers(c *gin.Context) {
 		}
 
 		body := &params.SegmentSubs{}
-		if err := c.ShouldBind(body); err != nil {
+		if err := c.ShouldBindJSON(body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Invalid parameters, please try again",
 			})
@@ -302,7 +302,7 @@ func DetachSegmentSubscribers(c *gin.Context) {
 		}
 
 		body := &params.SegmentSubs{}
-		if err := c.ShouldBind(body); err != nil {
+		if err := c.ShouldBindJSON(body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Invalid parameters, please try again",
 			})
