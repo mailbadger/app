@@ -344,7 +344,7 @@ const List = () => {
       )}
       <Box gridArea="nav" direction="row" border={{ side: 'bottom', color: 'light-4' }}>
         <Box margin={{ right: "small" }} alignSelf="center">
-          <Heading level="2">Segments</Heading>
+          <Heading level="2">Groups</Heading>
         </Box>
         <Box alignSelf="center">
           <Button
