@@ -236,11 +236,22 @@ func GetCampaign(c *gin.Context) {
 	}
 	campaign, err := storage.GetCampaign(c, id, middleware.GetUser(c).ID)
 	if err != nil {
-		logrus.Info(err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"message": "Campaign not found",
 		})
 		return
+	}
+
+	if campaign.Schedule != nil {
+		// populate the meta and segment ids fields
+		_, err := campaign.Schedule.GetMetadata()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate metadata field")
+		}
+		_, err = campaign.Schedule.GetSegmentIDs()
+		if err != nil {
+			logger.From(c).WithError(err).Warn("get campaign: unable to populate segmentIDs field")
+		}
 	}
 
 	c.JSON(http.StatusOK, campaign)

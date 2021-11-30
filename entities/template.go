@@ -22,7 +22,7 @@ const (
 // BaseTemplate represents the base params of each template
 type BaseTemplate struct {
 	Model
-	UserID      int64  `json:"user_id"`
+	UserID      int64  `json:"-"`
 	Name        string `json:"name"`
 	SubjectPart string `json:"subject_part"`
 }
