@@ -6,19 +6,19 @@ import List from "./List";
 import Details from "./Details";
 import { ListGrid } from "../ui";
 
-const Segments = () => (
+const Groups = () => (
   <Switch>
     <ProtectedRoute
       exact
-      path="/dashboard/segments"
+      path="/dashboard/groups"
       component={() => (
         <ListGrid>
           <List />
         </ListGrid>
       )}
     />
-    <ProtectedRoute exact path="/dashboard/segments/:id" component={Details} />
+    <ProtectedRoute exact path="/dashboard/groups/:id" component={Details} />
   </Switch>
 );
 
-export default Segments;
+export default Groups;

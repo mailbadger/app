@@ -25,8 +25,8 @@ const links = [
     icon: <FontAwesomeIcon icon={faUsers} />,
   },
   {
-    to: "/dashboard/segments",
-    label: "Segments",
+    to: "/dashboard/groups",
+    label: "Groups",
     icon: <FontAwesomeIcon icon={faSitemap} />,
   },
   {

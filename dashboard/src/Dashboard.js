@@ -7,7 +7,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Sidebar from "./Sidebar";
 import Subscribers from "./Subscribers";
 import Templates from "./Templates";
-import Segments from "./Segments";
+import Groups from "./Groups";
 import Campaigns from "./Campaigns";
 import Settings from "./Settings";
 import { SesKeysProvider } from "./Settings/SesKeysContext";
@@ -15,7 +15,7 @@ import { SesKeysProvider } from "./Settings/SesKeysContext";
 const Routes = React.memo(() => (
   <Box flex align="stretch" justify="start">
     <ProtectedRoute path="/dashboard/subscribers" component={Subscribers} />
-    <ProtectedRoute path="/dashboard/segments" component={Segments} />
+    <ProtectedRoute path="/dashboard/groups" component={Groups} />
     <ProtectedRoute
       path="/dashboard/templates"
       component={() => (
