@@ -33,7 +33,7 @@ require (
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
-	github.com/open-policy-agent/opa v0.34.2
+	github.com/open-policy-agent/opa v0.35.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/rakyll/statik v0.1.7
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
@@ -49,7 +49,7 @@ require (
 	github.com/valyala/fasthttp v1.16.0 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
-	golang.org/x/net v0.0.0-20210825183410-e898025ed96a
+	golang.org/x/net v0.0.0-20211111083644-e5c967477495
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
