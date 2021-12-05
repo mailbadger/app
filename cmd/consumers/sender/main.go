@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -79,6 +80,8 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 		"subscriber_id": msg.SubscriberID,
 		"cache_key":     cacheKey,
 	})
+
+	logEntry.Info("Received message, processing..")
 
 	// check if the message is processing (if the uuid exists in redis that means it is in progress)
 	exist, err := h.cache.Exists(cacheKey)
@@ -213,15 +216,10 @@ func main() {
 	}
 	logrus.SetOutput(os.Stdout)
 
-	queueStr := flag.String("q", "", "The name of the queue")
 	timeout := flag.Int("t", 300, "How long, in seconds, that the message is hidden from others")
-	maxInFlightMsgs := flag.Int("m", 100, "Max number of messages to be received from SQS simultaneously")
+	maxInFlightMsgs := flag.Int("m", 10, "Max number of messages to be received from SQS simultaneously")
 	waitTimeout := flag.Int("w", 10, "How long, in seconds, ")
 	flag.Parse()
-
-	if *queueStr == "" {
-		logrus.Fatal("You must supply the name of a queue (-q QUEUE)")
-	}
 
 	if *timeout < 0 {
 		*timeout = 0
@@ -250,8 +248,9 @@ func main() {
 
 	client := sqs.NewFromConfig(cfg)
 
+	queueStr := entities.SenderTopic
 	gQInput := &sqs.GetQueueUrlInput{
-		QueueName: queueStr,
+		QueueName: &queueStr,
 	}
 	// Get URL of queue
 	urlResult, err := client.GetQueueUrl(ctx, gQInput)
@@ -367,5 +366,5 @@ func genCacheKey(prefix string, key string) string {
 	h := sha256.New()
 	h.Write([]byte(key))
 	k := h.Sum(nil)
-	return prefix + string(k)
+	return prefix + hex.EncodeToString(k)
 }

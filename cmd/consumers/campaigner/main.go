@@ -34,8 +34,9 @@ type MessageHandler struct {
 	campaignsvc campaigns.Service
 	templatesvc templates.Service
 	//these are needed to change message visibility
-	sqsclient *sqs.Client
-	queueURL  *string
+	sqsclient         *sqs.Client
+	queueURL          *string
+	sendEmailQueueURL *string
 }
 
 // HandleMessage is the only requirement needed to fulfill the
@@ -50,6 +51,7 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 	err = json.Unmarshal([]byte(*m.Body), msg)
 
 	if err != nil {
+		logrus.WithError(err).Error("Unable to unmarshal message")
 		return err
 	}
 
@@ -58,6 +60,8 @@ func (h *MessageHandler) HandleMessage(ctx context.Context, m types.Message) (er
 		"user_id":     msg.UserID,
 		"segment_ids": msg.SegmentIDs,
 	})
+
+	logEntry.Info("Received a message, processing..")
 
 	campaign, err := h.store.GetCampaign(msg.UserID, msg.CampaignID)
 	if err != nil {
@@ -174,7 +178,7 @@ func (h *MessageHandler) processSubscribers(
 					continue
 				}
 
-				err = h.campaignsvc.PublishSubscriberEmailParams(ctx, params, h.queueURL)
+				err = h.campaignsvc.PublishSubscriberEmailParams(ctx, params, h.sendEmailQueueURL)
 				if err != nil {
 					logEntry.WithField("subscriber_id", s.ID).WithError(err).Error("unable to publish subscriber email params")
 
@@ -204,6 +208,7 @@ func (h *MessageHandler) processSubscribers(
 					logEntry.WithError(err).Errorf("unable to set campaign status to '%s'", entities.StatusSent)
 					return err
 				}
+				return nil
 			}
 
 			// set  vars for next batches
@@ -252,15 +257,10 @@ func main() {
 	}
 	logrus.SetOutput(os.Stdout)
 
-	queueStr := flag.String("q", "", "The name of the queue")
 	timeout := flag.Int("t", 360, "How long, in seconds, that the message is hidden from others")
-	maxInFlightMsgs := flag.Int("m", 10, "Max number of messages to be received from SQS simultaneously")
+	maxInFlightMsgs := flag.Int("m", 1, "Max number of messages to be received from SQS simultaneously")
 	waitTimeout := flag.Int("w", 10, "How long, in seconds, ")
 	flag.Parse()
-
-	if *queueStr == "" {
-		logrus.Fatal("You must supply the name of a queue (-q QUEUE)")
-	}
 
 	if *timeout < 0 {
 		*timeout = 0
@@ -289,16 +289,17 @@ func main() {
 
 	client := sqs.NewFromConfig(cfg)
 
+	queueName := entities.CampaignerTopic
 	gQInput := &sqs.GetQueueUrlInput{
-		QueueName: queueStr,
+		QueueName: &queueName,
 	}
 	// Get URL of queue
 	urlResult, err := client.GetQueueUrl(ctx, gQInput)
 	if err != nil {
 		logrus.WithError(err).Fatal("Got an error getting the queue URL")
 	}
-
 	queueURL := urlResult.QueueUrl
+
 	consumer := awssqs.NewConsumer(*queueURL, int32(*timeout), int32(*maxInFlightMsgs), int32(*waitTimeout), client)
 
 	driver := os.Getenv("DATABASE_DRIVER")
@@ -317,13 +318,25 @@ func main() {
 	templatesvc := templates.New(store, s3Client)
 	campaignsvc := campaigns.New(store, client)
 
+	queueName = entities.SenderTopic
+	gQInput = &sqs.GetQueueUrlInput{
+		QueueName: &queueName,
+	}
+	// Get URL of send email queue
+	urlResult, err = client.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		logrus.WithError(err).Fatal("Got an error getting the queue URL")
+	}
+	sendEmailQueueURL := urlResult.QueueUrl
+
 	g := new(errgroup.Group)
 	handler := &MessageHandler{
-		store:       store,
-		templatesvc: templatesvc,
-		campaignsvc: campaignsvc,
-		sqsclient:   client,
-		queueURL:    queueURL,
+		store:             store,
+		templatesvc:       templatesvc,
+		campaignsvc:       campaignsvc,
+		sqsclient:         client,
+		queueURL:          queueURL,
+		sendEmailQueueURL: sendEmailQueueURL,
 	}
 	fn := func(ctx context.Context, m types.Message) func() error {
 		return func() error {

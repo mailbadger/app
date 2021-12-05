@@ -18,11 +18,11 @@ const (
 	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
 	// CampaignerTopic is the topic used by the campaigner consumer.
-	CampaignerTopic = "campaigner"
+	CampaignerTopic = "SendCampaign"
 	// SendBulkTopic is the topic used by the bulksender consumer.
 	SendBulkTopic = "send_bulk"
 	// SenderTopic is the topic used by the sender consumer.
-	SenderTopic = "sender"
+	SenderTopic = "SendEmail"
 )
 
 // Campaign represents the campaign entity
@@ -108,6 +108,10 @@ func (c Campaign) GetUpdatedAt() time.Time {
 
 // SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
 func (c *Campaign) SetEventID() {
+	if c.EventID != nil {
+		return
+	}
+
 	if c.Schedule != nil {
 		c.EventID = &c.Schedule.ID
 		return

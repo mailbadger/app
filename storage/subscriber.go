@@ -122,15 +122,15 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 			AND subscribers.blacklisted = ? 
 			AND subscribers.active = ?
 			AND (created_at > ? OR (created_at = ? AND id > ?))
-			AND created_at < ?`,
+			AND created_at < NOW()`,
 			listIDs,
 			userID,
 			blacklisted,
 			active,
-			timestamp.Format(time.RFC3339Nano),
-			timestamp.Format(time.RFC3339Nano),
+			timestamp.Format(time.RFC3339),
+			timestamp.Format(time.RFC3339),
 			nextID,
-			time.Now().Format(time.RFC3339Nano)).
+		).
 		Order("created_at, id").
 		Limit(limit).
 		Find(&subs).Error
