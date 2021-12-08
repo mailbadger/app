@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -39,9 +38,6 @@ func main() {
 	}
 	logrus.SetOutput(os.Stdout)
 
-	queueStr := flag.String("q", "", "The name of the queue to send the campaign params to")
-	flag.Parse()
-
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		logrus.WithError(err).Fatal("AWS configuration error")
@@ -49,8 +45,9 @@ func main() {
 
 	client := sqs.NewFromConfig(cfg)
 
+	queueName := awssqs.CampaignerTopic
 	gQInput := &sqs.GetQueueUrlInput{
-		QueueName: queueStr,
+		QueueName: &queueName,
 	}
 	// Get URL of queue
 	urlResult, err := client.GetQueueUrl(ctx, gQInput)
@@ -68,7 +65,7 @@ func main() {
 	s := storage.New(driver, conf)
 
 	now := time.Now()
-	err = job(s, p, queueURL, now)
+	err = job(ctx, s, p, queueURL, now)
 	if err != nil {
 		logrus.WithField("time", now).WithError(err).Error("failed to start campaign scheduler job")
 	}
@@ -78,7 +75,7 @@ func main() {
 
 }
 
-func job(s storage.Storage, p awssqs.Publisher, queueURL *string, time time.Time) error {
+func job(ctx context.Context, s storage.Storage, p awssqs.Publisher, queueURL *string, time time.Time) error {
 	scheduledCampaigns, err := s.GetScheduledCampaigns(time)
 	if err != nil {
 		return fmt.Errorf("failed to get scheduled campaigns: %w", err)
@@ -102,7 +99,7 @@ func job(s storage.Storage, p awssqs.Publisher, queueURL *string, time time.Time
 			continue
 		}
 		if campaign.Status != entities.StatusScheduled {
-			logEntry.WithError(err).Warn("campaign status is not draft.")
+			logEntry.WithError(err).Warn("campaign status is not 'scheduled'")
 			continue
 		}
 
@@ -166,7 +163,7 @@ func job(s storage.Storage, p awssqs.Publisher, queueURL *string, time time.Time
 			logEntry.WithError(err).Error("failed to marshal params for campaigner.")
 			continue
 		}
-		err = p.SendMessage(context.TODO(), queueURL, paramsByte)
+		err = p.SendMessage(ctx, queueURL, paramsByte)
 		if err != nil {
 			logEntry.WithError(err).Error("failed to publish campaign to campaigner.")
 			continue

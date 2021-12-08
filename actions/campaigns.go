@@ -146,7 +146,7 @@ func StartCampaign(c *gin.Context) {
 		return
 	}
 
-	queueName := entities.CampaignerTopic
+	queueName := awssqs.CampaignerTopic
 	queueURL, err := awssqs.GetQueueURL(c, &queueName)
 	if err != nil {
 		logger.From(c).WithFields(logrus.Fields{
