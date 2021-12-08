@@ -17,6 +17,7 @@ import {
 import history from "../history";
 import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const Row = ({ template, setShowDelete }) => {
   const createdAt = parseISO(template.created_at);
@@ -115,7 +116,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
   const { createNotification } = useContext(NotificationsContext);
 
   const deleteTemplate = async (id) => {
-    await axios.delete(`/api/templates/${id}`);
+    await axios.delete(endpoints.deleleteTemplates(id));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -134,7 +135,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
             setSubmitting(true);
             try {
               await deleteTemplate(id);
-              await callApi({ url: "/api/templates" });
+              await callApi({ url: endpoints.getTemplates });
               hideModal();
             } catch(e) {
               console.error(e);
@@ -161,7 +162,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/templates",
+      url: endpoints.getTemplates,
     },
     {
       next_token: "",

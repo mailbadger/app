@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 import { Paragraph } from "grommet";
 import { mainInstance as axios } from "./axios";
+import { endpoints } from "./network/endpoints";
 
 const VerifyEmail = (props) => {
   const [data, setData] = useState({ message: "" });
@@ -13,7 +14,7 @@ const VerifyEmail = (props) => {
   useEffect(() => {
     const callApi = async () => {
       try {
-        const res = await axios.put(`/api/verify-email/${params.token}`);
+        const res = await axios.put(`${endpoints.verifyEmail}/${params.token}`);
         setData(res.data);
       } catch (error) {
         setData(error.response.data);

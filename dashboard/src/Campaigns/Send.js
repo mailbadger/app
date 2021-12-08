@@ -33,6 +33,7 @@ import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const sendValidation = object().shape({
   source: string()
@@ -106,7 +107,7 @@ const Form = ({
   const [selected, setSelected] = useState(values.segments);
   const [segments, callApi] = useApi(
     {
-      url: `/api/segments?per_page=40`,
+      url: `${endpoints.getGroups}?per_page=40`,
     },
     {
       collection: [],
@@ -379,7 +380,7 @@ const handleSubmit = (id, setSuccess, createNotification) => async (
       }
 
       await axios.post(
-        `/api/campaigns/${id}/start`,
+        endpoints.postCampaignsStart,
         qs.stringify(data, { arrayFormat: "brackets" })
       );
       createNotification(
@@ -409,7 +410,7 @@ const handleSubmit = (id, setSuccess, createNotification) => async (
 
 const PreviewTemplate = React.memo(({ name }) => {
   const [template] = useApi({
-    url: `/api/templates/${name}`,
+    url: `${endpoints.getTemplates}/${name}`,
   });
 
   if (template.isLoading) {
@@ -479,7 +480,7 @@ const SendCampaign = ({ match }) => {
   });
 
   const [campaign, callApi] = useApi({
-    url: `/api/campaigns/${match.params.id}`,
+    url: endpoints.getCampaigns(match.params.id),
   });
 
   if (campaign.isLoading) {
@@ -514,7 +515,7 @@ const SendCampaign = ({ match }) => {
                   id={campaign.data.id}
                   hideModal={() => setShowEdit(false)}
                   onSuccess={() =>
-                    callApi({ url: `/api/campaigns/${campaign.data.id}` })
+                    callApi({ url: endpoints.getCampaign(campaign.data.id) })
                   }
                 />
               }

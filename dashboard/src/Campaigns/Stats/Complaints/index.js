@@ -14,6 +14,7 @@ import { FormPreviousLink, FormNextLink } from "grommet-icons";
 import { StyledTable, PlaceholderTable } from "../../../ui";
 import { useApi } from "../../../hooks";
 import truncate from "../../../utils/truncate";
+import { endpoints } from "../../../network/endpoints";
 
 const Row = memo(({ complaint }) => {
   const d = parseISO(complaint.created_at);
@@ -88,7 +89,7 @@ Table.propTypes = {
 const Complaints = ({ campaignId }) => {
   const [state, callApi] = useApi(
     {
-      url: `/api/campaigns/${campaignId}/complaints`,
+      url: endpoints.getCampaignComplaints(campaignId),
     },
     {
       collection: [],

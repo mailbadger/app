@@ -13,6 +13,7 @@ import { FormPreviousLink, FormNextLink } from "grommet-icons";
 
 import { StyledTable, PlaceholderTable } from "../../../ui";
 import { useApi } from "../../../hooks";
+import { endpoints } from "../../../network/endpoints";
 
 const Row = memo(({ bounce }) => {
   const d = parseISO(bounce.created_at);
@@ -102,7 +103,7 @@ Table.propTypes = {
 const Bounces = ({ campaignId }) => {
   const [state, callApi] = useApi(
     {
-      url: `/api/campaigns/${campaignId}/bounces`,
+      url: endpoints.getCampaignBounces(campaignId),
     },
     {
       collection: [],

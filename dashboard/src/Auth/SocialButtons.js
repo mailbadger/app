@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Button, Box } from 'grommet';
 import { Twitter, Google, Github } from 'grommet-icons';
+import { endpoints } from '../network/endpoints';
 
 const SocialButton = styled(Button)`
   width: 140px;
@@ -33,9 +34,9 @@ const SocialButton = styled(Button)`
 
 const SocialButtons = () => (
 	<Box direction="row">
-		<SocialButton color="#4285F4" type="button" href="/api/auth/google" icon={<Google />} primary />
-		<SocialButton color="#541388" type="button" href="/api/auth/github" icon={<Github />} primary />
-		<SocialButton color="#000" type="button" href="/api/auth/github" icon={<Twitter />} primary />
+		<SocialButton color="#4285F4" type="button" href={endpoints.signInWithGoogle} icon={<Google />} primary />
+		<SocialButton color="#541388" type="button" href={endpoints.signInWithGithub} icon={<Github />} primary />
+		<SocialButton color="#000" type="button" href={endpoints.signInWithTwitter} icon={<Twitter />} primary />
 	</Box>
 );
 

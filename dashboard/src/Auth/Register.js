@@ -22,6 +22,7 @@ import {
 	AuthFormSubmittedError
 } from '../ui';
 import { FormPropTypes, AuthFormPropTypes } from '../PropTypes';
+import { endpoints } from '../network/endpoints';
 
 addMethod(string, 'equalTo', equalTo);
 
@@ -133,7 +134,7 @@ const RegisterForm = ({ isMobile, fetchUser }) => {
 					params.token_response = values.token_response;
 				}
 
-				await axios.post('/api/signup', qs.stringify(params));
+				await axios.post(endpoints.signup, qs.stringify(params));
 				fetchUser();
 			} catch (error) {
 				setErrors(error.response.data);

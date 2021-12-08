@@ -11,6 +11,7 @@ import history from "../history";
 import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
 import { FormPropTypes } from "../PropTypes";
+import { endpoints } from "../network/endpoints";
 
 const templateValidation = object().shape({
   name: string().required("Please enter a template name."),
@@ -90,7 +91,7 @@ const EditTemplateForm = ({ match }) => {
   const [success, setSuccess] = useState(false);
 
   const [state] = useApi({
-    url: `/api/templates/${match.params.id}`,
+    url: endpoints.putTemplates(match.params.id),
   });
 
   const { createNotification } = useContext(NotificationsContext);
@@ -105,7 +106,7 @@ const EditTemplateForm = ({ match }) => {
     const callApi = async () => {
       try {
         await axios.put(
-          `/api/templates/${id}`,
+          endpoints.putTemplates(id),
           qs.stringify({
             name: values.name,
             html_part: values.html_part,
