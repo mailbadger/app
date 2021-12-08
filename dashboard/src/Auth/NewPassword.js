@@ -79,7 +79,7 @@ const NewPasswordForm = (props) => {
     const callApi = async () => {
       try {
         await axios.put(
-          `${endpoints.forgotPasswords}/${params.token}`,
+          `${endpoints.forgotPassword}/${params.token}`,
           qs.stringify({
             password: values.password,
           })
