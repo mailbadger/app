@@ -476,7 +476,7 @@ const SendCampaign = ({ match }) => {
   const [showDelete, setShowDelete] = useState(false);
 
   const [quota] = useApi({
-    url: "/api/ses/quota",
+    url: endpoints.getSesQuota,
   });
 
   const [campaign, callApi] = useApi({

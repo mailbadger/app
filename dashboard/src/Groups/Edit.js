@@ -8,6 +8,7 @@ import { Box, Button, FormField, TextInput } from "grommet";
 import { mainInstance as axios } from "../axios";
 import { ButtonWithLoader } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const segmentValidation = object().shape({
   name: string()
@@ -73,7 +74,7 @@ const EditSegment = ({ setSegment, hideModal, segment }) => {
     const postForm = async () => {
       try {
         await axios.put(
-          `/api/segments/${segment.id}`,
+          endpoints.putGroups(segment.id),
           qs.stringify({
             name: values.name,
           })

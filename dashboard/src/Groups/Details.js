@@ -28,6 +28,7 @@ import DeleteSegment from "./Delete";
 import RemoveSubscriber from "./RemoveSubscriber";
 import history from "../history";
 import { Table, Header } from "../Subscribers";
+import { endpoints } from "../network/endpoints";
 
 const DetailsGrid = ({ children }) => {
   const size = useContext(ResponsiveContext);
@@ -114,7 +115,7 @@ const Details = ({ match }) => {
 
   const [state, callSegApi] = useApi(
     {
-      url: `/api/segments/${match.params.id}`,
+      url: endpoints.getGroup(match.params.id),
     },
     {
       subscribers_in_segment: 0,
@@ -124,7 +125,7 @@ const Details = ({ match }) => {
 
   const [subscribers, callApi] = useApi(
     {
-      url: `/api/segments/${match.params.id}/subscribers`,
+      url: endpoints.getGroupSubscribers(match.params.id),
     },
     {
       total: 0,
@@ -210,10 +211,10 @@ const Details = ({ match }) => {
                   subId={showDeleteSub.id}
                   onSuccess={async () => {
                     await callApi({
-                      url: `/api/segments/${match.params.id}/subscribers`,
+                      url: endpoints.getGroupSubscribers(match.params.id),
                     });
                     await callSegApi({
-                      url: `/api/segments/${match.params.id}`,
+                      url: endpoints.getGroup(match.params.id),
                     });
                     setShowDeleteSub({ show: false, id: "" });
                   }}

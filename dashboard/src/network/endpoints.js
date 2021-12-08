@@ -1,7 +1,7 @@
 
 // Users
 const getUsersMe = '/api/users/me'
-
+const postChangePassword = `/api/users/password`
 // Templates
 const getTemplate = (id) =>`/api/templates/${id}`
 const getTemplates = '/api/templates'
@@ -29,12 +29,25 @@ const getGroups = '/api/segments'
 const postGroups = '/api/segments'
 const putGroups = (id) => `/api/segments/${id}`
 const deleteGroups = (id) => `/api/segments/${id}`
+const deleteSubscriberFromGroup = (groupId,subscriberId) => `/api/segments/${groupId}/subscribers/${subscriberId}`
 
 // Subscribers
+const getSubscriber = (id) => `/api/subscribers/${id}`
 const getSubscribers = '/api/subscribers'
 const postSubscribers = '/api/subscribers'
 const putSubscribers = (id) => `/api/subscribers/${id}`
+const getSubscribersExport = `/api/subscribers/export`
+const postSubscribersExport = `/api/subscribers/export`
+const getSubscribersExportDownload = `/api/subscribers/export/download`
 const deleteSubscribers = (id) => `/api/subscribers/${id}`
+const deleteSubscribersBulk = `/api/subscribers/bulk-remove`
+const postImportSubscribers = `/api/subscribers/import`
+
+// Ses
+const getSesKeys = `/api/ses/keys`
+const postSesKeys = `/api/ses/keys`
+const getSesQuota = `/api/ses/quota`
+const deleteSesKeys = `/api/ses/keys`
 
 // Auth
 const signup = '/api/signup'
@@ -45,12 +58,13 @@ const logout = '/api/logout'
 const forgotPassword = '/api/forgot-password'
 const authenticate = '/api/forgot-password'
 const verifyEmail = '/api/verify-email'
-
+const signInS3 = '/api/s3/sign'
 
 export const endpoints = {
     verifyEmail,
     getUsersMe,
     getTemplate,
+    postChangePassword,
 getTemplates,
 postTemplates,
 putTemplates,
@@ -72,15 +86,27 @@ getGroups,
 postGroups,
 putGroups,
 deleteGroups,
+getSubscriber,
 getSubscribers,
 postSubscribers,
 putSubscribers,
 deleteSubscribers,
+deleteSubscriberFromGroup,
+deleteSubscribersBulk,
+postImportSubscribers,
+getSubscribersExport,
+getSubscribersExportDownload,
+postSubscribersExport,
+getSesKeys,
+postSesKeys,
+deleteSesKeys,
+getSesQuota,
 signup,
 signInWithGoogle,
 signInWithGithub,
 signInWithTwitter,
 logout,
 forgotPassword,
-authenticate
+authenticate,
+signInS3
 }

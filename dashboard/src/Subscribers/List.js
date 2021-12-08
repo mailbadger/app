@@ -39,6 +39,7 @@ import {
 } from "./StyledSections";
 import { StyledTableHeader } from "../ui/DashboardStyledTable";
 import DashboardPlaceholderTable from "../ui/DashboardPlaceholderTable";
+import { endpoints } from "../network/endpoints";
 
 export const Row = ({ subscriber, actions }) => {
   const ca = parseISO(subscriber.created_at);
@@ -121,7 +122,7 @@ const ExportSubscribers = () => {
   const [retries, setRetries] = useState(-1);
   const [state, callApi] = useApi(
     {
-      url: `/api/subscribers/export`,
+      url: endpoints.getSubscribersExport,
     },
     null,
     true
@@ -130,7 +131,7 @@ const ExportSubscribers = () => {
   useInterval(
     async () => {
       await callApi({
-        url: `/api/subscribers/export/download?filename=${filename}`,
+        url: `${endpoints.getSubscribersExportDownload}?filename=${filename}`,
       });
       setRetries(retries - 1);
     },
@@ -169,7 +170,7 @@ const ExportSubscribers = () => {
         disabled={retries > 0 || state.isLoading}
         onClick={async () => {
           try {
-            const res = await axios.post(`/api/subscribers/export`);
+            const res = await axios.post(endpoints.postSubscribersExport);
             setFilename(res.data.file_name);
             setRetries(50);
           } catch (e) {
@@ -283,7 +284,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/subscribers",
+      url: endpoints.getGroups,
     },
     {
       collection: [],

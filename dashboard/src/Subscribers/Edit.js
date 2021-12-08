@@ -18,6 +18,7 @@ import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
 import { ButtonWithLoader, StyledSpinner } from "../ui";
+import { endpoints } from "../network/endpoints";
 
 const subscrValidation = object().shape({
   name: string().max(191, "The name must not exceed 191 characters."),
@@ -47,7 +48,7 @@ const EditForm = ({
   const [selected, setSelected] = useState(values.segments);
   const [segments, callApi] = useApi(
     {
-      url: `/api/segments?per_page=40`,
+      url: `${endpoints.getGroups}?per_page=40`,
     },
     {
       collection: [],
@@ -250,7 +251,7 @@ EditForm.propTypes = {
 const EditSubscriber = ({ id, callApi, hideModal }) => {
   const { createNotification } = useContext(NotificationsContext);
   const [state] = useApi({
-    url: `/api/subscribers/${id}`,
+    url: endpoints.getSubscriber(id),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -276,14 +277,14 @@ const EditSubscriber = ({ id, callApi, hideModal }) => {
         }
 
         await axios.put(
-          `/api/subscribers/${id}`,
+          endpoints.putSubscribers(id),
           qs.stringify(data, { arrayFormat: "brackets" })
         );
         createNotification("Subscriber has been edited successfully.");
 
         //done submitting, set submitting to false
         setSubmitting(false);
-        await callApi({ url: "/api/subscribers" });
+        await callApi({ url: endpoints.getSubscribers() });
 
         hideModal();
       } catch (error) {

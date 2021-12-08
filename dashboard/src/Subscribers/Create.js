@@ -10,6 +10,7 @@ import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
 import { ButtonWithLoader } from "../ui";
 import { useApi } from "../hooks";
+import { endpoints } from "../network/endpoints";
 
 const subscrValidation = object().shape({
   email: string().email().required("Please enter a subscriber email."),
@@ -50,7 +51,7 @@ const CreateForm = ({
 
   const [segments, callApi] = useApi(
     {
-      url: `/api/segments?per_page=40`,
+      url: `${endpoints.getGroups}?per_page=40`,
     },
     {
       collection: [],
@@ -251,14 +252,14 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
         }
 
         await axios.post(
-          "/api/subscribers",
+          endpoints.postSubscribers,
           qs.stringify(data, { arrayFormat: "brackets" })
         );
         createNotification("Subscriber has been created successfully.");
 
         //done submitting, set submitting to false
         setSubmitting(false);
-        await callApi({ url: "/api/subscribers" });
+        await callApi({ url: endpoints.getSubscribers });
 
         hideModal();
       } catch (error) {
