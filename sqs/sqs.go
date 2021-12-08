@@ -9,6 +9,13 @@ import (
 	"github.com/mailbadger/app/logger"
 )
 
+const (
+	// CampaignerTopic is the topic used by the campaigner consumer.
+	CampaignerTopic = "SendCampaign"
+	// SenderTopic is the topic used by the sender consumer.
+	SenderTopic = "SendEmail"
+)
+
 // SQSSendReceiveMessageAPI defines the interface for the GetQueueUrl function.
 // We use this interface to test the function using a mocked service.
 type SQSSendReceiveMessageAPI interface {

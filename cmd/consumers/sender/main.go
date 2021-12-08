@@ -248,7 +248,7 @@ func main() {
 
 	client := sqs.NewFromConfig(cfg)
 
-	queueStr := entities.SenderTopic
+	queueStr := awssqs.SenderTopic
 	gQInput := &sqs.GetQueueUrlInput{
 		QueueName: &queueStr,
 	}

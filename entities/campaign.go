@@ -3,7 +3,6 @@ package entities
 import (
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/cbroglie/mustache"
 	"github.com/segmentio/ksuid"
 )
@@ -17,12 +16,6 @@ const (
 	StatusSent = "sent"
 	// StatusScheduled indicates a scheduled campaign status.
 	StatusScheduled = "scheduled"
-	// CampaignerTopic is the topic used by the campaigner consumer.
-	CampaignerTopic = "SendCampaign"
-	// SendBulkTopic is the topic used by the bulksender consumer.
-	SendBulkTopic = "send_bulk"
-	// SenderTopic is the topic used by the sender consumer.
-	SenderTopic = "SendEmail"
 )
 
 // Campaign represents the campaign entity
@@ -38,16 +31,6 @@ type Campaign struct {
 	CompletedAt  NullTime          `json:"completed_at" gorm:"column:completed_at"`
 	DeletedAt    NullTime          `json:"-" gorm:"column:deleted_at"`
 	StartedAt    NullTime          `json:"started_at" gorm:"column:started_at"`
-}
-
-// BulkSendMessage represents the entity used to transport the bulk send message
-// used by the bulksender consumer.
-type BulkSendMessage struct {
-	UUID       string                           `json:"msg_uuid"`
-	UserID     int64                            `json:"user_id"`
-	CampaignID int64                            `json:"campaign_id"`
-	SesKeys    *SesKeys                         `json:"ses_keys"`
-	Input      *ses.SendBulkTemplatedEmailInput `json:"input"`
 }
 
 // CampaignerTopicParams represent the request params used
@@ -108,12 +91,11 @@ func (c Campaign) GetUpdatedAt() time.Time {
 
 // SetCampaignEventID if the campaign is scheduled then sets the id to the scheduled campaign's id else generates new id
 func (c *Campaign) SetEventID() {
-	if c.EventID != nil {
-		return
-	}
-
 	if c.Schedule != nil {
 		c.EventID = &c.Schedule.ID
+		return
+	}
+	if c.EventID != nil {
 		return
 	}
 

@@ -171,7 +171,7 @@ func (h *MessageHandler) processSubscribers(
 					if err != nil {
 						logEntry.WithFields(logrus.Fields{
 							"subscriber_id": s.ID,
-							"event_id":      msg.EventID.String(),
+							"event_id":      msg.EventID,
 						}).WithError(err).Error("unable to insert send logs for subscriber.")
 					}
 
@@ -194,7 +194,7 @@ func (h *MessageHandler) processSubscribers(
 					if err != nil {
 						logEntry.WithFields(logrus.Fields{
 							"subscriber_id": s.ID,
-							"event_id":      msg.EventID.String(),
+							"event_id":      msg.EventID,
 						}).WithError(err).Error("unable to insert send logs for subscriber.")
 					}
 
@@ -289,7 +289,7 @@ func main() {
 
 	client := sqs.NewFromConfig(cfg)
 
-	queueName := entities.CampaignerTopic
+	queueName := awssqs.CampaignerTopic
 	gQInput := &sqs.GetQueueUrlInput{
 		QueueName: &queueName,
 	}
@@ -318,7 +318,7 @@ func main() {
 	templatesvc := templates.New(store, s3Client)
 	campaignsvc := campaigns.New(store, client)
 
-	queueName = entities.SenderTopic
+	queueName = awssqs.SenderTopic
 	gQInput = &sqs.GetQueueUrlInput{
 		QueueName: &queueName,
 	}
