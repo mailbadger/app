@@ -3,7 +3,6 @@ module github.com/mailbadger/app
 go 1.16
 
 require (
-	github.com/andybalholm/brotli v1.0.1 // indirect
 	github.com/aws/aws-sdk-go v1.42.11
 	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
@@ -29,7 +28,6 @@ require (
 	github.com/lib/pq v1.10.3
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/nsqio/go-nsq v1.0.8
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
@@ -46,7 +44,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/unrolled/secure v1.0.9
-	github.com/valyala/fasthttp v1.16.0 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20210825183410-e898025ed96a
