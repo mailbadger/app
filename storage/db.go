@@ -10,16 +10,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	"github.com/mailbadger/app/entities"
+	_ "github.com/mailbadger/app/statik"
+	"github.com/mailbadger/app/utils"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rakyll/statik/fs"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-
-	_ "github.com/mailbadger/app/statik"
-
-	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/utils"
 )
 
 // store implements the Storage interface

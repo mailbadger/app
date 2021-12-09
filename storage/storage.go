@@ -142,6 +142,7 @@ type Storage interface {
 	
 	GetJobByName(name string) (*entities.Job, error)
 	UpdateJob(job *entities.Job) error
+	CreateSubscriberMetrics(sm []*entities.SubscribersMetrics, job *entities.Job) error
 }
 
 // SetToContext sets the storage to the context

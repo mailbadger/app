@@ -2,7 +2,7 @@ package entities
 
 import (
 	"time"
-
+	
 	"github.com/segmentio/ksuid"
 )
 
@@ -19,4 +19,12 @@ type SubscriberEvent struct {
 	SubscriberEmail string      `json:"subscriber_email"`
 	EventType       EventType   `json:"event_type"`
 	CreatedAt       time.Time   `json:"created_at"`
+}
+
+// GroupedSubscriberEvents represents grouped subscriber events records by user date and event type
+type GroupedSubscriberEvents struct {
+	UserID    int64     `json:"user_id"`
+	EventType EventType `json:"event_type"`
+	Date      time.Time `json:"date"`
+	Total     int64     `json:"total"`
 }
