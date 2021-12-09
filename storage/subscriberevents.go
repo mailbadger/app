@@ -16,7 +16,7 @@ func (db *store) GetGroupedSubscriberEvents(startDate time.Time, endDate time.Ti
 	var events []*entities.GroupedSubscriberEvents
 	err := db.Raw(`SELECT user_id, DATE(created_at) date, event_type, COUNT(id) total
 		FROM subscriber_events
-		WHERE created_at >= ? AND created_at <= ?
+		WHERE created_at >= ? AND created_at < ?
 		GROUP BY user_id, DATE(created_at), event_type;`,
 		startDate, endDate).Scan(&events).Error
 	return events, err

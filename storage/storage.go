@@ -142,7 +142,7 @@ type Storage interface {
 	
 	GetJobByName(name string) (*entities.Job, error)
 	UpdateJob(job *entities.Job) error
-	UpdateSubscriberMetrics(sm *entities.SubscribersMetrics) error
+	UpdateSubscriberMetrics(sm *entities.SubscriberMetrics) error
 	GetGroupedSubscriberEvents(startDate time.Time, endDate time.Time) ([]*entities.GroupedSubscriberEvents, error)
 }
 

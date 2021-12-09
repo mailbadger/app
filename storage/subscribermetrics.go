@@ -4,8 +4,8 @@ import (
 	"github.com/mailbadger/app/entities"
 )
 
-func (db *store) UpdateSubscriberMetrics(sm *entities.SubscribersMetrics) (err error) {
-	return db.Exec(`INSERT INTO subscribers_metrics
+func (db *store) UpdateSubscriberMetrics(sm *entities.SubscriberMetrics) (err error) {
+	return db.Exec(`INSERT INTO subscriber_metrics
 			(user_id, created, deleted, unsubscribed, date)
 			VALUES (?, ?, ?, ?, ?)
 			ON DUPLICATE KEY

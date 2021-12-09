@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-// SubscribersMetrics represents daily events per user
-type SubscribersMetrics struct {
+// SubscriberMetrics represents daily events per user
+type SubscriberMetrics struct {
 	ID           int64     `json:"id" gorm:"column:id"`
 	UserID       int64     `json:"user_id" gorm:"primaryKey"`
 	Created      int64     `json:"created"`

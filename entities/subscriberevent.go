@@ -24,7 +24,7 @@ type SubscriberEvent struct {
 // GroupedSubscriberEvents represents grouped subscriber events records by user date and event type
 type GroupedSubscriberEvents struct {
 	UserID    int64     `json:"user_id"`
-	EventType EventType `json:"event_type"`
 	Date      time.Time `json:"date"`
+	EventType string `json:"event_type"`
 	Total     int64     `json:"total"`
 }

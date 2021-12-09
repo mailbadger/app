@@ -2,6 +2,7 @@ package entities
 
 import (
 	"database/sql/driver"
+	"errors"
 	"time"
 )
 
@@ -11,26 +12,32 @@ var (
 
 type JobStatus string
 
-func (js JobStatus) Value() (driver.Value, error) {
-	return string(js), nil
-}
-
-func (js JobStatus) Scan(value interface{}) error {
-	value = string(js)
+func (j *JobStatus) Scan(value interface{}) error {
+	str, ok := value.(string)
+	if !ok {
+		return errors.New("failed to scan JobStatus")
+	}
+	
+	*j = JobStatus(str)
+	
 	return nil
 }
 
+func (j *JobStatus) Value() (driver.Value, error) {
+	return j, nil
+}
+
 var (
-	JobStatusIdle       JobStatus = "idle"
-	JobStatusInProgress JobStatus = "in-progress"
-	JobStatusDirty      JobStatus = "dirty"
+	JobStatusIdle       = "idle"
+	JobStatusInProgress = "in-progress"
+	JobStatusDirty      = "dirty"
 )
 
 type Job struct {
 	ID                int64     `json:"-" gorm:"column:id; primary_key:yes"`
 	Name              string    `json:"-"`
 	LastProcessedDate time.Time `json:"-"`
-	Status            JobStatus `json:"-" gorm:"column:status"`
+	Status            string    `json:"-"`
 	CreatedAt         time.Time `json:"-"`
 	UpdatedAt         time.Time `json:"-"`
 }
