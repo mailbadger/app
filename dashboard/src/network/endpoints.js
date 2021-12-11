@@ -53,7 +53,7 @@ const deleteSesKeys = `/api/ses/keys`
 const signup = '/api/signup'
 const signInWithGoogle = 'api/auth/google'
 const signInWithGithub = 'api/auth/github'
-const signInWithTwitter = 'api/auth/twitter'
+const signInWithFacebook = 'api/auth/facebook'
 const logout = '/api/logout'
 const forgotPassword = '/api/forgot-password'
 const authenticate = '/api/authenticate'
@@ -104,7 +104,7 @@ export const endpoints = {
     signup,
     signInWithGoogle,
     signInWithGithub,
-    signInWithTwitter,
+    signInWithFacebook,
     logout,
     forgotPassword,
     authenticate,
