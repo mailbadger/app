@@ -11,6 +11,7 @@ import "@uppy/status-bar/dist/style.css";
 
 import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const Content = `
 CSV format:
@@ -37,7 +38,7 @@ const ImportSubscribers = () => {
     async getUploadParameters(file) {
       try {
         const res = await axios.post(
-          "/api/s3/sign",
+          endpoints.signInS3,
           qs.stringify({
             filename: file.name,
             contentType: file.type,
@@ -60,7 +61,7 @@ const ImportSubscribers = () => {
   uppy.on("upload-success", async (file) => {
     try {
       const res = await axios.post(
-        "/api/subscribers/bulk-remove",
+        endpoints.deleteSubscribersBulk,
         qs.stringify(
           {
             filename: file.name,

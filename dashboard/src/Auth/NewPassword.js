@@ -9,6 +9,7 @@ import qs from "qs";
 import equalTo from "../utils/equalTo";
 import history from "../history";
 import { FormPropTypes } from "../PropTypes";
+import {endpoints} from '../network/endpoints'
 
 addMethod(string, "equalTo", equalTo);
 
@@ -78,7 +79,7 @@ const NewPasswordForm = (props) => {
     const callApi = async () => {
       try {
         await axios.put(
-          `/api/forgot-password/${params.token}`,
+          `${endpoints.forgotPassword}/${params.token}`,
           qs.stringify({
             password: values.password,
           })

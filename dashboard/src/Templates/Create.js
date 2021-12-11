@@ -15,6 +15,7 @@ import { NotificationsContext } from "../Notifications/context";
 import history from "../history";
 import { ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
+import { endpoints } from "../network/endpoints";
 
 const initialHtml = `<!DOCTYPE html>
 <html>
@@ -115,7 +116,7 @@ const CreateTemplateForm = () => {
     const callApi = async () => {
       try {
         await axios.post(
-          "/api/templates",
+          endpoints.postTemplates,
           qs.stringify({
             name: values.name,
             html_part: values.html_part,

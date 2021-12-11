@@ -16,6 +16,7 @@ import {
   AuthStyledButton,
   AuthFormSubmittedError,
 } from "../ui";
+import { endpoints } from "../network/endpoints";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -75,7 +76,7 @@ const ForgotPasswordForm = ({ isMobile }) => {
     const callApi = async () => {
       try {
         await axios.post(
-          `/api/forgot-password`,
+          endpoints.forgotPassword,
           qs.stringify({
             email: values.email,
           })

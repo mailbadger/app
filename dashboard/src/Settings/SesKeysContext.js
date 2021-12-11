@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { mainInstance as axios } from "../axios";
+import { endpoints } from "../network/endpoints";
 
 const defaultState = {
   keys: null,
@@ -27,7 +28,7 @@ class SesKeysProvider extends Component {
     const callApi = async () => {
       try {
         this.setState({ isLoading: true, error: null });
-        const result = await axios.get("/api/ses/keys");
+        const result = await axios.get(endpoints.getSesKeys);
         this.setState({
           error: null,
           isLoading: false,

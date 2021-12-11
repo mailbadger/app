@@ -28,6 +28,7 @@ import CreateCampaign from "./Create";
 import EditCampaign from "./Edit";
 import DeleteCampaign from "./Delete";
 import { SesKeysContext } from "../Settings/SesKeysContext";
+import { endpoints } from "../network/endpoints";
 
 const NameLink = ({ id, name, status, hasSesKeys }) => {
   let to = `/dashboard/campaigns/send/${id}`;
@@ -237,7 +238,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/campaigns",
+      url: endpoints.getCampaigns,
     },
     {
       collection: [],
@@ -303,7 +304,7 @@ const List = () => {
             form={
               <DeleteCampaign
                 id={showDelete.id}
-                onSuccess={() => callApi({ url: "/api/campaigns" })}
+                onSuccess={() => callApi({ url:endpoints.getCampaigns })}
                 hideModal={hideModal}
               />
             }
@@ -328,7 +329,7 @@ const List = () => {
             form={
               <EditCampaign
                 id={showEdit.id}
-                onSuccess={() => callApi({ url: "/api/campaigns" })}
+                onSuccess={() => callApi({ url: endpoints.getCampaigns })}
                 hideModal={hideEditModal}
               />
             }

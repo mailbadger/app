@@ -4,10 +4,11 @@ import { Box, Button } from "grommet";
 
 import { mainInstance as axios } from "../axios";
 import { ButtonWithLoader } from "../ui";
+import { endpoints } from "../network/endpoints";
 
 const DeleteSubscriber = ({ id, callApi, hideModal }) => {
   const deleteSubscriber = async (id) => {
-    await axios.delete(`/api/subscribers/${id}`);
+    await axios.delete(endpoints.deleteSubscribers(id));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -25,7 +26,7 @@ const DeleteSubscriber = ({ id, callApi, hideModal }) => {
           onClick={async () => {
             setSubmitting(true);
             await deleteSubscriber(id);
-            await callApi({ url: "/api/subscribers" });
+            await callApi({ url: endpoints.getGroups });
             setSubmitting(false);
             hideModal();
           }}

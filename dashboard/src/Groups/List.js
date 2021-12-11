@@ -30,6 +30,7 @@ import {
 } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
 import DeleteSegment from "./Delete";
+import { endpoints } from "../network/endpoints";
 
 const Row = ({ segment, setShowDelete }) => {
   const ca = parseISO(segment.created_at);
@@ -192,14 +193,14 @@ const CreateSegment = ({ callApi, hideModal }) => {
     const postForm = async () => {
       try {
         await axios.post(
-          "/api/segments",
+          endpoints.postGroups,
           qs.stringify({
             name: values.name,
           })
         );
         createNotification("Group has been created successfully.");
 
-        await callApi({ url: "/api/segments" });
+        await callApi({ url: endpoints.getGroups });
 
         //done submitting, set submitting to false
         setSubmitting(false);
@@ -248,7 +249,7 @@ CreateSegment.propTypes = {
 
 const DeleteForm = ({ id, callApi, hideModal }) => {
   const deleteSegment = async (id) => {
-    await axios.delete(`/api/segments/${id}`);
+    await axios.delete(endpoints.deleteGroups(id));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);
@@ -266,7 +267,7 @@ const DeleteForm = ({ id, callApi, hideModal }) => {
           onClick={async () => {
             setSubmitting(true);
             await deleteSegment(id);
-            await callApi({ url: "/api/segments" });
+            await callApi({ url: endpoints.getGroups });
             setSubmitting(false);
             hideModal();
           }}
@@ -289,7 +290,7 @@ const List = () => {
 
   const [state, callApi] = useApi(
     {
-      url: "/api/segments",
+      url: endpoints.getGroups,
     },
     {
       collection: [],
@@ -322,7 +323,7 @@ const List = () => {
             <DeleteSegment
               id={showDelete.id}
               onSuccess={async () => {
-                await callApi({ url: "/api/segments" });
+                await callApi({ url: endpoints.getGroups });
                 hideModal();
               }}
               onCancel={hideModal}

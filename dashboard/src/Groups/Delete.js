@@ -3,10 +3,11 @@ import PropTypes from "prop-types";
 import { mainInstance as axios } from "../axios";
 import { Box, Button } from "grommet";
 import { ButtonWithLoader } from "../ui";
+import { endpoints } from "../network/endpoints";
 
 const DeleteSegment = ({ id, onSuccess, onCancel }) => {
   const deleteSegment = async (id) => {
-    await axios.delete(`/api/segments/${id}`);
+    await axios.delete(endpoints.deleteGroups(id));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);

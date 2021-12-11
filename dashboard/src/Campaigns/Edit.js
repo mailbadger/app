@@ -9,6 +9,7 @@ import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
 import { ButtonWithLoader, StyledSpinner } from "../ui";
 import { useApi } from "../hooks";
+import { endpoints } from "../network/endpoints";
 
 const campaignValidation = object().shape({
   name: string()
@@ -43,7 +44,7 @@ const EditForm = ({
   const [selected, setSelected] = useState({ name: values.template_name });
   const [templates, callApi] = useApi(
     {
-      url: `/api/templates`,
+      url: endpoints.getTemplates,
     },
     {
       collection: [],
@@ -80,7 +81,7 @@ const EditForm = ({
     }
 
     callApi({
-      url: `/api/templates?next_token=${encodeURIComponent(next_token)}`,
+      url: `${endpoints.getTemplates}?next_token=${encodeURIComponent(next_token)}`,
     });
   };
 
@@ -155,7 +156,7 @@ EditForm.propTypes = {
 const EditCampaign = ({ id, onSuccess, hideModal }) => {
   const { createNotification } = useContext(NotificationsContext);
   const [state] = useApi({
-    url: `/api/campaigns/${id}`,
+    url: endpoints.putCampaigns(id),
   });
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
@@ -166,7 +167,7 @@ const EditCampaign = ({ id, onSuccess, hideModal }) => {
           template_name: values.template_name,
         };
 
-        await axios.put(`/api/campaigns/${id}`, qs.stringify(data));
+        await axios.put(endpoints.putCampaigns(id), qs.stringify(data));
 
         createNotification("Campaign has been updated successfully.");
 

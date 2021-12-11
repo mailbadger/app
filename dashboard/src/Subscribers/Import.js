@@ -12,6 +12,7 @@ import "@uppy/status-bar/dist/style.css";
 import { mainInstance as axios } from "../axios";
 import { useApi } from "../hooks";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const Content = `
 CSV format:
@@ -33,7 +34,7 @@ const ImportSubscribers = () => {
   const [selected, setSelected] = useState([]);
   const [segments, callApi] = useApi(
     {
-      url: `/api/segments?per_page=40`,
+      url: `${endpoints.getGroups}?per_page=40`,
     },
     {
       collection: [],
@@ -97,7 +98,7 @@ const ImportSubscribers = () => {
     async getUploadParameters(file) {
       try {
         const res = await axios.post(
-          "/api/s3/sign",
+          endpoints.signInS3,
           qs.stringify({
             filename: file.name,
             contentType: file.type,
@@ -120,7 +121,7 @@ const ImportSubscribers = () => {
   uppy.on("upload-success", async (file) => {
     try {
       const res = await axios.post(
-        "/api/subscribers/import",
+        endpoints.postImportSubscribers,
         qs.stringify(
           {
             filename: file.name,

@@ -3,10 +3,11 @@ import PropTypes from "prop-types";
 import { mainInstance as axios } from "../axios";
 import { Box, Button } from "grommet";
 import { ButtonWithLoader } from "../ui";
+import { endpoints } from "../network/endpoints";
 
 const DeleteCampaign = ({ id, onSuccess, hideModal }) => {
   const deleteCampaign = async (id) => {
-    await axios.delete(`/api/campaigns/${id}`);
+    await axios.delete(endpoints.deleteCampaigns(id));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);

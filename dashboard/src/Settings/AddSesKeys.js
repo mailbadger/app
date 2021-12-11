@@ -21,6 +21,7 @@ import regions from "../regions/regions.json";
 import { useApi, useInterval } from "../hooks";
 import { ButtonWithLoader, StyledSpinner } from "../ui";
 import { FormPropTypes } from "../PropTypes";
+import { endpoints } from "../network/endpoints";
 
 const addSesKeysValidation = object().shape({
   access_key: string().required("Please enter your Amazon access key."),
@@ -78,7 +79,7 @@ Form.propTypes = FormPropTypes;
 
 const SesKey = ({ sesKey, setShowDelete }) => {
   const [quota] = useApi({
-    url: "/api/ses/quota",
+    url: endpoints.getSesQuota,
   });
 
   return (
@@ -161,7 +162,7 @@ SesKey.propTypes = {
 };
 
 const deleteKeys = async () => {
-  await axios.delete(`/api/ses/keys`);
+  await axios.delete(endpoints.deleteSesKeys);
 };
 
 const DeleteLayer = ({ setShowDelete, callApi }) => {
@@ -187,7 +188,7 @@ const DeleteLayer = ({ setShowDelete, callApi }) => {
               onClick={async () => {
                 setSubmitting(true);
                 await deleteKeys();
-                await callApi({ url: "/api/ses/keys" });
+                await callApi({ url: endpoints.getSesKeys });
                 setSubmitting(false);
                 hideModal();
               }}
@@ -207,14 +208,14 @@ DeleteLayer.propTypes = {
 const AddSesKeysForm = () => {
   const [showDelete, setShowDelete] = useState(false);
   const [state, callApi] = useApi({
-    url: `/api/ses/keys`,
-  });
+    url: endpoints.getSesKeys},
+  );
   const { createNotification } = useContext(NotificationsContext);
   const [retries, setRetries] = useState(-1);
 
   useInterval(
     async () => {
-      await callApi({ url: `/api/ses/keys` });
+      await callApi({ url: endpoints.getSesKeys});
       setRetries(retries - 1);
     },
     retries > 0 ? 1000 : null
@@ -224,7 +225,7 @@ const AddSesKeysForm = () => {
     const addKeys = async () => {
       try {
         return await axios.post(
-          "/api/ses/keys",
+          endpoints.postSesKeys,
           qs.stringify({
             access_key: values.access_key,
             secret_key: values.secret_key,

@@ -5,12 +5,13 @@ import { Box, Button } from "grommet";
 import { mainInstance as axios } from "../axios";
 import { ButtonWithLoader } from "../ui";
 import { NotificationsContext } from "../Notifications/context";
+import { endpoints } from "../network/endpoints";
 
 const RemoveSubscriber = ({ id, subId, onSuccess, onCancel }) => {
   const { createNotification } = useContext(NotificationsContext);
 
   const removeSubscriber = async (id) => {
-    await axios.delete(`/api/segments/${id}/subscribers/${subId}`);
+    await axios.delete(endpoints.deleteSubscriberFromGroup(id,subId));
   };
 
   const [isSubmitting, setSubmitting] = useState(false);

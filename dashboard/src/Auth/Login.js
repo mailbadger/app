@@ -4,7 +4,6 @@ import { Formik } from "formik";
 import { string, object } from "yup";
 import { NavLink } from "react-router-dom";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
 import SocialButtons from "./SocialButtons";
 import { socialAuthEnabled } from "../Auth";
 import {
@@ -19,6 +18,7 @@ import {
   AuthFormSubmittedError,
 } from "../ui";
 import { FormPropTypes, AuthFormPropTypes } from "../PropTypes";
+import { endpoints } from "../network/endpoints";
 
 const Form = ({
   handleSubmit,
@@ -123,8 +123,7 @@ const LoginForm = ({ isMobile, fetchUser }) => {
     const callApi = async () => {
       try {
         await axios.post(
-          "/api/authenticate",
-          qs.stringify({
+          endpoints.authenticate,({
             username: values.email,
             password: values.password,
           })

@@ -9,6 +9,7 @@ import { mainInstance as axios } from "../axios";
 import { NotificationsContext } from "../Notifications/context";
 import { ButtonWithLoader } from "../ui";
 import { useApi } from "../hooks";
+import { endpoints } from "../network/endpoints";
 
 const campaignValidation = object().shape({
   name: string()
@@ -38,7 +39,7 @@ const CreateForm = ({
   const [selected, setSelected] = useState("");
   const [templates, callApi] = useApi(
     {
-      url: `/api/templates`,
+      url: endpoints.getTemplates,
     },
     {
       collection: [],
@@ -73,7 +74,7 @@ const CreateForm = ({
     }
 
     callApi({
-      url: `/api/templates?next_token=${encodeURIComponent(next_token)}`,
+      url: `${endpoints.getTemplates}?next_token=${encodeURIComponent(next_token)}`,
     });
   };
 
@@ -151,13 +152,13 @@ const CreateCampaign = ({ callApi, hideModal }) => {
           template_name: values.template_name,
         };
 
-        await axios.post("/api/campaigns", qs.stringify(data));
+        await axios.post(endpoints.postCampaigns, qs.stringify(data));
 
         createNotification("Campaign has been created successfully.");
 
         //done submitting, set submitting to false
         setSubmitting(false);
-        await callApi({ url: "/api/campaigns" });
+        await callApi({ url: endpoints.getCampaigns });
 
         hideModal();
       } catch (error) {

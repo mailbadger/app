@@ -17,6 +17,7 @@ import Clicks from "./Stats/Clicks";
 import Opens from "./Stats/Opens";
 import { LoadingOverlay } from "../ui";
 import { useApi } from "../hooks";
+import { endpoints } from "../network/endpoints";
 
 const DetailsGrid = ({ children }) => {
   const size = useContext(ResponsiveContext);
@@ -180,12 +181,11 @@ const Details = ({ match }) => {
   const [data, setData] = useState([]);
 
   const [state] = useApi({
-    url: `/api/campaigns/${match.params.id}`,
+    url: endpoints.getCampaigns(match.params.id),
   });
 
   const [stats] = useApi({
-    url: `/api/campaigns/${match.params.id}/stats`,
-  });
+    url: endpoints.getCampaignsStats(match.params.id) });
 
   useEffect(() => {
     if (state.isLoading || state.isError) {

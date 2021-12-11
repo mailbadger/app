@@ -11,6 +11,7 @@ import {
 
 import { StyledTable, PlaceholderTable } from "../../../ui";
 import { useApi } from "../../../hooks";
+import { endpoints } from "../../../network/endpoints";
 
 const Row = memo(({ click }) => {
   return (
@@ -74,7 +75,7 @@ Table.propTypes = {
 const Clicks = ({ campaignId }) => {
   const [state] = useApi(
     {
-      url: `/api/campaigns/${campaignId}/clicks`,
+      url: endpoints.getCampaignClicks(campaignId),
     },
     {
       collection: [],

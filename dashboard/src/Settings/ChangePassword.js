@@ -9,6 +9,7 @@ import { NotificationsContext } from "../Notifications/context";
 import equalTo from "../utils/equalTo";
 import { ButtonWithLoader } from "../ui";
 import { FormPropTypes } from "../PropTypes";
+import { endpoints } from "../network/endpoints";
 
 addMethod(string, "equalTo", equalTo);
 
@@ -90,7 +91,7 @@ const ChangePasswordForm = () => {
     const callApi = async () => {
       try {
         const res = await axios.post(
-          "/api/users/password",
+          endpoints.postChangePassword,
           qs.stringify({
             password: values.password,
             new_password: values.new_password,
