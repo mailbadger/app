@@ -7,7 +7,7 @@ import (
 )
 
 func TestModes(t *testing.T) {
-	assert.Truef(t, IsDebug(), "mode should be %s by default", Debug)
+	assert.Truef(t, IsProd(), "mode should be %s by default", Prod)
 
 	SetMode("prod")
 

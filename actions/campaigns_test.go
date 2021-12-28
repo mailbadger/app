@@ -8,13 +8,20 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
 	s3mock "github.com/mailbadger/app/storage/s3"
 )
 
 func TestCampaigns(t *testing.T) {
-	s := storage.New("sqlite3", ":memory:")
+	db := storage.New(config.Config{
+		Database: config.Database{
+			Driver:        "sqlite3",
+			Sqlite3Source: ":memory:",
+		},
+	})
+	s := storage.From(db)
 
 	mockS3 := new(s3mock.MockS3Client)
 

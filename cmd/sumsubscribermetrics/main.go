@@ -7,10 +7,10 @@ import (
 	"os"
 	"sync"
 	"time"
-	
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	
+
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 )
@@ -18,19 +18,19 @@ import (
 func main() {
 	driver := os.Getenv("DATABASE_DRIVER")
 	config := storage.MakeConfigFromEnv(driver)
-	
+
 	s := storage.New(driver, config)
-	
+
 	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
-	
+
 	var (
 		dateStr      = flag.String("date", yesterday, "Sync payments for current date")
 		startDateStr = flag.String("start_date", yesterday, "Start date for syncing payments summaries")
 		endDateStr   = flag.String("end_date", yesterday, "End date for syncing payments summaries")
 	)
-	
+
 	flag.Parse()
-	
+
 	startDate, endDate, err := parseDates(yesterday, *dateStr, *startDateStr, *endDateStr)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -39,35 +39,35 @@ func main() {
 			"end_date_flag":   endDateStr,
 		}).WithError(err).Fatal("failed to parse dates")
 	}
-	
+
 	lf := logrus.WithFields(logrus.Fields{
-		"job_name":   entities.Job_SubscriberMetrics,
+		"job_name":   entities.JobSubscriberMetrics,
 		"start_date": startDate,
 		"end_date":   endDate,
 	})
-	
-	job, err := s.GetJobByName(entities.Job_SubscriberMetrics)
+
+	job, err := s.GetJobByName(entities.JobSubscriberMetrics)
 	if err != nil {
 		lf.WithError(err).
 			Fatal("failed to fetch job")
 	}
-	
+
 	if job.Status != entities.JobStatusIdle {
 		lf.WithFields(logrus.Fields{
 			"job_status": job.Status,
 		}).WithError(err).
 			Fatal("jobs' status is not idle")
 	}
-	
+
 	job.Status = entities.JobStatusInProgress
 	err = s.UpdateJob(job)
 	if err != nil {
 		lf.WithError(err).
 			Fatal("failed to update job to in-progress")
 	}
-	
+
 	lf.WithField("job_status", job.Status)
-	
+
 	defer func() {
 		err = s.UpdateJob(job)
 		if err != nil {
@@ -75,7 +75,7 @@ func main() {
 				Fatalf("failed to update job to %s", job.Status)
 		}
 	}()
-	
+
 	job.Status = processEvents(s, startDate, endDate, lf)
 }
 
@@ -85,38 +85,38 @@ func parseDates(yesterday, dateStr, startDateStr, endDateStr string) (sd time.Ti
 		if err != nil {
 			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
 		}
-		
+
 		ed, err = time.Parse("2006-01-02", endDateStr)
 		if err != nil {
 			return time.Time{}, time.Time{}, fmt.Errorf("parsing current time: %w", err)
 		}
-		
+
 		return sd, ed.AddDate(0, 0, 1), nil
 	}
-	
+
 	cd, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("parsing date: %w", err)
 	}
-	
+
 	return cd, cd.AddDate(0, 0, 1), nil
 }
 
 func processEvents(s storage.Storage, startDate, endDate time.Time, lf *logrus.Entry) string {
-	events, err := s.GetGroupedSubscriberEvents(startDate, endDate)
+	events, err := s.GetSubscriberEvents(startDate, endDate)
 	if err != nil {
 		lf.WithError(err).
 			Error("failed to group events")
 		return entities.JobStatusDirty
 	}
-	
+
 	logrus.Infof("There are %d grouped events from %s, to %s to be proccessed", len(events), startDate, endDate)
-	
+
 	if len(events) == 0 {
 		lf.Info("there are no events to process")
 		return entities.JobStatusIdle
 	}
-	
+
 	var (
 		i                   int
 		wg                  sync.WaitGroup
@@ -125,20 +125,20 @@ func processEvents(s storage.Storage, startDate, endDate time.Time, lf *logrus.E
 		chGroupedEvents     = make(chan *entities.GroupedSubscriberEvents)
 		chSubscriberMetrics = make(chan *entities.SubscriberMetrics)
 	)
-	
+
 	for i = 0; i < workers; i++ {
 		wg.Add(1)
 		go worker(&wg, chGroupedEvents, chReducers)
 	}
-	
+
 	for _, event := range events {
 		chGroupedEvents <- event
 	}
-	
+
 	close(chGroupedEvents)
 	wg.Wait()
 	close(chReducers)
-	
+
 	m := make(map[string]*entities.SubscriberMetrics)
 	for reducer := range chReducers {
 		for k, v := range reducer {
@@ -147,40 +147,39 @@ func processEvents(s storage.Storage, startDate, endDate time.Time, lf *logrus.E
 				m[k] = v
 				continue
 			}
-			
+
 			// it is safe to add the values since all types are counted daily
 			m[k].Created += v.Created
-			m[k].Deleted += v.Deleted
 			m[k].Unsubscribed += v.Unsubscribed
 		}
 	}
-	
+
 	errGroup, _ := errgroup.WithContext(context.Background())
-	
+
 	for i = 0; i < workers; i++ {
 		errGroup.Go(func() error {
 			return upsertSubscriberMetrics(s, chSubscriberMetrics)
 		})
 	}
-	
+
 	for _, v := range m {
 		chSubscriberMetrics <- v
 	}
-	
+
 	close(chSubscriberMetrics)
 	err = errGroup.Wait()
 	if err != nil {
 		lf.WithError(err).
 			Error("failed to upsert subscriber metrics")
-		return  entities.JobStatusIdle
+		return entities.JobStatusIdle
 	}
-	
+
 	return entities.JobStatusIdle
 }
 
 func worker(wg *sync.WaitGroup, events chan *entities.GroupedSubscriberEvents, reducers chan map[string]*entities.SubscriberMetrics) {
 	defer wg.Done()
-	
+
 	m := make(map[string]*entities.SubscriberMetrics)
 	for event := range events {
 		k := fmt.Sprintf("%d-%s", event.UserID, event.Date.Format("2006-01-02"))
@@ -188,17 +187,14 @@ func worker(wg *sync.WaitGroup, events chan *entities.GroupedSubscriberEvents, r
 			m[k] = &entities.SubscriberMetrics{
 				UserID:       event.UserID,
 				Created:      0,
-				Deleted:      0,
 				Unsubscribed: 0,
 				Date:         event.Date, // TODO need to be just date without time
 			}
 		}
-		
+
 		switch entities.EventType(event.EventType) {
 		case entities.SubscriberEventTypeCreated:
 			m[k].Created += event.Total
-		case entities.SubscriberEventTypeDeleted:
-			m[k].Deleted += event.Total
 		case entities.SubscriberEventTypeUnsubscribed:
 			m[k].Unsubscribed += event.Total
 		default:
@@ -208,7 +204,7 @@ func worker(wg *sync.WaitGroup, events chan *entities.GroupedSubscriberEvents, r
 			}).Error("event type is unsupported")
 		}
 	}
-	
+
 	reducers <- m
 }
 
@@ -219,6 +215,6 @@ func upsertSubscriberMetrics(s storage.Storage, metrics chan *entities.Subscribe
 			return err // TODO make our own error to track the date
 		}
 	}
-	
+
 	return nil
 }

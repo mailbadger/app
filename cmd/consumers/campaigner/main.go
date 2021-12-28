@@ -14,10 +14,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/jinzhu/gorm"
 	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/mode"

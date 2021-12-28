@@ -19,6 +19,7 @@ import (
 	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
 )
@@ -50,7 +51,6 @@ func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect
 	handler := gin.New()
 	handler.Use(sessions.Sessions("mbsess", cookiestore))
 	handler.Use(middleware.Storage(s))
-	handler.Use(middleware.SetUser())
 	handler.Use(middleware.S3Client(s3Mock))
 
 	routes.SetGuestRoutes(handler)
@@ -59,7 +59,8 @@ func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect
 	if err != nil {
 		t.FailNow()
 	}
-	routes.SetAuthorizedRoutes(handler, compiler)
+	sess := session.New(s, "foo", "bar", false)
+	routes.SetAuthorizedRoutes(handler, sess, compiler)
 
 	return httpexpect.WithConfig(httpexpect.Config{
 		Client: &http.Client{

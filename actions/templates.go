@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
@@ -50,7 +50,7 @@ func GetTemplate(c *gin.Context) {
 			logger.From(c).WithFields(logrus.Fields{
 				"user_id":     u.ID,
 				"template_id": id,
-			}).WithError(err).Errorf("Unable to get template")
+			}).WithError(err).Error("Unable to get template")
 			c.JSON(http.StatusUnprocessableEntity, gin.H{
 				"message": "Unable to get template",
 			})

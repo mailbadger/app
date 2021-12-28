@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/routes"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -15,29 +17,22 @@ type Server struct {
 	Handler http.Handler
 }
 
-type ServerOptions func(*Server)
-
-func WithTLS(key, cert string) ServerOptions {
-	return func(s *Server) {
-		s.Key = key
-		s.Cert = cert
-	}
+func From(api routes.API, conf config.Config) *Server {
+	return New(
+		":"+conf.Server.Port,
+		api.Handler(),
+		conf.Server.Cert,
+		conf.Server.Key,
+	)
 }
 
-func WithHandler(handler http.Handler) ServerOptions {
-	return func(s *Server) {
-		s.Handler = handler
+func New(addr string, handler http.Handler, cert, key string) *Server {
+	return &Server{
+		Addr:    addr,
+		Cert:    cert,
+		Key:     key,
+		Handler: handler,
 	}
-}
-
-func New(addr string, opts ...ServerOptions) *Server {
-	s := &Server{
-		Addr: addr,
-	}
-	for _, opt := range opts {
-		opt(s)
-	}
-	return s
 }
 
 func (s Server) ListenAndServe(ctx context.Context) error {

@@ -1,28 +1,23 @@
 package storage
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/jinzhu/gorm"
-	"github.com/mailbadger/app/entities"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestRoles(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 
 	_, err := store.GetRole("foobar")
 	assert.NotNil(t, err)
-	assert.EqualError(t, err, gorm.ErrRecordNotFound.Error())
+	assert.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 
 	r, err := store.GetRole(entities.AdminRole)
 

@@ -1,25 +1,27 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
-
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
 
 func createCampaigns(store Storage) {
 	for i := 0; i < 100; i++ {
-		err := store.CreateCampaign(&entities.Campaign{
+		c := entities.Campaign{
 			Name:   "foo " + strconv.Itoa(i),
 			UserID: 1,
 			Status: "draft",
-		})
+		}
+		err := store.CreateCampaign(&c)
 		if err != nil {
 			logrus.Fatal(err)
 		}
@@ -28,12 +30,6 @@ func createCampaigns(store Storage) {
 
 func TestCampaign(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 	createCampaigns(store)
@@ -106,6 +102,13 @@ func TestCampaign(t *testing.T) {
 	// Test delete campaign
 	err = store.DeleteCampaign(1, 1)
 	assert.Nil(t, err)
+
+	_, err = store.GetCampaign(1, 1)
+	assert.True(t, errors.Is(gorm.ErrRecordNotFound, err))
+
+	total, err := store.GetMonthlyTotalCampaigns(1)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(100), total)
 
 	// Test insert open
 	opens := []entities.Open{

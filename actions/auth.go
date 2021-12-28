@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/jinzhu/gorm"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -27,6 +26,7 @@ import (
 	googleoauth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
@@ -55,7 +55,7 @@ func PostAuthenticate(c *gin.Context) {
 
 	user, err := storage.GetActiveUserByUsername(c, body.Username)
 	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
 		}
 
@@ -562,7 +562,7 @@ func PostLogout(c *gin.Context) {
 func completeCallback(c *gin.Context, email, source, host string) {
 	u, err := storage.GetUserByUsername(c, email)
 	if err != nil {
-		if !gorm.IsRecordNotFoundError(err) {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.From(c).WithError(err).Error("Social auth callback: unable to fetch user by username.")
 			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
 			return

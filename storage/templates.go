@@ -17,30 +17,29 @@ func (db *store) UpdateTemplate(t *entities.Template) error {
 // GetTemplateByName returns the template by the given name and user id
 func (db *store) GetTemplateByName(name string, userID int64) (*entities.Template, error) {
 	var template = new(entities.Template)
-	err := db.Where("user_id = ? and name = ?", userID, name).Find(template).Error
+	err := db.Where("user_id = ? and name = ?", userID, name).First(template).Error
 	return template, err
 }
 
 // GetTemplate returns the template by the given id and user id
 func (db *store) GetTemplate(templateID, userID int64) (*entities.Template, error) {
 	var template = new(entities.Template)
-	err := db.Where("user_id = ? and id = ?", userID, templateID).Find(template).Error
+	err := db.Where("user_id = ? and id = ?", userID, templateID).First(template).Error
 	return template, err
 }
 
 // GetTemplates fetches templates by user id, and populates the pagination obj
 func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
-	p.SetCollection(&[]entities.BaseTemplate{})
+	p.SetCollection(new([]entities.BaseTemplate))
 	p.SetResource("templates")
 
-	for k, v := range scopeMap {
-		if k == "name" {
-			p.AddScope(NameLike(v))
-		}
+	p.AddScope(BelongsToUser(userID))
+	val, ok := scopeMap["name"]
+	if ok {
+		p.AddScope(NameLike(val))
 	}
 
 	query := db.Table(p.Resource).
-		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
@@ -51,7 +50,7 @@ func (db *store) GetTemplates(userID int64, p *PaginationCursor, scopeMap map[st
 
 // DeleteTemplate deletes the template with given template id and user id from db
 func (db *store) DeleteTemplate(templateID int64, userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(entities.Template{BaseTemplate: entities.BaseTemplate{Model: entities.Model{ID: templateID}}}).Error
+	return db.Where("user_id = ? and id = ?", userID, templateID).Delete(&entities.Template{}).Error
 }
 
 // GetAllTemplatesForUser fetches all templates for user

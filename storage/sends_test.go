@@ -4,20 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mailbadger/app/entities"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSends(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 	now := time.Now().UTC()

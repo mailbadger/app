@@ -1,136 +1,68 @@
 package routes
 
 import (
-	"context"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
-	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth/limiter"
-	"github.com/didip/tollbooth_gin"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/sirupsen/logrus"
-	"github.com/unrolled/secure"
-
 	"github.com/mailbadger/app/actions"
-	"github.com/mailbadger/app/mode"
-	"github.com/mailbadger/app/opa"
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/routes/middleware"
-	"github.com/mailbadger/app/s3"
-	awssqs "github.com/mailbadger/app/sqs"
+	"github.com/mailbadger/app/session"
+	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/templates"
+	"github.com/open-policy-agent/opa/ast"
+	"github.com/sirupsen/logrus"
 )
 
-// New creates a new HTTP handler with the specified middleware.
-func New() http.Handler {
-	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
-	if err != nil {
-		lvl = logrus.InfoLevel
-	}
+type API struct {
+	sess         session.Session
+	store        storage.Storage
+	opaCompiler  *ast.Compiler
+	sqsPublisher sqs.Publisher
+	s3Client     *s3.S3
+	appDir       string
+}
 
-	log := logrus.New()
-	log.SetLevel(lvl)
-	log.SetOutput(os.Stdout)
-	if mode.IsProd() {
-		log.SetFormatter(&logrus.JSONFormatter{})
-	}
-
-	s3Client, err := s3.NewS3Client(
-		os.Getenv("AWS_ACCESS_KEY_ID"),
-		os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		os.Getenv("AWS_REGION"),
+func From(sess session.Session, store storage.Storage, opaCompiler *ast.Compiler, conf config.Config) API {
+	return New(
+		sess,
+		store,
+		opaCompiler,
+		conf.Server.AppDir,
 	)
-	if err != nil {
-		panic(err)
+}
+func New(
+	sess session.Session,
+	store storage.Storage,
+	opaCompiler *ast.Compiler,
+	appDir string,
+) API {
+	return API{
+		sess:        sess,
+		store:       store,
+		opaCompiler: opaCompiler,
+		appDir:      appDir,
 	}
+}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		panic(err)
-	}
-
-	client := sqs.NewFromConfig(cfg)
-	publisher := awssqs.NewPublisher(client)
-
-	store := cookie.NewStore(
-		[]byte(os.Getenv("SESSION_AUTH_KEY")),
-		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
-	)
-	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
-	store.Options(sessions.Options{
-		Secure:   secureCookie,
-		HttpOnly: true,
-	})
-
-	driver := os.Getenv("DATABASE_DRIVER")
-	config := storage.MakeConfigFromEnv(driver)
-
-	s := storage.New(driver, config)
-
+func (api API) Handler() http.Handler {
 	handler := gin.New()
-
 	handler.Use(gin.Recovery())
-	handler.Use(ginrus.Ginrus(log, time.RFC3339, true))
-	handler.Use(sessions.Sessions("mbsess", store))
-	handler.Use(middleware.Storage(s))
-	handler.Use(middleware.SetUser())
+	handler.Use(middleware.Secure())
 	handler.Use(middleware.RequestID())
-	handler.Use(middleware.SetLoggerEntry())
-	handler.Use(middleware.S3Client(s3Client))
-	handler.Use(middleware.SQSPublisher(publisher))
+	handler.Use(middleware.Logger())
+	handler.Use(sessions.Sessions("mbsess", api.sess.CookieStore))
+	handler.Use(middleware.Storage(api.store))
+	handler.Use(middleware.S3Client(api.s3Client))
+	handler.Use(middleware.SQSPublisher(api.sqsPublisher))
 
-	// Security headers
-	secureMiddleware := secure.New(secure.Options{
-		FrameDeny:             true,
-		ContentTypeNosniff:    true,
-		BrowserXssFilter:      true,
-		SSLRedirect:           true,
-		SSLProxyHeaders:       map[string]string{"X-Forwarded-Proto": "https"},
-		STSSeconds:            31536000,
-		STSIncludeSubdomains:  true,
-		STSPreload:            true,
-		ContentSecurityPolicy: "default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'",
-
-		IsDevelopment: !mode.IsProd(),
-	})
-	secureFunc := func() gin.HandlerFunc {
-		return func(c *gin.Context) {
-			err := secureMiddleware.Process(c.Writer, c.Request)
-
-			// If there was an error, do not continue.
-			if err != nil {
-				c.Abort()
-				return
-			}
-
-			// Avoid header rewrite if response is a redirection.
-			if status := c.Writer.Status(); status > 300 && status < 399 {
-				c.Abort()
-			}
-		}
-	}()
-
-	handler.Use(secureFunc)
-
-	// Web app
-	appDir := os.Getenv("APP_DIR")
-	if appDir == "" {
-		logrus.Panic("app directory not set")
-	}
-
-	err = templates.Init(handler)
+	err := templates.Init(handler)
 	if err != nil {
-		logrus.Panic(err)
+		logrus.WithError(err).Panic("api: unable to init templates")
 	}
 
 	handler.NoRoute(func(c *gin.Context) {
@@ -161,35 +93,24 @@ func New() http.Handler {
 			return
 		}
 
-		c.File(appDir + "/index.html")
+		c.File(api.appDir + "/index.html")
 	})
 
-	// Assets
-	handler.Static("/static", appDir+"/static")
-
-	// rate limiter
-	lmt := tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
-	lmt.SetMessage(`{"message": "You have reached the maximum request limit."}`)
-	lmt.SetMessageContentType("application/json; charset=utf-8")
+	handler.Static("/static", api.appDir+"/static")
 
 	SetGuestRoutes(
 		handler,
 		middleware.NoCache(),
-		tollbooth_gin.LimitHandler(lmt),
+		middleware.Limiter(),
 	)
-
-	// Compile the OPA module. The keys are used as identifiers in error messages.
-	opacompiler, err := opa.NewCompiler()
-	if err != nil {
-		panic(err)
-	}
 
 	SetAuthorizedRoutes(
 		handler,
-		opacompiler,
+		api.sess,
+		api.opaCompiler,
 		middleware.NoCache(),
+		middleware.Limiter(),
 		middleware.CSRF(),
-		tollbooth_gin.LimitHandler(lmt),
 	)
 
 	return handler
@@ -219,9 +140,9 @@ func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 // SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
 // the Authorized middleware which performs the checks for authorized user as well as
 // other optional middlewares that we set.
-func SetAuthorizedRoutes(handler *gin.Engine, opacompiler *ast.Compiler, middlewares ...gin.HandlerFunc) {
+func SetAuthorizedRoutes(handler *gin.Engine, sess session.Session, opacompiler *ast.Compiler, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.Authorized(opacompiler))
+	authorized.Use(middleware.Authorized(sess, opacompiler))
 	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout)

@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities"
@@ -14,12 +13,6 @@ import (
 
 func TestSubscriber(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	store := From(db)
 
 	l := &entities.Segment{

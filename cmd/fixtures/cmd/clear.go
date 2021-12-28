@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
 	"github.com/mailbadger/app/entities"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/services/templates"
 )
@@ -64,7 +64,7 @@ func clear() error {
 	for _, apiKey := range apiKeys {
 		err = db.DeleteAPIKey(apiKey.ID, u.ID)
 		if err != nil {
-			return fmt.Errorf("failed to delete api key with id %d: %w",apiKey.ID, err)
+			return fmt.Errorf("failed to delete api key with id %d: %w", apiKey.ID, err)
 		}
 
 		fmt.Printf(" secret: %s\n", apiKey.SecretKey)

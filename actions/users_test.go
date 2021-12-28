@@ -4,13 +4,20 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
 )
 
 func TestUser(t *testing.T) {
-	s := storage.New("sqlite3", ":memory:")
+	db := storage.New(config.Config{
+		Database: config.Database{
+			Driver:        "sqlite3",
+			Sqlite3Source: ":memory:",
+		},
+	})
+	s := storage.From(db)
 
 	s3mock := new(s3.MockS3Client)
 
@@ -24,7 +31,7 @@ func TestUser(t *testing.T) {
 	e.GET("/api/users/me").
 		Expect().
 		Status(http.StatusUnauthorized).
-		JSON().Object().ValueEqual("message", "User not authorized")
+		JSON().Object().ValueEqual("message", "You are not authorized to perform this request.")
 
 	auth.GET("/api/users/me").
 		Expect().

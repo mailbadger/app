@@ -5,7 +5,7 @@ import "github.com/mailbadger/app/entities"
 // GetJobByName returns the job by the given name
 func (db store) GetJobByName(name string) (*entities.Job, error) {
 	var job = new(entities.Job)
-	err := db.Where("name = ?", name).Find(job).Error
+	err := db.Where("name = ?", name).First(job).Error
 	return job, err
 }
 

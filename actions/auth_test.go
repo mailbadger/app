@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/storage"
@@ -14,7 +15,13 @@ import (
 )
 
 func TestAuth(t *testing.T) {
-	s := storage.New("sqlite3", ":memory:")
+	db := storage.New(config.Config{
+		Database: config.Database{
+			Driver:        "sqlite3",
+			Sqlite3Source: ":memory:",
+		},
+	})
+	s := storage.From(db)
 
 	s3mock := new(s3.MockS3Client)
 

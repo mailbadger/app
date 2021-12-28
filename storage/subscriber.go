@@ -4,25 +4,23 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jinzhu/gorm"
-	"github.com/segmentio/ksuid"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
 
 // GetSubscribers fetches subscribers by user id, and populates the pagination obj
 func (db *store) GetSubscribers(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
-	p.SetCollection(&[]entities.Subscriber{})
+	p.SetCollection(new([]entities.Subscriber))
 	p.SetResource("subscribers")
 
-	for k, v := range scopeMap {
-		if k == "email" {
-			p.AddScope(EmailLike(v))
-		}
+	p.AddScope(BelongsToUser(userID))
+	val, ok := scopeMap["email"]
+	if ok {
+		p.AddScope(EmailLike(val))
 	}
 
 	query := db.Table(p.Resource).
-		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
@@ -80,7 +78,7 @@ func (db *store) GetTotalSubscribersBySegment(segmentID, userID int64) (int64, e
 // GetSubscriber returns the subscriber by the given id and user id
 func (db *store) GetSubscriber(id, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
-	err := db.Preload("Segments").Where("user_id = ? and id = ?", userID, id).Find(s).Error
+	err := db.Preload("Segments").Where("user_id = ? and id = ?", userID, id).First(s).Error
 	return s, err
 }
 
@@ -94,7 +92,7 @@ func (db *store) GetSubscribersByIDs(ids []int64, userID int64) ([]entities.Subs
 // GetSubscriberByEmail returns the subscriber by the given email and user id
 func (db *store) GetSubscriberByEmail(email string, userID int64) (*entities.Subscriber, error) {
 	var s = new(entities.Subscriber)
-	err := db.Where("user_id = ? and email = ?", userID, email).Find(s).Error
+	err := db.Where("user_id = ? and email = ?", userID, email).First(s).Error
 	return s, err
 }
 
@@ -117,8 +115,8 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 		Select("DISTINCT(id), name, email, created_at, metadata").
 		Joins("INNER JOIN subscribers_segments ON subscribers_segments.subscriber_id = subscribers.id").
 		Where(`
-			subscribers_segments.segment_id IN (?)
-			AND subscribers.user_id = ? 
+			subscribers.user_id = ? 
+			AND subscribers_segments.segment_id IN (?)
 			AND subscribers.blacklisted = ? 
 			AND subscribers.active = ?
 			AND (created_at > ? OR (created_at = ? AND id > ?))
@@ -133,7 +131,7 @@ func (db *store) GetDistinctSubscribersBySegmentIDs(
 			time.Now(),
 		).
 		Order("created_at, id").
-		Limit(limit).
+		Limit(int(limit)).
 		Find(&subs).Error
 
 	return subs, err
@@ -155,10 +153,9 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 	}
 
 	if err := tx.Create(&entities.SubscriberEvent{
-		ID:              ksuid.New(),
-		UserID:          s.UserID,
-		SubscriberEmail: s.Email,
-		EventType:       entities.SubscriberEventTypeCreated,
+		UserID:       s.UserID,
+		SubscriberID: s.ID,
+		EventType:    entities.SubscriberEventTypeCreated,
 	}).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: add subscriber event (created): %w", err)
@@ -176,7 +173,7 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Replace(s.Segments).Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Replace(s.Segments); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: update subscriber's segment: %w", err)
 	}
@@ -192,6 +189,10 @@ func (db *store) UpdateSubscriber(s *entities.Subscriber) error {
 // DeactivateSubscriber de-activates a subscriber by the given user and email
 // and adds unsubscribed subscriber event.
 func (db *store) DeactivateSubscriber(userID int64, email string) error {
+	s, err := db.GetSubscriberByEmail(email, userID)
+	if err != nil {
+		return err
+	}
 	tx := db.Begin()
 
 	defer func() {
@@ -208,10 +209,9 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 	}
 
 	if err := tx.Create(&entities.SubscriberEvent{
-		ID:              ksuid.New(),
-		UserID:          userID,
-		SubscriberEmail: email,
-		EventType:       entities.SubscriberEventTypeUnsubscribed,
+		UserID:       userID,
+		SubscriberID: s.ID,
+		EventType:    entities.SubscriberEventTypeUnsubscribed,
 	}).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: add subscriber event (unsubscribed): %w", err)
@@ -235,7 +235,7 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w", err)
 	}
@@ -245,14 +245,16 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		return fmt.Errorf("subscription store: delete subscriber: %w", err)
 	}
 
-	if err := tx.Create(&entities.SubscriberEvent{
-		ID:              ksuid.New(),
-		UserID:          userID,
-		SubscriberEmail: s.Email,
-		EventType:       entities.SubscriberEventTypeDeleted,
-	}).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("subscription store: add subscriber event (deleted): %w", err)
+	if s.Active {
+		//only create unsubscribe event if the subscriber did not unsubscribe before deleting them.
+		if err := tx.Create(&entities.SubscriberEvent{
+			UserID:       userID,
+			SubscriberID: s.ID,
+			EventType:    entities.SubscriberEventTypeUnsubscribed,
+		}).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("subscription store: add subscriber event (deleted): %w", err)
+		}
 	}
 
 	return tx.Commit().Error
@@ -272,7 +274,7 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Clear().Error; err != nil {
+	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -288,7 +290,7 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 // SeekSubscribersByUserID fetches chunk of subscribers with id greater than nextID
 func (db *store) SeekSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
 	var s []entities.Subscriber
-	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(limit).Find(&s).Error
+	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(int(limit)).Find(&s).Error
 	return s, err
 }
 

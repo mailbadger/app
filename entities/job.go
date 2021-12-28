@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	Job_SubscriberMetrics = "subscriber_metrics"
+	JobSubscriberMetrics = "subscriber_metrics"
 )
 
 type JobStatus string
@@ -17,9 +17,9 @@ func (j *JobStatus) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("failed to scan JobStatus")
 	}
-	
+
 	*j = JobStatus(str)
-	
+
 	return nil
 }
 

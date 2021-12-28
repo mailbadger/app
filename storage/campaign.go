@@ -3,26 +3,26 @@ package storage
 import (
 	"os"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
 
 // GetCampaigns fetches campaigns by user id, and populates the pagination obj
 func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[string]string) error {
-	p.SetCollection(&[]entities.Campaign{})
+	var scopes []func(*gorm.DB) *gorm.DB
+
+	p.SetCollection(new([]entities.Campaign))
 	p.SetResource("campaigns")
 
-	// scopes
-	p.AddScope(NotDeleted)
-	for k, v := range scopeMap {
-		if k == "name" {
-			p.AddScope(NameLike(v))
-		}
+	scopes = append(scopes, NotDeleted, BelongsToUser(userID))
+	val, ok := scopeMap["name"]
+	if ok {
+		scopes = append(scopes, NameLike(val))
 	}
+	p.SetScopes(scopes...)
 
 	query := db.Table(p.Resource).Preload("BaseTemplate").
-		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
@@ -34,8 +34,8 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 // GetMonthlyTotalCampaigns fetches the total count by user id in the current month
 func (db *store) GetMonthlyTotalCampaigns(userID int64) (int64, error) {
 	var count int64
-	err := db.Model(entities.Campaign{}).
-		Scopes(currentMonthScope()).
+	err := db.Debug().Model(entities.Campaign{}).
+		Scopes(currentMonthScope(), NotDeleted).
 		Where("user_id = ?", userID).
 		Count(&count).Error
 	return count, err
@@ -62,14 +62,14 @@ func currentMonthSqlite3Dialect(db *gorm.DB) *gorm.DB {
 // GetCampaign returns the campaign by the given id and user id
 func (db *store) GetCampaign(id, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Preload("Schedule").Find(&campaign).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).Preload("BaseTemplate").Preload("Schedule").First(&campaign).Error
 	return campaign, err
 }
 
 // GetCampaignByName returns the campaign by the given name and user id
 func (db *store) GetCampaignByName(name string, userID int64) (*entities.Campaign, error) {
 	var campaign = new(entities.Campaign)
-	err := db.Preload("BaseTemplate").Where("user_id = ? and name = ?", userID, name).Find(campaign).Error
+	err := db.Preload("BaseTemplate").Where("user_id = ? and name = ?", userID, name).First(campaign).Error
 	return campaign, err
 }
 
@@ -90,7 +90,7 @@ func (db *store) DeleteCampaign(id, userID int64) error {
 
 // GetCampaignOpens fetches campaign opens by campaign id, and populates the pagination obj
 func (db *store) GetCampaignOpens(campaignID, userID int64, p *PaginationCursor) error {
-	p.SetCollection(&[]entities.Open{})
+	p.SetCollection(new([]entities.Open))
 	p.SetResource("opens")
 
 	query := db.Table(p.Resource).
@@ -157,7 +157,7 @@ func (db *store) GetTotalComplaints(campaignID, userID int64) (int64, error) {
 
 // GetCampaignComplaints fetches campaign complaints by campaign id, and populates the pagination obj
 func (db *store) GetCampaignComplaints(campaignID, userID int64, p *PaginationCursor) error {
-	p.SetCollection(&[]entities.Complaint{})
+	p.SetCollection(new([]entities.Complaint))
 	p.SetResource("complaints")
 
 	query := db.Table(p.Resource).
@@ -172,7 +172,7 @@ func (db *store) GetCampaignComplaints(campaignID, userID int64, p *PaginationCu
 
 // GetCampaignBounces fetches campaign bounces by campaign id, and populates the pagination obj
 func (db *store) GetCampaignBounces(campaignID, userID int64, p *PaginationCursor) error {
-	p.SetCollection(&[]entities.Bounce{})
+	p.SetCollection(new([]entities.Bounce))
 	p.SetResource("bounces")
 
 	query := db.Table(p.Resource).

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/segmentio/ksuid"
-	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/assert"
 
@@ -14,12 +13,6 @@ import (
 
 func TestSendLogs(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 	now := time.Now().UTC()
@@ -66,7 +59,7 @@ func TestSendLogs(t *testing.T) {
 
 	n, err := store.CountLogsByStatus(entities.SendLogStatusFailed)
 	assert.Nil(t, err)
-	assert.Equal(t, 2, n)
+	assert.Equal(t, int64(2), n)
 
 	// Test delete all segments for a user
 	err = store.DeleteAllSendsForUser(1)

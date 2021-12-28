@@ -21,7 +21,7 @@ func PaginateWithCursor() gin.HandlerFunc {
 				return
 			}
 
-			p.SetPerPage(perpage)
+			p.SetPerPage(int(perpage))
 		}
 
 		if len(c.Query("ending_before")) > 0 {
