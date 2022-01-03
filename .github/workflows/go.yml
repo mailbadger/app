@@ -16,7 +16,7 @@ jobs:
       - name: Generate migration files
         uses: actions/setup-go@v2
         with:
-          go-version: "1.16.1"
+          go-version: "1.17"
       - run: go get github.com/rakyll/statik && make gen
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
@@ -31,7 +31,7 @@ jobs:
       - name: test
         uses: actions/setup-go@v2
         with:
-          go-version: "1.16.1"
+          go-version: "1.17"
       - run: go get github.com/rakyll/statik && make gen && go test -coverprofile=coverage.out ./...
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
@@ -47,5 +47,5 @@ jobs:
       - name: build
         uses: actions/setup-go@v2 
         with:
-          go-version: "1.16.1"
+          go-version: "1.17"
       - run: go get github.com/rakyll/statik && make gen && go build ./...
