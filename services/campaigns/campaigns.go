@@ -10,6 +10,7 @@ import (
 	"github.com/cbroglie/mustache"
 
 	"github.com/mailbadger/app/entities"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 )
 
@@ -28,10 +29,10 @@ type Service interface {
 // service implements the Service interface
 type service struct {
 	db        storage.Storage
-	sqsclient *sqs.Client
+	sqsclient awssqs.SQSSendReceiveMessageAPI
 }
 
-func New(db storage.Storage, sqsclient *sqs.Client) Service {
+func New(db storage.Storage, sqsclient awssqs.SQSSendReceiveMessageAPI) Service {
 	return &service{
 		db:        db,
 		sqsclient: sqsclient,
@@ -114,6 +115,7 @@ func (svc *service) PublishSubscriberEmailParams(ctx context.Context, params *en
 	}
 
 	body := string(senderBytes)
+
 	_, err = svc.sqsclient.SendMessage(ctx, &sqs.SendMessageInput{
 		MessageBody: &body,
 		QueueUrl:    queueURL,

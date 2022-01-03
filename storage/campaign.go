@@ -1,10 +1,9 @@
 package storage
 
 import (
-	"os"
-
 	"gorm.io/gorm"
 
+	"github.com/jinzhu/now"
 	"github.com/mailbadger/app/entities"
 )
 
@@ -34,29 +33,15 @@ func (db *store) GetCampaigns(userID int64, p *PaginationCursor, scopeMap map[st
 // GetMonthlyTotalCampaigns fetches the total count by user id in the current month
 func (db *store) GetMonthlyTotalCampaigns(userID int64) (int64, error) {
 	var count int64
-	err := db.Debug().Model(entities.Campaign{}).
-		Scopes(currentMonthScope(), NotDeleted).
+	err := db.Model(entities.Campaign{}).
+		Scopes(CurrentMonth, NotDeleted).
 		Where("user_id = ?", userID).
 		Count(&count).Error
 	return count, err
 }
 
-func currentMonthScope() func(db *gorm.DB) *gorm.DB {
-	driver := os.Getenv("DATABASE_DRIVER")
-	switch driver {
-	case "mysql":
-		return currentMonthMySQLDialect
-	default:
-		return currentMonthSqlite3Dialect
-	}
-}
-
-func currentMonthMySQLDialect(db *gorm.DB) *gorm.DB {
-	return db.Where("YEAR(created_at) = YEAR(NOW()) AND MONTH(created_at) = MONTH(NOW())")
-}
-
-func currentMonthSqlite3Dialect(db *gorm.DB) *gorm.DB {
-	return db.Where("strftime('%Y', created_at) = strftime('%Y', date('now')) AND strftime('%m', created_at) = strftime('%m',date('now'))")
+func CurrentMonth(db *gorm.DB) *gorm.DB {
+	return db.Where("created_at BETWEEN ? AND ?", now.BeginningOfMonth(), now.EndOfMonth())
 }
 
 // GetCampaign returns the campaign by the given id and user id

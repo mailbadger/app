@@ -150,7 +150,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 		if err != nil {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
-		p.Query.Joins(fmt.Sprintf("INNER JOIN (?) ON %s.id = rid", p.Resource),
+		p.Query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.rid", p.Resource),
 			db.DB.
 				Table(p.Resource).
 				Select("id as rid").

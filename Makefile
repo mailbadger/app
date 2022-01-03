@@ -25,7 +25,6 @@ build_api:
 	go build -o bin/app ./cmd/app
 	go build -o bin/sender ./cmd/consumers/sender
 	go build -o bin/campaigner ./cmd/consumers/campaigner
-	go build -o bin/scheduler ./cmd/scheduler
 
 build_static:
 	cd dashboard; rm -rf build && yarn && yarn build

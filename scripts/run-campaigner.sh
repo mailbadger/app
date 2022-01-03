@@ -4,4 +4,4 @@ set -euxo pipefail
 
 export $(egrep -v '^#' .env.local | xargs)
 
-go run ./cmd/consumers/campaigner/main.go
+go run ./cmd/consumers/campaigner/...

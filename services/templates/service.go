@@ -36,15 +36,6 @@ type Service interface {
 	ParseTemplate(c context.Context, templateID int64, userID int64) (*entities.CampaignTemplateData, error)
 }
 
-type Opts func(s *service)
-
-// TemplateBucket this is optionally adding template bucket for testing or for the fixture cli
-func TemplateBucket(bucket string) Opts {
-	return func(s *service) {
-		s.templatesBucket = bucket
-	}
-}
-
 // service implements the Service interface
 type service struct {
 	db              storage.Storage
@@ -52,18 +43,12 @@ type service struct {
 	templatesBucket string
 }
 
-func New(db storage.Storage, s3 s3iface.S3API, opts ...Opts) Service {
-	s := &service{
+func New(db storage.Storage, s3 s3iface.S3API) Service {
+	return &service{
 		db:              db,
 		s3:              s3,
 		templatesBucket: os.Getenv("TEMPLATES_BUCKET"),
 	}
-
-	for _, option := range opts {
-		option(s)
-	}
-
-	return s
 }
 
 func (s service) AddTemplate(c context.Context, template *entities.Template) error {

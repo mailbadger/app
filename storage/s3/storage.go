@@ -3,9 +3,20 @@ package s3
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+
 	"github.com/gin-gonic/gin"
 )
+
+func NewClient() (*s3.S3, error) {
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, err
+	}
+	return s3.New(sess), nil
+}
 
 const key = "s3"
 

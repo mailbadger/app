@@ -3,9 +3,11 @@ package sqs
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/gin-gonic/gin"
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/logger"
 )
 
@@ -15,6 +17,15 @@ const (
 	// SenderTopic is the topic used by the sender consumer.
 	SenderTopic = "SendEmail"
 )
+
+// QueueURL is a pointer to a URL string, used by the SQS client.
+type QueueURL *string
+
+// CampaignerQueueURL represents the queue url of the SendCampaign queue.
+type CampaignerQueueURL QueueURL
+
+// CampaignerQueueURL represents the queue url of the SendEmail queue.
+type SendEmailQueueURL QueueURL
 
 // SQSSendReceiveMessageAPI defines the interface for the GetQueueUrl function.
 // We use this interface to test the function using a mocked service.
@@ -33,7 +44,7 @@ type SQSSendReceiveMessageAPI interface {
 }
 
 type Consumer struct {
-	queueURL          string
+	queueURL          QueueURL
 	visibilityTimeout int32
 	maxNumOfMessages  int32
 	waitTimeout       int32
@@ -44,8 +55,26 @@ type Publisher struct {
 	api SQSSendReceiveMessageAPI
 }
 
+func NewClient(cfg aws.Config) *sqs.Client {
+	return sqs.NewFromConfig(cfg)
+}
+
+func NewConsumerFrom(
+	conf config.Config,
+	queueURL QueueURL,
+	api SQSSendReceiveMessageAPI,
+) Consumer {
+	return NewConsumer(
+		queueURL,
+		conf.Consumer.Timeout,
+		conf.Consumer.WaitTimeout,
+		conf.Consumer.MaxInFlightMsgs,
+		api,
+	)
+}
+
 func NewConsumer(
-	queueURL string,
+	queueURL QueueURL,
 	visibilityTimeout,
 	maxNumOfMessages,
 	waitTimeout int32,
@@ -83,7 +112,7 @@ func (c Consumer) PollSQS(ctx context.Context) <-chan types.Message {
 					AttributeNames: []types.QueueAttributeName{
 						types.QueueAttributeName(types.MessageSystemAttributeNameSentTimestamp),
 					},
-					QueueUrl:            &c.queueURL,
+					QueueUrl:            c.queueURL,
 					MaxNumberOfMessages: c.maxNumOfMessages,
 					VisibilityTimeout:   c.visibilityTimeout,
 					WaitTimeSeconds:     c.waitTimeout,
@@ -142,20 +171,46 @@ func (p Publisher) GetQueueURL(ctx context.Context, queueName *string) (*string,
 
 const key = "publisher"
 
-// SetToContext sets the producer to the context
-func SetToContext(ctx *gin.Context, pub Publisher) {
+// SetPublisherToContext sets the producer to the context
+func SetPublisherToContext(ctx *gin.Context, pub Publisher) {
 	ctx.Set(key, pub)
 }
 
-// GetFromContext returns the Producer associated with the context
-func GetFromContext(ctx context.Context) Publisher {
+// GetPublisherFromContext returns the Producer associated with the context
+func GetPublisherFromContext(ctx context.Context) Publisher {
 	return ctx.Value(key).(Publisher)
 }
 
 func SendMessage(ctx context.Context, queueUrl *string, body []byte) error {
-	return GetFromContext(ctx).SendMessage(ctx, queueUrl, body)
+	return GetPublisherFromContext(ctx).SendMessage(ctx, queueUrl, body)
 }
 
 func GetQueueURL(ctx context.Context, queueName *string) (*string, error) {
-	return GetFromContext(ctx).GetQueueURL(ctx, queueName)
+	return GetPublisherFromContext(ctx).GetQueueURL(ctx, queueName)
+}
+
+func GetCampaignerQueueURL(ctx context.Context, api SQSSendReceiveMessageAPI) (CampaignerQueueURL, error) {
+	queueStr := CampaignerTopic
+	gQInput := &sqs.GetQueueUrlInput{
+		QueueName: &queueStr,
+	}
+	// Get URL of queue
+	urlResult, err := api.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		return nil, err
+	}
+	return urlResult.QueueUrl, nil
+}
+
+func GetSendEmailQueueURL(ctx context.Context, api SQSSendReceiveMessageAPI) (SendEmailQueueURL, error) {
+	queueStr := SenderTopic
+	gQInput := &sqs.GetQueueUrlInput{
+		QueueName: &queueStr,
+	}
+	// Get URL of queue
+	urlResult, err := api.GetQueueUrl(ctx, gQInput)
+	if err != nil {
+		return nil, err
+	}
+	return urlResult.QueueUrl, nil
 }

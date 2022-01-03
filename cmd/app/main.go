@@ -4,6 +4,7 @@ import (
 	"context"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -23,7 +24,7 @@ func main() {
 	initMode(conf.Mode)
 	initLogger(conf.Logging)
 
-	app, err := initApp(conf)
+	app, err := initApp(ctx, conf)
 	if err != nil {
 		logrus.WithError(err).Fatalln("unable to initialize app")
 	}
@@ -34,9 +35,11 @@ func main() {
 	})
 
 	g.Go(func() error {
-		//	cron := metric.NewCron()
-		//	return cron.Start(ctx, 5*time.Second)
-		return nil
+		return app.subscrmetrics.Start(ctx, time.Hour)
+	})
+
+	g.Go(func() error {
+		return app.campaignsched.Start(ctx, 2*time.Minute)
 	})
 
 	if err := g.Wait(); err != nil {

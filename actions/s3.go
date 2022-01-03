@@ -13,7 +13,7 @@ import (
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
 	"github.com/mailbadger/app/routes/middleware"
-	"github.com/mailbadger/app/s3"
+	"github.com/mailbadger/app/storage/s3"
 	"github.com/mailbadger/app/validator"
 )
 
@@ -33,18 +33,7 @@ func GetSignedURL(c *gin.Context) {
 		return
 	}
 
-	client, err := s3.NewS3Client(
-		os.Getenv("AWS_ACCESS_KEY_ID"),
-		os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		os.Getenv("AWS_REGION"),
-	)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to create s3 client.")
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"message": "Unable to sign url.",
-		})
-		return
-	}
+	client := s3.GetFromContext(c)
 	req, _ := client.PutObjectRequest(&awss3.PutObjectInput{
 		Bucket:      aws.String(os.Getenv("FILES_BUCKET")),
 		Key:         aws.String(fmt.Sprintf("subscribers/%s/%d/%s", body.Action, u.ID, body.Filename)),

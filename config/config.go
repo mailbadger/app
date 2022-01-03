@@ -5,9 +5,11 @@ import "github.com/kelseyhightower/envconfig"
 type (
 	Config struct {
 		Database Database
+		Redis    Redis
 		Session  Session
 		Server   Server
 		Logging  Logging
+		Consumer Consumer
 		Mode     string `envconfig:"MB_APP_MODE"`
 	}
 
@@ -51,6 +53,12 @@ type (
 	Logging struct {
 		Level  string `envconfig:"MB_APP_LOG_LEVEL" default:"info"`
 		Pretty bool   `envconfig:"MB_APP_LOG_PRETTY"`
+	}
+
+	Consumer struct {
+		Timeout         int32 `envconfig:"MB_APP_CONSUMER_TIMEOUT" default:"300"`
+		WaitTimeout     int32 `envconfig:"MB_APP_CONSUMER_WAIT_TIMEOUT" default:"10"`
+		MaxInFlightMsgs int32 `envconfig:"MB_APP_CONSUMER_MAX_INFLIGHT_MSGS" default:"10"`
 	}
 )
 

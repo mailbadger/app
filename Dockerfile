@@ -16,7 +16,6 @@ RUN make driver=mysql gen
 RUN go build -o /go/bin/app ./cmd/app
 RUN go build -o /go/bin/consumers/sender ./cmd/consumers/sender
 RUN go build -o /go/bin/consumers/campaigner ./cmd/consumers/campaigner
-RUN go build -o /go/bin/scheduler ./cmd/scheduler
 
 FROM node:14-buster as node-build
 
@@ -35,5 +34,4 @@ ENV APP_DIR=/www/app
 
 COPY --from=go-build /go/bin/app /
 COPY --from=go-build /go/bin/consumers /consumers
-COPY --from=go-build /go/bin/scheduler /
 COPY --from=node-build /www/app/build /www/app/

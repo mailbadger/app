@@ -27,11 +27,20 @@ type API struct {
 	appDir       string
 }
 
-func From(sess session.Session, store storage.Storage, opaCompiler *ast.Compiler, conf config.Config) API {
+func From(
+	sess session.Session,
+	store storage.Storage,
+	opaCompiler *ast.Compiler,
+	sqsPublisher sqs.Publisher,
+	s3Client *s3.S3,
+	conf config.Config,
+) API {
 	return New(
 		sess,
 		store,
 		opaCompiler,
+		sqsPublisher,
+		s3Client,
 		conf.Server.AppDir,
 	)
 }
@@ -39,13 +48,17 @@ func New(
 	sess session.Session,
 	store storage.Storage,
 	opaCompiler *ast.Compiler,
+	sqsPublisher sqs.Publisher,
+	s3Client *s3.S3,
 	appDir string,
 ) API {
 	return API{
-		sess:        sess,
-		store:       store,
-		opaCompiler: opaCompiler,
-		appDir:      appDir,
+		sess:         sess,
+		store:        store,
+		opaCompiler:  opaCompiler,
+		sqsPublisher: sqsPublisher,
+		s3Client:     s3Client,
+		appDir:       appDir,
 	}
 }
 

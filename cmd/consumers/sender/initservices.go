@@ -7,26 +7,23 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/wire"
-	"github.com/mailbadger/app/services/campaigns/scheduler"
-	"github.com/mailbadger/app/services/subscribers/metric"
-	"github.com/mailbadger/app/session"
 	awssqs "github.com/mailbadger/app/sqs"
-	"github.com/mailbadger/app/storage/s3"
 )
 
 //nolint
 var svcSet = wire.NewSet(
 	initAwsConfig,
-	session.From,
 	awssqs.NewClient,
-	s3.NewClient,
-	awssqs.GetCampaignerQueueURL,
 	wire.Bind(new(awssqs.SQSSendReceiveMessageAPI), new(*sqs.Client)),
-	awssqs.NewPublisher,
-	metric.NewCron,
-	scheduler.New,
+	awssqs.GetSendEmailQueueURL,
+	newQueueURL,
+	awssqs.NewConsumerFrom,
 )
 
 func initAwsConfig(ctx context.Context) (aws.Config, error) {
 	return config.LoadDefaultConfig(ctx)
+}
+
+func newQueueURL(url awssqs.SendEmailQueueURL) awssqs.QueueURL {
+	return awssqs.QueueURL(url)
 }
