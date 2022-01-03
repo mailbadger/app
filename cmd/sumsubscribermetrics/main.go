@@ -4,22 +4,25 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 )
 
 func main() {
-	driver := os.Getenv("DATABASE_DRIVER")
-	config := storage.MakeConfigFromEnv(driver)
+	conf, err := config.FromEnv()
+	if err != nil {
+		logrus.WithError(err).Fatalln("unable to build config from env")
+	}
 
-	s := storage.New(driver, config)
+	db := storage.New(conf)
+	s := storage.From(db)
 
 	yesterday := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 
