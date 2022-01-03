@@ -9,8 +9,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/mailbadger/app/s3"
 	"github.com/mailbadger/app/storage"
+	"github.com/mailbadger/app/storage/s3"
 )
 
 const version = "v1.0.0"
@@ -66,11 +66,7 @@ func init() {
 	db = storage.New(driver, conf)
 
 	// Creating s3 client
-	s3Client, err = s3.NewS3Client(
-		viper.GetString("AWS_ACCESS_KEY_ID"),
-		viper.GetString("AWS_SECRET_ACCESS_KEY"),
-		viper.GetString("AWS_REGION"),
-	)
+	s3Client, err = s3.NewClient()
 	if err != nil {
 		fmt.Printf("[ERROR %s] failed to create s3 client", err.Error())
 		os.Exit(1)
