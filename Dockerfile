@@ -1,5 +1,5 @@
 # Builder image
-FROM golang:1.16-buster as go-build
+FROM golang:1.17-buster as go-build
 
 WORKDIR /go/src/app
 
