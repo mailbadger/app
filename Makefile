@@ -41,8 +41,5 @@ run_campaigner:
 run_sender:
 	./scripts/run-sender.sh
 
-install_fixtures:
-	./scripts/install-fixtures.sh
-
 process_events:
 	./scripts/process-events.sh

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/actions"
@@ -22,8 +22,8 @@ type API struct {
 	sess         session.Session
 	store        storage.Storage
 	opaCompiler  *ast.Compiler
-	sqsPublisher sqs.Publisher
-	s3Client     *s3.S3
+	sqsPublisher sqs.PublisherAPI
+	s3Client     s3iface.S3API
 	appDir       string
 }
 
@@ -31,8 +31,8 @@ func From(
 	sess session.Session,
 	store storage.Storage,
 	opaCompiler *ast.Compiler,
-	sqsPublisher sqs.Publisher,
-	s3Client *s3.S3,
+	sqsPublisher sqs.PublisherAPI,
+	s3Client s3iface.S3API,
 	conf config.Config,
 ) API {
 	return New(
@@ -48,8 +48,8 @@ func New(
 	sess session.Session,
 	store storage.Storage,
 	opaCompiler *ast.Compiler,
-	sqsPublisher sqs.Publisher,
-	s3Client *s3.S3,
+	sqsPublisher sqs.PublisherAPI,
+	s3Client s3iface.S3API,
 	appDir string,
 ) API {
 	return API{
@@ -111,19 +111,17 @@ func (api API) Handler() http.Handler {
 
 	handler.Static("/static", api.appDir+"/static")
 
-	SetGuestRoutes(
+	api.SetGuestRoutes(
 		handler,
 		middleware.NoCache(),
 		middleware.Limiter(),
 	)
 
-	SetAuthorizedRoutes(
+	api.SetAuthorizedRoutes(
 		handler,
-		api.sess,
-		api.opaCompiler,
 		middleware.NoCache(),
 		middleware.Limiter(),
-		middleware.CSRF(),
+		middleware.CSRF(api.sess.AuthKey, api.sess.Secure),
 	)
 
 	return handler
@@ -131,7 +129,7 @@ func (api API) Handler() http.Handler {
 
 // SetGuestRoutes sets the guest routes to the gin engine handler along with
 // a number of middleware that we set.
-func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
+func (api API) SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 	guest := handler.Group("/api")
 	guest.Use(middleware...)
 
@@ -141,7 +139,7 @@ func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 	guest.GET("/auth/google", actions.GetGoogleAuth)
 	guest.GET("/auth/facebook/callback", actions.FacebookCallback)
 	guest.GET("/auth/facebook", actions.GetFacebookAuth)
-	guest.POST("/authenticate", actions.PostAuthenticate)
+	guest.POST("/authenticate", actions.PostAuthenticate(api.store, api.sess))
 	guest.POST("/forgot-password", actions.PostForgotPassword)
 	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
 	guest.PUT("/verify-email/:token", actions.PutVerifyEmail)
@@ -153,9 +151,9 @@ func SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc) {
 // SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
 // the Authorized middleware which performs the checks for authorized user as well as
 // other optional middlewares that we set.
-func SetAuthorizedRoutes(handler *gin.Engine, sess session.Session, opacompiler *ast.Compiler, middlewares ...gin.HandlerFunc) {
+func (api API) SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.Authorized(sess, opacompiler))
+	authorized.Use(middleware.Authorized(api.sess, api.opaCompiler))
 	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout)

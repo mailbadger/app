@@ -23,7 +23,7 @@ func Logger() gin.HandlerFunc {
 		end := time.Now().UTC()
 		latency := end.Sub(start)
 
-		entry = entry.WithFields(logrus.Fields{
+		entry = logger.From(c).WithFields(logrus.Fields{
 			"status":     c.Writer.Status(),
 			"method":     c.Request.Method,
 			"path":       path,

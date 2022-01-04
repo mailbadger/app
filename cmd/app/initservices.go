@@ -21,7 +21,7 @@ var svcSet = wire.NewSet(
 	awssqs.NewClient,
 	s3.NewClient,
 	awssqs.GetCampaignerQueueURL,
-	wire.Bind(new(awssqs.SQSSendReceiveMessageAPI), new(*sqs.Client)),
+	wire.Bind(new(awssqs.SendReceiveMessageAPI), new(*sqs.Client)),
 	awssqs.NewPublisher,
 	metric.NewCron,
 	scheduler.New,

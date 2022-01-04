@@ -27,9 +27,9 @@ type CampaignerQueueURL QueueURL
 // CampaignerQueueURL represents the queue url of the SendEmail queue.
 type SendEmailQueueURL QueueURL
 
-// SQSSendReceiveMessageAPI defines the interface for the GetQueueUrl function.
+// SendReceiveMessageAPI defines the interface for the GetQueueUrl function.
 // We use this interface to test the function using a mocked service.
-type SQSSendReceiveMessageAPI interface {
+type SendReceiveMessageAPI interface {
 	GetQueueUrl(ctx context.Context,
 		params *sqs.GetQueueUrlInput,
 		optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
@@ -43,16 +43,21 @@ type SQSSendReceiveMessageAPI interface {
 		optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
 
+type PublisherAPI interface {
+	SendMessage(ctx context.Context, queueURL *string, body []byte) error
+	GetQueueURL(ctx context.Context, queueName *string) (*string, error)
+}
+
+type Publisher struct {
+	api SendReceiveMessageAPI
+}
+
 type Consumer struct {
 	queueURL          QueueURL
 	visibilityTimeout int32
 	maxNumOfMessages  int32
 	waitTimeout       int32
-	api               SQSSendReceiveMessageAPI
-}
-
-type Publisher struct {
-	api SQSSendReceiveMessageAPI
+	api               SendReceiveMessageAPI
 }
 
 func NewClient(cfg aws.Config) *sqs.Client {
@@ -62,7 +67,7 @@ func NewClient(cfg aws.Config) *sqs.Client {
 func NewConsumerFrom(
 	conf config.Config,
 	queueURL QueueURL,
-	api SQSSendReceiveMessageAPI,
+	api SendReceiveMessageAPI,
 ) Consumer {
 	return NewConsumer(
 		queueURL,
@@ -78,7 +83,7 @@ func NewConsumer(
 	visibilityTimeout,
 	maxNumOfMessages,
 	waitTimeout int32,
-	api SQSSendReceiveMessageAPI,
+	api SendReceiveMessageAPI,
 ) Consumer {
 	return Consumer{
 		queueURL:          queueURL,
@@ -89,7 +94,7 @@ func NewConsumer(
 	}
 }
 
-func NewPublisher(api SQSSendReceiveMessageAPI) Publisher {
+func NewPublisher(api SendReceiveMessageAPI) Publisher {
 	return Publisher{
 		api: api,
 	}
@@ -145,7 +150,7 @@ func (c Consumer) PollSQS(ctx context.Context) <-chan types.Message {
 //     Otherwise, nil and an error from the call to ReceiveMessage.
 func getMessages(
 	ctx context.Context,
-	api SQSSendReceiveMessageAPI,
+	api SendReceiveMessageAPI,
 	input *sqs.ReceiveMessageInput,
 ) (*sqs.ReceiveMessageOutput, error) {
 	return api.ReceiveMessage(ctx, input)
@@ -172,13 +177,13 @@ func (p Publisher) GetQueueURL(ctx context.Context, queueName *string) (*string,
 const key = "publisher"
 
 // SetPublisherToContext sets the producer to the context
-func SetPublisherToContext(ctx *gin.Context, pub Publisher) {
+func SetPublisherToContext(ctx *gin.Context, pub PublisherAPI) {
 	ctx.Set(key, pub)
 }
 
 // GetPublisherFromContext returns the Producer associated with the context
-func GetPublisherFromContext(ctx context.Context) Publisher {
-	return ctx.Value(key).(Publisher)
+func GetPublisherFromContext(ctx context.Context) PublisherAPI {
+	return ctx.Value(key).(PublisherAPI)
 }
 
 func SendMessage(ctx context.Context, queueUrl *string, body []byte) error {
@@ -189,7 +194,7 @@ func GetQueueURL(ctx context.Context, queueName *string) (*string, error) {
 	return GetPublisherFromContext(ctx).GetQueueURL(ctx, queueName)
 }
 
-func GetCampaignerQueueURL(ctx context.Context, api SQSSendReceiveMessageAPI) (CampaignerQueueURL, error) {
+func GetCampaignerQueueURL(ctx context.Context, api SendReceiveMessageAPI) (CampaignerQueueURL, error) {
 	queueStr := CampaignerTopic
 	gQInput := &sqs.GetQueueUrlInput{
 		QueueName: &queueStr,
@@ -202,7 +207,7 @@ func GetCampaignerQueueURL(ctx context.Context, api SQSSendReceiveMessageAPI) (C
 	return urlResult.QueueUrl, nil
 }
 
-func GetSendEmailQueueURL(ctx context.Context, api SQSSendReceiveMessageAPI) (SendEmailQueueURL, error) {
+func GetSendEmailQueueURL(ctx context.Context, api SendReceiveMessageAPI) (SendEmailQueueURL, error) {
 	queueStr := SenderTopic
 	gQInput := &sqs.GetQueueUrlInput{
 		QueueName: &queueStr,

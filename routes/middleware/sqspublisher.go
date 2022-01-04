@@ -7,7 +7,7 @@ import (
 )
 
 // SQSPublisher is a middleware that adds the SQS publisher to the context.
-func SQSPublisher(pub sqs.Publisher) gin.HandlerFunc {
+func SQSPublisher(pub sqs.PublisherAPI) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sqs.SetPublisherToContext(c, pub)
 		c.Next()

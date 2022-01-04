@@ -14,7 +14,7 @@ import (
 var svcSet = wire.NewSet(
 	initAwsConfig,
 	awssqs.NewClient,
-	wire.Bind(new(awssqs.SQSSendReceiveMessageAPI), new(*sqs.Client)),
+	wire.Bind(new(awssqs.SendReceiveMessageAPI), new(*sqs.Client)),
 	awssqs.GetSendEmailQueueURL,
 	newQueueURL,
 	awssqs.NewConsumerFrom,

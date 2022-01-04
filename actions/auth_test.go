@@ -5,13 +5,18 @@ import (
 	"os"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/opa"
+	"github.com/mailbadger/app/session"
+	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/s3"
+	s3mock "github.com/mailbadger/app/storage/s3"
 )
 
 func TestAuth(t *testing.T) {
@@ -22,10 +27,20 @@ func TestAuth(t *testing.T) {
 		},
 	})
 	s := storage.From(db)
+	sess := session.New(s, "foo", "secretexmplkeythatis32characters", true)
 
-	s3mock := new(s3.MockS3Client)
+	mockS3 := new(s3mock.MockS3Client)
+	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
 
-	e := setup(t, s, s3mock)
+	mockPub := new(sqs.MockPublisher)
+
+	compiler, err := opa.NewCompiler()
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	e := setup(t, s, sess, mockS3, mockPub, compiler)
 
 	// test when signup is disabled
 	e.POST("/api/signup").WithJSON(params.PostSignUp{
@@ -38,7 +53,7 @@ func TestAuth(t *testing.T) {
 		Value("message").
 		Equal("Sign up is disabled.")
 
-	err := os.Setenv("ENABLE_SIGNUP", "true")
+	err = os.Setenv("ENABLE_SIGNUP", "true")
 	assert.Nil(t, err)
 
 	e.POST("/api/signup").

@@ -18,13 +18,13 @@ import (
 
 type Scheduler struct {
 	s                    storage.Storage
-	p                    awssqs.Publisher
+	p                    awssqs.PublisherAPI
 	sendCampaignQueueURL awssqs.CampaignerQueueURL
 }
 
 func New(
 	s storage.Storage,
-	p awssqs.Publisher,
+	p awssqs.PublisherAPI,
 	queueURL awssqs.CampaignerQueueURL,
 ) *Scheduler {
 	return &Scheduler{

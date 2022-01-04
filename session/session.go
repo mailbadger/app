@@ -20,6 +20,8 @@ type Store interface {
 
 type Session struct {
 	Secure      bool
+	AuthKey     string
+	EncryptKey  string
 	CookieStore cookie.Store
 
 	store Store
@@ -58,6 +60,8 @@ func New(store Store, authKey, encryptKey string, secure bool) Session {
 		store:       store,
 		CookieStore: cookieStore,
 		Secure:      secure,
+		AuthKey:     authKey,
+		EncryptKey:  encryptKey,
 	}
 }
 

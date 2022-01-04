@@ -20,7 +20,7 @@ var svcSet = wire.NewSet(
 	initAwsConfig,
 	awss3.NewClient,
 	awssqs.NewClient,
-	wire.Bind(new(awssqs.SQSSendReceiveMessageAPI), new(*sqs.Client)),
+	wire.Bind(new(awssqs.SendReceiveMessageAPI), new(*sqs.Client)),
 	wire.Bind(new(s3iface.S3API), new(*s3.S3)),
 	awssqs.GetCampaignerQueueURL,
 	awssqs.GetSendEmailQueueURL,

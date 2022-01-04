@@ -29,10 +29,10 @@ type Service interface {
 // service implements the Service interface
 type service struct {
 	db        storage.Storage
-	sqsclient awssqs.SQSSendReceiveMessageAPI
+	sqsclient awssqs.SendReceiveMessageAPI
 }
 
-func New(db storage.Storage, sqsclient awssqs.SQSSendReceiveMessageAPI) Service {
+func New(db storage.Storage, sqsclient awssqs.SendReceiveMessageAPI) Service {
 	return &service{
 		db:        db,
 		sqsclient: sqsclient,

@@ -32,6 +32,7 @@ import (
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/logger"
+	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/templates"
 	"github.com/mailbadger/app/utils"
@@ -39,68 +40,61 @@ import (
 )
 
 // PostAuthenticate authenticates a user with the given username and password.
-func PostAuthenticate(c *gin.Context) {
-	body := &params.PostAuthenticate{}
-	if err := c.ShouldBindJSON(body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-
-	if err := validator.Validate(body); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	user, err := storage.GetActiveUserByUsername(c, body.Username)
-	if err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
+func PostAuthenticate(storage storage.Storage, sess session.Session) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		body := &params.PostAuthenticate{}
+		if err := c.ShouldBindJSON(body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
+			})
+			return
 		}
 
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Invalid credentials.",
-		})
-		return
-	}
+		if err := validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
 
-	if !user.Password.Valid {
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Invalid credentials. Most likely your account was created using one of the oauth providers. Try a different authentication method.",
-		})
-		return
-	}
+		user, err := storage.GetActiveUserByUsername(body.Username)
+		if err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				logger.From(c).WithError(err).Error("Unable to fetch active user by username.")
+			}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(body.Password))
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Invalid credentials.",
-		})
-		return
-	}
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Invalid credentials.",
+			})
+			return
+		}
 
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Cannot create session id.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create session id.",
-		})
-		return
-	}
+		if !user.Password.Valid {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Invalid credentials. Most likely your account was created using one of the oauth providers. Try a different authentication method.",
+			})
+			return
+		}
 
-	err = persistSession(c, user.ID, sessID)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Cannot persist session id.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create session id.",
-		})
-		return
-	}
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password.String), []byte(body.Password))
+		if err != nil {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Invalid credentials.",
+			})
+			return
+		}
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
-	})
+		err = sess.CreateSession(c, user.ID)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Cannot persist session id.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create session id.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	}
 }
 
 // PostSignup validates and creates a user account by the given

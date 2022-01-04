@@ -60,7 +60,7 @@ func Authorized(sess session.Session, compiler *ast.Compiler) gin.HandlerFunc {
 		} else {
 			s, err := sess.GetSession(c)
 			if err != nil {
-				if !errors.Is(err, gorm.ErrRecordNotFound) || !errors.Is(err, session.ErrNotFound) {
+				if !errors.Is(err, gorm.ErrRecordNotFound) && !errors.Is(err, session.ErrNotFound) {
 					logrus.WithError(err).Error("authorized: unable to get user session")
 				}
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "You are not authorized to perform this request."})
