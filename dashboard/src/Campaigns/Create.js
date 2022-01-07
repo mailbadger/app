@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import qs from "qs";
+
 import { Box, Button, Select, FormField, TextInput } from "grommet";
 
 import { mainInstance as axios } from "../axios";
@@ -152,7 +152,7 @@ const CreateCampaign = ({ callApi, hideModal }) => {
           template_name: values.template_name,
         };
 
-        await axios.post(endpoints.postCampaigns, qs.stringify(data));
+        await axios.post(endpoints.postCampaigns, data);
 
         createNotification("Campaign has been created successfully.");
 

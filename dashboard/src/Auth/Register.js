@@ -4,8 +4,6 @@ import { Formik } from 'formik';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { string, object, ref, addMethod, bool } from 'yup';
 import { mainInstance as axios } from '../axios';
-import qs from 'qs';
-
 import equalTo from '../utils/equalTo';
 import { socialAuthEnabled } from '../Auth';
 import SocialButtons from './SocialButtons';
@@ -32,11 +30,11 @@ const registerValidation = object().shape({
 	password_confirm: string()
 		.equalTo(ref('password'), "Passwords don't match")
 		.required('Confirm Password is required'),
-	terms: bool().oneOf([ true ], 'Please accept Terms of Service')
+	terms: bool().oneOf([true], 'Please accept Terms of Service')
 });
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, setFieldValue, errors, isMobile }) => {
-	const [ checked, setChecked ] = useState(false);
+	const [checked, setChecked] = useState(false);
 
 	const handleChangeCheckBtn = (e) => {
 		setChecked(!checked);
@@ -134,7 +132,7 @@ const RegisterForm = ({ isMobile, fetchUser }) => {
 					params.token_response = values.token_response;
 				}
 
-				await axios.post(endpoints.signup, qs.stringify(params));
+				await axios.post(endpoints.signup, params);
 				fetchUser();
 			} catch (error) {
 				setErrors(error.response.data);

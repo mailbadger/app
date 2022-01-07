@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
-import qs from "qs";
+
 import { Add, Trash } from "grommet-icons";
 import { Box, Button, Select, FormField, TextInput, Text } from "grommet";
 
@@ -233,27 +233,27 @@ const CreateSubscriber = ({ callApi, hideModal }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const postForm = async () => {
       try {
-        let data = {
+        let params = {
           email: values.email,
           segments: values.segments,
         };
         if (values.name !== "") {
-          data.name = values.name;
+          params.name = values.name;
         }
         if (values.metadata.length > 0) {
-          data.metadata = values.metadata.reduce((map, meta) => {
+          params.metadata = values.metadata.reduce((map, meta) => {
             map[meta.key] = meta.val;
             return map;
           }, {});
         }
 
         if (values.segments.length > 0) {
-          data.segments = values.segments.map((s) => s.id);
+          params.segments = values.segments.map((s) => s.id);
         }
 
         await axios.post(
           endpoints.postSubscribers,
-          qs.stringify(data, { arrayFormat: "brackets" })
+          params
         );
         createNotification("Subscriber has been created successfully.");
 

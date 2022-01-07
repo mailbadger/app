@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import qs from "qs";
+
 import { Box, Button, FormField, TextInput } from "grommet";
 
 import { mainInstance as axios } from "../axios";
@@ -72,12 +72,14 @@ const EditSegment = ({ setSegment, hideModal, segment }) => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const postForm = async () => {
+      const params = {
+        name: values.name
+      }
+
       try {
         await axios.put(
           endpoints.putGroups(segment.id),
-          qs.stringify({
-            name: values.name,
-          })
+          params
         );
         createNotification("Group has been edited successfully.");
 

@@ -5,7 +5,7 @@ import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons";
 import { mainInstance as axios } from "../axios";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import qs from "qs";
+
 
 import { useApi } from "../hooks";
 import {
@@ -41,7 +41,7 @@ const Row = ({ segment, setShowDelete }) => {
         <AnchorLink
           size="medium"
           fontWeight="bold"
-          to={`/dashboard/segments/${segment.id}`}
+          to={`/dashboard/groups/${segment.id}`}
           label={segment.name}
         />
       </TableCell>
@@ -64,7 +64,7 @@ const Row = ({ segment, setShowDelete }) => {
             (function () {
               switch (option) {
                 case "View":
-                  history.push(`/dashboard/segments/${segment.id}`);
+                  history.push(`/dashboard/groups/${segment.id}`);
                   break;
                 case "Delete":
                   setShowDelete({
@@ -191,12 +191,13 @@ const CreateSegment = ({ callApi, hideModal }) => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const postForm = async () => {
+      const params = {
+        name:values.name
+      }
       try {
         await axios.post(
           endpoints.postGroups,
-          qs.stringify({
-            name: values.name,
-          })
+          params
         );
         createNotification("Group has been created successfully.");
 

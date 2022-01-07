@@ -34,3 +34,13 @@ go get github.com/rakyll/statik
 5. See the `.example.env` file to see which env variables should be set for the application to run.
 
 ## Starting the application
+
+1. Run `docker-compose up -d`
+
+2. Run `make run_mailbadger`
+
+3. Navigate to `/dashboard` directory
+
+4. Run `yarn` (Install packages for the frontend project)
+
+5. Run `yarn start` to start the frontend project

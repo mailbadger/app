@@ -4,7 +4,7 @@ import { FormField, Button, TextInput } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
+
 
 import equalTo from "../utils/equalTo";
 import history from "../history";
@@ -78,11 +78,12 @@ const NewPasswordForm = (props) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
+        const data = {
+          password:values.password
+        }
         await axios.put(
           `${endpoints.forgotPassword}/${params.token}`,
-          qs.stringify({
-            password: values.password,
-          })
+          data
         );
 
         history.replace("/login");

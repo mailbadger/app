@@ -4,7 +4,6 @@ import { FormField, Box } from "grommet";
 import { Formik } from "formik";
 import { string, object, addMethod } from "yup";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
 
 import equalTo from "../utils/equalTo";
 import { FormPropTypes } from "../PropTypes";
@@ -75,12 +74,9 @@ const ForgotPasswordForm = ({ isMobile }) => {
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
       try {
-        await axios.post(
-          endpoints.forgotPassword,
-          qs.stringify({
-            email: values.email,
-          })
-        );
+        await axios.post(endpoints.forgotPassword, {
+          email: values.email,
+        });
       } catch (error) {
         setErrors(error.response.data);
       }

@@ -14,7 +14,7 @@ import { Trash } from "grommet-icons";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
+
 
 import { NotificationsContext } from "../Notifications/context";
 import regions from "../regions/regions.json";
@@ -223,14 +223,15 @@ const AddSesKeysForm = () => {
 
   const handleSubmit = async (values, { setErrors, setSubmitting }) => {
     const addKeys = async () => {
+      const params = {
+        access_key: values.access_key,
+        secret_key: values.secret_key,
+        region: values.region.code,
+      }
       try {
         return await axios.post(
           endpoints.postSesKeys,
-          qs.stringify({
-            access_key: values.access_key,
-            secret_key: values.secret_key,
-            region: values.region.code,
-          })
+          params
         );
 
       } catch (error) {

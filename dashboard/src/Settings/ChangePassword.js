@@ -3,7 +3,7 @@ import { FormField, TextInput, Heading, Box } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object, ref, addMethod } from "yup";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
+
 
 import { NotificationsContext } from "../Notifications/context";
 import equalTo from "../utils/equalTo";
@@ -89,13 +89,14 @@ const ChangePasswordForm = () => {
 
   const handleSubmit = async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
+      const params = { 
+        password: values.password,
+        new_password: values.new_password,
+      }
       try {
         const res = await axios.post(
           endpoints.postChangePassword,
-          qs.stringify({
-            password: values.password,
-            new_password: values.new_password,
-          })
+          params
         );
 
         createNotification(res.data.message);
