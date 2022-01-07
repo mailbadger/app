@@ -3,7 +3,7 @@ import { Box, Heading, Markdown, Select, Text } from "grommet";
 import Uppy from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import { DragDrop, StatusBar } from "@uppy/react";
-import qs from "qs";
+
 
 import "@uppy/core/dist/style.css";
 import "@uppy/drag-drop/dist/style.css";
@@ -96,14 +96,15 @@ const ImportSubscribers = () => {
   });
   uppy.use(AwsS3, {
     async getUploadParameters(file) {
+      const params = {
+        filename: file.name,
+        contentType: file.type,
+        action: "import",
+      }
       try {
         const res = await axios.post(
           endpoints.signInS3,
-          qs.stringify({
-            filename: file.name,
-            contentType: file.type,
-            action: "import",
-          })
+          params
         );
 
         return res.data;
@@ -119,16 +120,14 @@ const ImportSubscribers = () => {
   });
 
   uppy.on("upload-success", async (file) => {
+    const params = {
+      filename: file.name,
+      segments: selected.map((s) => s.id),
+    }
     try {
       const res = await axios.post(
         endpoints.postImportSubscribers,
-        qs.stringify(
-          {
-            filename: file.name,
-            segments: selected.map((s) => s.id),
-          },
-          { arrayFormat: "brackets" }
-        )
+        params
       );
 
       createNotification(res.data.message, "status-ok");

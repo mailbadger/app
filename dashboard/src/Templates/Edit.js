@@ -5,7 +5,7 @@ import { FormField, Box, Heading, ResponsiveContext } from "grommet";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
 import { mainInstance as axios } from "../axios";
-import qs from "qs";
+
 import { ButtonWithLoader, StyledTextInput, StyledSpinner } from "../ui";
 import history from "../history";
 import { useApi } from "../hooks";
@@ -104,15 +104,16 @@ const EditTemplateForm = ({ match }) => {
 
   const handleSubmit = (id) => async (values, { setSubmitting, setErrors }) => {
     const callApi = async () => {
+      const params = {
+        name: values.name,
+        html_part: values.html_part,
+        text_part: values.html_part,
+        subject: values.subject,
+      }
       try {
         await axios.put(
           endpoints.putTemplates(id),
-          qs.stringify({
-            name: values.name,
-            html_part: values.html_part,
-            text_part: values.html_part,
-            subject: values.subject,
-          })
+          params
         );
 
         createNotification("Template has been updated successfully.");

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useReducer } from "react";
 import PropTypes from "prop-types";
 import { Formik, ErrorMessage } from "formik";
 import { string, object } from "yup";
-import qs from "qs";
+
 import { Box, Button, Select, FormField, TextInput, Heading } from "grommet";
 
 import { mainInstance as axios } from "../axios";
@@ -167,7 +167,7 @@ const EditCampaign = ({ id, onSuccess, hideModal }) => {
           template_name: values.template_name,
         };
 
-        await axios.put(endpoints.putCampaigns(id), qs.stringify(data));
+        await axios.put(endpoints.putCampaigns(id), data);
 
         createNotification("Campaign has been updated successfully.");
 

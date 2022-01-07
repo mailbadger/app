@@ -16,7 +16,7 @@ import { Formik, ErrorMessage, FieldArray } from "formik";
 import { string, object, array } from "yup";
 import { Redirect } from "react-router-dom";
 import DOMPurify from "dompurify";
-import qs from "qs";
+
 
 import { useApi } from "../hooks";
 import history from "../history";
@@ -363,25 +363,25 @@ const handleSubmit = (id, setSuccess, createNotification) => async (
 ) => {
   const postForm = async () => {
     try {
-      let data = {
+      let params = {
         from_name: values.from_name,
         source: values.source,
       };
 
       if (values.metadata.length > 0) {
-        data.default_template_data = values.metadata.reduce((map, meta) => {
+        params.default_template_data = values.metadata.reduce((map, meta) => {
           map[meta.key] = meta.val;
           return map;
         }, {});
       }
 
       if (values.segments.length > 0) {
-        data.segment_id = values.segments.map((s) => s.id);
+        params.segment_id = values.segments.map((s) => s.id);
       }
 
       await axios.post(
         endpoints.postCampaignsStart,
-        qs.stringify(data, { arrayFormat: "brackets" })
+        params
       );
       createNotification(
         "The campaign has started. We will begin queueing e-mails shortly."

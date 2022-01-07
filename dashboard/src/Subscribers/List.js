@@ -218,7 +218,7 @@ const getData = (subscribersData, setShowEdit, setShowDelete) => {
                     });
                     break;
                   case "View":
-                    history.push(`/dashboard/segments/${id}`);
+                    history.push(`/dashboard/groups/${id}`);
                     break;
                   case "Delete":
                     setShowDelete({
