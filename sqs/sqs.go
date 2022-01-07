@@ -9,6 +9,13 @@ import (
 	"github.com/mailbadger/app/logger"
 )
 
+const (
+	// CampaignerTopic is the topic used by the campaigner consumer.
+	CampaignerTopic = "SendCampaign"
+	// SenderTopic is the topic used by the sender consumer.
+	SenderTopic = "SendEmail"
+)
+
 // SQSSendReceiveMessageAPI defines the interface for the GetQueueUrl function.
 // We use this interface to test the function using a mocked service.
 type SQSSendReceiveMessageAPI interface {
@@ -66,6 +73,7 @@ func (c Consumer) PollSQS(ctx context.Context) <-chan types.Message {
 			select {
 			case <-ctx.Done():
 				logger.From(ctx).Info("sqs consumer: polling canceled...")
+				close(msgs)
 				return
 			default:
 				gMInput := &sqs.ReceiveMessageInput{
@@ -83,7 +91,8 @@ func (c Consumer) PollSQS(ctx context.Context) <-chan types.Message {
 
 				msgResult, err := getMessages(ctx, c.api, gMInput)
 				if err != nil {
-					logger.From(ctx).WithError(err).Error("sqs consumer: unagle to get messages, aborting...")
+					logger.From(ctx).WithError(err).Error("sqs consumer: unable to get messages, aborting...")
+					close(msgs)
 					return
 				}
 
@@ -125,7 +134,10 @@ func (p Publisher) SendMessage(ctx context.Context, queueUrl *string, body []byt
 
 func (p Publisher) GetQueueURL(ctx context.Context, queueName *string) (*string, error) {
 	out, err := p.api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{QueueName: queueName})
-	return out.QueueUrl, err
+	if err != nil {
+		return nil, err
+	}
+	return out.QueueUrl, nil
 }
 
 const key = "publisher"
