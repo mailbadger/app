@@ -1,6 +1,6 @@
-import { createGlobalStyle } from 'styled-components';
-import PoppinsMedium from './fonts/Poppins/Poppins-Medium.ttf';
-import PoppinsBold from './fonts/Poppins/Poppins-Bold.ttf';
+import { createGlobalStyle } from "styled-components"
+import PoppinsMedium from "./fonts/Poppins/Poppins-Medium.ttf"
+import PoppinsBold from "./fonts/Poppins/Poppins-Bold.ttf"
 
 export default createGlobalStyle`
 @font-face {
@@ -16,4 +16,4 @@ export default createGlobalStyle`
     font-weight: normal;
     font-style: normal;
 }
-`;
+`

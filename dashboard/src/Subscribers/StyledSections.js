@@ -1,18 +1,18 @@
-import { SecondaryButton } from "../ui";
+import { SecondaryButton } from "../ui"
 
-const { default: styled } = require("styled-components");
-const { Box } = require("grommet");
+const { default: styled } = require("styled-components")
+const { Box } = require("grommet")
 
 export const StyledHeaderButtons = styled(Box)`
-  ${(props) =>
-    props.size === "large"
-      ? `
+    ${(props) =>
+        props.size === "large"
+            ? `
     align-self: center;
     align-items: center;
     flex-direction: row;
     margin-left: auto;
     `
-      : `
+            : `
     align-self: start;
     align-items: start;
     flex-direction: column;
@@ -22,24 +22,24 @@ export const StyledHeaderButtons = styled(Box)`
         margin-top: 10px;
     }
 `}
-`;
+`
 
 export const StyledHeaderWrapper = styled(Box)`
-  min-height: auto;
-  flex-direction: ${(props) => (props.size === "large" ? "row" : "column")};
-`;
+    min-height: auto;
+    flex-direction: ${(props) => (props.size === "large" ? "row" : "column")};
+`
 
 export const StyledHeaderTitle = styled(Box)`
-  font-size: 50px;
-  font-weight: bold;
-  ${(props) =>
-    props.size === "large"
-      ? `
+    font-size: 50px;
+    font-weight: bold;
+    ${(props) =>
+        props.size === "large"
+            ? `
 	align-self: center;
 	 `
-      : `align-self: start; 
+            : `align-self: start; 
 	 margin-bottom: 30px;`}
-`;
+`
 
 export const StyledHeaderButton = styled(SecondaryButton)`
 	width: ${(props) => (props.width ? `${props.width}px` : "auto")}
@@ -58,36 +58,36 @@ export const StyledHeaderButton = styled(SecondaryButton)`
 	&:focus {
 		box-shadow:none;
 	}
-`;
+`
 
 export const StyledImportButton = styled(StyledHeaderButton)`
-  background-color: #fadcff;
-  border: none;
-  font-size: 20px;
-  height: 50px;
+    background-color: #fadcff;
+    border: none;
+    font-size: 20px;
+    height: 50px;
 
-  &:hover {
-    background-color: #541388;
-    color: white;
-  }
-`;
+    &:hover {
+        background-color: #541388;
+        color: white;
+    }
+`
 
 export const StyledActions = styled(Box)`
-  flex-direction: row;
-  justify-content: center;
+    flex-direction: row;
+    justify-content: center;
 
-  button {
-    div {
-      div:nth-child(1) {
-        display: none;
-      }
-    }
+    button {
+        div {
+            div:nth-child(1) {
+                display: none;
+            }
+        }
 
-    svg {
-      &:hover,
-      &:focus {
-        stroke: #541388;
-      }
+        svg {
+            &:hover,
+            &:focus {
+                stroke: #541388;
+            }
+        }
     }
-  }
-`;
+`

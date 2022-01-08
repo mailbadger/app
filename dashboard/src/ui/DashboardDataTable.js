@@ -1,26 +1,26 @@
-import React, { useContext } from "react";
-import { Box, DataTable, Button, ResponsiveContext } from "grommet";
-import PropTypes from "prop-types";
-import styled, { css } from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useContext } from "react"
+import { Box, DataTable, Button, ResponsiveContext } from "grommet"
+import PropTypes from "prop-types"
+import styled, { css } from "styled-components"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
-  faChevronRight,
-  faChevronLeft,
-  faSearch,
-} from "@fortawesome/free-solid-svg-icons";
+    faChevronRight,
+    faChevronLeft,
+    faSearch,
+} from "@fortawesome/free-solid-svg-icons"
 
 const StyledWrapper = styled(Box)`
-  min-height: auto;
-  position: relative;
-  border-radius: 12px 12px 0px 0px;
-`;
+    min-height: auto;
+    position: relative;
+    border-radius: 12px 12px 0px 0px;
+`
 
 export const tableHeading = css`
-  height: 50px;
-  margin: 10px 0 0;
-  background-color: rgba(245, 245, 250, 0.4);
-  font-weight: bold;
-`;
+    height: 50px;
+    margin: 10px 0 0;
+    background-color: rgba(245, 245, 250, 0.4);
+    font-weight: bold;
+`
 
 const StyledSearchIcon = styled(FontAwesomeIcon)`
 	position: absolute;
@@ -29,24 +29,24 @@ const StyledSearchIcon = styled(FontAwesomeIcon)`
 	width: 20px;
 	height: 20px;
 }
-`;
+`
 const StyledInput = styled.input`
-  ${tableHeading};
-  border: none;
-  padding-left: 65px;
-  outline: none;
-  font-size: 17px;
-  font-family: "Poppins Bold";
+    ${tableHeading};
+    border: none;
+    padding-left: 65px;
+    outline: none;
+    font-size: 17px;
+    font-family: "Poppins Bold";
 
-  &::-webkit-input-placeholder,
-  &::-moz-placeholder,
-  &:-ms-input-placeholder,
-  &:-moz-placeholder {
-    font-size: 13px;
-    line-height: 1.38;
-    color: #737d8b;
-  }
-`;
+    &::-webkit-input-placeholder,
+    &::-moz-placeholder,
+    &:-ms-input-placeholder,
+    &:-moz-placeholder {
+        font-size: 13px;
+        line-height: 1.38;
+        color: #737d8b;
+    }
+`
 
 const StyledDataTable = styled(DataTable)`
 	background:white;
@@ -129,155 +129,165 @@ const StyledDataTable = styled(DataTable)`
 			}
 		}	
 	}
-`;
+`
 
 const StyledLinkIcon = styled(Box)`
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  border-radius: 6px;
-  background-color: rgba(84, 19, 136, 0.1);
-  justify-content: center;
-  align-items: center;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    border-radius: 6px;
+    background-color: rgba(84, 19, 136, 0.1);
+    justify-content: center;
+    align-items: center;
 
-  ${this} svg {
-    width: 12.1px !important;
-    height: 20px;
-  }
-`;
+    ${this} svg {
+        width: 12.1px !important;
+        height: 20px;
+    }
+`
 
 const StyledButton = styled(Button)`
-  border: none;
-  font-size: 14px;
-  text-align: left;
-  color: #000000;
-  font-weight: normal;
+    border: none;
+    font-size: 14px;
+    text-align: left;
+    color: #000000;
+    font-weight: normal;
 
-  &:focus {
-    box-shadow: 0 0 6px 2px #390099;
-  }
+    &:focus {
+        box-shadow: 0 0 6px 2px #390099;
+    }
 
-  &:first-of-type {
-    padding-right: 5px;
-  }
-`;
+    &:first-of-type {
+        padding-right: 5px;
+    }
+`
 
 export const DashboardWrapper = styled(Box)`
-  padding: ${(props) =>
-    props.contextSize === "large" ? "0 100px 15px" : "20px"};
-  display: table;
-`;
+    padding: ${(props) =>
+        props.contextSize === "large" ? "0 100px 15px" : "20px"};
+    display: table;
+`
 
-export const getColumnSize = (size) => (size === "large" ? "medium" : "small");
+export const getColumnSize = (size) => (size === "large" ? "medium" : "small")
 
 export const DashboardSearchPlaceholder = ({
-  searchInput,
-  handleChange,
-  pad,
+    searchInput,
+    handleChange,
+    pad,
 }) => {
-  const onChange = handleChange ? handleChange : () => {};
-  return (
-    <StyledWrapper background=" white" fill pad={pad ? pad : {}}>
-      <Box
-        background="white"
-        style={{ borderRadius: "12px 12px 0px 0px", position: "relative" }}
-        pad={{ top: "30px" }}
-      >
-        <StyledInput
-          placeholder="Search in this table ..."
-          name="searchInput"
-          value={searchInput || ""}
-          onChange={onChange}
-          label="Search"
-        />
-        <StyledSearchIcon icon={faSearch} />
-      </Box>
-    </StyledWrapper>
-  );
-};
+    const onChange = handleChange ? handleChange : () => {}
+    return (
+        <StyledWrapper background=" white" fill pad={pad ? pad : {}}>
+            <Box
+                background="white"
+                style={{
+                    borderRadius: "12px 12px 0px 0px",
+                    position: "relative",
+                }}
+                pad={{ top: "30px" }}
+            >
+                <StyledInput
+                    placeholder="Search in this table ..."
+                    name="searchInput"
+                    value={searchInput || ""}
+                    onChange={onChange}
+                    label="Search"
+                />
+                <StyledSearchIcon icon={faSearch} />
+            </Box>
+        </StyledWrapper>
+    )
+}
 
 DashboardSearchPlaceholder.propTypes = {
-  searchInput: PropTypes.string,
-  handleChange: PropTypes.func,
-  pad: PropTypes.object,
-};
+    searchInput: PropTypes.string,
+    handleChange: PropTypes.func,
+    pad: PropTypes.object,
+}
 
 export const DashboardDataTable = ({
-  columns,
-  data,
-  isLoading,
-  onClickPrev,
-  onClickNext,
-  prevLinks,
-  nextLinks,
-  searchInput,
-  handleChange,
+    columns,
+    data,
+    isLoading,
+    onClickPrev,
+    onClickNext,
+    prevLinks,
+    nextLinks,
+    searchInput,
+    handleChange,
 }) => {
-  const size = useContext(ResponsiveContext);
+    const size = useContext(ResponsiveContext)
 
-  return (
-    <DashboardWrapper fill="horizontal" contextSize={size} overflow="auto">
-      <DashboardSearchPlaceholder
-        searchInput={searchInput}
-        handleChange={handleChange}
-      />
-      <StyledDataTable
-        contextSize={size}
-        rowProps={{ email: { pad: "large" } }}
-        columns={columns}
-        data={data}
-      />
-      {!isLoading && data.length > 0 ? (
-        <Box
-          width="100%"
-          pad={{ top: "10px", right: "30px", bottom: "15px", left: "0" }}
-          background="white"
-          style={{
-            minHeight: "auto",
-            borderRadius: "0px 0px 12px 12px",
-          }}
-        >
-          <Box direction="row" alignSelf="end">
-            <Box margin={{ right: "small" }} justify="center">
-              <StyledButton
-                icon={
-                  <StyledLinkIcon>
-                    <FontAwesomeIcon icon={faChevronLeft} />
-                  </StyledLinkIcon>
-                }
-                label="Prev"
-                disabled={prevLinks === null}
-                onClick={onClickPrev}
-              />
-            </Box>
-            <Box justify="center" margin={{ right: "0" }}>
-              <StyledButton
-                icon={
-                  <StyledLinkIcon>
-                    <FontAwesomeIcon icon={faChevronRight} />
-                  </StyledLinkIcon>
-                }
-                reverse
-                label="Next"
-                disabled={nextLinks === null}
-                onClick={onClickNext}
-              />
-            </Box>
-          </Box>
-        </Box>
-      ) : null}
-    </DashboardWrapper>
-  );
-};
+    return (
+        <DashboardWrapper fill="horizontal" contextSize={size} overflow="auto">
+            <DashboardSearchPlaceholder
+                searchInput={searchInput}
+                handleChange={handleChange}
+            />
+            <StyledDataTable
+                contextSize={size}
+                rowProps={{ email: { pad: "large" } }}
+                columns={columns}
+                data={data}
+            />
+            {!isLoading && data.length > 0 ? (
+                <Box
+                    width="100%"
+                    pad={{
+                        top: "10px",
+                        right: "30px",
+                        bottom: "15px",
+                        left: "0",
+                    }}
+                    background="white"
+                    style={{
+                        minHeight: "auto",
+                        borderRadius: "0px 0px 12px 12px",
+                    }}
+                >
+                    <Box direction="row" alignSelf="end">
+                        <Box margin={{ right: "small" }} justify="center">
+                            <StyledButton
+                                icon={
+                                    <StyledLinkIcon>
+                                        <FontAwesomeIcon icon={faChevronLeft} />
+                                    </StyledLinkIcon>
+                                }
+                                label="Prev"
+                                disabled={prevLinks === null}
+                                onClick={onClickPrev}
+                            />
+                        </Box>
+                        <Box justify="center" margin={{ right: "0" }}>
+                            <StyledButton
+                                icon={
+                                    <StyledLinkIcon>
+                                        <FontAwesomeIcon
+                                            icon={faChevronRight}
+                                        />
+                                    </StyledLinkIcon>
+                                }
+                                reverse
+                                label="Next"
+                                disabled={nextLinks === null}
+                                onClick={onClickNext}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+            ) : null}
+        </DashboardWrapper>
+    )
+}
 
 DashboardDataTable.propTypes = {
-  columns: PropTypes.array,
-  data: PropTypes.array,
-  isLoading: PropTypes.bool,
-  onClickPrev: PropTypes.func,
-  onClickNext: PropTypes.func,
-  prevLinks: PropTypes.string || undefined,
-  nextLinks: PropTypes.string || undefined,
-  searchInput: PropTypes.string,
-  handleChange: PropTypes.func,
-};
+    columns: PropTypes.array,
+    data: PropTypes.array,
+    isLoading: PropTypes.bool,
+    onClickPrev: PropTypes.func,
+    onClickNext: PropTypes.func,
+    prevLinks: PropTypes.string || undefined,
+    nextLinks: PropTypes.string || undefined,
+    searchInput: PropTypes.string,
+    handleChange: PropTypes.func,
+}
