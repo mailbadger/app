@@ -16,7 +16,6 @@ import (
 	"github.com/mailbadger/app/services/exporters"
 	reportsvc "github.com/mailbadger/app/services/reports"
 	subscrsvc "github.com/mailbadger/app/services/subscribers"
-	"github.com/mailbadger/app/services/subscribers/metric"
 	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/session"
 	awssqs "github.com/mailbadger/app/sqs"
@@ -35,7 +34,6 @@ var svcSet = wire.NewSet(
 	wire.Bind(new(awssqs.SendReceiveMessageAPI), new(*sqs.Client)),
 	awssqs.NewPublisher,
 	wire.Bind(new(awssqs.PublisherAPI), new(awssqs.Publisher)),
-	metric.NewCron,
 	scheduler.New,
 	templatesvc.From,
 	boundarysvc.New,

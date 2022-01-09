@@ -35,10 +35,6 @@ func main() {
 	})
 
 	g.Go(func() error {
-		return app.subscrmetrics.Start(ctx, time.Hour)
-	})
-
-	g.Go(func() error {
 		return app.campaignsched.Start(ctx, 2*time.Minute)
 	})
 

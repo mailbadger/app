@@ -71,10 +71,6 @@ func TestSegment(t *testing.T) {
 	err = store.DeleteSegment(1, 1)
 	assert.Nil(t, err)
 
-	// Test delete all segments for a user
-	err = store.DeleteAllSegmentsForUser(1)
-	assert.Nil(t, err)
-
 	p = NewPaginationCursor("/api/segments", 10)
 	err = store.GetSegments(1, p)
 	assert.Nil(t, err)

@@ -18,7 +18,6 @@ import (
 	"github.com/mailbadger/app/services/exporters"
 	"github.com/mailbadger/app/services/reports"
 	"github.com/mailbadger/app/services/subscribers"
-	"github.com/mailbadger/app/services/subscribers/metric"
 	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/sqs"
@@ -61,9 +60,8 @@ func initApp(ctx context.Context, conf config.Config) (app, error) {
 	}
 	api := routes.From(sessionSession, storageStorage, compiler, publisher, s3S3, sender, service, boundariesService, subscribersService, reportsService, campaignerQueueURL, conf)
 	serverServer := server.From(api, conf)
-	cron := metric.NewCron(storageStorage)
 	schedulerScheduler := scheduler.New(storageStorage, publisher, campaignerQueueURL)
-	mainApp := newApp(serverServer, cron, schedulerScheduler)
+	mainApp := newApp(serverServer, schedulerScheduler)
 	return mainApp, nil
 }
 
@@ -71,18 +69,15 @@ func initApp(ctx context.Context, conf config.Config) (app, error) {
 
 type app struct {
 	srv           *server.Server
-	subscrmetrics *metric.Cron
 	campaignsched *scheduler.Scheduler
 }
 
 func newApp(
 	srv *server.Server,
-	subscrmetrics *metric.Cron,
 	campaignsched *scheduler.Scheduler,
 ) app {
 	return app{
 		srv:           srv,
-		subscrmetrics: subscrmetrics,
 		campaignsched: campaignsched,
 	}
 }

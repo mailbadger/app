@@ -41,12 +41,12 @@ func (s *service) ImportSubscribersFromFile(
 	segments []entities.Segment,
 	r io.Reader,
 ) (err error) {
-
 	reader := csv.NewReader(r)
+
 	header, err := reader.Read()
 	if err != nil {
 		if err == io.EOF {
-			return fmt.Errorf("importer: empty file : %w", err)
+			return fmt.Errorf("importer: empty file: %w", err)
 		}
 
 		return fmt.Errorf("importer: read header: %w", err)
@@ -157,7 +157,7 @@ func (s *service) RemoveSubscribersFromFile(
 
 		email := strings.TrimSpace(line[0])
 		err = s.db.DeleteSubscriberByEmail(email, userID)
-		if err != nil {
+		if err != nil && !errors.Is(gorm.ErrRecordNotFound, err) {
 			return fmt.Errorf("bulkremover: delete subscriber: %w", err)
 		}
 	}

@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
+	"github.com/jinzhu/now"
 	"github.com/mailbadger/app/entities"
 )
 
@@ -147,18 +149,33 @@ func (db *store) CreateSubscriber(s *entities.Subscriber) error {
 		}
 	}()
 
-	if err := tx.Create(s).Error; err != nil {
+	err := tx.Create(s).Error
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: create subscriber: %w", err)
 	}
 
-	if err := tx.Create(&entities.SubscriberEvent{
+	err = tx.Create(&entities.SubscriberEvent{
 		UserID:       s.UserID,
 		SubscriberID: s.ID,
 		EventType:    entities.SubscriberEventTypeCreated,
-	}).Error; err != nil {
+	}).Error
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: add subscriber event (created): %w", err)
+	}
+
+	err = tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "datetime"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{"created": gorm.Expr("created + 1")}),
+	}).Create(&entities.SubscriberMetrics{
+		UserID:   s.UserID,
+		Created:  1,
+		Datetime: now.BeginningOfHour(),
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: add subscriber metric: %w", err)
 	}
 
 	return tx.Commit().Error
@@ -193,6 +210,7 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 	if err != nil {
 		return err
 	}
+
 	tx := db.Begin()
 
 	defer func() {
@@ -201,20 +219,35 @@ func (db *store) DeactivateSubscriber(userID int64, email string) error {
 		}
 	}()
 
-	if err := tx.Model(&entities.Subscriber{}).
+	err = tx.Model(&entities.Subscriber{}).
 		Where("user_id = ? AND email = ?", userID, email).
-		Update("active", false).Error; err != nil {
+		Update("active", false).Error
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: deactivate subscriber: %w", err)
 	}
 
-	if err := tx.Create(&entities.SubscriberEvent{
+	err = tx.Create(&entities.SubscriberEvent{
 		UserID:       userID,
 		SubscriberID: s.ID,
 		EventType:    entities.SubscriberEventTypeUnsubscribed,
-	}).Error; err != nil {
+	}).Error
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: add subscriber event (unsubscribed): %w", err)
+	}
+
+	err = tx.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "datetime"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{"unsubscribed": gorm.Expr("unsubscribed + 1")}),
+	}).Create(&entities.SubscriberMetrics{
+		UserID:       userID,
+		Unsubscribed: 1,
+		Datetime:     now.BeginningOfHour(),
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("subscription store: add subscriber metric (unsubscribed): %w", err)
 	}
 
 	return tx.Commit().Error
@@ -235,25 +268,41 @@ func (db *store) DeleteSubscriber(id, userID int64) error {
 		}
 	}()
 
-	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
+	err = tx.Model(s).Association("Segments").Clear()
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: delete subscriber's segment relation: %w", err)
 	}
 
-	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
+	err = tx.Where("user_id = ?", userID).Delete(s).Error
+	if err != nil {
 		tx.Rollback()
 		return fmt.Errorf("subscription store: delete subscriber: %w", err)
 	}
 
 	if s.Active {
 		//only create unsubscribe event if the subscriber did not unsubscribe before deleting them.
-		if err := tx.Create(&entities.SubscriberEvent{
+		err = tx.Create(&entities.SubscriberEvent{
 			UserID:       userID,
 			SubscriberID: s.ID,
 			EventType:    entities.SubscriberEventTypeUnsubscribed,
-		}).Error; err != nil {
+		}).Error
+		if err != nil {
 			tx.Rollback()
 			return fmt.Errorf("subscription store: add subscriber event (deleted): %w", err)
+		}
+
+		err = tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_id"}, {Name: "datetime"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{"unsubscribed": gorm.Expr("unsubscribed + 1")}),
+		}).Create(&entities.SubscriberMetrics{
+			UserID:       userID,
+			Unsubscribed: 1,
+			Datetime:     now.BeginningOfHour(),
+		}).Error
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("subscription store: add subscriber metric (unsubscribed): %w", err)
 		}
 	}
 
@@ -267,36 +316,12 @@ func (db *store) DeleteSubscriberByEmail(email string, userID int64) error {
 		return err
 	}
 
-	tx := db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	if err := tx.Model(s).Association("Segments").Clear(); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Where("user_id = ?", userID).Delete(s).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit().Error
+	return db.DeleteSubscriber(s.ID, userID)
 }
 
 // SeekSubscribersByUserID fetches chunk of subscribers with id greater than nextID
 func (db *store) SeekSubscribersByUserID(userID, nextID, limit int64) ([]entities.Subscriber, error) {
 	var s []entities.Subscriber
 	err := db.Where("user_id = ? and id > ?", userID, nextID).Limit(int(limit)).Find(&s).Error
-	return s, err
-}
-
-// GetAllSubscribersForUser fetches all subscribers for a user
-func (db *store) GetAllSubscribersForUser(userID int64) ([]entities.Subscriber, error) {
-	var s []entities.Subscriber
-	err := db.Where("user_id = ?", userID).Find(&s).Error
 	return s, err
 }

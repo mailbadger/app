@@ -26,8 +26,3 @@ func (db *store) GetSendLogByUUID(id string) (*entities.SendLog, error) {
 	err := db.Where("id = ?", id).First(log).Error
 	return log, err
 }
-
-// DeleteAllSendLogsForUser deletes all send log records for user
-func (db *store) DeleteAllSendLogsForUser(userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(&entities.SendLog{}).Error
-}

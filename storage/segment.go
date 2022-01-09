@@ -89,8 +89,3 @@ func (db *store) AppendSubscribers(s *entities.Segment) error {
 func (db *store) DetachSubscribers(s *entities.Segment) error {
 	return db.Model(s).Association("Subscribers").Delete(s.Subscribers)
 }
-
-// DeleteAllSegmentsForUser deletes all subscribers for user
-func (db *store) DeleteAllSegmentsForUser(userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(&entities.Segment{}).Error
-}

@@ -1,41 +1,12 @@
 -- +migrate Up
-CREATE TABLE IF NOT EXISTS `jobs` (
-    `id` INTEGER UNSIGNED PRIMARY KEY AUTO_INCREMENT NOT NULL,
-    `name` VARCHAR(30) UNIQUE NOT NULL,
-    `last_processed_date` DATE NOT NULL,
-    `status` VARCHAR(30) NOT NULL,
-    `created_at` DATETIME(6) NOT NULL,
-    `updated_at` DATETIME(6) NOT NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-INSERT INTO
-    `jobs` (
-        `name`,
-        `last_processed_date`,
-        `status`,
-        `created_at`,
-        `updated_at`
-    )
-VALUES
-    (
-        "subscriber_metrics",
-        "2006-01-02",
-        "idle",
-        NOW(),
-        NOW()
-    );
-
 CREATE TABLE IF NOT EXISTS `subscriber_metrics` (
-    `id` INTEGER UNSIGNED AUTO_INCREMENT UNIQUE NOT NULL,
     `user_id` INTEGER UNSIGNED NOT NULL,
     `created` INTEGER UNSIGNED NOT NULL,
     `unsubscribed` INTEGER UNSIGNED NOT NULL,
-    `date` DATE NOT NULL,
-    PRIMARY KEY (`user_id`, `date`),
+    `datetime` DATETIME NOT NULL,
+    PRIMARY KEY (`user_id`, `datetime`),
     FOREIGN KEY (`user_id`) REFERENCES users (`id`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- +migrate Down
-DROP TABLE `processes`;
-
-DROP TABLE `accumulated_subscribes`;
+DROP TABLE `subscriber_metrics`;

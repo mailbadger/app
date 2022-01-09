@@ -60,8 +60,4 @@ func TestSendLogs(t *testing.T) {
 	n, err := store.CountLogsByStatus(entities.SendLogStatusFailed)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), n)
-
-	// Test delete all segments for a user
-	err = store.DeleteAllSendsForUser(1)
-	assert.Nil(t, err)
 }
