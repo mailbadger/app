@@ -74,7 +74,7 @@ func (s *service) ImportSubscribersFromFile(
 		email := strings.TrimSpace(line[0])
 		name := strings.TrimSpace(line[1])
 
-		_, err = storage.GetSubscriberByEmail(ctx, email, userID)
+		_, err = s.db.GetSubscriberByEmail(email, userID)
 		if err == nil {
 			continue
 		} else if errors.Is(err, gorm.ErrRecordNotFound) {

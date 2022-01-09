@@ -139,9 +139,6 @@ func (api API) Handler() http.Handler {
 	handler.Use(middleware.RequestID())
 	handler.Use(middleware.Logger())
 	handler.Use(sessions.Sessions("mbsess", api.sess.CookieStore))
-	handler.Use(middleware.Storage(api.store))
-	handler.Use(middleware.S3Client(api.s3Client))
-	handler.Use(middleware.SQSPublisher(api.sqsPublisher))
 
 	err := templates.Init(handler)
 	if err != nil {
@@ -284,7 +281,7 @@ func (api API) SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc
 // other optional middlewares that we set.
 func (api API) SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.HandlerFunc) {
 	authorized := handler.Group("/api")
-	authorized.Use(middleware.Authorized(api.sess, api.opaCompiler))
+	authorized.Use(middleware.Authorized(api.sess, api.store, api.opaCompiler))
 	authorized.Use(middlewares...)
 
 	authorized.POST("/logout", actions.PostLogout(api.sess))

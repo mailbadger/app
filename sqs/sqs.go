@@ -6,7 +6,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/logger"
 )
@@ -172,26 +171,6 @@ func (p Publisher) GetQueueURL(ctx context.Context, queueName *string) (*string,
 		return nil, err
 	}
 	return out.QueueUrl, nil
-}
-
-const key = "publisher"
-
-// SetPublisherToContext sets the producer to the context
-func SetPublisherToContext(ctx *gin.Context, pub PublisherAPI) {
-	ctx.Set(key, pub)
-}
-
-// GetPublisherFromContext returns the Producer associated with the context
-func GetPublisherFromContext(ctx context.Context) PublisherAPI {
-	return ctx.Value(key).(PublisherAPI)
-}
-
-func SendMessage(ctx context.Context, queueUrl *string, body []byte) error {
-	return GetPublisherFromContext(ctx).SendMessage(ctx, queueUrl, body)
-}
-
-func GetQueueURL(ctx context.Context, queueName *string) (*string, error) {
-	return GetPublisherFromContext(ctx).GetQueueURL(ctx, queueName)
 }
 
 func GetCampaignerQueueURL(ctx context.Context, api SendReceiveMessageAPI) (CampaignerQueueURL, error) {

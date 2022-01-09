@@ -40,13 +40,17 @@ func GetUser(c *gin.Context) *entities.User {
 
 // Authorized is a middleware that checks if the user is authorized to do the
 // requested action.
-func Authorized(sess session.Session, compiler *ast.Compiler) gin.HandlerFunc {
+func Authorized(
+	sess session.Session,
+	storage storage.Storage,
+	compiler *ast.Compiler,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var u *entities.User
 
 		authHeader := c.GetHeader(APIKeyAuth)
 		if authHeader != "" {
-			key, err := storage.GetAPIKey(c, authHeader)
+			key, err := storage.GetAPIKey(authHeader)
 			if err != nil {
 				logger.From(c).WithError(err).Error("unable to fetch api key")
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "You are not authorized to perform this request."})
