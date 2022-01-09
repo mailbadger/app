@@ -11,10 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/open-policy-agent/opa/ast"
 
+	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
 	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/routes"
+	"github.com/mailbadger/app/services/boundaries"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers"
+	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
@@ -31,10 +37,40 @@ func setup(
 	sess session.Session,
 	s3Mock *s3.MockS3Client,
 	pub sqs.PublisherAPI,
+	emailSender emails.Sender,
+	templatesvc templates.Service,
+	boundarysvc boundaries.Service,
+	subscrsvc subscribers.Service,
+	reportsvc reports.Service,
 	compiler *ast.Compiler,
+	enableSignup bool,
+	verifyEmail bool,
 ) *httpexpect.Expect {
 	mode.SetMode("test")
-	api := routes.New(sess, s, compiler, pub, s3Mock, "foobar")
+
+	queueURL := "http://example.com/campaigns-queue"
+	api := routes.New(
+		sess,
+		s,
+		compiler,
+		pub,
+		s3Mock,
+		emailSender,
+		templatesvc,
+		boundarysvc,
+		subscrsvc,
+		reportsvc,
+		&queueURL,
+		"/var/www/app",       // app dir
+		"http://example.com", // app url
+		"files-bucket",
+		enableSignup,
+		verifyEmail,
+		"",                                 // recaptcha secret
+		"secretexmplkeythatis32characters", // unsubscribe token secret
+		"test@example.com",                 // system email
+		config.Social{},
+	)
 
 	handler := api.Handler()
 

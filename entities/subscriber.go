@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
@@ -41,8 +40,8 @@ func (s *Subscriber) GetMetadata() (map[string]string, error) {
 
 // GetUnsubscribeURL generates and signs a token based on the subscriber ID
 // and creates an unsubscribe url with the email and token as query parameters.
-func (s *Subscriber) GetUnsubscribeURL(uuid string) (string, error) {
-	t, err := s.GenerateUnsubscribeToken(os.Getenv("UNSUBSCRIBE_SECRET"))
+func (s *Subscriber) GetUnsubscribeURL(uuid, secret, appURL string) (string, error) {
+	t, err := s.GenerateUnsubscribeToken(secret)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +50,7 @@ func (s *Subscriber) GetUnsubscribeURL(uuid string) (string, error) {
 	params.Add("uuid", uuid)
 	params.Add("t", t)
 
-	return os.Getenv("APP_URL") + "/unsubscribe.html?" + params.Encode(), nil
+	return appURL + "/unsubscribe.html?" + params.Encode(), nil
 }
 
 // GenerateUnsubscribeToken generates and signs a new unsubscribe token with the given key, from the

@@ -21,32 +21,34 @@ var (
 	ErrLimitReached         = errors.New("report limit reached")
 )
 
-// ReportService represents all report functionalities
-type ReportService interface {
-	GenerateExportReport(c context.Context, userID int64, report *entities.Report) (*entities.Report, error)
+// Service represents all report functionalities
+type Service interface {
+	GenerateExportReport(c context.Context, userID int64, report *entities.Report, bucket string) (*entities.Report, error)
 	CreateExportReport(c context.Context, userID int64, resource string, note string, date time.Time) (*entities.Report, error)
 }
 
 type reportService struct {
 	exporter exporters.Exporter
+	storage  storage.Storage
 }
 
-// NewReportService represents constructor for ReportService
-func NewReportService(exporter exporters.Exporter) ReportService {
+// New represents constructor for ReportService
+func New(exporter exporters.Exporter, storage storage.Storage) Service {
 	return &reportService{
 		exporter: exporter,
+		storage:  storage,
 	}
 }
 
 // GenerateExportReport starts the resources export method
-func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report) (*entities.Report, error) {
+func (r *reportService) GenerateExportReport(c context.Context, userID int64, report *entities.Report, bucket string) (*entities.Report, error) {
 	var updateErr error
-	err := r.exporter.Export(c, userID, report)
+	err := r.exporter.Export(c, userID, report, bucket)
 	if err != nil {
 		// report failed
 		report.Status = entities.StatusFailed
 
-		updateErr = storage.UpdateReport(c, report)
+		updateErr = r.storage.UpdateReport(report)
 		if updateErr != nil {
 			return nil, fmt.Errorf("update report: %w", updateErr)
 		}
@@ -58,7 +60,7 @@ func (r *reportService) GenerateExportReport(c context.Context, userID int64, re
 	report.Status = entities.StatusDone
 
 	// updating the report
-	updateErr = storage.UpdateReport(c, report)
+	updateErr = r.storage.UpdateReport(report)
 	if updateErr != nil {
 		return nil, fmt.Errorf("update report: %w", updateErr)
 	}
@@ -68,11 +70,11 @@ func (r *reportService) GenerateExportReport(c context.Context, userID int64, re
 
 // CreateExportReport creates export report
 func (r *reportService) CreateExportReport(c context.Context, userID int64, resource, note string, date time.Time) (*entities.Report, error) {
-	if isAnotherReportRunning(c, userID) {
+	if r.isAnotherReportRunning(c, userID) {
 		return nil, ErrAnotherReportRunning
 	}
 
-	limit, err := isLimitExceeded(c, userID, date)
+	limit, err := r.isLimitExceeded(c, userID, date)
 	if err != nil {
 		return nil, fmt.Errorf("is limit exceeded check error: %w", err)
 	}
@@ -89,7 +91,7 @@ func (r *reportService) CreateExportReport(c context.Context, userID int64, reso
 		Note:     note,
 	}
 
-	err = storage.CreateReport(c, report)
+	err = r.storage.CreateReport(report)
 	if err != nil {
 		return nil, fmt.Errorf("create report: %w", err)
 	}
@@ -103,14 +105,14 @@ func generateFilename(resource string, date time.Time) string {
 }
 
 // isAnotherReportRunning returns true if there is report in progress for a user or false if all are done
-func isAnotherReportRunning(c context.Context, userID int64) bool {
-	_, err := storage.GetRunningReportForUser(c, userID)
+func (r *reportService) isAnotherReportRunning(c context.Context, userID int64) bool {
+	_, err := r.storage.GetRunningReportForUser(userID)
 	return err == nil
 }
 
 // isLimitExceeded returns true if there are less than maxReports reports per day
-func isLimitExceeded(c context.Context, userID int64, time time.Time) (bool, error) {
-	n, err := storage.GetNumberOfReportsForDate(c, userID, time)
+func (r *reportService) isLimitExceeded(c context.Context, userID int64, time time.Time) (bool, error) {
+	n, err := r.storage.GetNumberOfReportsForDate(userID, time)
 	if err != nil {
 		return false, err
 	}

@@ -9,7 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/actions"
 	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/services/boundaries"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers"
+	templatesvc "github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
@@ -24,7 +29,24 @@ type API struct {
 	opaCompiler  *ast.Compiler
 	sqsPublisher sqs.PublisherAPI
 	s3Client     s3iface.S3API
-	appDir       string
+	emailSender  emails.Sender
+	templatesvc  templatesvc.Service
+	boundarysvc  boundaries.Service
+	subscrsvc    subscribers.Service
+	reportsvc    reports.Service
+
+	campaignerQueueURL sqs.CampaignerQueueURL
+	appDir             string
+	appURL             string
+
+	filesBucket string
+
+	enableSignup           bool
+	verifyEmail            bool
+	recaptchaSecret        string
+	unsubscribeTokenSecret string
+	systemEmail            string
+	social                 config.Social
 }
 
 func From(
@@ -33,6 +55,12 @@ func From(
 	opaCompiler *ast.Compiler,
 	sqsPublisher sqs.PublisherAPI,
 	s3Client s3iface.S3API,
+	emailSender emails.Sender,
+	templatesvc templatesvc.Service,
+	boundarysvc boundaries.Service,
+	subscrsvc subscribers.Service,
+	reportsvc reports.Service,
+	campaignerQueueURL sqs.CampaignerQueueURL,
 	conf config.Config,
 ) API {
 	return New(
@@ -41,7 +69,21 @@ func From(
 		opaCompiler,
 		sqsPublisher,
 		s3Client,
+		emailSender,
+		templatesvc,
+		boundarysvc,
+		subscrsvc,
+		reportsvc,
+		campaignerQueueURL,
 		conf.Server.AppDir,
+		conf.Server.AppURL,
+		conf.Storage.S3.FilesBucket,
+		conf.Server.EnableSignup,
+		conf.Server.VerifyEmailOnSignup,
+		conf.Server.RecaptchaSecret,
+		conf.Server.UnsubscribeSecret,
+		conf.Server.SystemEmailSource,
+		conf.Social,
 	)
 }
 func New(
@@ -50,15 +92,43 @@ func New(
 	opaCompiler *ast.Compiler,
 	sqsPublisher sqs.PublisherAPI,
 	s3Client s3iface.S3API,
+	emailSender emails.Sender,
+	templatesvc templatesvc.Service,
+	boundarysvc boundaries.Service,
+	subscrsvc subscribers.Service,
+	reportsvc reports.Service,
+	campaignerQueueURL sqs.CampaignerQueueURL,
 	appDir string,
+	appURL string,
+	filesBucket string,
+	enableSignup bool,
+	verifyEmail bool,
+	recaptchaSecret string,
+	unsubscribeTokenSecret string,
+	systemEmail string,
+	social config.Social,
 ) API {
 	return API{
-		sess:         sess,
-		store:        store,
-		opaCompiler:  opaCompiler,
-		sqsPublisher: sqsPublisher,
-		s3Client:     s3Client,
-		appDir:       appDir,
+		sess:                   sess,
+		store:                  store,
+		opaCompiler:            opaCompiler,
+		sqsPublisher:           sqsPublisher,
+		s3Client:               s3Client,
+		emailSender:            emailSender,
+		templatesvc:            templatesvc,
+		boundarysvc:            boundarysvc,
+		subscrsvc:              subscrsvc,
+		reportsvc:              reportsvc,
+		campaignerQueueURL:     campaignerQueueURL,
+		appDir:                 appDir,
+		appURL:                 appURL,
+		filesBucket:            filesBucket,
+		enableSignup:           enableSignup,
+		verifyEmail:            verifyEmail,
+		recaptchaSecret:        recaptchaSecret,
+		unsubscribeTokenSecret: unsubscribeTokenSecret,
+		systemEmail:            systemEmail,
+		social:                 social,
 	}
 }
 
@@ -133,19 +203,80 @@ func (api API) SetGuestRoutes(handler *gin.Engine, middleware ...gin.HandlerFunc
 	guest := handler.Group("/api")
 	guest.Use(middleware...)
 
-	guest.GET("/auth/github/callback", actions.GithubCallback)
-	guest.GET("/auth/github", actions.GetGithubAuth)
-	guest.GET("/auth/google/callback", actions.GoogleCallback)
-	guest.GET("/auth/google", actions.GetGoogleAuth)
-	guest.GET("/auth/facebook/callback", actions.FacebookCallback)
-	guest.GET("/auth/facebook", actions.GetFacebookAuth)
+	guest.GET("/auth/github/callback",
+		actions.GithubCallback(
+			api.store,
+			api.sess,
+			api.social.Github.ClientID,
+			api.social.Github.ClientSecret,
+			api.appURL,
+		),
+	)
+	guest.GET("/auth/github", actions.GetGithubAuth(api.social.Github.ClientID))
+
+	guest.GET("/auth/google/callback",
+		actions.GoogleCallback(
+			api.store,
+			api.sess,
+			api.social.Google.ClientID,
+			api.social.Google.ClientSecret,
+			api.appURL,
+		),
+	)
+	guest.GET("/auth/google",
+		actions.GetGoogleAuth(
+			api.social.Google.ClientID,
+			api.social.Google.ClientSecret,
+			api.appURL,
+		),
+	)
+
+	guest.GET("/auth/facebook",
+		actions.GetFacebookAuth(
+			api.social.Facebook.ClientID,
+			api.appURL,
+		),
+	)
+	guest.GET("/auth/facebook/callback",
+		actions.FacebookCallback(
+			api.store,
+			api.sess,
+			api.social.Facebook.ClientID,
+			api.social.Facebook.ClientSecret,
+			api.appURL,
+		))
+
 	guest.POST("/authenticate", actions.PostAuthenticate(api.store, api.sess))
-	guest.POST("/forgot-password", actions.PostForgotPassword)
-	guest.PUT("/forgot-password/:token", actions.PutForgotPassword)
-	guest.PUT("/verify-email/:token", actions.PutVerifyEmail)
-	guest.POST("/signup", actions.PostSignup)
-	guest.POST("/hooks/:uuid", actions.HandleHook)
-	guest.POST("/unsubscribe", actions.PostUnsubscribe)
+	guest.POST("/forgot-password",
+		actions.PostForgotPassword(
+			api.store,
+			api.emailSender,
+			api.systemEmail,
+			api.appURL,
+		),
+	)
+	guest.PUT("/forgot-password/:token", actions.PutForgotPassword(api.store))
+	guest.PUT("/verify-email/:token", actions.PutVerifyEmail(api.store))
+	guest.POST("/signup",
+		actions.PostSignup(
+			api.store,
+			api.sess,
+			api.emailSender,
+			api.enableSignup,
+			api.verifyEmail,
+			api.recaptchaSecret,
+			api.systemEmail,
+			api.appURL,
+		),
+	)
+	guest.POST("/hooks/:uuid", actions.HandleHook(api.store))
+	guest.POST("/unsubscribe",
+		actions.PostUnsubscribe(
+			api.store,
+			api.unsubscribeTokenSecret,
+			api.appURL,
+		),
+	)
 }
 
 // SetAuthorizedRoutes sets the authorized routes to the gin engine handler along with
@@ -156,77 +287,83 @@ func (api API) SetAuthorizedRoutes(handler *gin.Engine, middlewares ...gin.Handl
 	authorized.Use(middleware.Authorized(api.sess, api.opaCompiler))
 	authorized.Use(middlewares...)
 
-	authorized.POST("/logout", actions.PostLogout)
+	authorized.POST("/logout", actions.PostLogout(api.sess))
 	{
 		users := authorized.Group("/users")
 		{
 			users.GET("/me", actions.GetMe)
-			users.POST("/password", actions.ChangePassword)
+			users.POST("/password", actions.ChangePassword(api.store))
 		}
 
 		templates := authorized.Group("/templates")
 		{
-			templates.GET("", middleware.PaginateWithCursor(), actions.GetTemplates)
-			templates.GET("/:id", actions.GetTemplate)
-			templates.POST("", actions.PostTemplate)
-			templates.PUT("/:id", actions.PutTemplate)
-			templates.DELETE("/:id", actions.DeleteTemplate)
+			templates.GET("", middleware.PaginateWithCursor(), actions.GetTemplates(api.templatesvc))
+			templates.GET("/:id", actions.GetTemplate(api.templatesvc))
+			templates.POST("", actions.PostTemplate(api.templatesvc, api.store))
+			templates.PUT("/:id", actions.PutTemplate(api.templatesvc, api.store))
+			templates.DELETE("/:id", actions.DeleteTemplate(api.templatesvc))
 		}
 
 		campaigns := authorized.Group("/campaigns")
 		{
-			campaigns.GET("", middleware.PaginateWithCursor(), actions.GetCampaigns)
-			campaigns.GET("/:id", actions.GetCampaign)
-			campaigns.POST("", actions.PostCampaign)
-			campaigns.PUT("/:id", actions.PutCampaign)
-			campaigns.DELETE("/:id", actions.DeleteCampaign)
-			campaigns.POST("/:id/start", actions.StartCampaign)
-			campaigns.GET("/:id/opens", middleware.PaginateWithCursor(), actions.GetCampaignOpens)
-			campaigns.GET("/:id/stats", actions.GetCampaignStats)
-			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats)
-			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints)
-			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces)
-			campaigns.PATCH("/:id/schedule", actions.PatchCampaignSchedule)
-			campaigns.DELETE("/:id/schedule", actions.DeleteCampaignSchedule)
+			campaigns.GET("", middleware.PaginateWithCursor(), actions.GetCampaigns(api.store))
+			campaigns.GET("/:id", actions.GetCampaign(api.store))
+			campaigns.POST("", actions.PostCampaign(api.boundarysvc, api.store))
+			campaigns.PUT("/:id", actions.PutCampaign(api.store))
+			campaigns.DELETE("/:id", actions.DeleteCampaign(api.store))
+			campaigns.POST("/:id/start", actions.StartCampaign(api.store, api.sqsPublisher, api.campaignerQueueURL))
+			campaigns.GET("/:id/opens", middleware.PaginateWithCursor(), actions.GetCampaignOpens(api.store))
+			campaigns.GET("/:id/stats", actions.GetCampaignStats(api.store))
+			campaigns.GET("/:id/clicks", actions.GetCampaignClicksStats(api.store))
+			campaigns.GET("/:id/complaints", middleware.PaginateWithCursor(), actions.GetCampaignComplaints(api.store))
+			campaigns.GET("/:id/bounces", middleware.PaginateWithCursor(), actions.GetCampaignBounces(api.store))
+			campaigns.PATCH("/:id/schedule", actions.PatchCampaignSchedule(api.store))
+			campaigns.DELETE("/:id/schedule", actions.DeleteCampaignSchedule(api.store))
 		}
 
 		segments := authorized.Group("/segments")
 		{
-			segments.GET("", middleware.PaginateWithCursor(), actions.GetSegments)
-			segments.GET("/:id", actions.GetSegment)
-			segments.POST("", actions.PostSegment)
-			segments.PUT("/:id", actions.PutSegment)
-			segments.DELETE("/:id", actions.DeleteSegment)
-			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers)
-			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers)
-			segments.POST("/:id/subscribers/detach", actions.DetachSegmentSubscribers)
-			segments.DELETE("/:id/subscribers/:sub_id", actions.DetachSubscriber)
+			segments.GET("", middleware.PaginateWithCursor(), actions.GetSegments(api.store))
+			segments.GET("/:id", actions.GetSegment(api.store))
+			segments.POST("", actions.PostSegment(api.store))
+			segments.PUT("/:id", actions.PutSegment(api.store))
+			segments.DELETE("/:id", actions.DeleteSegment(api.store))
+			segments.PUT("/:id/subscribers", actions.PutSegmentSubscribers(api.store))
+			segments.GET("/:id/subscribers", middleware.PaginateWithCursor(), actions.GetSegmentsubscribers(api.store))
+			segments.POST("/:id/subscribers/detach", actions.DetachSegmentSubscribers(api.store))
+			segments.DELETE("/:id/subscribers/:sub_id", actions.DetachSubscriber(api.store))
 		}
 
 		subscribers := authorized.Group("/subscribers")
 		{
-			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers)
-			subscribers.GET("/:id", actions.GetSubscriber)
-			subscribers.GET("/export/download", actions.DownloadSubscribersReport)
-			subscribers.POST("", actions.PostSubscriber)
-			subscribers.PUT("/:id", actions.PutSubscriber)
-			subscribers.DELETE("/:id", actions.DeleteSubscriber)
-			subscribers.POST("/import", actions.ImportSubscribers)
-			subscribers.POST("/bulk-remove", actions.BulkRemoveSubscribers)
-			subscribers.POST("/export", actions.ExportSubscribers)
+			subscribers.GET("", middleware.PaginateWithCursor(), actions.GetSubscribers(api.store))
+			subscribers.GET("/:id", actions.GetSubscriber(api.store))
+			subscribers.GET("/export/download", actions.DownloadSubscribersReport(api.store, api.s3Client, api.filesBucket))
+			subscribers.POST("", actions.PostSubscriber(api.boundarysvc, api.store))
+			subscribers.PUT("/:id", actions.PutSubscriber(api.store))
+			subscribers.DELETE("/:id", actions.DeleteSubscriber(api.store))
+			subscribers.POST("/import", actions.ImportSubscribers(
+				api.subscrsvc,
+				api.boundarysvc,
+				api.store,
+				api.s3Client,
+				api.filesBucket,
+			))
+			subscribers.POST("/bulk-remove", actions.BulkRemoveSubscribers(api.subscrsvc, api.s3Client, api.filesBucket))
+			subscribers.POST("/export", actions.ExportSubscribers(api.reportsvc, api.filesBucket))
 		}
 
 		ses := authorized.Group(("/ses"))
 		{
-			ses.GET("/keys", actions.GetSESKeys)
-			ses.POST("/keys", actions.PostSESKeys)
-			ses.DELETE("/keys", actions.DeleteSESKeys)
-			ses.GET("/quota", actions.GetSESQuota)
+			ses.GET("/keys", actions.GetSESKeys(api.store))
+			ses.POST("/keys", actions.PostSESKeys(api.store, api.appURL))
+			ses.DELETE("/keys", actions.DeleteSESKeys(api.store))
+			ses.GET("/quota", actions.GetSESQuota(api.store))
 		}
 
 		s3 := authorized.Group("/s3")
 		{
-			s3.POST("/sign", actions.GetSignedURL)
+			s3.POST("/sign", actions.GetSignedURL(api.s3Client, api.filesBucket))
 		}
 	}
 }

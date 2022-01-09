@@ -9,11 +9,17 @@ package main
 import (
 	"context"
 	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/opa"
 	"github.com/mailbadger/app/routes"
 	"github.com/mailbadger/app/server"
+	"github.com/mailbadger/app/services/boundaries"
 	"github.com/mailbadger/app/services/campaigns/scheduler"
+	"github.com/mailbadger/app/services/exporters"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers"
 	"github.com/mailbadger/app/services/subscribers/metric"
+	"github.com/mailbadger/app/services/templates"
 	"github.com/mailbadger/app/session"
 	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
@@ -40,13 +46,22 @@ func initApp(ctx context.Context, conf config.Config) (app, error) {
 	if err != nil {
 		return app{}, err
 	}
-	api := routes.From(sessionSession, storageStorage, compiler, publisher, s3S3, conf)
-	serverServer := server.From(api, conf)
-	cron := metric.NewCron(storageStorage)
+	sender, err := emails.NewSesSender()
+	if err != nil {
+		return app{}, err
+	}
+	service := templates.From(storageStorage, s3S3, conf)
+	boundariesService := boundaries.New(storageStorage)
+	subscribersService := subscribers.New(s3S3, storageStorage)
+	subscribersExporter := exporters.NewSubscribersExporter(s3S3, storageStorage)
+	reportsService := reports.New(subscribersExporter, storageStorage)
 	campaignerQueueURL, err := sqs.GetCampaignerQueueURL(ctx, client)
 	if err != nil {
 		return app{}, err
 	}
+	api := routes.From(sessionSession, storageStorage, compiler, publisher, s3S3, sender, service, boundariesService, subscribersService, reportsService, campaignerQueueURL, conf)
+	serverServer := server.From(api, conf)
+	cron := metric.NewCron(storageStorage)
 	schedulerScheduler := scheduler.New(storageStorage, publisher, campaignerQueueURL)
 	mainApp := newApp(serverServer, cron, schedulerScheduler)
 	return mainApp, nil

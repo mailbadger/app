@@ -114,7 +114,7 @@ func (sched *Scheduler) execute(ctx context.Context) error {
 			continue
 		}
 
-		sender, err := emails.NewSesSender(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
+		sender, err := emails.NewSesSenderFromCreds(sesKeys.AccessKey, sesKeys.SecretKey, sesKeys.Region)
 		if err != nil {
 			logEntry.WithError(err).Error("sched: failed to create new ses sender")
 			continue

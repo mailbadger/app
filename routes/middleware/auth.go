@@ -58,7 +58,7 @@ func Authorized(sess session.Session, compiler *ast.Compiler) gin.HandlerFunc {
 			// since we are not using cookies to authenticate the user
 			c.Request = csrf.UnsafeSkipCheck(c.Request)
 		} else {
-			s, err := sess.GetSession(c)
+			s, err := sess.GetUserSession(c)
 			if err != nil {
 				if !errors.Is(err, gorm.ErrRecordNotFound) && !errors.Is(err, session.ErrNotFound) {
 					logrus.WithError(err).Error("authorized: unable to get user session")

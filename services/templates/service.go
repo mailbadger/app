@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -14,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/cbroglie/mustache"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/storage"
 )
@@ -43,11 +43,15 @@ type service struct {
 	templatesBucket string
 }
 
-func New(db storage.Storage, s3 s3iface.S3API) Service {
+func From(db storage.Storage, s3 s3iface.S3API, conf config.Config) Service {
+	return New(db, s3, conf.Storage.S3.TemplatesBucket)
+}
+
+func New(db storage.Storage, s3 s3iface.S3API, bucket string) Service {
 	return &service{
 		db:              db,
 		s3:              s3,
-		templatesBucket: os.Getenv("TEMPLATES_BUCKET"),
+		templatesBucket: bucket,
 	}
 }
 

@@ -208,7 +208,7 @@ func newSesClient(keys entities.SesKeys) (emails.Sender, error) {
 		return nil, ErrInvalidSesKeys
 	}
 
-	client, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
+	client, err := emails.NewSesSenderFromCreds(keys.AccessKey, keys.SecretKey, keys.Region)
 	if err != nil {
 		return nil, fmt.Errorf("new ses sender: %w", err)
 	}

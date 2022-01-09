@@ -1,7 +1,5 @@
 package mode
 
-import "os"
-
 type Mode int
 
 const (
@@ -49,16 +47,4 @@ func IsDebug() bool {
 
 func IsProd() bool {
 	return appMode == Prod
-}
-
-func SetModeFromEnv() {
-	env := os.Getenv("MB_APP_MODE")
-	switch env {
-	case "debug":
-		appMode = Debug
-	case "prod":
-		appMode = Prod
-	case "test":
-		appMode = Test
-	}
 }

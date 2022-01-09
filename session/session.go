@@ -16,6 +16,7 @@ import (
 type Store interface {
 	GetSession(id string) (*entities.Session, error)
 	CreateSession(sess *entities.Session) error
+	DeleteSession(id string) error
 }
 
 type Session struct {
@@ -65,7 +66,7 @@ func New(store Store, authKey, encryptKey string, secure bool) Session {
 	}
 }
 
-func (sess Session) GetSession(c *gin.Context) (*entities.Session, error) {
+func (sess Session) GetUserSession(c *gin.Context) (*entities.Session, error) {
 	defaultsess := sessions.Default(c)
 	v := defaultsess.Get(sessKey)
 	if v == nil {
@@ -79,7 +80,7 @@ func (sess Session) GetSession(c *gin.Context) (*entities.Session, error) {
 	return s, err
 }
 
-func (sess Session) CreateSession(c *gin.Context, userID int64) error {
+func (sess Session) CreateUserSession(c *gin.Context, userID int64) error {
 	sessID, err := utils.GenerateRandomString(32)
 	if err != nil {
 		return fmt.Errorf("session: gen session id: %w", err)
@@ -105,6 +106,25 @@ func (sess Session) CreateSession(c *gin.Context, userID int64) error {
 	session.Set(sessKey, sessID)
 
 	err = session.Save()
+	if err != nil {
+		return fmt.Errorf("session: save: %w", err)
+	}
+	return nil
+}
+
+func (sess Session) DeleteUserSession(c *gin.Context) error {
+	s := sessions.Default(c)
+
+	sessID := s.Get(sessKey)
+	if id, ok := sessID.(string); ok {
+		err := sess.store.DeleteSession(id)
+		if err != nil {
+			return fmt.Errorf("session: delete session: %w", err)
+		}
+	}
+
+	s.Delete(sessKey)
+	err := s.Save()
 	if err != nil {
 		return fmt.Errorf("session: save: %w", err)
 	}

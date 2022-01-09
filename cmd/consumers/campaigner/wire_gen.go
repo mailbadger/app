@@ -26,12 +26,12 @@ func initApp(ctx context.Context, conf config.Config) (app, error) {
 		return app{}, err
 	}
 	client := sqs.NewClient(awsConfig)
-	service := campaigns.New(storageStorage, client)
+	service := campaigns.From(storageStorage, client, conf)
 	s3S3, err := s3.NewClient()
 	if err != nil {
 		return app{}, err
 	}
-	templatesService := templates.New(storageStorage, s3S3)
+	templatesService := templates.From(storageStorage, s3S3, conf)
 	campaignerQueueURL, err := sqs.GetCampaignerQueueURL(ctx, client)
 	if err != nil {
 		return app{}, err

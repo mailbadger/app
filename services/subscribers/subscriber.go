@@ -17,8 +17,8 @@ import (
 )
 
 type Service interface {
-	ImportSubscribersFromFile(ctx context.Context, filename string, userID int64, segments []entities.Segment) error
-	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64) error
+	ImportSubscribersFromFile(ctx context.Context, userID int64, segments []entities.Segment, r io.Reader) error
+	RemoveSubscribersFromFile(ctx context.Context, filename string, userID int64, r io.ReadCloser) error
 }
 
 type service struct {
@@ -31,7 +31,7 @@ var (
 	ErrInvalidFormat     = errors.New("importer: csv file not formatted properly")
 )
 
-func New(client s3iface.S3API, db storage.Storage) *service {
+func New(client s3iface.S3API, db storage.Storage) Service {
 	return &service{client, db}
 }
 

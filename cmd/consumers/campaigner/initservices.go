@@ -27,8 +27,8 @@ var svcSet = wire.NewSet(
 	newQueueURL,
 	awssqs.NewPublisher,
 	awssqs.NewConsumerFrom,
-	templates.New,
-	campaigns.New,
+	templates.From,
+	campaigns.From,
 )
 
 func initAwsConfig(ctx context.Context) (aws.Config, error) {

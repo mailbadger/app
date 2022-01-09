@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/mode"
 	_ "github.com/mailbadger/app/statik"
 	"github.com/mailbadger/app/utils"
 	"github.com/rakyll/statik/fs"
@@ -19,7 +18,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 // store implements the Storage interface
@@ -30,7 +28,7 @@ type store struct {
 // New creates a database connection and returns a new DB
 func New(conf config.Config) *gorm.DB {
 	dsn := makeDsn(conf)
-	return openDbConn(conf.Database.Driver, dsn)
+	return openDbConn(conf.Storage.DB.Driver, dsn)
 }
 
 // From creates a new store object.
@@ -48,9 +46,6 @@ func openDbConn(driver, dsn string) *gorm.DB {
 	}
 
 	conf := &gorm.Config{}
-	if mode.IsDebug() {
-		conf.Logger = logger.Default.LogMode(logger.Info)
-	}
 
 	db, err := gorm.Open(dialect, conf)
 	if err != nil {
@@ -107,16 +102,16 @@ func pingDb(db *sql.DB) (err error) {
 // makeDsn creates a DSN string from the db config based on the driver name.
 // List of drivers: 'sqlite3', 'mysql'.
 func makeDsn(conf config.Config) string {
-	switch conf.Database.Driver {
+	switch conf.Storage.DB.Driver {
 	case "sqlite3":
-		return conf.Database.Sqlite3Source
+		return conf.Storage.DB.Sqlite3Source
 	case "mysql":
 		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
-			conf.Database.MySQLUser,
-			conf.Database.MySQLPass,
-			conf.Database.MySQLHost,
-			conf.Database.MySQLPort,
-			conf.Database.MySQLDatabase,
+			conf.Storage.DB.MySQLUser,
+			conf.Storage.DB.MySQLPass,
+			conf.Storage.DB.MySQLHost,
+			conf.Storage.DB.MySQLPort,
+			conf.Storage.DB.MySQLDatabase,
 		)
 	default:
 		return ""
@@ -218,11 +213,6 @@ func openTestDb() *gorm.DB {
 		driver = "sqlite3"
 		config = ":memory:"
 	)
-
-	if os.Getenv("DATABASE_DRIVER") != "" && os.Getenv("DATABASE_CONFIG") != "" {
-		driver = os.Getenv("DATABASE_DRIVER")
-		config = os.Getenv("DATABASE_CONFIG")
-	}
 
 	return openDbConn(driver, config)
 }

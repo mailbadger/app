@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -21,105 +20,112 @@ import (
 	"github.com/mailbadger/app/validator"
 )
 
-func GetSESKeys(c *gin.Context) {
-	u := middleware.GetUser(c)
+func GetSESKeys(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "AWS Ses keys not set.",
-		})
-		return
-	}
-
-	keys.SecretKey = "" //do not return the secret
-
-	c.JSON(http.StatusOK, keys)
-}
-
-func PostSESKeys(c *gin.Context) {
-	u := middleware.GetUser(c)
-
-	_, err := storage.GetSesKeys(c, u.ID)
-	if err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "AWS Ses keys are already set.",
-		})
-		return
-	}
-
-	body := &params.PostSESKeys{}
-	if err := c.ShouldBindJSON(body); err != nil {
-		logger.From(c).WithError(err).Error("Unable to bind ses keys params.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Invalid parameters, please try again",
-		})
-		return
-	}
-
-	if err := validator.Validate(body); err != nil {
-		logger.From(c).WithError(err).Error("Invalid ses keys params.")
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	keys := &entities.SesKeys{
-		AccessKey: body.AccessKey,
-		SecretKey: body.SecretKey,
-		Region:    body.Region,
-		UserID:    u.ID,
-	}
-
-	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create SNS client.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	//TODO: Move this to work queue to be more robust.
-	//createAWSResources is a slow process and could fail periodically.
-	go func(
-		c *gin.Context,
-		sender emails.Sender,
-		snsClient events.EventsClient,
-		keys *entities.SesKeys,
-		uuid string,
-	) {
-		err := createAWSResources(sender, snsClient, uuid)
+		keys, err := storage.GetSesKeys(u.ID)
 		if err != nil {
-			logger.From(c).WithError(err).Warn("Unable to create AWS resources.")
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "AWS Ses keys not set.",
+			})
 			return
 		}
 
-		err = storage.CreateSesKeys(c, keys)
-		if err != nil {
-			logger.From(c).WithError(err).Warn("Unable to create SES keys.")
-		}
-	}(c.Copy(), sender, snsClient, keys, u.UUID)
+		keys.SecretKey = "" //do not return the secret
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "We are currently processing the request.",
-	})
+		c.JSON(http.StatusOK, keys)
+	}
+}
+
+func PostSESKeys(store storage.Storage, appURL string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := middleware.GetUser(c)
+
+		_, err := store.GetSesKeys(u.ID)
+		if err == nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "AWS Ses keys are already set.",
+			})
+			return
+		}
+
+		body := &params.PostSESKeys{}
+		if err := c.ShouldBindJSON(body); err != nil {
+			logger.From(c).WithError(err).Error("Unable to bind ses keys params.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid parameters, please try again",
+			})
+			return
+		}
+
+		if err := validator.Validate(body); err != nil {
+			logger.From(c).WithError(err).Error("Invalid ses keys params.")
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		keys := &entities.SesKeys{
+			AccessKey: body.AccessKey,
+			SecretKey: body.SecretKey,
+			Region:    body.Region,
+			UserID:    u.ID,
+		}
+
+		sender, err := emails.NewSesSenderFromCreds(keys.AccessKey, keys.SecretKey, keys.Region)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "SES keys are incorrect.",
+			})
+			return
+		}
+
+		snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SNS client.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "SES keys are incorrect.",
+			})
+			return
+		}
+
+		//TODO: Move this to work queue to be more robust.
+		//createAWSResources is a slow process and could fail periodically.
+		go func(
+			c *gin.Context,
+			sender emails.Sender,
+			snsClient events.EventsClient,
+			store storage.Storage,
+			keys *entities.SesKeys,
+			uuid string,
+			appURL string,
+		) {
+			err := createAWSResources(sender, snsClient, uuid, appURL)
+			if err != nil {
+				logger.From(c).WithError(err).Warn("Unable to create AWS resources.")
+				return
+			}
+
+			err = store.CreateSesKeys(keys)
+			if err != nil {
+				logger.From(c).WithError(err).Error("Unable to create SES keys.")
+			}
+		}(c.Copy(), sender, snsClient, store, keys, u.UUID, appURL)
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "We are currently processing the request.",
+		})
+	}
 }
 
 func createAWSResources(
 	sender emails.Sender,
 	snsClient events.EventsClient,
 	uuid string,
+	appURL string,
 ) error {
-	hookURLStr := fmt.Sprintf("%s/api/hooks/%s", os.Getenv("APP_URL"), uuid)
+	hookURLStr := fmt.Sprintf("%s/api/hooks/%s", appURL, uuid)
 	hookURL, err := url.Parse(hookURLStr)
 	if err != nil {
 		return fmt.Errorf("ses keys: unable to parse hook URL: %w", err)
@@ -201,106 +207,110 @@ func createAWSResources(
 	return nil
 }
 
-func DeleteSESKeys(c *gin.Context) {
-	u := middleware.GetUser(c)
+func DeleteSESKeys(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.Status(http.StatusNoContent)
-		return
-	}
+		keys, err := storage.GetSesKeys(u.ID)
+		if err != nil {
+			c.Status(http.StatusNoContent)
+			return
+		}
 
-	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
+		sender, err := emails.NewSesSenderFromCreds(keys.AccessKey, keys.SecretKey, keys.Region)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "SES keys are incorrect.",
+			})
+			return
+		}
+
+		snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SNS client.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "SES keys are incorrect.",
+			})
+			return
+		}
+
+		cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
+			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+			ConfigurationSetAttributeNames: []*string{
+				aws.String("eventDestinations"),
+			},
 		})
-		return
-	}
 
-	snsClient, err := events.NewEventsClient(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create SNS client.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	cs, err := sender.DescribeConfigurationSet(&ses.DescribeConfigurationSetInput{
-		ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-		ConfigurationSetAttributeNames: []*string{
-			aws.String("eventDestinations"),
-		},
-	})
-
-	if err == nil {
-		// find and delete topic
-		for _, e := range cs.EventDestinations {
-			if e.Name != nil && *e.Name == events.SNSTopicName {
-				_, err := snsClient.DeleteTopic(&sns.DeleteTopicInput{
-					TopicArn: e.SNSDestination.TopicARN,
-				})
-				if err != nil {
-					logger.From(c).WithError(err).Warn("Unable to delete topic.")
+		if err == nil {
+			// find and delete topic
+			for _, e := range cs.EventDestinations {
+				if e.Name != nil && *e.Name == events.SNSTopicName {
+					_, err := snsClient.DeleteTopic(&sns.DeleteTopicInput{
+						TopicArn: e.SNSDestination.TopicARN,
+					})
+					if err != nil {
+						logger.From(c).WithError(err).Warn("Unable to delete topic.")
+					}
+					break
 				}
-				break
+			}
+
+			_, err = sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
+				ConfigurationSetName: aws.String(emails.ConfigurationSetName),
+			})
+			if err != nil {
+				logger.From(c).WithError(err).Warn("Unable to delete configuration set.")
 			}
 		}
 
-		_, err = sender.DeleteConfigurationSet(&ses.DeleteConfigurationSetInput{
-			ConfigurationSetName: aws.String(emails.ConfigurationSetName),
-		})
+		err = storage.DeleteSesKeys(u.ID)
 		if err != nil {
-			logger.From(c).WithError(err).Warn("Unable to delete configuration set.")
+			logger.From(c).WithError(err).Error("Unable to delete SES keys.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to delete SES keys.",
+			})
+			return
 		}
-	}
 
-	err = storage.DeleteSesKeys(c, u.ID)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to delete SES keys.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to delete SES keys.",
-		})
-		return
+		c.Status(http.StatusNoContent)
 	}
-
-	c.Status(http.StatusNoContent)
 }
 
-func GetSESQuota(c *gin.Context) {
-	u := middleware.GetUser(c)
+func GetSESQuota(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u := middleware.GetUser(c)
 
-	keys, err := storage.GetSesKeys(c, u.ID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "AWS Ses keys not set.",
+		keys, err := storage.GetSesKeys(u.ID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "AWS Ses keys not set.",
+			})
+			return
+		}
+
+		sender, err := emails.NewSesSenderFromCreds(keys.AccessKey, keys.SecretKey, keys.Region)
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to create SES sender.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "SES keys are incorrect.",
+			})
+			return
+		}
+
+		res, err := sender.GetSendQuota(&ses.GetSendQuotaInput{})
+		if err != nil {
+			logger.From(c).WithError(err).Warn("Unable to fetch send quota.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to fetch send quota.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, entities.SendQuota{
+			Max24HourSend:   *res.Max24HourSend,
+			MaxSendRate:     *res.MaxSendRate,
+			SentLast24Hours: *res.SentLast24Hours,
 		})
-		return
 	}
-
-	sender, err := emails.NewSesSender(keys.AccessKey, keys.SecretKey, keys.Region)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to create SES sender.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "SES keys are incorrect.",
-		})
-		return
-	}
-
-	res, err := sender.GetSendQuota(&ses.GetSendQuotaInput{})
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Unable to fetch send quota.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to fetch send quota.",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, entities.SendQuota{
-		Max24HourSend:   *res.Max24HourSend,
-		MaxSendRate:     *res.MaxSendRate,
-		SentLast24Hours: *res.SentLast24Hours,
-	})
 }

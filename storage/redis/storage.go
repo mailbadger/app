@@ -19,7 +19,7 @@ type Store interface {
 }
 
 func NewStoreFrom(conf config.Config) (*RedisStore, error) {
-	client, err := NewRedisClient(conf.Redis.Host, conf.Redis.Port, conf.Redis.Pass)
+	client, err := NewRedisClient(conf.Storage.Redis.Host, conf.Storage.Redis.Port, conf.Storage.Redis.Pass)
 	if err != nil {
 		return nil, err
 	}

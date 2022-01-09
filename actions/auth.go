@@ -2,13 +2,10 @@ package actions
 
 import (
 	"bytes"
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -82,9 +79,148 @@ func PostAuthenticate(storage storage.Storage, sess session.Session) gin.Handler
 			return
 		}
 
-		err = sess.CreateSession(c, user.ID)
+		err = sess.CreateUserSession(c, user.ID)
 		if err != nil {
 			logger.From(c).WithError(err).Error("Cannot persist session id.")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Unable to create session.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"user": user,
+		})
+	}
+}
+
+// PostSignup validates and creates a user account by the given
+// user parameters. The handler also sends a verification email.
+func PostSignup(
+	storage storage.Storage,
+	sess session.Session,
+	emailSender emails.Sender,
+	enableSignup bool,
+	verifyEmail bool,
+	recaptchaSecret string,
+	systemEmailSource string,
+	appURL string,
+) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !enableSignup {
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Sign up is disabled.",
+			})
+			return
+		}
+
+		body := &params.PostSignUp{}
+		err := c.ShouldBindJSON(body)
+		if err != nil {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Invalid parameters, please try again.",
+			})
+			return
+		}
+
+		if err = validator.Validate(body); err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		_, err = storage.GetUserByUsername(body.Email)
+		if err == nil {
+			logger.From(c).WithField("email", body.Email).Warn("Duplicate account.")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Unable to create an account.",
+			})
+			return
+		}
+
+		if recaptchaSecret != "" {
+			captcha, err := recaptcha.NewReCAPTCHA(recaptchaSecret, recaptcha.V2, 10*time.Second)
+			if err != nil {
+				logger.From(c).WithError(err).Error("Recaptcha initialize error.")
+				c.JSON(http.StatusForbidden, gin.H{
+					"message": "Unable to create an account. Captcha is invalid.",
+				})
+				return
+			}
+
+			err = captcha.Verify(body.TokenResponse)
+			if err != nil {
+				logger.From(c).WithField("username", body.Email).WithError(err).Infof("recaptcha invalid response.")
+				c.JSON(http.StatusForbidden, gin.H{
+					"message": "Unable to create an account.",
+				})
+				return
+			}
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Unable to generate hash from password.")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Unable to create an account.",
+			})
+			return
+		}
+
+		b, err := storage.GetBoundariesByType(entities.BoundaryTypeFree)
+		if err != nil {
+			logger.From(c).WithError(err).Error("signup: unable to fetch boundary")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Unable to create an account.",
+			})
+			return
+		}
+
+		r, err := storage.GetRole(entities.AdminRole)
+		if err != nil {
+			logger.From(c).WithError(err).Error("signup: unable to fetch admin role")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Unable to create an account.",
+			})
+			return
+		}
+
+		uuid := uuid.NewString()
+
+		user := &entities.User{
+			Username: body.Email,
+			UUID:     uuid,
+			Password: sql.NullString{
+				String: string(hashedPassword),
+				Valid:  true,
+			},
+			Active:     true,
+			Verified:   false,
+			Boundaries: b,
+			Roles:      []entities.Role{*r},
+			Source:     "mailbadger.io",
+		}
+
+		err = storage.CreateUser(user)
+		if err != nil {
+			logger.From(c).WithField("username", body.Email).WithError(err).Error("Unable to persist user.")
+			c.JSON(http.StatusForbidden, gin.H{
+				"message": "Unable to create an account.",
+			})
+			return
+		}
+
+		if verifyEmail {
+			go func(c *gin.Context) {
+				err := sendVerifyEmail(storage, emailSender, user, systemEmailSource, appURL)
+				if err != nil {
+					logger.From(c).WithError(err).Error("Unable to send verification email.")
+				}
+			}(c.Copy())
+		}
+
+		err = sess.CreateUserSession(c, user.ID)
+		if err != nil {
+			logger.From(c).WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
 			c.JSON(http.StatusBadRequest, gin.H{
 				"message": "Unable to create session id.",
 			})
@@ -97,482 +233,355 @@ func PostAuthenticate(storage storage.Storage, sess session.Session) gin.Handler
 	}
 }
 
-// PostSignup validates and creates a user account by the given
-// user parameters. The handler also sends a verification email
-func PostSignup(c *gin.Context) {
-	enableSignup, _ := strconv.ParseBool(os.Getenv("ENABLE_SIGNUP"))
-	if !enableSignup {
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Sign up is disabled.",
-		})
-		return
-	}
-
-	body := &params.PostSignUp{}
-	err := c.ShouldBindJSON(body)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Invalid parameters, please try again.",
-		})
-		return
-	}
-
-	if err = validator.Validate(body); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	_, err = storage.GetUserByUsername(c, body.Email)
-	if err == nil {
-		logger.From(c).WithField("email", body.Email).Warn("Duplicate account.")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
-	secret := os.Getenv("RECAPTCHA_SECRET")
-	if secret != "" {
-		captcha, err := recaptcha.NewReCAPTCHA(secret, recaptcha.V2, 10*time.Second)
-		if err != nil {
-			logger.From(c).WithError(err).Error("Recaptcha initialize error.")
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unable to create an account. Captcha is invalid.",
-			})
-			return
-		}
-
-		err = captcha.Verify(body.TokenResponse)
-		if err != nil {
-			logger.From(c).WithField("username", body.Email).WithError(err).Infof("recaptcha invalid response.")
-			c.JSON(http.StatusForbidden, gin.H{
-				"message": "Unable to create an account.",
-			})
-			return
-		}
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to generate hash from password.")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
-	b, err := storage.GetBoundariesByType(c, entities.BoundaryTypeFree)
-	if err != nil {
-		logger.From(c).WithError(err).Error("signup: unable to fetch boundary")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
-	r, err := storage.GetRole(c, entities.AdminRole)
-	if err != nil {
-		logger.From(c).WithError(err).Error("signup: unable to fetch admin role")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
-	uuid := uuid.NewString()
-
-	user := &entities.User{
-		Username: body.Email,
-		UUID:     uuid,
-		Password: sql.NullString{
-			String: string(hashedPassword),
-			Valid:  true,
-		},
-		Active:     true,
-		Verified:   false,
-		Boundaries: b,
-		Roles:      []entities.Role{*r},
-		Source:     "mailbadger.io",
-	}
-
-	err = storage.CreateUser(c, user)
-	if err != nil {
-		logger.From(c).WithField("username", body.Email).WithError(err).Error("Unable to persist user.")
-		c.JSON(http.StatusForbidden, gin.H{
-			"message": "Unable to create an account.",
-		})
-		return
-	}
-
-	verifyEmail, _ := strconv.ParseBool(os.Getenv("VERIFY_EMAIL_ON_SIGNUP"))
-	if verifyEmail {
-		go func(c *gin.Context) {
-			err := sendVerifyEmail(c, user)
-			if err != nil {
-				logger.From(c).WithError(err).Error("Unable to send verification email.")
-			}
-		}(c.Copy())
-	}
-
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logger.From(c).WithField("user_id", user.ID).WithError(err).Error("Cannot create session id.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create session id.",
-		})
-		return
-	}
-
-	err = persistSession(c, user.ID, sessID)
-	if err != nil {
-		logger.From(c).WithField("user_id", user.ID).WithError(err).Error("Cannot persist session id.")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Unable to create session id.",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
-	})
-}
-
 // GetGithubAuth redirects the user to the github oauth authorization page.
-func GetGithubAuth(c *gin.Context) {
-	state, err := utils.GenerateRandomString(12)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Github: unable to generate random string.")
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"message": "Service unavailable.",
-		})
-		return
+func GetGithubAuth(clientID string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		state, err := utils.GenerateRandomString(12)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Github: unable to generate random string")
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"message": "Service unavailable.",
+			})
+			return
+		}
+
+		session := sessions.Default(c)
+		session.Set("state", state)
+		err = session.Save()
+		if err != nil {
+			logger.From(c).WithError(err).Error("Github: unable to save session")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to save session, please try again.",
+			})
+			return
+		}
+
+		url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&scope=user:email&state=%s", clientID, state)
+
+		c.Redirect(http.StatusTemporaryRedirect, url)
 	}
-
-	session := sessions.Default(c)
-	session.Set("state", state)
-	err = session.Save()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Github: unable to save session.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Unable to save session, please try again.",
-		})
-		return
-	}
-
-	url := fmt.Sprintf("https://github.com/login/oauth/authorize?client_id=%s&scope=user:email&state=%s",
-		os.Getenv("GITHUB_CLIENT_ID"),
-		state,
-	)
-
-	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // GithubCallback fetches the github user by the given access code and creates a new session.
 // The callback creates a new user if the email does not exist in our system.
 // If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
 // to the login screen with an error message.
-func GithubCallback(c *gin.Context) {
-	host := os.Getenv("APP_URL")
+func GithubCallback(
+	storage storage.Storage,
+	sess session.Session,
+	clientID string,
+	clientSecret string,
+	appURL string,
+) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		conf := &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			Scopes:       []string{"user:email"},
+			Endpoint:     oauthgithub.Endpoint,
+		}
 
-	ctx := context.Background()
-	conf := &oauth2.Config{
-		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
-		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		Scopes:       []string{"user:email"},
-		Endpoint:     oauthgithub.Endpoint,
+		code := c.Query("code")
+		state := c.Query("state")
+
+		session := sessions.Default(c)
+
+		sessState := session.Get("state")
+		s, ok := sessState.(string)
+		if !ok {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		session.Clear()
+
+		if s != state {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		ghToken, err := conf.Exchange(c, code)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Github: unable to exchange code for access token")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		tc := conf.Client(c, ghToken)
+		client := github.NewClient(tc)
+
+		ghUser, _, err := client.Users.Get(c, "")
+		if err != nil {
+			logger.From(c).WithError(err).Error("Github: get user error")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		completeCallback(c, storage, sess, ghUser.GetEmail(), "github", appURL)
 	}
-
-	code := c.Query("code")
-	state := c.Query("state")
-
-	session := sessions.Default(c)
-
-	sessState := session.Get("state")
-	s, ok := sessState.(string)
-	if !ok {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	session.Clear()
-
-	if s != state {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	ghToken, err := conf.Exchange(ctx, code)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Github: unable to exchange code for access token.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	tc := conf.Client(ctx, ghToken)
-	client := github.NewClient(tc)
-
-	ghUser, _, err := client.Users.Get(ctx, "")
-	if err != nil {
-		logger.From(c).WithError(err).Error("Github: get user error.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	completeCallback(c, ghUser.GetEmail(), "github", host)
 }
 
 // GetGoogleAuth redirects the user to the google oauth authorization page.
-func GetGoogleAuth(c *gin.Context) {
-	host := os.Getenv("APP_URL")
+func GetGoogleAuth(clientID, clientSecret, appURL string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		state, err := utils.GenerateRandomString(12)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Google: unable to generate random string")
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"message": "Service unavailable.",
+			})
+			return
+		}
 
-	state, err := utils.GenerateRandomString(12)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to generate random string.")
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"message": "Service unavailable.",
-		})
-		return
+		session := sessions.Default(c)
+
+		session.Set("state", state)
+		err = session.Save()
+		if err != nil {
+			logger.From(c).WithError(err).Error("Google: unable to save session")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to save session, please try again.",
+			})
+			return
+		}
+
+		conf := &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			RedirectURL:  appURL + "/api/auth/google/callback",
+			Scopes: []string{
+				googleoauth2.UserinfoEmailScope,
+			},
+			Endpoint: google.Endpoint,
+		}
+
+		url := conf.AuthCodeURL(state)
+
+		c.Redirect(http.StatusTemporaryRedirect, url)
 	}
-
-	session := sessions.Default(c)
-
-	session.Set("state", state)
-	err = session.Save()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to save session.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Unable to save session, please try again.",
-		})
-		return
-	}
-
-	conf := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  host + "/api/auth/google/callback",
-		Scopes: []string{
-			googleoauth2.UserinfoEmailScope,
-		},
-		Endpoint: google.Endpoint,
-	}
-
-	url := conf.AuthCodeURL(state)
-
-	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // GoogleCallback fetches the google user by the given access code and creates a new session.
 // The callback creates a new user if the email does not exist in our system.
 // If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
 // to the login screen with an error message.
-func GoogleCallback(c *gin.Context) {
-	host := os.Getenv("APP_URL")
-	conf := &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		RedirectURL:  host + "/api/auth/google/callback",
-		Scopes: []string{
-			googleoauth2.UserinfoEmailScope,
-		},
-		Endpoint: google.Endpoint,
+func GoogleCallback(
+	storage storage.Storage,
+	sess session.Session,
+	clientID string,
+	clientSecret string,
+	appURL string,
+) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		conf := &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			RedirectURL:  appURL + "/api/auth/google/callback",
+			Scopes: []string{
+				googleoauth2.UserinfoEmailScope,
+			},
+			Endpoint: google.Endpoint,
+		}
+
+		code := c.Query("code")
+		state := c.Query("state")
+
+		session := sessions.Default(c)
+
+		sessState := session.Get("state")
+		s, ok := sessState.(string)
+		if !ok {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		session.Clear()
+
+		if s != state {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		tok, err := conf.Exchange(c, code)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Google: exchange token error")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		oauth2Service, err := googleoauth2.NewService(c, option.WithTokenSource(conf.TokenSource(c, tok)))
+		if err != nil {
+			logger.From(c).WithError(err).Error("Google: unable to instantiate oauth2 service")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		userInfoSvc := googleoauth2.NewUserinfoV2MeService(oauth2Service)
+		gUser, err := userInfoSvc.Get().Do()
+		if err != nil {
+			logger.From(c).WithError(err).Error("Google: fetch user error")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		completeCallback(c, storage, sess, gUser.Email, "google", appURL)
 	}
-
-	code := c.Query("code")
-	state := c.Query("state")
-
-	session := sessions.Default(c)
-
-	sessState := session.Get("state")
-	s, ok := sessState.(string)
-	if !ok {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	session.Clear()
-
-	if s != state {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	ctx := context.Background()
-	tok, err := conf.Exchange(ctx, code)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("Google: exchange token error.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	oauth2Service, err := googleoauth2.NewService(ctx, option.WithTokenSource(conf.TokenSource(ctx, tok)))
-	if err != nil {
-		logger.From(c).WithError(err).Error("Google: unable to instantiate oauth2 service.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	userInfoSvc := googleoauth2.NewUserinfoV2MeService(oauth2Service)
-	gUser, err := userInfoSvc.Get().Do()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Google: fetch user error.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	completeCallback(c, gUser.Email, "google", host)
 }
 
 // GetFacebookAuth redirects the user to the facebook oauth authorization page.
-func GetFacebookAuth(c *gin.Context) {
-	host := os.Getenv("APP_URL")
-	state, err := utils.GenerateRandomString(12)
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to generate random string.")
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"message": "Service unavailable.",
-		})
-		return
+func GetFacebookAuth(clientID, appURL string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		state, err := utils.GenerateRandomString(12)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Facebook: unable to generate random string")
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"message": "Service unavailable.",
+			})
+			return
+		}
+
+		session := sessions.Default(c)
+
+		session.Set("state", state)
+		err = session.Save()
+		if err != nil {
+			logger.From(c).WithError(err).Error("Facebook: unable to save session")
+			c.JSON(http.StatusUnprocessableEntity, gin.H{
+				"message": "Unable to save session, please try again.",
+			})
+			return
+		}
+
+		url := fmt.Sprintf("https://www.facebook.com/v3.3/dialog/oauth?client_id=%s&scope=email&redirect_uri=%s&state=%s",
+			clientID,
+			appURL+"/api/auth/facebook/callback",
+			state,
+		)
+
+		c.Redirect(http.StatusTemporaryRedirect, url)
 	}
-
-	session := sessions.Default(c)
-
-	session.Set("state", state)
-	err = session.Save()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to save session.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Unable to save session, please try again.",
-		})
-		return
-	}
-
-	url := fmt.Sprintf("https://www.facebook.com/v3.3/dialog/oauth?client_id=%s&scope=email&redirect_uri=%s&state=%s",
-		os.Getenv("FACEBOOK_CLIENT_ID"),
-		host+"/api/auth/facebook/callback",
-		state,
-	)
-
-	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 // FacebookCallback fetches the facebook user by the given access code and creates a new session.
 // The callback creates a new user if the email does not exist in our system.
 // If the sign in is successful it redirects the user to the dashboard, if it fails we redirect the user
 // to the login screen with an error message.
-func FacebookCallback(c *gin.Context) {
-	host := os.Getenv("APP_URL")
+func FacebookCallback(
+	storage storage.Storage,
+	sess session.Session,
+	clientID string,
+	clientSecret string,
+	appURL string,
+) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		code := c.Query("code")
+		state := c.Query("state")
 
-	ctx := context.Background()
-	conf := &oauth2.Config{
-		ClientID:     os.Getenv("FACEBOOK_CLIENT_ID"),
-		ClientSecret: os.Getenv("FACEBOOK_CLIENT_SECRET"),
-		Scopes:       []string{"email"},
-		Endpoint:     oauthfb.Endpoint,
+		session := sessions.Default(c)
+
+		sessState := session.Get("state")
+		s, ok := sessState.(string)
+		if !ok {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		session.Clear()
+
+		if s != state {
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		conf := &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			Scopes:       []string{"email"},
+			Endpoint:     oauthfb.Endpoint,
+		}
+		fbToken, err := conf.Exchange(c, code)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Facebook: exchange token error")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		tc := conf.Client(c, fbToken)
+		fbsess := &fb.Session{
+			HttpClient: tc,
+			Version:    "v3.3",
+		}
+
+		res, err := fbsess.Get("/me", nil)
+		if err != nil {
+			logger.From(c).WithError(err).Error("Facebook: unable to get user")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		email, ok := res["email"]
+		if !ok {
+			logger.From(c).WithField("resp", res).Error("Facebook: response does not include email")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		emailStr, ok := email.(string)
+		if !ok {
+			logger.From(c).WithField("email", email).Error("Facebook: cannot convert email to string")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=server-error")
+			return
+		}
+
+		completeCallback(c, storage, sess, emailStr, "facebook", appURL)
 	}
-
-	code := c.Query("code")
-	state := c.Query("state")
-
-	session := sessions.Default(c)
-
-	sessState := session.Get("state")
-	s, ok := sessState.(string)
-	if !ok {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	session.Clear()
-
-	if s != state {
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	fbToken, err := conf.Exchange(ctx, code)
-	if err != nil {
-		logger.From(c).WithError(err).Warn("FB: exchange token error.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	tc := conf.Client(ctx, fbToken)
-	sess := &fb.Session{
-		HttpClient: tc,
-		Version:    "v3.3",
-	}
-
-	res, err := sess.Get("/me", nil)
-	if err != nil {
-		logger.From(c).WithError(err).Error("FB: unable to get user.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	email, ok := res["email"]
-	if !ok {
-		logger.From(c).WithField("resp", res).Warn("FB: response does not include email.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	emailStr, ok := email.(string)
-	if !ok {
-		logger.From(c).WithField("email", email).Error("FB: cannot convert email to string.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=server-error")
-		return
-	}
-
-	completeCallback(c, emailStr, "facebook", host)
 }
 
 // PostLogout deletes the current user session.
-func PostLogout(c *gin.Context) {
-	session := sessions.Default(c)
-	sessID := session.Get("sess_id")
-	s, ok := sessID.(string)
-	if ok {
-		err := storage.DeleteSession(c, s)
+func PostLogout(sess session.Session) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := sess.DeleteUserSession(c)
 		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to delete session.")
+			logger.From(c).WithError(err).Error("logout: unable to delete session.")
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "We are unable to process the request, please try again.",
+			})
+			return
 		}
-	}
 
-	session.Delete("sess_id")
-	err := session.Save()
-	if err != nil {
-		logger.From(c).WithError(err).Error("Unable to save session.")
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"message": "Unable to save session, please try again.",
+		c.JSON(http.StatusOK, gin.H{
+			"message": "You have been successfully logged out.",
 		})
-		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "You have been successfully logged out.",
-	})
 }
 
-func completeCallback(c *gin.Context, email, source, host string) {
-	u, err := storage.GetUserByUsername(c, email)
+func completeCallback(
+	c *gin.Context,
+	storage storage.Storage,
+	sess session.Session,
+	email string,
+	source string,
+	appURL string,
+) {
+	u, err := storage.GetUserByUsername(email)
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.From(c).WithError(err).Error("Social auth callback: unable to fetch user by username.")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			logger.From(c).WithError(err).Error("social auth callback: unable to fetch user by username")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=register-failed")
 			return
 		}
 
-		b, err := storage.GetBoundariesByType(c, entities.BoundaryTypeFree)
+		b, err := storage.GetBoundariesByType(entities.BoundaryTypeFree)
 		if err != nil {
-			logger.From(c).WithError(err).Error("signup: unable to fetch boundary")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			logger.From(c).WithError(err).Error("social auth callback: unable to fetch boundary")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=register-failed")
 			return
 		}
 
-		r, err := storage.GetRole(c, entities.AdminRole)
+		r, err := storage.GetRole(entities.AdminRole)
 		if err != nil {
-			logger.From(c).WithError(err).Error("signup: unable to fetch admin role")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			logger.From(c).WithError(err).Error("social auth callback: unable to fetch admin role")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=register-failed")
 			return
 		}
 
@@ -588,47 +597,37 @@ func completeCallback(c *gin.Context, email, source, host string) {
 			Roles:      []entities.Role{*r},
 		}
 
-		err = storage.CreateUser(c, u)
+		err = storage.CreateUser(u)
 		if err != nil {
-			logger.From(c).WithError(err).Error("Unable to create user.")
-			c.Redirect(http.StatusPermanentRedirect, host+"/login?message=register-failed")
+			logger.From(c).WithError(err).Error("social auth callback: unable to create user")
+			c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=register-failed")
 			return
 		}
 	}
 
 	if !u.Active {
-		logger.From(c).WithField("user_id", u.ID).Warn("Inactive user sign in.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		logger.From(c).WithField("user_id", u.ID).Warn("social auth callback: inactive user sign in")
+		c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=forbidden")
 		return
 	}
 
-	sessID, err := utils.GenerateRandomString(32)
-	if err != nil {
-		logger.From(c).WithField("user_id", u.ID).WithError(err).Error("Cannot create session id.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
-		return
-	}
-
-	err = persistSession(c, u.ID, sessID)
+	err = sess.CreateUserSession(c, u.ID)
 	if err != nil {
 		logger.From(c).WithField("user_id", u.ID).WithError(err).Error("Cannot persist session.")
-		c.Redirect(http.StatusPermanentRedirect, host+"/login?message=forbidden")
+		c.Redirect(http.StatusTemporaryRedirect, appURL+"/login?message=forbidden")
 		return
 	}
 
-	c.Redirect(http.StatusPermanentRedirect, host+"/dashboard")
+	c.Redirect(http.StatusTemporaryRedirect, appURL+"/dashboard")
 }
 
-func sendVerifyEmail(c context.Context, u *entities.User) error {
-	sender, err := emails.NewSesSender(
-		os.Getenv("AWS_ACCESS_KEY_ID"),
-		os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		os.Getenv("AWS_REGION"),
-	)
-	if err != nil {
-		return fmt.Errorf("send verify email: ses sender: %w", err)
-	}
-
+func sendVerifyEmail(
+	storage storage.Storage,
+	sender emails.Sender,
+	u *entities.User,
+	systemEmailSource string,
+	appURL string,
+) error {
 	token, err := utils.GenerateRandomString(32)
 	if err != nil {
 		return fmt.Errorf("send verify email: gen token: %w", err)
@@ -641,14 +640,14 @@ func sendVerifyEmail(c context.Context, u *entities.User) error {
 		ExpiresAt: time.Now().AddDate(0, 0, 1),
 	}
 
-	err = storage.CreateToken(c, t)
+	err = storage.CreateToken(t)
 	if err != nil {
 		return fmt.Errorf("send verify email: create token: %w", err)
 	}
 
 	var html bytes.Buffer
 	emailTmpls := templates.GetEmailTemplates()
-	url := fmt.Sprintf("%s/verify-email/%s", os.Getenv("APP_URL"), token)
+	url := fmt.Sprintf("%s/verify-email/%s", appURL, token)
 
 	err = emailTmpls.ExecuteTemplate(&html, "verify-email.html", map[string]string{
 		"url": url,
@@ -671,7 +670,7 @@ func sendVerifyEmail(c context.Context, u *entities.User) error {
 				Data:    aws.String(string("Verify your email address")),
 			},
 		},
-		Source: aws.String(fmt.Sprintf("%s <%s>", "Mailbadger.io", os.Getenv("SYSTEM_EMAIL_SOURCE"))),
+		Source: aws.String(fmt.Sprintf("%s <%s>", "Mailbadger.io", systemEmailSource)),
 		Destination: &ses.Destination{
 			ToAddresses: []*string{aws.String(u.Username)},
 		},
@@ -681,27 +680,4 @@ func sendVerifyEmail(c context.Context, u *entities.User) error {
 	}
 
 	return nil
-}
-
-func persistSession(c *gin.Context, userID int64, sessID string) error {
-	err := storage.CreateSession(c, &entities.Session{
-		UserID:    userID,
-		SessionID: sessID,
-	})
-	if err != nil {
-		return err
-	}
-
-	session := sessions.Default(c)
-	exp := time.Now().Add(time.Hour*72).Unix() - time.Now().Unix()
-	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
-	session.Options(sessions.Options{
-		HttpOnly: true,
-		MaxAge:   int(exp),
-		Secure:   secureCookie,
-		Path:     "/api",
-	})
-	session.Set("sess_id", sessID)
-
-	return session.Save()
 }
