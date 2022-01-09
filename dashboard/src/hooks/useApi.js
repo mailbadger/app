@@ -1,81 +1,89 @@
-import { useReducer, useEffect, useState, useRef } from "react";
-import { mainInstance as axios } from "../axios";
+import { useReducer, useEffect, useState, useRef } from "react"
+import { mainInstance as axios } from "../axios"
 
 const dataFetchReducer = (state, action) => {
-  switch (action.type) {
-    case "REQUEST_INIT":
-      return {
-        ...state,
-        isLoading: true,
-        isError: false,
-      };
-    case "REQUEST_SUCCESS":
-      return {
-        ...state,
+    switch (action.type) {
+        case "REQUEST_INIT":
+            return {
+                ...state,
+                isLoading: true,
+                isError: false,
+            }
+        case "REQUEST_SUCCESS":
+            return {
+                ...state,
+                isLoading: false,
+                isError: false,
+                data: action.payload,
+            }
+        case "REQUEST_FAILURE":
+            return {
+                ...state,
+                isLoading: false,
+                isError: true,
+                data: action.payload,
+            }
+        default:
+            throw new Error()
+    }
+}
+
+const defaultOpts = {}
+
+const useDataApi = (
+    initialOpts = defaultOpts,
+    initialData,
+    skipFirst = false
+) => {
+    const firstUpdate = useRef(skipFirst)
+    const [opts, setOpts] = useState(initialOpts)
+
+    const [state, dispatch] = useReducer(dataFetchReducer, {
         isLoading: false,
         isError: false,
-        data: action.payload,
-      };
-    case "REQUEST_FAILURE":
-      return {
-        ...state,
-        isLoading: false,
-        isError: true,
-        data: action.payload,
-      };
-    default:
-      throw new Error();
-  }
-};
+        data: initialData,
+    })
 
-const defaultOpts = {};
+    useEffect(() => {
+        if (firstUpdate.current) {
+            firstUpdate.current = false
+            return
+        }
 
-const useDataApi = (initialOpts = defaultOpts, initialData, skipFirst = false) => {
-  const firstUpdate = useRef(skipFirst);
-  const [opts, setOpts] = useState(initialOpts);
+        let didCancel = false
 
-  const [state, dispatch] = useReducer(dataFetchReducer, {
-    isLoading: false,
-    isError: false,
-    data: initialData,
-  });
+        const fetchData = async () => {
+            dispatch({ type: "REQUEST_INIT" })
 
-  useEffect(() => {
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
-      return;
+            try {
+                const result = await axios(opts)
+
+                if (!didCancel) {
+                    dispatch({ type: "REQUEST_SUCCESS", payload: result.data })
+                }
+            } catch (error) {
+                if (!didCancel) {
+                    dispatch({
+                        type: "REQUEST_FAILURE",
+                        error,
+                        payload: error.response.data,
+                    })
+                }
+            }
+        }
+
+        fetchData()
+
+        return () => {
+            didCancel = true
+        }
+    }, [opts])
+
+    const callApi = (opts) => {
+        setOpts(opts)
     }
 
-    let didCancel = false;
+    return [state, callApi]
+}
 
-    const fetchData = async () => {
-      dispatch({ type: "REQUEST_INIT" });
-
-      try {
-        const result = await axios(opts);
-
-        if (!didCancel) {
-          dispatch({ type: "REQUEST_SUCCESS", payload: result.data });
-        }
-      } catch (error) {
-        if (!didCancel) {
-          dispatch({ type: "REQUEST_FAILURE", error, payload: error.response.data });
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      didCancel = true;
-    };
-  }, [opts]);
-
-  const callApi = (opts) => {
-    setOpts(opts);
-  };
-
-  return [state, callApi];
-};
-
-export default useDataApi;
+export default useDataApi

@@ -1,120 +1,119 @@
-import React, { Fragment } from "react";
-import PropTypes from "prop-types";
-import { FormField, Button, TextInput } from "grommet";
-import { Formik, ErrorMessage } from "formik";
-import { string, object, ref, addMethod } from "yup";
-import { mainInstance as axios } from "../axios";
+import React, { Fragment } from "react"
+import PropTypes from "prop-types"
+import { FormField, Button, TextInput } from "grommet"
+import { Formik, ErrorMessage } from "formik"
+import { string, object, ref, addMethod } from "yup"
+import { mainInstance as axios } from "../axios"
 
+import equalTo from "../utils/equalTo"
+import history from "../history"
+import { FormPropTypes } from "../PropTypes"
+import { endpoints } from "../network/endpoints"
 
-import equalTo from "../utils/equalTo";
-import history from "../history";
-import { FormPropTypes } from "../PropTypes";
-import {endpoints} from '../network/endpoints'
-
-addMethod(string, "equalTo", equalTo);
+addMethod(string, "equalTo", equalTo)
 
 const passwordValidation = object().shape({
-  password: string().required("Please enter a password").min(8),
-  password_confirm: string()
-    .equalTo(ref("password"), "Passwords don't match")
-    .required("Confirm Password is required"),
-});
+    password: string().required("Please enter a password").min(8),
+    password_confirm: string()
+        .equalTo(ref("password"), "Passwords don't match")
+        .required("Confirm Password is required"),
+})
 
 const Form = ({ handleSubmit, handleChange, isSubmitting, errors }) => (
-  <Fragment>
-    {errors && errors.message && <div>{errors.message}</div>}
-    <form
-      onSubmit={handleSubmit}
-      style={{ color: "black", width: "90%", height: "100%" }}
-    >
-      <FormField label="Password" htmlFor="password">
-        <TextInput
-          placeholder="****"
-          name="password"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="password" />
-      </FormField>
-      <FormField label="Confirm Password" htmlFor="password_confirm">
-        <TextInput
-          placeholder="****"
-          name="password_confirm"
-          type="password"
-          onChange={handleChange}
-        />
-        <ErrorMessage name="password_confirm" />
-      </FormField>
+    <Fragment>
+        {errors && errors.message && <div>{errors.message}</div>}
+        <form
+            onSubmit={handleSubmit}
+            style={{ color: "black", width: "90%", height: "100%" }}
+        >
+            <FormField label="Password" htmlFor="password">
+                <TextInput
+                    placeholder="****"
+                    name="password"
+                    type="password"
+                    onChange={handleChange}
+                />
+                <ErrorMessage name="password" />
+            </FormField>
+            <FormField label="Confirm Password" htmlFor="password_confirm">
+                <TextInput
+                    placeholder="****"
+                    name="password_confirm"
+                    type="password"
+                    onChange={handleChange}
+                />
+                <ErrorMessage name="password_confirm" />
+            </FormField>
 
-      <Button
-        plain
-        style={{
-          marginTop: "10px",
-          marginBottom: "10px",
-          borderRadius: "5px",
-          padding: "8px",
-          background: "#654FAA",
-          width: "100%",
-          textAlign: "center",
-        }}
-        disabled={isSubmitting}
-        type="submit"
-        alignSelf="stretch"
-        textAlign="center"
-        primary
-        label="Change Password"
-      />
-    </form>
-  </Fragment>
-);
+            <Button
+                plain
+                style={{
+                    marginTop: "10px",
+                    marginBottom: "10px",
+                    borderRadius: "5px",
+                    padding: "8px",
+                    background: "#654FAA",
+                    width: "100%",
+                    textAlign: "center",
+                }}
+                disabled={isSubmitting}
+                type="submit"
+                alignSelf="stretch"
+                textAlign="center"
+                primary
+                label="Change Password"
+            />
+        </form>
+    </Fragment>
+)
 
-Form.propTypes = FormPropTypes;
+Form.propTypes = FormPropTypes
 
 const NewPasswordForm = (props) => {
-  const {
-    match: { params },
-  } = props;
+    const {
+        match: { params },
+    } = props
 
-  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-    const callApi = async () => {
-      try {
-        const data = {
-          password:values.password
+    const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+        const callApi = async () => {
+            try {
+                const data = {
+                    password: values.password,
+                }
+                await axios.put(
+                    `${endpoints.forgotPassword}/${params.token}`,
+                    data
+                )
+
+                history.replace("/login")
+            } catch (error) {
+                setErrors(error.response.data)
+            }
         }
-        await axios.put(
-          `${endpoints.forgotPassword}/${params.token}`,
-          data
-        );
 
-        history.replace("/login");
-      } catch (error) {
-        setErrors(error.response.data);
-      }
-    };
+        await callApi()
 
-    await callApi();
+        //done submitting, set submitting to false
+        setSubmitting(false)
+    }
 
-    //done submitting, set submitting to false
-    setSubmitting(false);
-  };
-
-  return (
-    <Formik
-      initialValues={{ password: "", password_confirm: "" }}
-      onSubmit={handleSubmit}
-      validationSchema={passwordValidation}
-    >
-      {(props) => <Form {...props} />}
-    </Formik>
-  );
-};
+    return (
+        <Formik
+            initialValues={{ password: "", password_confirm: "" }}
+            onSubmit={handleSubmit}
+            validationSchema={passwordValidation}
+        >
+            {(props) => <Form {...props} />}
+        </Formik>
+    )
+}
 
 NewPasswordForm.propTypes = {
-  match: PropTypes.shape({
-    params: PropTypes.shape({
-      token: PropTypes.string,
+    match: PropTypes.shape({
+        params: PropTypes.shape({
+            token: PropTypes.string,
+        }),
     }),
-  }),
-};
+}
 
-export default NewPasswordForm;
+export default NewPasswordForm
