@@ -1,24 +1,18 @@
 package storage
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/jinzhu/gorm"
 	"github.com/mailbadger/app/entities"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestAPIKeys(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
-	store := From(db)
 
+	store := From(db)
 	_, err := store.GetAPIKey("foobar")
 	assert.NotNil(t, err)
 
@@ -53,13 +47,13 @@ func TestAPIKeys(t *testing.T) {
 
 	_, err = store.GetAPIKey("foobar")
 	assert.NotNil(t, err)
-	assert.True(t, gorm.IsRecordNotFoundError(err))
+	assert.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 
 	err = store.DeleteAPIKey(k.ID, 1)
 	assert.Nil(t, err)
 
 	_, err = store.GetAPIKey("foobar")
 	assert.NotNil(t, err)
-	assert.True(t, gorm.IsRecordNotFoundError(err))
+	assert.True(t, errors.Is(err, gorm.ErrRecordNotFound))
 
 }

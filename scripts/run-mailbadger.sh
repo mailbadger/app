@@ -4,4 +4,4 @@ set -euxo pipefail
 
 export $(egrep -v '^#' .env.local | xargs)
 
-go run ./cmd/app/main.go
+go run ./cmd/app/...

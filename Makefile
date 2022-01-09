@@ -23,10 +23,8 @@ build: build_api
 build_api:
 	mkdir -p bin
 	go build -o bin/app ./cmd/app
-	# go build -o bin/bulksender ./cmd/consumers/bulksender
 	go build -o bin/sender ./cmd/consumers/sender
 	go build -o bin/campaigner ./cmd/consumers/campaigner
-	go build -o bin/scheduler ./cmd/scheduler
 
 build_static:
 	cd dashboard; rm -rf build && yarn && yarn build
@@ -43,5 +41,5 @@ run_campaigner:
 run_sender:
 	./scripts/run-sender.sh
 
-install_fixtures:
-	./scripts/install-fixtures.sh
+process_events:
+	./scripts/process-events.sh

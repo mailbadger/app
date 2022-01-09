@@ -1,22 +1,17 @@
 package storage
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/jinzhu/gorm"
-	"github.com/mailbadger/app/entities"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
+
+	"github.com/mailbadger/app/entities"
 )
 
 func TestSessions(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	store := From(db)
 
 	sess, err := store.GetSession("foobar")
@@ -44,21 +39,5 @@ func TestSessions(t *testing.T) {
 
 	_, err = store.GetSession("foobar")
 	assert.NotNil(t, err)
-	assert.True(t, gorm.IsRecordNotFoundError(err))
-
-	// test delete all sessions for user
-	sess = &entities.Session{
-		UserID:    1,
-		SessionID: "delete-session",
-	}
-
-	err = store.CreateSession(sess)
-	assert.Nil(t, err)
-
-	err = store.DeleteAllSessionsForUser(1)
-	assert.Nil(t, err)
-
-	_, err = store.GetSession("delete-session")
-	assert.NotNil(t, err)
-	assert.True(t, gorm.IsRecordNotFoundError(err))
+	assert.True(t, errors.Is(gorm.ErrRecordNotFound, err))
 }

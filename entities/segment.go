@@ -22,7 +22,7 @@ type SegmentWithTotalSubs struct {
 	SubscribersInSeg int64 `json:"subscribers_in_segment" gorm:"column:subscribers_in_segment"`
 	// This property is a pointer because we omit it when we populate the object for the paginated result.
 	// The property is only used in the "get single result" response.
-	TotalSubscribers *int64 `json:"total_subscribers,omitempty" sql:"-"`
+	TotalSubscribers *int64 `json:"total_subscribers,omitempty" sql:"-" gorm:"-"`
 }
 
 func (s Segment) GetID() int64 {

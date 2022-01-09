@@ -2,49 +2,43 @@ package main
 
 import (
 	"context"
-	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
 
-	"github.com/mailbadger/app/mode"
-	"github.com/mailbadger/app/routes"
-	"github.com/mailbadger/app/server"
+	"github.com/mailbadger/app/config"
 )
-
-func init() {
-	mode.SetModeFromEnv()
-	lvl, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
-	if err != nil {
-		lvl = logrus.InfoLevel
-	}
-
-	logrus.SetLevel(lvl)
-	logrus.SetOutput(os.Stdout)
-	if mode.IsProd() {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
-		gin.SetMode(gin.ReleaseMode)
-	}
-}
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	handler := routes.New()
-
-	var addr = os.Getenv("PORT")
-	if addr == "" {
-		addr = "8080"
+	conf, err := config.FromEnv()
+	if err != nil {
+		logrus.WithError(err).Fatalln("unable to read config from env")
 	}
-	srv := server.New(
-		":"+addr,
-		server.WithHandler(handler),
-		server.WithTLS(os.Getenv("CERT_FILE"), os.Getenv("KEY_FILE")),
-	)
-	if err := srv.ListenAndServe(ctx); err != nil {
-		logrus.WithError(err).Fatalln("server terminated")
+
+	initMode(conf.Mode)
+	initLogger(conf.Logging)
+
+	app, err := initApp(ctx, conf)
+	if err != nil {
+		logrus.WithError(err).Fatalln("unable to initialize app")
+	}
+
+	g := new(errgroup.Group)
+	g.Go(func() error {
+		return app.srv.ListenAndServe(ctx)
+	})
+
+	g.Go(func() error {
+		return app.campaignsched.Start(ctx, 2*time.Minute)
+	})
+
+	if err := g.Wait(); err != nil {
+		logrus.WithError(err).Error("app terminated")
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/csv"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -18,16 +17,18 @@ import (
 )
 
 type SubscribersExporter struct {
-	S3 s3iface.S3API
+	s3      s3iface.S3API
+	storage storage.Storage
 }
 
-func NewSubscribersExporter(s3 s3iface.S3API) *SubscribersExporter {
+func NewSubscribersExporter(s3 s3iface.S3API, storage storage.Storage) *SubscribersExporter {
 	return &SubscribersExporter{
-		S3: s3,
+		s3:      s3,
+		storage: storage,
 	}
 }
 
-func (se *SubscribersExporter) Export(c context.Context, userID int64, report *entities.Report) error {
+func (se *SubscribersExporter) Export(c context.Context, userID int64, report *entities.Report, bucket string) error {
 	var (
 		err    error
 		nextID int64
@@ -46,7 +47,7 @@ func (se *SubscribersExporter) Export(c context.Context, userID int64, report *e
 	}
 
 	for {
-		subscribers, err := storage.SeekSubscribersByUserID(c, userID, nextID, limit)
+		subscribers, err := se.storage.SeekSubscribersByUserID(userID, nextID, limit)
 		if err != nil {
 			return fmt.Errorf("get subscribers: %w", err)
 		}
@@ -66,8 +67,8 @@ func (se *SubscribersExporter) Export(c context.Context, userID int64, report *e
 
 	writer.Flush()
 
-	_, err = se.S3.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("FILES_BUCKET")),
+	_, err = se.s3.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(bucket),
 		Key:    aws.String(fmt.Sprintf("subscribers/export/%d/%s", userID, report.FileName)),
 		Body:   bytes.NewReader(buf.Bytes()),
 	})

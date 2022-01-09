@@ -1,32 +1,33 @@
 package redis
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-redis/redis"
 )
 
-type redisStore struct {
+type RedisStore struct {
 	client *redis.Client
 }
 
-func (rs *redisStore) Get(key string) ([]byte, error) {
-	return rs.client.Get(key).Bytes()
+func (rs *RedisStore) Get(ctx context.Context, key string) ([]byte, error) {
+	return rs.client.WithContext(ctx).Get(key).Bytes()
 }
 
-func (rs *redisStore) Set(key string, content []byte, duration time.Duration) error {
-	return rs.client.Set(key, content, duration).Err()
+func (rs *RedisStore) Set(ctx context.Context, key string, content []byte, duration time.Duration) error {
+	return rs.client.WithContext(ctx).Set(key, content, duration).Err()
 }
 
-func (rs *redisStore) Delete(key string) error {
-	return rs.client.Del(key).Err()
+func (rs *RedisStore) Delete(ctx context.Context, key string) error {
+	return rs.client.WithContext(ctx).Del(key).Err()
 }
 
-func (rs *redisStore) Exists(key string) (bool, error) {
-	r, err := rs.client.Exists(key).Result()
+func (rs *RedisStore) Exists(ctx context.Context, key string) (bool, error) {
+	r, err := rs.client.WithContext(ctx).Exists(key).Result()
 	return r != 0, err
 }
 
-func (rs *redisStore) Expire(key string, duration time.Duration) error {
-	return rs.client.Expire(key, duration).Err()
+func (rs *RedisStore) Expire(ctx context.Context, key string, duration time.Duration) error {
+	return rs.client.WithContext(ctx).Expire(key, duration).Err()
 }

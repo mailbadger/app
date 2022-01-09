@@ -3,7 +3,6 @@ package storage
 import (
 	"testing"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities"
@@ -11,12 +10,6 @@ import (
 
 func TestCampaignFailedLog(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	store := From(db)
 
 	campaign1 := &entities.Campaign{
@@ -36,8 +29,4 @@ func TestCampaignFailedLog(t *testing.T) {
 	c, err := store.GetCampaign(campaign1.ID, campaign1.UserID)
 	assert.Nil(t, err)
 	assert.Equal(t, "failed", c.Status)
-
-	// Test delete all campaign failed logs for a user
-	err = store.DeleteAllCampaignFailedLogsForUser(campaign1.UserID)
-	assert.Nil(t, err)
 }

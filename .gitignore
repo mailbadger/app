@@ -2,7 +2,6 @@
 *.o
 *.a
 *.so
-*_gen.go
 
 # Folders
 _obj

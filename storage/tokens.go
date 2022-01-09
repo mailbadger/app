@@ -26,8 +26,3 @@ func (db *store) CreateToken(t *entities.Token) error {
 func (db *store) DeleteToken(token string) error {
 	return db.Delete(&entities.Token{}, "token = ?", token).Error
 }
-
-// DeleteAllTokensForUser deletes all tokens for user
-func (db *store) DeleteAllTokensForUser(userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(&entities.Token{}).Error
-}

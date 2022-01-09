@@ -3,22 +3,26 @@ package actions_test
 import (
 	"database/sql"
 	"net/http"
-	"os"
-	"strconv"
 	"testing"
 
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gavv/httpexpect/v2"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/open-policy-agent/opa/ast"
 
+	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities"
 	"github.com/mailbadger/app/entities/params"
-	"github.com/mailbadger/app/opa"
+	"github.com/mailbadger/app/mode"
 	"github.com/mailbadger/app/routes"
-	"github.com/mailbadger/app/routes/middleware"
+	"github.com/mailbadger/app/services/boundaries"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers"
+	"github.com/mailbadger/app/services/templates"
+	"github.com/mailbadger/app/session"
+	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 	"github.com/mailbadger/app/storage/s3"
 )
@@ -27,48 +31,58 @@ func init() {
 	gin.SetMode(gin.TestMode)
 }
 
-func setup(t *testing.T, s storage.Storage, s3Mock *s3.MockS3Client) *httpexpect.Expect {
-	err := os.Setenv("SESSION_AUTH_KEY", "foo")
-	if err != nil {
-		t.FailNow()
-	}
-	err = os.Setenv("SESSION_ENCRYPT_KEY", "secretexmplkeythatis32characters")
-	if err != nil {
-		t.FailNow()
-	}
+func setup(
+	t *testing.T,
+	s storage.Storage,
+	sess session.Session,
+	s3Mock *s3.MockS3Client,
+	pub sqs.PublisherAPI,
+	emailSender emails.Sender,
+	templatesvc templates.Service,
+	boundarysvc boundaries.Service,
+	subscrsvc subscribers.Service,
+	reportsvc reports.Service,
+	compiler *ast.Compiler,
+	enableSignup bool,
+	verifyEmail bool,
+) *httpexpect.Expect {
+	mode.SetMode("test")
 
-	cookiestore := cookie.NewStore(
-		[]byte(os.Getenv("SESSION_AUTH_KEY")),
-		[]byte(os.Getenv("SESSION_ENCRYPT_KEY")),
+	queueURL := "http://example.com/campaigns-queue"
+	api := routes.New(
+		sess,
+		s,
+		compiler,
+		pub,
+		s3Mock,
+		emailSender,
+		templatesvc,
+		boundarysvc,
+		subscrsvc,
+		reportsvc,
+		&queueURL,
+		"/var/www/app",       // app dir
+		"http://example.com", // app url
+		"files-bucket",
+		enableSignup,
+		verifyEmail,
+		"",                                 // recaptcha secret
+		"secretexmplkeythatis32characters", // unsubscribe token secret
+		"test@example.com",                 // system email
+		config.Social{},
 	)
-	secureCookie, _ := strconv.ParseBool(os.Getenv("SECURE_COOKIE"))
-	cookiestore.Options(sessions.Options{
-		Secure:   secureCookie,
-		HttpOnly: true,
-	})
 
-	handler := gin.New()
-	handler.Use(sessions.Sessions("mbsess", cookiestore))
-	handler.Use(middleware.Storage(s))
-	handler.Use(middleware.SetUser())
-	handler.Use(middleware.S3Client(s3Mock))
-
-	routes.SetGuestRoutes(handler)
-
-	compiler, err := opa.NewCompiler()
-	if err != nil {
-		t.FailNow()
-	}
-	routes.SetAuthorizedRoutes(handler, compiler)
+	handler := api.Handler()
 
 	return httpexpect.WithConfig(httpexpect.Config{
+		BaseURL: "http://example.com",
 		Client: &http.Client{
 			Transport: httpexpect.NewBinder(handler),
 			Jar:       httpexpect.NewJar(),
 		},
 		Reporter: httpexpect.NewAssertReporter(t),
 		Printers: []httpexpect.Printer{
-			httpexpect.NewCompactPrinter(t),
+			httpexpect.NewCurlPrinter(t),
 		},
 	})
 }
@@ -106,7 +120,16 @@ func createAuthenticatedExpect(e *httpexpect.Expect, s storage.Storage) (*httpex
 		Password: "hunter1",
 	}).Expect().Status(http.StatusOK).Cookie("mbsess")
 
-	return e.Builder(func(req *httpexpect.Request) {
+	e = e.Builder(func(req *httpexpect.Request) {
 		req.WithCookie(c.Name().Raw(), c.Value().Raw())
+	})
+
+	res := e.GET("/api/users/me").Expect()
+	token := res.Header("X-CSRF-Token").Raw()
+	csrfCookie := res.Cookie("_gorilla_csrf")
+
+	return e.Builder(func(req *httpexpect.Request) {
+		req.WithCookie(csrfCookie.Name().Raw(), csrfCookie.Value().Raw())
+		req.WithHeader("X-CSRF-Token", token)
 	}), nil
 }

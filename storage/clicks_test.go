@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities"
@@ -12,12 +11,6 @@ import (
 
 func TestClicks(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 	now := time.Now().UTC()
@@ -208,14 +201,6 @@ func TestClicks(t *testing.T) {
 
 	// Test get empty campaign clicks stats
 	campaignClicksStats, err = store.GetCampaignClicksStats(55, 1)
-	assert.Nil(t, err)
-	assert.Empty(t, campaignClicksStats)
-
-	// Test delete all clicks for a user
-	err = store.DeleteAllClicksForUser(1)
-	assert.Nil(t, err)
-
-	campaignClicksStats, err = store.GetCampaignClicksStats(2, 1)
 	assert.Nil(t, err)
 	assert.Empty(t, campaignClicksStats)
 }

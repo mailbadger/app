@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities"
@@ -13,12 +12,6 @@ import (
 
 func TestReport(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	now := time.Now()
 
 	store := From(db)
@@ -66,16 +59,11 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, reports[0].Resource, report.Resource)
 
 	// test update report
-	updatedReport := entities.Report{
-		Model: entities.Model{
-			ID:        2,
-			UpdatedAt: time.Now(),
-		},
-		UserID:   1,
-		FileName: "subv2",
-		Status:   "failed",
-		Note:     "unable to unmarshal bla",
-	}
+	updatedReport := reports[1]
+	updatedReport.Note = "unable to unmarshal bla"
+	updatedReport.Status = "failed"
+	updatedReport.FileName = "subv2"
+
 	err = store.UpdateReport(&updatedReport)
 	assert.Nil(t, err)
 
@@ -98,12 +86,4 @@ func TestReport(t *testing.T) {
 	assert.Equal(t, reports[2].FileName, runningReport.FileName)
 	assert.Equal(t, reports[2].Resource, runningReport.Resource)
 	assert.Equal(t, reports[2].Type, runningReport.Type)
-
-	// Test delete all reports for a user
-	err = store.DeleteAllReportsForUser(1)
-	assert.Nil(t, err)
-
-	numOfRep, err = store.GetNumberOfReportsForDate(1, now)
-	assert.Nil(t, err)
-	assert.Equal(t, int64(0), numOfRep)
 }

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/segmentio/ksuid"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mailbadger/app/entities"
@@ -14,12 +13,6 @@ import (
 
 func TestScheduledCampaign(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	var now = time.Now()
 

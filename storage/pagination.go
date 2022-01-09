@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
@@ -23,7 +23,7 @@ const (
 )
 
 // DefaultPerPage is a default value of number of items per page
-var DefaultPerPage int64 = 10
+var DefaultPerPage int = 10
 
 // Links represent the previous and next links used when iterating through the
 // collection.
@@ -41,14 +41,14 @@ type PaginationCursor struct {
 	Path          string                    `json:"-"`
 	Resource      string                    `json:"-"`
 	Direction     Direction                 `json:"-"`
-	PerPage       int64                     `json:"per_page"`
+	PerPage       int                       `json:"per_page"`
 	Total         int64                     `json:"total"`
 	Links         Links                     `json:"links"`
 	Collection    interface{}               `json:"collection"`
 }
 
 // NewPaginationCursor creates new PaginationCursor object.
-func NewPaginationCursor(path string, perPage int64) *PaginationCursor {
+func NewPaginationCursor(path string, perPage int) *PaginationCursor {
 	if perPage <= 0 || perPage > 100 {
 		perPage = DefaultPerPage
 	}
@@ -63,24 +63,31 @@ func NewPaginationCursor(path string, perPage int64) *PaginationCursor {
 // PopulateLinks populates the Links property with the query params needed for the
 // previous and next urls. It uses the BasePath and encodes the 'per_page', 'ending_before' and 'starting_after'
 // query parameters needed to create the links.
-func (c *PaginationCursor) PopulateLinks(prevID, nextID string) {
+func (c *PaginationCursor) PopulateLinks(last *entities.Model) error {
+	prev, next, err := c.findPrevAndNextIDs(last)
+	if err != nil {
+		return err
+	}
+
+	prevID := strconv.FormatInt(prev, 10)
+	nextID := strconv.FormatInt(next, 10)
 
 	c.Links = Links{}
-
 	if prevID != "" && prevID != "0" {
 		params := url.Values{}
-		params.Add("per_page", strconv.FormatInt(c.PerPage, 10))
+		params.Add("per_page", strconv.FormatInt(int64(c.PerPage), 10))
 		params.Add("ending_before", prevID)
 		l := c.Path + "?" + params.Encode()
 		c.Links.Previous = &l
 	}
 	if nextID != "" && nextID != "0" {
 		params := url.Values{}
-		params.Add("per_page", strconv.FormatInt(c.PerPage, 10))
+		params.Add("per_page", strconv.FormatInt(int64(c.PerPage), 10))
 		params.Add("starting_after", nextID)
 		l := c.Path + "?" + params.Encode()
 		c.Links.Next = &l
 	}
+	return nil
 }
 
 // SetCollection sets the collection in the cursor. Usually when setting a collection, it is empty, and
@@ -127,7 +134,7 @@ func (c *PaginationCursor) SetEndingBefore(eb int64) {
 }
 
 // SetPerPage sets the number for total items to be fetched per page.
-func (c *PaginationCursor) SetPerPage(perPage int64) {
+func (c *PaginationCursor) SetPerPage(perPage int) {
 	if perPage <= 0 || perPage > 100 {
 		perPage = DefaultPerPage
 	}
@@ -143,17 +150,17 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 		if err != nil {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
-		p.Query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.id", p.Resource),
+		p.Query.Joins(fmt.Sprintf("INNER JOIN (?) as r ON %s.id = r.rid", p.Resource),
 			db.DB.
 				Table(p.Resource).
-				Select("id").
+				Select("id as rid").
 				Where("(created_at > ? OR (created_at = ? AND id > ?)) AND created_at < ?",
 					m.CreatedAt,
 					m.CreatedAt,
 					m.ID,
 					time.Now(),
-				).Scopes(p.Scopes...).Order("created_at, id asc").Limit(p.PerPage).QueryExpr(),
-		).Scopes(p.Scopes...).Find(p.Collection)
+				).Scopes(p.Scopes...).Order("created_at, id asc").Limit(p.PerPage),
+		).Find(p.Collection)
 
 		last, err = db.GetLast(userID, p.Resource, p.Scopes...)
 		if err != nil {
@@ -166,12 +173,13 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			return fmt.Errorf("paginate: get one: %w", err)
 		}
 
-		p.Query.Where(`(created_at < ? OR (created_at = ? AND id < ?)) AND created_at < ?`,
-			m.CreatedAt,
-			m.CreatedAt,
-			m.ID,
-			time.Now(),
-		).Scopes(p.Scopes...).Find(p.Collection)
+		p.Query.Table(p.Resource).
+			Where(`(created_at < ? OR (created_at = ? AND id < ?)) AND created_at < ?`,
+				m.CreatedAt,
+				m.CreatedAt,
+				m.ID,
+				time.Now(),
+			).Scopes(p.Scopes...).Find(p.Collection)
 
 		// when it is descending order we'll need the first record (last from behind) in order
 		// to check if it matches the last record from the current page. If they're the same
@@ -181,7 +189,7 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 			return fmt.Errorf("paginate: get first: %w", err)
 		}
 	case Start:
-		p.Query.Scopes(p.Scopes...).Find(p.Collection)
+		p.Query.Scopes(p.Scopes...).Table(p.Resource).Find(p.Collection)
 	}
 
 	total, err := db.GetTotal(userID, p.Resource, p.Scopes...)
@@ -191,60 +199,48 @@ func (db *store) Paginate(p *PaginationCursor, userID int64) error {
 
 	p.SetTotal(total)
 
-	models := interfaceToSlice(p.Collection)
-
-	prevID, nextID, err := findPrevAndNextIDs(p, models, last)
-	if err != nil {
-		return fmt.Errorf("paginate: find prev and next: %w", err)
-	}
-
-	p.PopulateLinks(strconv.FormatInt(prevID, 10), strconv.FormatInt(nextID, 10))
-
-	return nil
+	err = p.PopulateLinks(last)
+	return err
 }
 
 func (db *store) GetOne(id, userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	scopes = append(scopes, BelongsToUser(userID))
-	err := db.Table(table).Scopes(scopes...).Where("id = ?", id).Find(&model).Error
+	err := db.Table(table).Scopes(scopes...).Where("id = ?", id).First(&model).Error
 	return &model, err
 }
 
 func (db *store) GetTotal(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (int64, error) {
 	var count int64
-	scopes = append(scopes, BelongsToUser(userID))
 	err := db.Table(table).Scopes(scopes...).Count(&count).Error
 	return count, err
 }
 
 func (db *store) GetFirst(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	scopes = append(scopes, BelongsToUser(userID))
 	err := db.Table(table).
 		Scopes(scopes...).
 		Order("id").
-		Limit(1).
-		Find(&model).
+		First(&model).
 		Error
 	return &model, err
 }
 
 func (db *store) GetLast(userID int64, table string, scopes ...func(*gorm.DB) *gorm.DB) (*entities.Model, error) {
 	var model entities.Model
-	scopes = append(scopes, BelongsToUser(userID))
 	err := db.Table(table).
 		Scopes(scopes...).
 		Order("id desc").
-		Limit(1).
-		Find(&model).
+		First(&model).
 		Error
 	return &model, err
 }
 
-func findPrevAndNextIDs(p *PaginationCursor, models []interface{}, last *entities.Model) (int64, int64, error) {
+func (p *PaginationCursor) findPrevAndNextIDs(last *entities.Model) (int64, int64, error) {
 	var (
 		prevID, nextID int64
 	)
+
+	models := interfaceToSlice(p.Collection)
 
 	if p.Direction == Start {
 		if len(models) == int(p.PerPage) && len(models) < int(p.Total) {

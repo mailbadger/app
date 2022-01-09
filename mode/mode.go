@@ -1,7 +1,5 @@
 package mode
 
-import "os"
-
 type Mode int
 
 const (
@@ -24,7 +22,7 @@ func (m Mode) String() string {
 	return names[m]
 }
 
-var appMode = Debug
+var appMode = Prod
 
 // SetMode sets the app mode according to input string.
 func SetMode(mode string) {
@@ -49,16 +47,4 @@ func IsDebug() bool {
 
 func IsProd() bool {
 	return appMode == Prod
-}
-
-func SetModeFromEnv() {
-	env := os.Getenv("ENVIRONMENT")
-	switch env {
-	case "debug":
-		appMode = Debug
-	case "prod":
-		appMode = Prod
-	case "test":
-		appMode = Test
-	}
 }

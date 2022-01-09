@@ -9,7 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/cbroglie/mustache"
 
+	"github.com/mailbadger/app/config"
 	"github.com/mailbadger/app/entities"
+	awssqs "github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
 )
 
@@ -27,14 +29,32 @@ type Service interface {
 
 // service implements the Service interface
 type service struct {
-	db        storage.Storage
-	sqsclient *sqs.Client
+	db                storage.Storage
+	sqsclient         awssqs.SendReceiveMessageAPI
+	unsubscribeSecret string
+	appURL            string
 }
 
-func New(db storage.Storage, sqsclient *sqs.Client) Service {
+func From(db storage.Storage, sqsclient awssqs.SendReceiveMessageAPI, conf config.Config) Service {
+	return New(
+		db,
+		sqsclient,
+		conf.Server.UnsubscribeSecret,
+		conf.Server.AppURL,
+	)
+}
+
+func New(
+	db storage.Storage,
+	sqsclient awssqs.SendReceiveMessageAPI,
+	secret string,
+	appURL string,
+) Service {
 	return &service{
-		db:        db,
-		sqsclient: sqsclient,
+		db:                db,
+		sqsclient:         sqsclient,
+		unsubscribeSecret: secret,
+		appURL:            appURL,
 	}
 }
 
@@ -68,7 +88,7 @@ func (svc *service) PrepareSubscriberEmailData(
 		m[entities.TagName] = s.Name
 	}
 
-	url, err := s.GetUnsubscribeURL(msg.UserUUID)
+	url, err := s.GetUnsubscribeURL(msg.UserUUID, svc.unsubscribeSecret, svc.appURL)
 	if err != nil {
 		return nil, fmt.Errorf("campaign service: get unsubscribe url: %w", err)
 	}
@@ -114,6 +134,7 @@ func (svc *service) PublishSubscriberEmailParams(ctx context.Context, params *en
 	}
 
 	body := string(senderBytes)
+
 	_, err = svc.sqsclient.SendMessage(ctx, &sqs.SendMessageInput{
 		MessageBody: &body,
 		QueueUrl:    queueURL,

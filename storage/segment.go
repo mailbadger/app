@@ -6,17 +6,17 @@ import (
 
 // GetSegments fetches lists by user id, and populates the pagination obj
 func (db *store) GetSegments(userID int64, p *PaginationCursor) error {
-	p.SetCollection(&[]entities.SegmentWithTotalSubs{})
+	p.SetCollection(new([]entities.SegmentWithTotalSubs))
 	p.SetResource("segments")
+
+	p.AddScope(BelongsToUser(userID))
 
 	query := db.Table(p.Resource).
 		Select("segments.*, (?) as subscribers_in_segment",
 			db.Select("count(*)").
 				Table("subscribers_segments").
-				Where("segment_id = segments.id").
-				QueryExpr(),
+				Where("segment_id = segments.id"),
 		).
-		Where("user_id = ?", userID).
 		Order("created_at desc, id desc").
 		Limit(p.PerPage)
 
@@ -44,14 +44,14 @@ func (db *store) GetSegmentsByIDs(userID int64, ids []int64) ([]entities.Segment
 // GetSegment returns the list by the given id and user id
 func (db *store) GetSegment(id, userID int64) (*entities.Segment, error) {
 	var seg = new(entities.Segment)
-	err := db.Where("user_id = ? and id = ?", userID, id).Find(seg).Error
+	err := db.Where("user_id = ? and id = ?", userID, id).First(seg).Error
 	return seg, err
 }
 
 // GetSegmentByName returns the segment by the given name and user id
 func (db *store) GetSegmentByName(name string, userID int64) (*entities.Segment, error) {
 	var seg = new(entities.Segment)
-	err := db.Where("user_id = ? and name = ?", userID, name).Find(seg).Error
+	err := db.Where("user_id = ? and name = ?", userID, name).First(seg).Error
 	return seg, err
 }
 
@@ -77,20 +77,15 @@ func (db *store) DeleteSegment(id, userID int64) error {
 
 // RemoveSubscribersFromSegment clears the subscribers association.
 func (db *store) RemoveSubscribersFromSegment(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Clear().Error
+	return db.Model(s).Association("Subscribers").Clear()
 }
 
 // AppendSubscribers appends segscribers to the existing association.
 func (db *store) AppendSubscribers(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Append(s.Subscribers).Error
+	return db.Model(s).Association("Subscribers").Append(s.Subscribers)
 }
 
 // DetachSubscribers deletes the subscribers association by the given subscribers list.
 func (db *store) DetachSubscribers(s *entities.Segment) error {
-	return db.Model(s).Association("Subscribers").Delete(s.Subscribers).Error
-}
-
-// DeleteAllSegmentsForUser deletes all subscribers for user
-func (db *store) DeleteAllSegmentsForUser(userID int64) error {
-	return db.Where("user_id = ?", userID).Delete(&entities.Segment{}).Error
+	return db.Model(s).Association("Subscribers").Delete(s.Subscribers)
 }

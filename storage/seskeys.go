@@ -21,5 +21,5 @@ func (db *store) CreateSesKeys(s *entities.SesKeys) error {
 
 // DeleteSesKeys deletes the keys by the given user id.
 func (db *store) DeleteSesKeys(userID int64) error {
-	return db.Delete(&entities.SesKeys{UserID: userID}).Error
+	return db.Where("user_id = ?", userID).Delete(&entities.SesKeys{}).Error
 }

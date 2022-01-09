@@ -1,30 +1,43 @@
 package middleware
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mailbadger/app/logger"
 	"github.com/sirupsen/logrus"
 )
 
-// SetLoggerEntry sets a request logger entry to the context, along with fields 'request_id' and 'user_id'
-// which will propagate in each logged message.
-func SetLoggerEntry() gin.HandlerFunc {
+// Logger provides logging middleware.
+func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		reqLogger := logrus.StandardLogger()
-		fields := logrus.Fields{}
-
 		reqID := GetReqID(c)
-		if reqID != "" {
-			fields["request_id"] = reqID
-		}
+		entry := logger.From(c).WithField("request_id", reqID)
+		logger.SetToContext(c, entry)
 
-		u := GetUser(c)
-		if u != nil {
-			fields["user_id"] = u.ID
-		}
+		start := time.Now()
 
-		logger.SetToContext(c, reqLogger.WithFields(fields))
-
+		path := c.Request.URL.Path
 		c.Next()
+
+		end := time.Now().UTC()
+		latency := end.Sub(start)
+
+		entry = logger.From(c).WithFields(logrus.Fields{
+			"status":     c.Writer.Status(),
+			"method":     c.Request.Method,
+			"path":       path,
+			"ip":         c.ClientIP(),
+			"latency":    latency,
+			"user-agent": c.Request.UserAgent(),
+			"time":       end.Format(time.RFC3339),
+		})
+
+		if len(c.Errors) > 0 {
+			// Append error field if this is an erroneous request.
+			entry.Error(c.Errors.String())
+		} else {
+			entry.Info()
+		}
 	}
 }

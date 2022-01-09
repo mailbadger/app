@@ -6,20 +6,18 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/entities"
+	_ "github.com/mailbadger/app/statik"
+	"github.com/mailbadger/app/utils"
 	"github.com/rakyll/statik/fs"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-
-	_ "github.com/mailbadger/app/statik"
-
-	"github.com/mailbadger/app/entities"
-	"github.com/mailbadger/app/utils"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // store implements the Storage interface
@@ -27,9 +25,10 @@ type store struct {
 	*gorm.DB
 }
 
-// New creates a database connection and returns a new Storage
-func New(driver, config string) Storage {
-	return From(openDbConn(driver, config))
+// New creates a database connection and returns a new DB
+func New(conf config.Config) *gorm.DB {
+	dsn := makeDsn(conf)
+	return openDbConn(conf.Storage.DB.Driver, dsn)
 }
 
 // From creates a new store object.
@@ -37,25 +36,39 @@ func From(db *gorm.DB) Storage {
 	return &store{db}
 }
 
-// openDbConn creates a database connection using the driver and config string
-func openDbConn(driver, config string) *gorm.DB {
-	db, err := gorm.Open(driver, config)
+// openDbConn creates a database connection using the driver and source string
+func openDbConn(driver, dsn string) *gorm.DB {
+	var dialect gorm.Dialector
+	if driver == "mysql" {
+		dialect = mysql.Open(dsn)
+	} else {
+		dialect = sqlite.Open(dsn)
+	}
+
+	conf := &gorm.Config{}
+
+	db, err := gorm.Open(dialect, conf)
 	if err != nil {
-		log.WithError(err).Fatalln("db connection failed")
+		log.WithError(err).Fatalln("db open connection failed")
+	}
+
+	conn, err := db.DB()
+	if err != nil {
+		log.WithError(err).Fatalln("db get connection failed")
 	}
 
 	if driver == "mysql" {
-		db.DB().SetMaxIdleConns(0)
+		conn.SetMaxIdleConns(0)
 	}
 
-	if err := pingDb(db); err != nil {
+	if err := pingDb(conn); err != nil {
 		log.WithError(err).Fatalln("database ping attempts failed")
 	}
 
 	fresh := false
 	switch driver {
 	case "sqlite3":
-		if _, err := os.Stat(config); err != nil || config == ":memory:" {
+		if _, err := os.Stat(dsn); err != nil || dsn == ":memory:" {
 			fresh = true
 		}
 	case "mysql":
@@ -65,13 +78,44 @@ func openDbConn(driver, config string) *gorm.DB {
 		}
 	}
 
-	if err := setupDb(driver, config, fresh, db); err != nil {
-		log.WithError(err).Fatalln("migrations failed")
+	if err := setupDb(driver, dsn, fresh, db); err != nil {
+		log.WithError(err).Fatalln("database setup failed")
 	}
 
-	// db.LogMode(mode.IsDebug())
-
 	return db
+}
+
+// pingDb ensures that the database is reachable before running migrations
+func pingDb(db *sql.DB) (err error) {
+	for i := 0; i < 20; i++ {
+		err = db.Ping()
+		if err == nil {
+			return
+		}
+
+		log.Infof("database ping failed. retry in 1s")
+		time.Sleep(time.Second)
+	}
+	return
+}
+
+// makeDsn creates a DSN string from the db config based on the driver name.
+// List of drivers: 'sqlite3', 'mysql'.
+func makeDsn(conf config.Config) string {
+	switch conf.Storage.DB.Driver {
+	case "sqlite3":
+		return conf.Storage.DB.Sqlite3Source
+	case "mysql":
+		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
+			conf.Storage.DB.MySQLUser,
+			conf.Storage.DB.MySQLPass,
+			conf.Storage.DB.MySQLHost,
+			conf.Storage.DB.MySQLPort,
+			conf.Storage.DB.MySQLDatabase,
+		)
+	default:
+		return ""
+	}
 }
 
 // setupDb runs the necessary migrations and creates a new user if the database
@@ -87,7 +131,11 @@ func setupDb(driver, config string, fresh bool, db *gorm.DB) error {
 	var m = &migrate.HttpFileSystemMigrationSource{
 		FileSystem: migrationFS,
 	}
-	_, err = migrate.Exec(db.DB(), driver, m, migrate.Up)
+	conn, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("create migrations db conn: %w", err)
+	}
+	_, err = migrate.Exec(conn, driver, m, migrate.Up)
 	if err != nil {
 		return err
 	}
@@ -159,20 +207,6 @@ func initDb(config string, db *gorm.DB) error {
 	return nil
 }
 
-// pingDb ensures that the database is reachable before running migrations
-func pingDb(db *gorm.DB) (err error) {
-	for i := 0; i < 20; i++ {
-		err = db.DB().Ping()
-		if err == nil {
-			return
-		}
-
-		log.Infof("database ping failed. retry in 1s")
-		time.Sleep(time.Second)
-	}
-	return
-}
-
 // openTestDb creates a database connection for testing purposes
 func openTestDb() *gorm.DB {
 	var (
@@ -180,29 +214,5 @@ func openTestDb() *gorm.DB {
 		config = ":memory:"
 	)
 
-	if os.Getenv("DATABASE_DRIVER") != "" && os.Getenv("DATABASE_CONFIG") != "" {
-		driver = os.Getenv("DATABASE_DRIVER")
-		config = os.Getenv("DATABASE_CONFIG")
-	}
-
 	return openDbConn(driver, config)
-}
-
-// MakeConfigFromEnv creates a DSN string from env variables based on the driver name.
-// List of drivers: 'sqlite3', 'mysql'.
-func MakeConfigFromEnv(driver string) string {
-	switch driver {
-	case "sqlite3":
-		return os.Getenv("SQLITE3_FILE")
-	case "mysql":
-		return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true",
-			os.Getenv("MYSQL_USER"),
-			os.Getenv("MYSQL_PASS"),
-			os.Getenv("MYSQL_HOST"),
-			os.Getenv("MYSQL_PORT"),
-			os.Getenv("MYSQL_DATABASE"),
-		)
-	default:
-		return ""
-	}
 }

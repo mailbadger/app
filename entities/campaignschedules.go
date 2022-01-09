@@ -15,9 +15,9 @@ type CampaignSchedule struct {
 	Source                  string            `json:"source"`
 	FromName                string            `json:"from_name"`
 	SegmentIDsJSON          JSON              `json:"-" gorm:"column:segment_ids; type:json"`
-	SegmentIDs              []int64           `json:"segment_ids" sql:"-"`
+	SegmentIDs              []int64           `json:"segment_ids" sql:"-" gorm:"-"`
 	DefaultTemplateDataJSON JSON              `json:"-"  gorm:"column:default_template_data; type:json"`
-	DefaultTemplateData     map[string]string `json:"default_template_data" sql:"-"`
+	DefaultTemplateData     map[string]string `json:"default_template_data" sql:"-" gorm:"-"`
 	CreatedAt               time.Time         `json:"created_at"`
 	UpdatedAt               time.Time         `json:"updated_at"`
 }

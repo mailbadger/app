@@ -4,18 +4,11 @@ import (
 	"testing"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSegment(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 
@@ -76,10 +69,6 @@ func TestSegment(t *testing.T) {
 
 	// Test delete list
 	err = store.DeleteSegment(1, 1)
-	assert.Nil(t, err)
-
-	// Test delete all segments for a user
-	err = store.DeleteAllSegmentsForUser(1)
 	assert.Nil(t, err)
 
 	p = NewPaginationCursor("/api/segments", 10)

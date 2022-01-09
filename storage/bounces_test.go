@@ -4,21 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mailbadger/app/entities"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBounces(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
-
 	store := From(db)
 	now := time.Now().UTC()
 
@@ -65,13 +56,4 @@ func TestBounces(t *testing.T) {
 	totalBounces, err = store.GetTotalBounces(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalBounces)
-
-	// test delete all bounces for user
-	err = store.DeleteAllBouncesForUser(1)
-	assert.Nil(t, err)
-
-	totalBounces, err = store.GetTotalBounces(1, 1)
-	assert.Nil(t, err)
-	assert.Equal(t, int64(0), totalBounces)
-
 }

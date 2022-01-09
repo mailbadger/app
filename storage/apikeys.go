@@ -17,7 +17,7 @@ func (db *store) GetAPIKey(identifier string) (*entities.APIKey, error) {
 	err := db.
 		Where("secret_key = ? and active = ?", identifier, true).
 		Preload("User.Boundaries").Preload("User.Roles").
-		Find(key).
+		First(key).
 		Error
 
 	return key, err

@@ -4,17 +4,66 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/mailbadger/app/config"
+	"github.com/mailbadger/app/emails"
 	"github.com/mailbadger/app/entities/params"
+	"github.com/mailbadger/app/opa"
+	"github.com/mailbadger/app/services/boundaries"
+	"github.com/mailbadger/app/services/exporters"
+	"github.com/mailbadger/app/services/reports"
+	"github.com/mailbadger/app/services/subscribers"
+	"github.com/mailbadger/app/services/templates"
+	"github.com/mailbadger/app/session"
+	"github.com/mailbadger/app/sqs"
 	"github.com/mailbadger/app/storage"
-	"github.com/mailbadger/app/storage/s3"
+	s3mock "github.com/mailbadger/app/storage/s3"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestUser(t *testing.T) {
-	s := storage.New("sqlite3", ":memory:")
+	db := storage.New(config.Config{
+		Storage: config.Storage{
+			DB: config.DB{
+				Driver:        "sqlite3",
+				Sqlite3Source: ":memory:",
+			},
+		},
+	})
+	s := storage.From(db)
+	sess := session.New(s, "foo", "secretexmplkeythatis32characters", true)
 
-	s3mock := new(s3.MockS3Client)
+	mockS3 := new(s3mock.MockS3Client)
+	mockS3.On("PutObject", mock.AnythingOfType("*s3.PutObjectInput")).Twice().Return(&s3.PutObjectAclOutput{}, nil)
 
-	e := setup(t, s, s3mock)
+	mockPub := new(sqs.MockPublisher)
+	mockSender := new(emails.MockSender)
+
+	templatesvc := templates.New(s, mockS3, "test_bucket")
+	boundarysvc := boundaries.New(s)
+	subscrsvc := subscribers.New(mockS3, s)
+	reportsvc := reports.New(exporters.NewSubscribersExporter(mockS3, s), s)
+
+	compiler, err := opa.NewCompiler()
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	e := setup(
+		t, s,
+		sess,
+		mockS3,
+		mockPub,
+		mockSender,
+		templatesvc,
+		boundarysvc,
+		subscrsvc,
+		reportsvc,
+		compiler,
+		false, // enable signup
+		false, // verify email
+	)
 	auth, err := createAuthenticatedExpect(e, s)
 	if err != nil {
 		t.Error(err)
@@ -24,7 +73,7 @@ func TestUser(t *testing.T) {
 	e.GET("/api/users/me").
 		Expect().
 		Status(http.StatusUnauthorized).
-		JSON().Object().ValueEqual("message", "User not authorized")
+		JSON().Object().ValueEqual("message", "You are not authorized to perform this request.")
 
 	auth.GET("/api/users/me").
 		Expect().

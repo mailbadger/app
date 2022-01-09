@@ -4,20 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/mailbadger/app/entities"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDeliveries(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 
 	store := From(db)
 	now := time.Now().UTC()
@@ -61,12 +53,4 @@ func TestDeliveries(t *testing.T) {
 	totalDeliveries, err = store.GetTotalDelivered(1, 1)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(2), totalDeliveries)
-
-	// Test delete all deliveries for a user
-	err = store.DeleteAllDeliveriesForUser(1)
-	assert.Nil(t, err)
-
-	totalDeliveries, err = store.GetTotalDelivered(1, 1)
-	assert.Nil(t, err)
-	assert.Empty(t, totalDeliveries)
 }

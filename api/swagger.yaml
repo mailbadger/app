@@ -1114,7 +1114,7 @@ components:
           schema:
             $ref: "#/components/schemas/Message"
           example:
-            message: "User not authorized"
+            message: "You are not authorized to perform this request."
     UnexpectedError:
       description: Unexpected error
       content:

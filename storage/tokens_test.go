@@ -5,18 +5,11 @@ import (
 	"time"
 
 	"github.com/mailbadger/app/entities"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTokens(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	store := From(db)
 
 	_, err := store.GetToken("abc")
@@ -59,22 +52,4 @@ func TestTokens(t *testing.T) {
 	token, err = store.GetToken("abc")
 	assert.NotNil(t, err)
 	assert.Nil(t, token)
-
-	// test delete all tokens for user
-	token = &entities.Token{
-		UserID:    1,
-		Token:     "delete-all-tokens",
-		Type:      entities.UnsubscribeTokenType,
-		ExpiresAt: now.AddDate(0, 0, 4),
-	}
-
-	err = store.CreateToken(token)
-	assert.Nil(t, err)
-
-	err = store.DeleteAllTokensForUser(1)
-	assert.Nil(t, err)
-
-	token, err = store.GetToken("delete-all-tokens")
-	assert.NotNil(t, err)
-	assert.Empty(t, token)
 }

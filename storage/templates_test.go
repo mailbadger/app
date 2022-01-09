@@ -30,12 +30,6 @@ func createTemplates(store Storage) {
 
 func TestTemplate(t *testing.T) {
 	db := openTestDb()
-	defer func() {
-		err := db.Close()
-		if err != nil {
-			logrus.Error(err)
-		}
-	}()
 	store := From(db)
 	createTemplates(store)
 

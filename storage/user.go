@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
 	"github.com/mailbadger/app/entities"
 )
