@@ -3,10 +3,10 @@ import PropTypes from "prop-types"
 import { FormField, Box } from "grommet"
 import { Formik } from "formik"
 import { string, object, addMethod } from "yup"
-import { mainInstance as axios } from "../axios"
+import { mainInstance as axios } from "../network/axios"
 
 import equalTo from "../utils/equalTo"
-import { FormPropTypes } from "../PropTypes"
+import { FormPropTypes } from "../utils/PropTypes"
 import {
     AuthFormWrapper,
     AuthStyledTextLabel,

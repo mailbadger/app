@@ -8,14 +8,14 @@ import { deepMerge } from "grommet/utils"
 
 import { Emoji } from "./ui"
 import { AuthProvider } from "./Auth/context"
-import Landing from "./Landing"
-import Dashboard from "./Dashboard"
+import Landing from "./pages/Landing/Landing"
+import Dashboard from "./pages/Dashboard/Dashboard"
 import Logout from "./Auth/Logout"
-import VerifyEmail from "./VerifyEmail"
+import VerifyEmail from "./pages/VerifyEmail/VerifyEmail"
 import ProtectedRoute from "./ProtectedRoute"
-import history from "./history"
+import history from "./utils/history"
 
-import GlobalFonts from "./StyledFonts"
+import GlobalFonts from "./ui/StyledFonts"
 
 const theme = deepMerge(grommet, {
     global: {

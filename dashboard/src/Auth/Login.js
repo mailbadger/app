@@ -3,7 +3,7 @@ import { FormField, Paragraph, Box } from "grommet"
 import { Formik } from "formik"
 import { string, object } from "yup"
 import { NavLink } from "react-router-dom"
-import { mainInstance as axios } from "../axios"
+import { mainInstance as axios } from "../network/axios"
 import SocialButtons from "./SocialButtons"
 import { socialAuthEnabled } from "../Auth"
 import {
@@ -17,7 +17,7 @@ import {
     AuthFormWrapper,
     AuthFormSubmittedError,
 } from "../ui"
-import { FormPropTypes, AuthFormPropTypes } from "../PropTypes"
+import { FormPropTypes, AuthFormPropTypes } from "../utils/PropTypes"
 import { endpoints } from "../network/endpoints"
 
 const Form = ({

@@ -3,11 +3,11 @@ import PropTypes from "prop-types"
 import { FormField, Button, TextInput } from "grommet"
 import { Formik, ErrorMessage } from "formik"
 import { string, object, ref, addMethod } from "yup"
-import { mainInstance as axios } from "../axios"
+import { mainInstance as axios } from "../network/axios"
 
 import equalTo from "../utils/equalTo"
-import history from "../history"
-import { FormPropTypes } from "../PropTypes"
+import history from "../utils/history"
+import { FormPropTypes } from "../utils/PropTypes"
 import { endpoints } from "../network/endpoints"
 
 addMethod(string, "equalTo", equalTo)
