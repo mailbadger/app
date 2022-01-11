@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import PropTypes from "prop-types"
-import { authInstance as axios } from "../axios"
+import { authInstance as axios } from "../network/axios"
 import { endpoints } from "../network/endpoints"
 
 const defaultState = {

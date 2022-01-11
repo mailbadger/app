@@ -3,7 +3,7 @@ import { FormField, Box } from "grommet"
 import { Formik } from "formik"
 import ReCAPTCHA from "react-google-recaptcha"
 import { string, object, ref, addMethod, bool } from "yup"
-import { mainInstance as axios } from "../axios"
+import { mainInstance as axios } from "../network/axios"
 import equalTo from "../utils/equalTo"
 import { socialAuthEnabled } from "../Auth"
 import SocialButtons from "./SocialButtons"
@@ -19,7 +19,7 @@ import {
     AuthFormWrapper,
     AuthFormSubmittedError,
 } from "../ui"
-import { FormPropTypes, AuthFormPropTypes } from "../PropTypes"
+import { FormPropTypes, AuthFormPropTypes } from "../utils/PropTypes"
 import { endpoints } from "../network/endpoints"
 
 addMethod(string, "equalTo", equalTo)
