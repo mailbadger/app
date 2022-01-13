@@ -23,7 +23,7 @@ require (
 	github.com/huandu/facebook v2.3.1+incompatible
 	github.com/jinzhu/now v1.1.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/open-policy-agent/opa v0.36.0
+	github.com/open-policy-agent/opa v0.36.1
 	github.com/rakyll/statik v0.1.7
 	github.com/robbiet480/go.sns v0.0.0-20181124163742-ca087b49e1da
 	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
