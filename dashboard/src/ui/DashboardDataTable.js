@@ -49,86 +49,79 @@ const StyledInput = styled.input`
 `
 
 const StyledDataTable = styled(DataTable)`
-	background:white;
-	padding: 10px 0 0;
-	display: table;
-  overflow: auto;
-  
-  @media (width: 1440px) {
-    width: auto;
-   }
+    background: white;
+    padding: 10px 0 0;
+    display: table;
+    overflow: auto;
 
-	${this} thead {
-		tr {
-		width: 100%;
-		font-size: 13px;
-		${tableHeading};
-		}
-		
-		th {
-			border:none;
+    @media (width: 1440px) {
+        width: auto;
+    }
 
-			&:first-of-type{
-				padding-left: 30px;
-			}
-		}
-	}
+    ${this} thead {
+        tr {
+            width: 100%;
+            font-size: 13px;
+            ${tableHeading};
+        }
 
-	${this} tbody {
-		th, td {
-			padding-top: 2px;
-			padding-bottom: 1px;
-		}
+        th {
+            border: none;
 
-		tr {
-			input {
-				width: 85px;
-				text-align:center;
+            &:first-of-type {
+                padding-left: 30px;
+            }
+        }
+    }
 
-				&:hover {
-					color:#541388;
-				}
-			}
-			
-			&:hover {
-				background-color: rgba(84, 19, 136, 0.1);
-			}
+    ${this} tbody {
+        th,
+        td {
+            padding-top: 2px;
+            padding-bottom: 1px;
+            min-height: 15px;
+        }
 
-			th {
-				font-size: 16px;
-				font-weight: bold;
-				color: #541388;
+        tr {
+            height: 55px;
+            input {
+                width: 85px;
+                text-align: center;
 
-				&:first-of-type{
-					padding-left: 30px;
-				}
-			}
+                &:hover {
+                    color: #541388;
+                }
+            }
 
-			span {
-				white-space: nowrap;
-				text-overflow: ellipsis;
-				overflow: hidden;
-			}
+            &:hover {
+                background-color: rgba(84, 19, 136, 0.1);
+            }
 
-			td {
-				button{
-					&:focus {
-						box-shadow: none;
-					}
-				}
+            th {
+                font-size: 16px;
+                font-weight: bold;
+                color: #541388;
 
-				&:nth-of-type(3) {	
-					div {
-						background-color: #fadcff;
-						border-radius: 8px;
-						padding: 8.5px 24px 8.5px;
-						font-size: 14px;
-						font-weight: bold;
-						color: #541388;
-				}
-			}
-		}	
-	}
+                &:first-of-type {
+                    padding-left: 30px;
+                }
+            }
+
+            span {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            td {
+                button {
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+            }
+        }
+    }
 `
 
 const StyledLinkIcon = styled(Box)`

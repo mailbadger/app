@@ -2,7 +2,8 @@ import React from "react"
 import { Switch } from "react-router-dom"
 
 import ProtectedRoute from "../../ProtectedRoute"
-import List, { Row, Header, SubscriberTable } from "./List"
+import List from "./List"
+import { Row, Header, SubscriberTable } from "./SubscriberTable"
 import Import from "./Import"
 import BulkDelete from "./BulkDelete"
 
