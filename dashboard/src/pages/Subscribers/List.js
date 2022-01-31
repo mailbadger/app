@@ -4,7 +4,7 @@ import { More } from "grommet-icons"
 import { Box, Heading, ResponsiveContext, Select } from "grommet"
 
 import history from "../../utils/history"
-import { Modal, Badge } from "../../ui"
+import { Modal } from "../../ui"
 import CreateSubscriber from "./Create"
 import DeleteSubscriber from "./Delete"
 import EditSubscriber from "./Edit"
@@ -64,7 +64,7 @@ const List = () => {
     const columns = [
         {
             property: "email",
-            header: "Email",
+            header: "name",
             size: getColumnSize(contextSize),
         },
         {
@@ -83,19 +83,6 @@ const List = () => {
             render: function Cell({ updated_at }) {
                 const dateUpdatedAt = parseISO(updated_at)
                 return <span>{formatRelative(dateUpdatedAt, new Date())}</span>
-            },
-        },
-        {
-            property: "tags",
-            header: "",
-            size: "128px",
-            align: "center",
-            render: function Cell() {
-                return (
-                    <Badge color="#fadcff" fontColor="#541388">
-                        Subscribers
-                    </Badge>
-                )
             },
         },
         {
@@ -146,7 +133,7 @@ const List = () => {
     ]
 
     const [callApi, state, onClickPrev, onClickNext] = useCallApiDataTable(
-        endpoints.getGroups
+        endpoints.getSubscribers
     )
 
     const handleChange = (e) => {

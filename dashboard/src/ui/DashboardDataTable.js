@@ -54,10 +54,6 @@ const StyledDataTable = styled(DataTable)`
     display: table;
     overflow: auto;
 
-    @media (width: 1440px) {
-        width: auto;
-    }
-
     ${this} thead {
         tr {
             width: 100%;
@@ -210,7 +206,6 @@ export const DashboardDataTable = ({
     handleChange,
 }) => {
     const size = useContext(ResponsiveContext)
-
     return (
         <DashboardWrapper fill="horizontal" contextSize={size} overflow="auto">
             <DashboardSearchPlaceholder
