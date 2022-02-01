@@ -64,7 +64,7 @@ const List = () => {
     const columns = [
         {
             property: "email",
-            header: "name",
+            header: "Email",
             size: getColumnSize(contextSize),
         },
         {
