@@ -2,10 +2,10 @@ import React, { useState, useContext } from "react"
 import PropTypes from "prop-types"
 import { Box, Button } from "grommet"
 
-import { mainInstance as axios } from "../../network/axios"
-import { ButtonWithLoader } from "../../ui"
-import { NotificationsContext } from "../../Notifications/context"
-import { endpoints } from "../../network/endpoints"
+import { mainInstance as axios } from "../../../network/axios"
+import { ButtonWithLoader } from "../../../ui"
+import { NotificationsContext } from "../../../Notifications/context"
+import { endpoints } from "../../../network/endpoints"
 
 const RemoveSubscriber = ({ id, subId, onSuccess, onCancel }) => {
     const { createNotification } = useContext(NotificationsContext)

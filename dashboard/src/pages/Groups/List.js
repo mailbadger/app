@@ -1,23 +1,10 @@
 import React, { useState, useContext, Fragment } from "react"
-import PropTypes from "prop-types"
 import { parseISO, formatRelative } from "date-fns"
 import { More, Add } from "grommet-icons"
-import { mainInstance as axios } from "../../network/axios"
-import { Formik, ErrorMessage } from "formik"
-import { string, object } from "yup"
 
-import {
-    Box,
-    Button,
-    Heading,
-    Select,
-    FormField,
-    TextInput,
-    ResponsiveContext,
-} from "grommet"
+import { Box, Heading, Select, ResponsiveContext } from "grommet"
 import history from "../../utils/history"
-import { ButtonWithLoader, Modal } from "../../ui"
-import { NotificationsContext } from "../../Notifications/context"
+import { Modal } from "../../ui"
 import DeleteSegment from "./Delete"
 import { endpoints } from "../../network/endpoints"
 import { DashboardDataTable, getColumnSize } from "../../ui/DashboardDataTable"
@@ -32,153 +19,7 @@ import { useCallApiDataTable } from "../../hooks/useCallApiDataTable"
 import DashboardPlaceholderTable from "../../ui/DashboardPlaceholderTable"
 import { LinkWrapper } from "../../ui/LinkWrapper"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
-
-const segmentValidation = object().shape({
-    name: string()
-        .required("Please enter a group name.")
-        .max(191, "The name must not exceed 191 characters."),
-})
-
-const CreateForm = ({
-    handleSubmit,
-    handleChange,
-    isSubmitting,
-    hideModal,
-}) => (
-    <Box
-        direction="column"
-        fill
-        margin={{ left: "medium", right: "medium", bottom: "medium" }}
-    >
-        <form onSubmit={handleSubmit}>
-            <Box>
-                <FormField htmlFor="name" label="Group Name">
-                    <TextInput
-                        name="name"
-                        onChange={handleChange}
-                        placeholder="My group"
-                    />
-                    <ErrorMessage name="name" />
-                </FormField>
-                <Box direction="row" alignSelf="end" margin={{ top: "medium" }}>
-                    <Box margin={{ right: "small" }}>
-                        <Button label="Cancel" onClick={() => hideModal()} />
-                    </Box>
-                    <Box>
-                        <ButtonWithLoader
-                            type="submit"
-                            primary
-                            disabled={isSubmitting}
-                            label="Save Group"
-                        />
-                    </Box>
-                </Box>
-            </Box>
-        </form>
-    </Box>
-)
-
-CreateForm.propTypes = {
-    hideModal: PropTypes.func,
-    handleSubmit: PropTypes.func,
-    handleChange: PropTypes.func,
-    isSubmitting: PropTypes.bool,
-}
-
-const CreateSegment = ({ callApi, hideModal }) => {
-    const { createNotification } = useContext(NotificationsContext)
-
-    const handleSubmit = async (values, { setSubmitting, setErrors }) => {
-        const postForm = async () => {
-            const params = {
-                name: values.name,
-            }
-            try {
-                await axios.post(endpoints.postGroups, params)
-                createNotification("Group has been created successfully.")
-
-                await callApi({ url: endpoints.getGroups })
-
-                //done submitting, set submitting to false
-                setSubmitting(false)
-
-                hideModal()
-            } catch (error) {
-                if (error.response) {
-                    const { message, errors } = error.response.data
-
-                    setErrors(errors)
-
-                    const msg = message
-                        ? message
-                        : "Unable to create group. Please try again."
-
-                    createNotification(msg, "status-error")
-
-                    //done submitting, set submitting to false
-                    setSubmitting(false)
-                }
-            }
-        }
-
-        await postForm()
-
-        return
-    }
-
-    return (
-        <Box direction="row">
-            <Formik
-                initialValues={{ name: "" }}
-                onSubmit={handleSubmit}
-                validationSchema={segmentValidation}
-            >
-                {(props) => <CreateForm {...props} hideModal={hideModal} />}
-            </Formik>
-        </Box>
-    )
-}
-
-CreateSegment.propTypes = {
-    callApi: PropTypes.func,
-    hideModal: PropTypes.func,
-}
-
-const DeleteForm = ({ id, callApi, hideModal }) => {
-    const deleteSegment = async (id) => {
-        await axios.delete(endpoints.deleteGroups(id))
-    }
-
-    const [isSubmitting, setSubmitting] = useState(false)
-    return (
-        <Box direction="row" alignSelf="end" pad="small">
-            <Box margin={{ right: "small" }}>
-                <Button label="Cancel" onClick={() => hideModal()} />
-            </Box>
-            <Box>
-                <ButtonWithLoader
-                    primary
-                    label="Delete"
-                    color="#FF4040"
-                    disabled={isSubmitting}
-                    onClick={async () => {
-                        setSubmitting(true)
-                        await deleteSegment(id)
-                        await callApi({ url: endpoints.getGroups })
-                        setSubmitting(false)
-                        hideModal()
-                    }}
-                />
-            </Box>
-        </Box>
-    )
-}
-
-DeleteForm.propTypes = {
-    id: PropTypes.number,
-    callApi: PropTypes.func,
-    hideModal: PropTypes.func,
-}
+import { CreateSegment } from "./CreateSegmet/CreateSegment"
 
 const List = () => {
     const [showDelete, setShowDelete] = useState({ show: false, name: "" })
