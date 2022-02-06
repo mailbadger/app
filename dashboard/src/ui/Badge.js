@@ -10,8 +10,8 @@ const Badge = styled.span`
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: 5px;
-    color: #fff;
     background-color: ${(props) => props.color || "#CCCCCC"};
+    color: ${(props) => props.fontColor || "#fff"};
 `
 
 export default Badge

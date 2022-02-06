@@ -1,169 +1,22 @@
-import React, { useState, useContext } from "react"
-import PropTypes from "prop-types"
+import React, { useState, useContext, Fragment } from "react"
 import { parseISO, formatRelative } from "date-fns"
-import { More, Add, FormPreviousLink, FormNextLink } from "grommet-icons"
-import { mainInstance as axios } from "../../network/axios"
-import { useApi } from "../../hooks"
-import {
-    TableHeader,
-    TableBody,
-    TableRow,
-    TableCell,
-    Box,
-    Button,
-    Heading,
-    Select,
-} from "grommet"
+import { More, Add } from "grommet-icons"
+import { Box, Heading, Select, ResponsiveContext } from "grommet"
 import history from "../../utils/history"
-import { StyledTable, ButtonWithLoader, PlaceholderTable, Modal } from "../../ui"
-import { NotificationsContext } from "../../Notifications/context"
+import { Modal } from "../../ui"
 import { endpoints } from "../../network/endpoints"
-
-const Row = ({ template, setShowDelete }) => {
-    const createdAt = parseISO(template.created_at)
-    const updatedAt = parseISO(template.updated_at)
-    return (
-        <TableRow>
-            <TableCell scope="row" size="xlarge">
-                <strong>{template.name}</strong>
-            </TableCell>
-            <TableCell scope="row" size="medium">
-                <strong>{template.subject_part}</strong>
-            </TableCell>
-            <TableCell scope="row" size="medium">
-                {formatRelative(createdAt, new Date())}
-            </TableCell>
-            <TableCell scope="row" size="medium">
-                {formatRelative(updatedAt, new Date())}
-            </TableCell>
-            <TableCell scope="row" size="xsmall">
-                <Select
-                    alignSelf="center"
-                    plain
-                    icon={<More />}
-                    options={["Edit", "Delete"]}
-                    onChange={({ option }) => {
-                        ;(function () {
-                            switch (option) {
-                                case "Edit":
-                                    history.push(
-                                        `/dashboard/templates/${template.id}/edit`
-                                    )
-                                    break
-                                case "Delete":
-                                    setShowDelete({
-                                        show: true,
-                                        name: template.name,
-                                        id: template.id,
-                                    })
-                                    break
-                                default:
-                                    return null
-                            }
-                        })()
-                    }}
-                />
-            </TableCell>
-        </TableRow>
-    )
-}
-
-Row.propTypes = {
-    setShowDelete: PropTypes.func,
-    template: PropTypes.shape({
-        id: PropTypes.number,
-        name: PropTypes.string,
-        subject_part: PropTypes.string,
-        created_at: PropTypes.string,
-        updated_at: PropTypes.string,
-    }),
-}
-
-const Header = () => (
-    <TableHeader>
-        <TableRow>
-            <TableCell scope="col" border="bottom" size="medium">
-                <strong>Name</strong>
-            </TableCell>
-            <TableCell scope="col" border="bottom" size="medium">
-                <strong>Subject</strong>
-            </TableCell>
-            <TableCell scope="col" border="bottom" size="medium">
-                <strong>Created At</strong>
-            </TableCell>
-            <TableCell scope="col" border="bottom" size="medium">
-                <strong>Updated At</strong>
-            </TableCell>
-            <TableCell align="end" scope="col" border="bottom" size="small">
-                <strong>Action</strong>
-            </TableCell>
-        </TableRow>
-    </TableHeader>
-)
-
-const TemplateTable = React.memo(({ list, setShowDelete }) => (
-    <StyledTable>
-        <Header />
-        <TableBody>
-            {list.map((t) => (
-                <Row template={t} key={t.name} setShowDelete={setShowDelete} />
-            ))}
-        </TableBody>
-    </StyledTable>
-))
-
-TemplateTable.displayName = "TemplateTable"
-TemplateTable.propTypes = {
-    list: PropTypes.array,
-    setShowDelete: PropTypes.func,
-}
-
-const DeleteForm = ({ id, callApi, hideModal }) => {
-    const { createNotification } = useContext(NotificationsContext)
-
-    const deleteTemplate = async (id) => {
-        await axios.delete(endpoints.deleleteTemplates(id))
-    }
-
-    const [isSubmitting, setSubmitting] = useState(false)
-    return (
-        <Box direction="row" alignSelf="end" pad="small">
-            <Box margin={{ right: "small" }}>
-                <Button label="Cancel" onClick={() => hideModal()} />
-            </Box>
-            <Box>
-                <ButtonWithLoader
-                    primary
-                    label="Delete"
-                    color="#FF4040"
-                    disabled={isSubmitting}
-                    onClick={async () => {
-                        setSubmitting(true)
-                        try {
-                            await deleteTemplate(id)
-                            await callApi({ url: endpoints.getTemplates })
-                            hideModal()
-                        } catch (e) {
-                            console.error(e)
-                            createNotification(
-                                "Unable to delete template, please try again.",
-                                "status-error"
-                            )
-                        }
-
-                        setSubmitting(false)
-                    }}
-                />
-            </Box>
-        </Box>
-    )
-}
-
-DeleteForm.propTypes = {
-    id: PropTypes.number,
-    callApi: PropTypes.func,
-    hideModal: PropTypes.func,
-}
+import { DashboardDataTable, getColumnSize } from "../../ui/DashboardDataTable"
+import DashboardPlaceholderTable from "../../ui/DashboardPlaceholderTable"
+import { useCallApiDataTable } from "../../hooks/useCallApiDataTable"
+import {
+    StyledActions,
+    StyledHeaderButtons,
+    StyledHeaderTitle,
+    StyledHeaderWrapper,
+    StyledImportButton,
+} from "../Subscribers/StyledSections"
+import { faPlus } from "@fortawesome/free-solid-svg-icons"
+import { DeleteForm } from "./DeleteTemplate/DeleteForm"
 
 const List = () => {
     const [showDelete, setShowDelete] = useState({
@@ -172,26 +25,108 @@ const List = () => {
         id: null,
     })
     const hideModal = () => setShowDelete({ show: false, name: "", id: null })
+    const [searchInput, setSearchInput] = useState("")
 
-    const [state, callApi] = useApi(
+    const contextSize = useContext(ResponsiveContext)
+
+    const columns = [
         {
-            url: endpoints.getTemplates,
+            property: "name",
+            header: "Name",
+            size: getColumnSize(contextSize),
         },
         {
-            next_token: "",
-            collection: [],
-        }
+            property: "subject_part",
+            header: "Subject",
+            size: "small",
+        },
+        {
+            property: "created",
+            header: "Created At",
+            size: "small",
+            render: function Cell({ created_at }) {
+                const dateCreatedAt = new Date(created_at)
+                return <span>{dateCreatedAt.toLocaleDateString("en-US")}</span>
+            },
+        },
+        {
+            property: "updated",
+            header: "Updated At",
+            size: "small",
+            render: function Cell(data) {
+                const dateUpdatedAt = parseISO(data.updated_at)
+                return <span>{formatRelative(dateUpdatedAt, new Date())}</span>
+            },
+        },
+        {
+            property: "actions",
+            header: "Actions",
+            size: "small",
+            align: "center",
+            render: function Cell({ id, name }) {
+                return (
+                    <StyledActions>
+                        <Select
+                            alignSelf="center"
+                            plain
+                            icon={<More />}
+                            options={["Edit", "Delete"]}
+                            onChange={({ option }) => {
+                                ;(function () {
+                                    switch (option) {
+                                        case "Edit":
+                                            history.push(
+                                                `/dashboard/templates/${id}/edit`
+                                            )
+                                            break
+                                        case "Delete":
+                                            setShowDelete({
+                                                show: true,
+                                                name: name,
+                                                id: id,
+                                            })
+                                            break
+                                        default:
+                                            return null
+                                    }
+                                })()
+                            }}
+                        />
+                    </StyledActions>
+                )
+            },
+        },
+    ]
+
+    const [callApi, state, onClickPrev, onClickNext] = useCallApiDataTable(
+        endpoints.getTemplates
     )
+
+    const handleChange = (e) => {
+        setSearchInput(e.target.value)
+    }
 
     let table = null
     if (state.isLoading) {
-        table = <PlaceholderTable header={Header} numCols={4} numRows={5} />
+        table = (
+            <DashboardPlaceholderTable
+                columns={columns}
+                numCols={columns.length}
+                numRows={10}
+            />
+        )
     } else if (!state.isError && state.data.collection.length > 0) {
         table = (
-            <TemplateTable
+            <DashboardDataTable
+                columns={columns}
+                data={state.data.collection}
                 isLoading={state.isLoading}
-                list={state.data.collection}
-                setShowDelete={setShowDelete}
+                onClickNext={onClickNext}
+                onClickPrev={onClickPrev}
+                prevLinks={state.data.links.previous}
+                nextLinks={state.data.links.next}
+                searchInput={searchInput}
+                handleChange={handleChange}
             />
         )
     }
@@ -211,25 +146,37 @@ const List = () => {
                     }
                 />
             )}
-            <Box
+            <StyledHeaderWrapper
+                size={contextSize}
                 gridArea="nav"
-                direction="row"
-                border={{ side: "bottom", color: "light-4" }}
+                margin={{
+                    left: "40px",
+                    right: "100px",
+                    bottom: "22px",
+                    top: "40px",
+                }}
             >
-                <Box alignSelf="center" margin={{ right: "small" }}>
-                    <Heading level="2">Templates</Heading>
-                </Box>
-                <Box alignSelf="center">
-                    <Button
-                        primary
-                        color="status-ok"
-                        label="Create new"
-                        icon={<Add />}
-                        reverse
-                        onClick={() => history.push("/dashboard/templates/new")}
-                    />
-                </Box>
-            </Box>
+                <StyledHeaderTitle size={contextSize}>
+                    Templates
+                </StyledHeaderTitle>
+                <StyledHeaderButtons
+                    size={contextSize}
+                    margin={{ left: "auto" }}
+                >
+                    <Fragment>
+                        <StyledImportButton
+                            width="256"
+                            margin={{ right: "small" }}
+                            icon={<Add icon={faPlus} />}
+                            label="Create new"
+                            onClick={() =>
+                                history.push("/dashboard/templates/new")
+                            }
+                        />
+                    </Fragment>
+                </StyledHeaderButtons>
+            </StyledHeaderWrapper>
+
             <Box gridArea="main">
                 <Box animation="fadeIn">
                     {table}
@@ -244,41 +191,6 @@ const List = () => {
                         </Box>
                     ) : null}
                 </Box>
-                {!state.isLoading &&
-                !state.isError &&
-                state.data.collection.length > 0 ? (
-                    <Box
-                        direction="row"
-                        alignSelf="end"
-                        margin={{ top: "medium" }}
-                    >
-                        <Box margin={{ right: "small" }}>
-                            <Button
-                                icon={<FormPreviousLink />}
-                                label="Previous"
-                                disabled={state.data.links.previous === null}
-                                onClick={() => {
-                                    callApi({
-                                        url: state.data.links.previous,
-                                    })
-                                }}
-                            />
-                        </Box>
-                        <Box>
-                            <Button
-                                icon={<FormNextLink />}
-                                reverse
-                                label="Next"
-                                disabled={state.data.links.next === null}
-                                onClick={() => {
-                                    callApi({
-                                        url: state.data.links.next,
-                                    })
-                                }}
-                            />
-                        </Box>
-                    </Box>
-                ) : null}
             </Box>
         </>
     )

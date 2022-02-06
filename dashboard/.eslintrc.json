@@ -18,7 +18,8 @@
   },
   "plugins": ["react"],
   "rules": {
-    "react/state-in-constructor": [1, "always"]
+    "react/state-in-constructor": [1, "always"],
+    "react/prop-types": 0
   },
   "settings": {
     "react": {

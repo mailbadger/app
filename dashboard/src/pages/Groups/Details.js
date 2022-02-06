@@ -17,10 +17,15 @@ import {
     FormNextLink,
 } from "grommet-icons"
 import { useApi } from "../../hooks"
-import { LoadingOverlay, Modal, SecondaryButton, PlaceholderTable } from "../../ui"
+import {
+    LoadingOverlay,
+    Modal,
+    SecondaryButton,
+    PlaceholderTable,
+} from "../../ui"
 import EditSegment from "./Edit"
 import DeleteSegment from "./Delete"
-import RemoveSubscriber from "./RemoveSubscriber"
+import RemoveSubscriber from "./RemoveSubscriber/RemoveSubscriber"
 import history from "../../utils/history"
 import { Table, Header } from "../Subscribers"
 import { endpoints } from "../../network/endpoints"

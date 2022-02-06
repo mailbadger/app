@@ -4,7 +4,6 @@ import ProtectedRoute from "../../ProtectedRoute"
 import List from "./List"
 import CreateTemplateForm from "./Create"
 import EditTemplateForm from "./Edit"
-import { ListGrid } from "../../ui"
 
 const Templates = () => {
     return (
@@ -20,11 +19,7 @@ const Templates = () => {
             <ProtectedRoute
                 exact
                 path="/dashboard/templates"
-                component={() => (
-                    <ListGrid>
-                        <List />
-                    </ListGrid>
-                )}
+                component={() => <List />}
             />
         </Switch>
     )

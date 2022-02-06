@@ -49,86 +49,75 @@ const StyledInput = styled.input`
 `
 
 const StyledDataTable = styled(DataTable)`
-	background:white;
-	padding: 10px 0 0;
-	display: table;
-  overflow: auto;
-  
-  @media (width: 1440px) {
-    width: auto;
-   }
+    background: white;
+    padding: 10px 0 0;
+    display: table;
+    overflow: auto;
 
-	${this} thead {
-		tr {
-		width: 100%;
-		font-size: 13px;
-		${tableHeading};
-		}
-		
-		th {
-			border:none;
+    ${this} thead {
+        tr {
+            width: 100%;
+            font-size: 13px;
+            ${tableHeading};
+        }
 
-			&:first-of-type{
-				padding-left: 30px;
-			}
-		}
-	}
+        th {
+            border: none;
 
-	${this} tbody {
-		th, td {
-			padding-top: 2px;
-			padding-bottom: 1px;
-		}
+            &:first-of-type {
+                padding-left: 30px;
+            }
+        }
+    }
 
-		tr {
-			input {
-				width: 85px;
-				text-align:center;
+    ${this} tbody {
+        th,
+        td {
+            padding-top: 2px;
+            padding-bottom: 1px;
+            min-height: 15px;
+        }
 
-				&:hover {
-					color:#541388;
-				}
-			}
-			
-			&:hover {
-				background-color: rgba(84, 19, 136, 0.1);
-			}
+        tr {
+            height: 55px;
+            input {
+                width: 85px;
+                text-align: center;
 
-			th {
-				font-size: 16px;
-				font-weight: bold;
-				color: #541388;
+                &:hover {
+                    color: #541388;
+                }
+            }
 
-				&:first-of-type{
-					padding-left: 30px;
-				}
-			}
+            &:hover {
+                background-color: rgba(84, 19, 136, 0.1);
+            }
 
-			span {
-				white-space: nowrap;
-				text-overflow: ellipsis;
-				overflow: hidden;
-			}
+            th {
+                font-size: 16px;
+                font-weight: bold;
+                color: #541388;
 
-			td {
-				button{
-					&:focus {
-						box-shadow: none;
-					}
-				}
+                &:first-of-type {
+                    padding-left: 30px;
+                }
+            }
 
-				&:nth-of-type(3) {	
-					div {
-						background-color: #fadcff;
-						border-radius: 8px;
-						padding: 8.5px 24px 8.5px;
-						font-size: 14px;
-						font-weight: bold;
-						color: #541388;
-				}
-			}
-		}	
-	}
+            span {
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+            }
+
+            td {
+                button {
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+            }
+        }
+    }
 `
 
 const StyledLinkIcon = styled(Box)`
@@ -217,7 +206,6 @@ export const DashboardDataTable = ({
     handleChange,
 }) => {
     const size = useContext(ResponsiveContext)
-
     return (
         <DashboardWrapper fill="horizontal" contextSize={size} overflow="auto">
             <DashboardSearchPlaceholder
