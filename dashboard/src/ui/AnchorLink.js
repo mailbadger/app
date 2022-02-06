@@ -28,7 +28,9 @@ const AnchorLink = (props) => {
         light = active ? "white" : "dark-1"
     }
 
-    const shouldDisplayTooltip = fromSidebar && isHovered
+    // Tooltip shows the text right of the input on the menu items, with the implementation of Tip,
+    // we don't need this functionality
+    const shouldDisplayTooltip = false
 
     let linkStyle = {}
     if (shouldDisplayTooltip) {

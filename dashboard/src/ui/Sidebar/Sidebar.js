@@ -2,7 +2,7 @@ import React, { Fragment, useState } from "react"
 import PropTypes from "prop-types"
 import { FormClose } from "grommet-icons"
 import { useLocation } from "react-router-dom"
-import { Box, Button, Layer } from "grommet"
+import { Box, Button, Layer, Tip } from "grommet"
 import { UserMenu } from ".."
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
@@ -13,10 +13,7 @@ import {
     faTools,
 } from "@fortawesome/free-solid-svg-icons"
 import logo from "../../images/logo-small.png"
-import {
-    StyledMenuItemContainer,
-    StyledAnchorLink,
-} from "./StyledSections"
+import { StyledMenuItemContainer, StyledAnchorLink } from "./StyledSections"
 
 const links = [
     {
@@ -56,21 +53,38 @@ const NavLinks = () => {
                 const isActive =
                     active === link.label ||
                     location.pathname.startsWith(link.to)
-
                 return (
-                    <StyledMenuItemContainer active={isActive} key={link.label}>
-                        <Box direction="row">
-                            <StyledAnchorLink
-                                to={link.to}
-                                size="medium"
-                                icon={link.icon}
-                                active={isActive}
-                                onClick={() => setActive(link.label)}
-                                fromSidebar={true}
-                                label={link.label}
-                            />
-                        </Box>
-                    </StyledMenuItemContainer>
+                    <Tip
+                        key={link.label}
+                        content={link.label}
+                        plain
+                        dropProps={{
+                            align: { left: "right" },
+                            background: "black",
+                            pad: "small",
+                            round: "small",
+                            elevation: "large",
+                            margin: {
+                                left: "xsmall",
+                            },
+                        }}
+                    >
+                        <StyledMenuItemContainer
+                            active={isActive}
+                            key={link.label}
+                        >
+                            <Box direction="row">
+                                <StyledAnchorLink
+                                    to={link.to}
+                                    size="medium"
+                                    icon={link.icon}
+                                    active={isActive}
+                                    onClick={() => setActive(link.label)}
+                                    fromSidebar={true}
+                                />
+                            </Box>
+                        </StyledMenuItemContainer>
+                    </Tip>
                 )
             })}
         </Fragment>
