@@ -3,7 +3,7 @@ module github.com/mailbadger/app
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.42.11
+	github.com/aws/aws-sdk-go v1.43.4
 	github.com/aws/aws-sdk-go-v2 v1.11.2
 	github.com/aws/aws-sdk-go-v2/config v1.10.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.11.0
@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/unrolled/secure v1.0.9
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
-	golang.org/x/net v0.0.0-20211111083644-e5c967477495
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.64.0
