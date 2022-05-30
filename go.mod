@@ -37,9 +37,9 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.64.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gorm.io/driver/mysql v1.2.2
+	gorm.io/driver/mysql v1.3.4
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.4
+	gorm.io/gorm v1.23.4
 )
 
 require (
