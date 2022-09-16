@@ -39,7 +39,7 @@ require (
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gorm.io/driver/mysql v1.2.2
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.4
+	gorm.io/gorm v1.23.9
 )
 
 require (
