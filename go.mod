@@ -21,7 +21,7 @@ require (
 	github.com/gorilla/csrf v1.7.1
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/now v1.1.4
+	github.com/jinzhu/now v1.1.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-policy-agent/opa v0.36.0
 	github.com/rakyll/statik v0.1.7
@@ -37,9 +37,9 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.64.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gorm.io/driver/mysql v1.2.2
+	gorm.io/driver/mysql v1.4.1
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.4
+	gorm.io/gorm v1.23.8
 )
 
 require (
