@@ -21,7 +21,7 @@
     "grommet-icons": "^4.6.0",
     "history": "^4.10.1",
     "prop-types": "^15.7.2",
-    "qs": "^6.10.1",
+    "qs": "^6.10.3",
     "react": "^16.14.0",
     "react-codemirror2": "^7.2.1",
     "react-content-loader": "^6.0.3",
