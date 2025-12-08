@@ -21,7 +21,7 @@ require (
 	github.com/gorilla/csrf v1.7.1
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/now v1.1.4
+	github.com/jinzhu/now v1.1.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-policy-agent/opa v0.36.0
 	github.com/rakyll/statik v0.1.7
@@ -34,16 +34,17 @@ require (
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20211111083644-e5c967477495
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync v0.9.0
 	google.golang.org/api v0.64.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
-	gorm.io/driver/mysql v1.2.2
+	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/sqlite v1.2.6
-	gorm.io/gorm v1.22.4
+	gorm.io/gorm v1.30.0
 )
 
 require (
 	cloud.google.com/go v0.99.0 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.6.0 // indirect
@@ -61,7 +62,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -103,7 +104,7 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb // indirect
