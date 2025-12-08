@@ -17,7 +17,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/go-github/v25 v25.1.3
 	github.com/google/uuid v1.3.0
-	github.com/google/wire v0.5.0
+	github.com/google/wire v0.7.0
 	github.com/gorilla/csrf v1.7.1
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
@@ -34,7 +34,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/net v0.0.0-20211111083644-e5c967477495
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sync v0.8.0
 	google.golang.org/api v0.64.0
 	gopkg.in/ezzarghili/recaptcha-go.v3 v3.0.1
 	gorm.io/driver/mysql v1.2.2
