@@ -21,7 +21,7 @@ require (
 	github.com/gorilla/csrf v1.7.1
 	github.com/gwatts/gin-adapter v0.0.0-20170508204228-c44433c485ad
 	github.com/huandu/facebook v2.3.1+incompatible
-	github.com/jinzhu/now v1.1.4
+	github.com/jinzhu/now v1.1.5
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/open-policy-agent/opa v0.36.0
 	github.com/rakyll/statik v0.1.7
